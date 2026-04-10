@@ -199,7 +199,3 @@ export const CIE11Badge = ({ cie10value }) => {
     </div>
   );
 };
-// MÓDULO CUPS: Código Único de Procedimientos en Salud - Colombia
-// Fuente: Res. 2175/2015 MSPS (consolida CUPS, deroga Res. 2175/2015), actualizada 2024
-// Procedimientos frecuentes en Salud Ocupacional y Medicina General
-// Ref. legal: Res. 2275/2023 (RIPS), Res. 1843/2025

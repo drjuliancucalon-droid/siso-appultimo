@@ -146,8 +146,8 @@ export const PLAN_CONFIG = {
 // Organización principal del super_admin. Todos los datos existentes pertenecen
 // a esta org. Las nuevas orgs se crean desde el Panel Global del super_admin.
 // ══════════════════════════════════════════════════════════════════════════════
-const ORG_DEFAULT_ID = "org_cucalon_2026";
-const ORG_CONFIG_DEFAULT = {
+export const ORG_DEFAULT_ID = "org_cucalon_2026";
+export const ORG_CONFIG_DEFAULT = {
   orgId: ORG_DEFAULT_ID,
   orgName: "OcupaSalud Popayán",
   orgNit: "",
@@ -157,7 +157,7 @@ const ORG_CONFIG_DEFAULT = {
 };
 
 // Helper: genera org_id único para nuevas organizaciones
-const _genOrgId = (name) =>
+export const _genOrgId = (name) =>
   "org_" +
   name
     .toLowerCase()
@@ -168,16 +168,16 @@ const _genOrgId = (name) =>
   Date.now().toString(36);
 
 // Helper: ¿el rol tiene privilegios de administrador?
-const _isAdmin = (role) => role === "administrador" || role === "super_admin";
+export const _isAdmin = (role) => role === "administrador" || role === "super_admin";
 
 // ── IPS: helpers para admin de empresa (acceso desde login principal) ──
-const _isAdminEmpresa = (role) => role === "admin_empresa";
-const _isEmpresaUser = (user) => !!user?.empresaId;
-const _isAdminOrEmpresa = (role) => _isAdmin(role) || _isAdminEmpresa(role);
+export const _isAdminEmpresa = (role) => role === "admin_empresa";
+export const _isEmpresaUser = (user) => !!user?.empresaId;
+export const _isAdminOrEmpresa = (role) => _isAdmin(role) || _isAdminEmpresa(role);
 
 // Helper: ¿el usuario actual tiene esta feature?
 // Uso: _canUse('ia_analisis', currentUser) → true/false
-const _canUse = (feature, user) => {
+export const _canUse = (feature, user) => {
   const plan = user?.license || "libre";
   const cfg = PLAN_CONFIG[plan] || PLAN_CONFIG.libre;
   // Verificar expiración
@@ -189,7 +189,7 @@ const _canUse = (feature, user) => {
 };
 
 // Helper: ¿cuántas HC totales tiene el usuario?
-const _contarHC = (lista, userId) =>
+export const _contarHC = (lista, userId) =>
   lista.filter((p) => p._medicoId === userId && p.fechaExamen && !p._archivado)
     .length;
 
@@ -197,7 +197,7 @@ const _contarHC = (lista, userId) =>
 // PERMISOS DE SECRETARIA - Solo el administrador puede activar módulos
 // por usuario. Por defecto TODO está en false (denegado).
 // ══════════════════════════════════════════════════════════════════════════════
-const SECRETARIA_PERMISOS_DEFAULT = {
+export const SECRETARIA_PERMISOS_DEFAULT = {
   agenda: false, // Ver y gestionar agenda de citas
   bill: false, // Generar cuentas de cobro
   propuestas: false, // Generar propuestas económicas
@@ -213,7 +213,7 @@ const SECRETARIA_PERMISOS_DEFAULT = {
 };
 
 // ── Permisos que SIEMPRE tienen los médicos (no necesitan check) ──────────────
-const MEDICO_SIEMPRE_PUEDE = new Set([
+export const MEDICO_SIEMPRE_PUEDE = new Set([
   "agenda",
   "bill",
   "propuestas",
@@ -236,7 +236,7 @@ const MEDICO_SIEMPRE_PUEDE = new Set([
 //   1. usersList (siempre la más actualizada desde Supabase)
 //   2. currentUser.secretariaPermisos (cacheado en sesión actual)
 //   3. SECRETARIA_PERMISOS_DEFAULT (todo denegado)
-const _secretariaPuede = (feature, currentUser, usersList) => {
+export const _secretariaPuede = (feature, currentUser, usersList) => {
   if (!currentUser) return false;
   if (_isAdmin(currentUser.role)) return true;
   if (_isAdminEmpresa(currentUser.role)) return true;
@@ -255,7 +255,7 @@ const _secretariaPuede = (feature, currentUser, usersList) => {
 };
 
 // ── Secretaria: ¿puede ver a este médico? (por medicosAsignados) ───────────────
-const _secretariaMedicoAsignado = (currentUser, medicoId, usersList) => {
+export const _secretariaMedicoAsignado = (currentUser, medicoId, usersList) => {
   if (!currentUser) return false;
   if (currentUser.role !== "secretaria") return true; // admin/medico ven todo
   const userObj = usersList?.find((u) => u.user === currentUser.user);

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+﻿import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
   User,
   FileText,
@@ -47198,3 +47198,5 @@ body{padding-top:52px;}
 export default function App() {
   return React.createElement(AppErrorBoundary, null, React.createElement(AppInner));
 }
+
+// OcupaSalud Ultimate v5.0 - Build verificado 2026-04-10 17:36
