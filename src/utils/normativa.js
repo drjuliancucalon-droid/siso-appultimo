@@ -332,7 +332,7 @@ export const _descargarRIPSJson = (pacientes, doctorData, periodo) => {
     document.body.removeChild(a);
     return true;
   } catch (e) {
-    console.error("RIPS download error:", e);
+    if (typeof console !== 'undefined') console.error("[SISO]", e?.message || e);
     return false;
   }
 };
@@ -406,7 +406,7 @@ export const _descargarRDA = (paciente, doctorData, sesionId) => {
     document.body.removeChild(a);
     return true;
   } catch (e) {
-    console.error("RDA error:", e);
+    if (typeof console !== 'undefined') console.error("[SISO]", e?.message || e);
     return false;
   }
 };

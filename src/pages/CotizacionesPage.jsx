@@ -204,13 +204,13 @@ const CotizacionesPage = () => {
   <p><strong>CLIENTE:</strong> ${cot.clienteNombre}</p>
   ${
     cot.clienteEmpresa
-      ? `<p><strong>EMPRESA:</strong> ${cot.clienteEmpresa}</p>`
+      ? "<p><strong>EMPRESA:</strong> " + cot.clienteEmpresa + "</p>"
       : ""
   }
   ${
-    cot.clienteEmail ? `<p><strong>EMAIL:</strong> ${cot.clienteEmail}</p>` : ""
+    cot.clienteEmail ? "<p><strong>EMAIL:</strong> " + cot.clienteEmail + "</p>" : ""
   }
-  ${cot.clienteTel ? `<p><strong>TEL:</strong> ${cot.clienteTel}</p>` : ""}
+  ${cot.clienteTel ? "<p><strong>TEL:</strong> " + cot.clienteTel + "</p>" : ""}
 </div>
 <table>
   <thead><tr><th>#</th><th>Descripción</th><th>Cant.</th><th>Precio Unitario</th><th>Total</th></tr></thead>

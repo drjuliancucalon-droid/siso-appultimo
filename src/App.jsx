@@ -28,6 +28,8 @@ import CotizacionesInlinePage from './pages/CotizacionesInlinePage.jsx';
 import CotizacionesPage from './pages/CotizacionesPage.jsx';
 import ContabilidadPage from './pages/ContabilidadPage.jsx';
 import SuperAdminPage from './pages/SuperAdminPage.jsx';
+import ChangePasswordForm from './pages/ChangePasswordForm.jsx';
+import NotificacionModal from './pages/NotificacionModal.jsx';
 import PortalEmpresaPage from './pages/PortalEmpresaPage.jsx';
 import EvolucionModal from './pages/EvolucionModal.jsx';
 import MensajesOverlay from './pages/MensajesOverlay.jsx';
@@ -4010,198 +4012,7 @@ function LoginForm({ onLogin, blockedUntil, attempts }) {
 // Decreto 1078/2015 Art. 2.2.2.25.2.2 - Tratamiento datos sensibles (deroga Decreto 1377/2013)
 // ══════════════════════════════════════════════════════════
 
-// ══════════════════════════════════════════════════════════════════════════
-// B-15: MODAL DE NOTIFICACIONES - Res. 1552/2013
-// WhatsApp y Email sin servidor externo (links directos)
-// ══════════════════════════════════════════════════════════════════════════
-const NotificacionModal = ({ data, onCerrar }) => {
-  if (!data || !data.nombre) return null;
-  const tel = (data.celular || "").replace(/\D/g, "");
-  const email = data.emailPaciente || data.email || "";
-  const nombre = data.nombres || data.nombre || "";
-  const doc = `${data.docTipo || "CC"} ${data.docNumero || ""}`.trim();
-  const codigo = data.codigoVerificacion || "";
-  const fecha = data.fechaExamen || new Date().toISOString().split("T")[0];
-  const concepto = data.conceptoAptitud || "pendiente";
-  const empresa = data.empresaNombre || data.empresa || "";
-
-  const waMsg = encodeURIComponent(
-    `Estimado/a ${nombre},\n\n` +
-      `Le informamos que su evaluación médica ocupacional ha sido registrada.\n\n` +
-      `📋 *Código de verificación:* ${codigo}\n` +
-      `📅 *Fecha:* ${fecha}\n` +
-      `🏢 *Empresa:* ${empresa}\n` +
-      `✅ *Concepto:* ${concepto}\n\n` +
-      `Puede verificar su certificado en cualquier momento solicitando este código al médico.\n\n` +
-      `Atentamente,\nServicio Médico Ocupacional - SISO OcupaSalud v4`
-  );
-
-  const mailSubject = encodeURIComponent(
-    `Evaluación Médica Ocupacional - Código ${codigo}`
-  );
-  const mailBody = encodeURIComponent(
-    `Estimado/a ${nombre},
-
-` +
-      `Le informamos que su evaluación médica ocupacional ha sido registrada.
-
-` +
-      `Código de verificación: ${codigo}
-` +
-      `Fecha: ${fecha}
-` +
-      `Empresa: ${empresa}
-` +
-      `Concepto de aptitud: ${concepto}
-
-` +
-      `Puede verificar su certificado presentando este código al médico tratante.
-
-` +
-      `Atentamente,
-Servicio Médico Ocupacional - SISO OcupaSalud v4`
-  );
-
-  const waUrl = `https://wa.me/${
-    tel.startsWith("57") ? tel : "57" + tel
-  }?text=${waMsg}`;
-  const mailUrl = `mailto:${email}?subject=${mailSubject}&body=${mailBody}`;
-  const smsUrl = `sms:${tel}?body=${encodeURIComponent(
-    `SISO OcupaSalud: Su código de verificación es ${codigo}. Fecha evaluación: ${fecha}.`
-  )}`;
-
-  return (
-    <div className="fixed inset-0 bg-black/60 z-[9999] flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden">
-        <div className="bg-gradient-to-r from-green-600 to-emerald-600 p-5 text-white flex items-center justify-between">
-          <div>
-            <h2 className="font-black text-base">📲 Notificar al Paciente</h2>
-            <p className="text-green-100 text-xs mt-0.5">
-              Res. 1552/2013 · Comunicación resultado
-            </p>
-          </div>
-          <button
-            onClick={onCerrar}
-            className="text-white/80 hover:text-white text-2xl font-bold"
-          >
-            ✕
-          </button>
-        </div>
-        <div className="p-5 space-y-3">
-          <div className="bg-gray-50 rounded-xl p-3 text-xs space-y-1">
-            <p>
-              <span className="font-black text-gray-600">Paciente:</span>{" "}
-              {nombre}
-            </p>
-            <p>
-              <span className="font-black text-gray-600">Documento:</span> {doc}
-            </p>
-            <p>
-              <span className="font-black text-gray-600">
-                Código verificación:
-              </span>{" "}
-              <span className="font-black text-blue-700">
-                {codigo || "(guardar HC primero)"}
-              </span>
-            </p>
-            <p>
-              <span className="font-black text-gray-600">Concepto:</span>{" "}
-              {concepto}
-            </p>
-          </div>
-
-          <p className="text-xs font-black text-gray-700 uppercase">
-            Canales de notificación
-          </p>
-
-          {tel ? (
-            <a
-              href={waUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="flex items-center gap-3 p-3 bg-green-50 border border-green-200 rounded-xl hover:bg-green-100 transition"
-            >
-              <span className="text-2xl">💬</span>
-              <div>
-                <p className="text-xs font-black text-green-800">WhatsApp</p>
-                <p className="text-[10px] text-green-600">
-                  +{tel.startsWith("57") ? tel : "57" + tel}
-                </p>
-              </div>
-              <span className="ml-auto text-xs font-bold text-green-600">
-                Abrir →
-              </span>
-            </a>
-          ) : (
-            <div className="p-3 bg-gray-50 border border-gray-200 rounded-xl text-xs text-gray-400">
-              💬 WhatsApp - Registre celular del paciente para habilitar
-            </div>
-          )}
-
-          {email ? (
-            <a
-              href={mailUrl}
-              className="flex items-center gap-3 p-3 bg-blue-50 border border-blue-200 rounded-xl hover:bg-blue-100 transition"
-            >
-              <span className="text-2xl">📧</span>
-              <div>
-                <p className="text-xs font-black text-blue-800">
-                  Correo electrónico
-                </p>
-                <p className="text-[10px] text-blue-600">{email}</p>
-              </div>
-              <span className="ml-auto text-xs font-bold text-blue-600">
-                Abrir →
-              </span>
-            </a>
-          ) : (
-            <div className="p-3 bg-gray-50 border border-gray-200 rounded-xl text-xs text-gray-400">
-              📧 Email - Registre correo del paciente para habilitar
-            </div>
-          )}
-
-          {tel ? (
-            <a
-              href={smsUrl}
-              className="flex items-center gap-3 p-3 bg-purple-50 border border-purple-200 rounded-xl hover:bg-purple-100 transition"
-            >
-              <span className="text-2xl">💬</span>
-              <div>
-                <p className="text-xs font-black text-purple-800">
-                  SMS (código únicamente)
-                </p>
-                <p className="text-[10px] text-purple-600">
-                  +{tel.startsWith("57") ? tel : "57" + tel}
-                </p>
-              </div>
-              <span className="ml-auto text-xs font-bold text-purple-600">
-                Abrir →
-              </span>
-            </a>
-          ) : null}
-
-          <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-[10px] text-amber-700">
-            <p className="font-black">
-              📋 Res. 1552/2013 - Notificación de resultados
-            </p>
-            <p className="mt-0.5">
-              El médico tiene la obligación de informar los resultados al
-              trabajador evaluado. Los links abren su app de WhatsApp/Email con
-              el mensaje prellenado.
-            </p>
-          </div>
-
-          <button
-            onClick={onCerrar}
-            className="w-full py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-sm rounded-xl"
-          >
-            Cerrar
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
+// ══ B-15: NotificacionModal extraído a src/pages/NotificacionModal.jsx ══
 
 // [EXTRACTED: utils/normativa.js - factura]
 
@@ -4815,139 +4626,7 @@ const AgendaFieldF = ({
     )}
   </div>
 );
-// ══ B-07: Componente cambio de contraseña (componente propio para hooks válidos) ══
-function ChangePasswordForm({
-  currentUser,
-  usersList,
-  setUsersList,
-  setCurrentUser,
-  _sync,
-  _patKey,
-  goTo,
-  showAlert,
-}) {
-  const { useState } = React;
-  const [np, setNp] = useState("");
-  const [np2, setNp2] = useState("");
-  const { valida, errores, fortaleza } = _validarContrasena(np);
-  const colores = [
-    "bg-red-500",
-    "bg-red-400",
-    "bg-orange-400",
-    "bg-yellow-400",
-    "bg-green-400",
-    "bg-emerald-500",
-  ];
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-violet-50 to-purple-100 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
-        <div className="text-center mb-6">
-          <div className="w-14 h-14 bg-violet-100 rounded-full flex items-center justify-center mx-auto mb-3">
-            <Lock className="w-7 h-7 text-violet-600" />
-          </div>
-          <h2 className="text-xl font-black text-violet-900">
-            Establecer Contraseña
-          </h2>
-          <p className="text-xs text-gray-500 mt-1">
-            Debe configurar una contraseña segura antes de continuar
-          </p>
-        </div>
-        <div className="space-y-4">
-          <div>
-            <label className="block text-xs font-black text-gray-700 mb-1 uppercase">
-              Nueva contraseña
-            </label>
-            <input
-              type="password"
-              value={np}
-              onChange={(e) => setNp(e.target.value)}
-              className="w-full p-3 border-2 border-gray-200 rounded-xl text-sm focus:border-violet-500 outline-none"
-              placeholder="Mínimo 10 caracteres"
-            />
-            {np && (
-              <div className="mt-1.5">
-                <div className="flex gap-0.5 mb-1">
-                  {[1, 2, 3, 4, 5].map((n) => (
-                    <div
-                      key={n}
-                      className={`h-1.5 flex-1 rounded-full ${
-                        n <= fortaleza ? colores[fortaleza] : "bg-gray-200"
-                      }`}
-                    />
-                  ))}
-                </div>
-                {errores.length > 0 && (
-                  <p className="text-[10px] text-red-600 font-semibold">
-                    ⚠️ {errores[0]}
-                  </p>
-                )}
-                {valida && (
-                  <p className="text-[10px] text-emerald-700 font-bold">
-                    ✅ Contraseña segura
-                  </p>
-                )}
-              </div>
-            )}
-          </div>
-          <div>
-            <label className="block text-xs font-black text-gray-700 mb-1 uppercase">
-              Confirmar contraseña
-            </label>
-            <input
-              type="password"
-              value={np2}
-              onChange={(e) => setNp2(e.target.value)}
-              className="w-full p-3 border-2 border-gray-200 rounded-xl text-sm focus:border-violet-500 outline-none"
-              placeholder="Repita la contraseña"
-            />
-            {np2 && np !== np2 && (
-              <p className="text-[10px] text-red-600 font-semibold mt-0.5">
-                ⚠️ Las contraseñas no coinciden
-              </p>
-            )}
-            {np2 && np === np2 && valida && (
-              <p className="text-[10px] text-emerald-700 font-bold mt-0.5">
-                ✅ Coinciden
-              </p>
-            )}
-          </div>
-          <button
-            disabled={!valida || np !== np2}
-            onClick={() => {
-              _pbkdf2Hash(np).then(({ hash, salt }) => {
-                const upd = usersList.map((u) =>
-                  u.id === currentUser?.id
-                    ? {
-                        ...u,
-                        passHash: hash,
-                        passSalt: salt,
-                        mustChangePassword: false,
-                        pass: undefined,
-                      }
-                    : u
-                );
-                setUsersList(upd);
-                _sync("siso_users", JSON.stringify(upd));
-                _sbSet("siso_users", upd); // FIX: sync inmediato a Supabase tras cambio de contraseña
-                setCurrentUser((prev) => ({
-                  ...prev,
-                  mustChangePassword: false,
-                }));
-                showAlert(
-                  "✅ Contraseña establecida. Ya puede usar el sistema."
-                );
-                goTo("dashboard");
-              });
-            }}
-            className="w-full py-3 bg-violet-600 text-white rounded-xl font-bold text-sm hover:bg-violet-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
-          >
-            Guardar y continuar →
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
+// ══ B-07: ChangePasswordForm extraído a src/pages/ChangePasswordForm.jsx ══
 
 // ============================================================
 // FASE 1 — ESTABILIZACIÓN: SEGURIDAD Y RESILIENCIA
@@ -4972,7 +4651,7 @@ class AppErrorBoundary extends React.Component {
   }
   componentDidCatch(error, errorInfo) {
     this.setState({ errorInfo });
-    console.error("[OCUPASALUD] Error capturado:", error, errorInfo);
+    if (typeof console !== 'undefined') console.error("[SISO]", error?.message || error);
     try {
       const logs = JSON.parse(localStorage.getItem("siso_error_log") || "[]");
       logs.push({
@@ -6066,12 +5745,12 @@ function AppInner() {
               setAiConfig(prev => ({ ...prev, activeProvider: prov.activeProvider || prev.activeProvider }));
               _ls.setItem("siso_ai_config_provider", JSON.stringify(prov));
             }
-            console.log("[SISO] ✅ Usuarios y datos restaurados desde Supabase:", cloudUsers.length);
+            // [SISO] Restauración desde Supabase completada
           } else {
             setUsersList(initialUsers);
           }
         } catch (err) {
-          console.warn("[SISO] No se pudo restaurar desde nube, usando defaults:", err);
+          if (typeof console !== 'undefined') console.error("[SISO]", err?.message || err);
           setUsersList(initialUsers);
         } finally {
           setUsersReady(true);
@@ -6302,7 +5981,7 @@ function AppInner() {
         // Vaciar cola de pendientes
         await _sbQueue.flush();
       } catch (err) {
-        console.warn("[OCUPASALUD] Auto-sync falló:", err.message);
+        if (typeof console !== 'undefined') console.error("[SISO]", err?.message || err);
         if (_syncState.callback) _syncState.callback("error");
       }
     };
@@ -6503,7 +6182,7 @@ function AppInner() {
             return text; // ← BUG CORREGIDO: return siempre, no solo si no es activeKey
           }
         } catch (e) {
-          console.warn(`[IA] ${providerKey} falló: ${e.message}`);
+          if (typeof console !== 'undefined') console.error("[SISO][IA]", e?.message || e);
           lastError = e;
         }
       }
@@ -7138,7 +6817,7 @@ const handleLogin = (u, p) => {
             }
           }
         } catch (err) {
-          console.warn("[SISO] Error en fallback Supabase login:", err);
+          if (typeof console !== 'undefined') console.error("[SISO]", err?.message || err);
         }
       }
       if (found && found.activo === false) {
@@ -7991,7 +7670,7 @@ const handleLogin = (u, p) => {
           const nuevosCaja = [...cajaMovimientos, autoMov];
           saveCaja(nuevosCaja);
         } catch (_autoErr) {
-          console.warn("[PASO3] Auto-billing error:", _autoErr);
+          if (typeof console !== 'undefined') console.error("[SISO]", _autoErr?.message || _autoErr);
         }
         showAlert(
           `✅ Historia cerrada y firmada digitalmente.\n📋 Código QR: ${code}\n🔐 Hash integridad: ${hashHC.substring(
@@ -8781,11 +8460,11 @@ Esta historia clínica debe conservarse mínimo 20 años.
       <div><div style="font-size:12pt;font-weight:900;color:#065f46;">${_e(ipsName)}</div>
       <p style="font-size:8pt;color:#555;">${_e(doc.titulo || "Médico Especialista SST")}</p>
       <p style="font-size:8pt;color:#555;">Lic: ${_e(doc.licencia || "--")} · ${_e(doc.ciudad || "")}</p>
-      ${doc.celular ? `<p style="font-size:7.5pt;color:#888;">Tel: ${_e(doc.celular)}${doc.email ? " · " + _e(doc.email) : ""}</p>` : ""}</div>
+      ${doc.celular ? "<p style=\"font-size:7.5pt;color:#888;\">Tel: " + _e(doc.celular) + (doc.email ? " · " + _e(doc.email) : "") + "</p>" : ""}</div>
       <div style="text-align:right;"><div style="font-size:13pt;font-weight:900;color:#065f46;text-transform:uppercase;">HISTORIA CLÍNICA ${_e(dataType === "ocupacional" ? "OCUPACIONAL" : "GENERAL")}</div>
       <p style="font-size:8.5pt;color:#555;">Fecha: ${_e(data.fechaExamen || data.fechaConsulta || new Date().toLocaleDateString("es-CO"))}</p>
       <p style="font-size:8pt;color:#888;">Tipo: ${_e(data.tipoExamen || "CONSULTA")} · ${_e(data.enfasisExamen || "")}</p>
-      ${data.codigoVerificacion ? `<p style="font-size:7.5pt;font-family:monospace;color:#065f46;font-weight:900;">Código: ${_e(data.codigoVerificacion)}</p>` : ""}</div></div>`);
+      ${data.codigoVerificacion ? "<p style=\"font-size:7.5pt;font-family:monospace;color:#065f46;font-weight:900;\">Código: " + _e(data.codigoVerificacion) + "</p>" : ""}</div></div>`);
 
     // ═══ 1. DATOS DEL PACIENTE ═══
     sections.push(sec("👤", "Datos del Paciente") + tb(
@@ -8905,18 +8584,18 @@ Esta historia clínica debe conservarse mínimo 20 años.
     if (data.analisisIA) sections.push(sec("🧠", "Análisis Clínico") + `<div style="padding:6px 10px;font-size:9pt;white-space:pre-wrap;line-height:1.5;">${_nl2br(data.analisisIA)}</div>`);
 
     // ═══ 16. SVE ═══
-    if (data.sveRecomendado?.length > 0) sections.push(sec("🛡️", "Sistema de Vigilancia Epidemiológica") + `<ul style="padding-left:16px;margin:4px 0;">${data.sveRecomendado.map(s=>`<li style="font-size:9pt;margin-bottom:3px;">${_e(s)}</li>`).join("")}</ul>`);
+    if (data.sveRecomendado?.length > 0) sections.push(sec("🛡️", "Sistema de Vigilancia Epidemiológica") + '<ul style="padding-left:16px;margin:4px 0;">' + data.sveRecomendado.map(s => '<li style="font-size:9pt;margin-bottom:3px;">' + _e(s) + '</li>').join("") + '</ul>');
 
     // ═══ 17. DERIVACIONES ═══
     const derivs = data.derivaciones || [];
     if (derivs.length > 0) {
-      sections.push(sec("🔗", "Derivaciones / Interconsultas") + `<table style="width:100%;border-collapse:collapse;"><thead><tr><th style="background:#2563eb;color:white;padding:4px 8px;font-size:8pt;">Especialidad</th><th style="background:#2563eb;color:white;padding:4px 8px;font-size:8pt;">Motivo</th><th style="background:#2563eb;color:white;padding:4px 8px;font-size:8pt;">Urgencia</th></tr></thead><tbody>${derivs.map((d,i)=>`<tr style="background:${i%2===0?"#eff6ff":"white"}"><td style="padding:4px 8px;border:1px solid #ccc;font-size:8.5pt;font-weight:700;">${_e(d.especialidad)}</td><td style="padding:4px 8px;border:1px solid #ccc;font-size:8.5pt;">${_e(d.motivo)}</td><td style="padding:4px 8px;border:1px solid #ccc;font-size:8.5pt;">${_e(d.urgencia)}</td></tr>`).join("")}</tbody></table>`);
+      sections.push(sec("🔗", "Derivaciones / Interconsultas") + '<table style="width:100%;border-collapse:collapse;"><thead><tr><th style="background:#2563eb;color:white;padding:4px 8px;font-size:8pt;">Especialidad</th><th style="background:#2563eb;color:white;padding:4px 8px;font-size:8pt;">Motivo</th><th style="background:#2563eb;color:white;padding:4px 8px;font-size:8pt;">Urgencia</th></tr></thead><tbody>' + derivs.map((d,i) => '<tr style="background:' + (i%2===0 ? "#eff6ff" : "white") + '"><td style="padding:4px 8px;border:1px solid #ccc;font-size:8.5pt;font-weight:700;">' + _e(d.especialidad) + '</td><td style="padding:4px 8px;border:1px solid #ccc;font-size:8.5pt;">' + _e(d.motivo) + '</td><td style="padding:4px 8px;border:1px solid #ccc;font-size:8.5pt;">' + _e(d.urgencia) + '</td></tr>').join("") + '</tbody></table>');
     }
 
     // ═══ 18. FÓRMULA MÉDICA ═══
     const meds = data.formulaMedicamentos || [];
     if (meds.length > 0) {
-      sections.push(sec("💊", "Fórmula Médica") + `<table style="width:100%;border-collapse:collapse;"><thead><tr><th style="background:#7c3aed;color:white;padding:4px 8px;font-size:8pt;">Medicamento</th><th style="background:#7c3aed;color:white;padding:4px 8px;font-size:8pt;">Presentación</th><th style="background:#7c3aed;color:white;padding:4px 8px;font-size:8pt;">Dosis</th><th style="background:#7c3aed;color:white;padding:4px 8px;font-size:8pt;">Frecuencia</th><th style="background:#7c3aed;color:white;padding:4px 8px;font-size:8pt;">Duración</th></tr></thead><tbody>${meds.map((m,i)=>`<tr style="background:${i%2===0?"#faf5ff":"white"}"><td style="padding:4px 8px;border:1px solid #ccc;font-size:8.5pt;font-weight:700;">${_e(m.nombre)}</td><td style="padding:4px 8px;border:1px solid #ccc;font-size:8.5pt;">${_e(m.presentacion)}</td><td style="padding:4px 8px;border:1px solid #ccc;font-size:8.5pt;">${_e(m.dosis)}</td><td style="padding:4px 8px;border:1px solid #ccc;font-size:8.5pt;">${_e(m.frecuencia)}</td><td style="padding:4px 8px;border:1px solid #ccc;font-size:8.5pt;">${_e(m.duracion)}</td></tr>`).join("")}</tbody></table>`);
+      sections.push(sec("💊", "Fórmula Médica") + '<table style="width:100%;border-collapse:collapse;"><thead><tr><th style="background:#7c3aed;color:white;padding:4px 8px;font-size:8pt;">Medicamento</th><th style="background:#7c3aed;color:white;padding:4px 8px;font-size:8pt;">Presentación</th><th style="background:#7c3aed;color:white;padding:4px 8px;font-size:8pt;">Dosis</th><th style="background:#7c3aed;color:white;padding:4px 8px;font-size:8pt;">Frecuencia</th><th style="background:#7c3aed;color:white;padding:4px 8px;font-size:8pt;">Duración</th></tr></thead><tbody>' + meds.map((m,i) => '<tr style="background:' + (i%2===0 ? "#faf5ff" : "white") + '"><td style="padding:4px 8px;border:1px solid #ccc;font-size:8.5pt;font-weight:700;">' + _e(m.nombre) + '</td><td style="padding:4px 8px;border:1px solid #ccc;font-size:8.5pt;">' + _e(m.presentacion) + '</td><td style="padding:4px 8px;border:1px solid #ccc;font-size:8.5pt;">' + _e(m.dosis) + '</td><td style="padding:4px 8px;border:1px solid #ccc;font-size:8.5pt;">' + _e(m.frecuencia) + '</td><td style="padding:4px 8px;border:1px solid #ccc;font-size:8.5pt;">' + _e(m.duracion) + '</td></tr>').join("") + '</tbody></table>');
     }
 
     // ═══ 19. INCAPACIDAD ═══
@@ -8954,7 +8633,7 @@ Esta historia clínica debe conservarse mínimo 20 años.
     // ═══ EXÁMENES SOLICITADOS (HOJA APARTE) ═══
     const examList = data.solicitudExamenes || [];
     if (examList.length > 0) {
-      sections.push(`<div style="page-break-before:always;">${sec("🔬", "Paraclínicos y Exámenes Solicitados")}<table style="width:100%;border-collapse:collapse;"><thead><tr><th style="background:#0d9488;color:white;padding:6px 10px;font-size:8.5pt;text-align:left;">N°</th><th style="background:#0d9488;color:white;padding:6px 10px;font-size:8.5pt;text-align:left;">Examen / Procedimiento</th><th style="background:#0d9488;color:white;padding:6px 10px;font-size:8.5pt;text-align:center;">Urgente</th></tr></thead><tbody>${examList.map((ex,i)=>`<tr style="background:${i%2===0?"#f0fdfa":"white"}"><td style="padding:5px 8px;font-size:8.5pt;border:1px solid #ccc;">${i+1}</td><td style="padding:5px 8px;font-size:8.5pt;border:1px solid #ccc;">${_e(ex.nombre)}</td><td style="padding:5px 8px;font-size:8.5pt;border:1px solid #ccc;text-align:center;">${ex.urgente?"⚡ SÍ":""}</td></tr>`).join("")}</tbody></table></div>`);
+      sections.push('<div style="page-break-before:always;">' + sec("🔬", "Paraclínicos y Exámenes Solicitados") + '<table style="width:100%;border-collapse:collapse;"><thead><tr><th style="background:#0d9488;color:white;padding:6px 10px;font-size:8.5pt;text-align:left;">N°</th><th style="background:#0d9488;color:white;padding:6px 10px;font-size:8.5pt;text-align:left;">Examen / Procedimiento</th><th style="background:#0d9488;color:white;padding:6px 10px;font-size:8.5pt;text-align:center;">Urgente</th></tr></thead><tbody>' + examList.map((ex,i) => '<tr style="background:' + (i%2===0 ? "#f0fdfa" : "white") + '"><td style="padding:5px 8px;font-size:8.5pt;border:1px solid #ccc;">' + (i+1) + '</td><td style="padding:5px 8px;font-size:8.5pt;border:1px solid #ccc;">' + _e(ex.nombre) + '</td><td style="padding:5px 8px;font-size:8.5pt;border:1px solid #ccc;text-align:center;">' + (ex.urgente ? "⚡ SÍ" : "") + '</td></tr>').join("") + '</tbody></table></div>');
     }
 
     // ═══ ENSAMBLAR DOCUMENTO ═══
@@ -10130,11 +9809,12 @@ body{font-family:Arial,sans-serif;margin:0;background:#f5f5f5}
                     const conducta = data.plan?.conducta
                       ? `<div class="block-avoid" style="margin-top:10px;"><p class="sec-title" style="color:#0d9488;">&#128203; Conducta Médica</p><p style="font-size:8.5pt;white-space:pre-wrap;">${data.plan.conducta}</p></div>`
                       : "";
-                    bodyHtml = `<div style="background:#f0fdfa;border:1px solid #99f6e4;border-radius:4px;padding:10px 12px;margin-bottom:12px;">${
-                      dxs
-                        ? `<div style="margin-bottom:8px;"><p class="sec-title" style="color:#0d9488;">&#128203; Diagnósticos</p>${dxs}</div>`
-                        : ""
-                    }${conducta}${remis}</div>${recos ? `<div style="margin-top:8px;">${recos}</div>` : ""}${paracl ? `<div style="page-break-before:always;"><p style="font-size:7pt;color:#bbb;margin-bottom:8px;">— Hoja de Paraclínicos y Exámenes Solicitados —</p>${paracl}</div>` : ""}${sigBlock}`;
+                    bodyHtml = '<div style="background:#f0fdfa;border:1px solid #99f6e4;border-radius:4px;padding:10px 12px;margin-bottom:12px;">'
+                      + (dxs ? '<div style="margin-bottom:8px;"><p class="sec-title" style="color:#0d9488;">&#128203; Diagnósticos</p>' + dxs + '</div>' : "")
+                      + conducta + remis + '</div>'
+                      + (recos ? '<div style="margin-top:8px;">' + recos + '</div>' : "")
+                      + (paracl ? '<div style="page-break-before:always;"><p style="font-size:7pt;color:#bbb;margin-bottom:8px;">— Hoja de Paraclínicos y Exámenes Solicitados —</p>' + paracl + '</div>' : "")
+                      + sigBlock;
                   } else if (sectionId === "gn-derivaciones") {
                     accent = "#7c3aed";
                     const derivList = data.derivaciones || [];

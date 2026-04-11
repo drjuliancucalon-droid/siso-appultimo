@@ -1,3 +1,10 @@
+// ══════════════════════════════════════════════════════════════
+// SUPABASE CLIENT — OcupaSalud
+// SEGURIDAD: La publishable key es intencional para el piloto.
+// En PRODUCCIÓN: inyectar via window.__SISO_CONFIG en index.html
+// <script>window.__SISO_CONFIG={sbUrl:"URL",sbKey:"KEY"};</script>
+// Las keys se configuran en el primer despliegue y se rotan cada 90 días.
+// ══════════════════════════════════════════════════════════════
 import { _ls } from './storage.js';
 
 // MODULO SUPABASE CLOUD SYNC
@@ -135,7 +142,7 @@ export const _rlCheck = () => {
   }
   _sbRl.count++;
   if (_sbRl.count > 120) {
-    console.warn("[SISO SEC] Rate limit alcanzado");
+    if (typeof console !== 'undefined') console.error("[SISO SEC] Rate limit alcanzado");
     return false;
   }
   return true;
