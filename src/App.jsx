@@ -10948,6 +10948,7 @@ body{padding-top:52px;}
     <>
       <PrintStyles />
       <SecurityHeaders />
+      {/* renderCurrentView ya está dentro del AppProvider */}
       {showPortalPublico ? (
         <PortalPublicoTrabajador
           sbUrl={_SB_URL}
