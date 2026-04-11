@@ -5910,6 +5910,31 @@ function AppInner() {
     window.addEventListener("beforeunload", handler);
     return () => window.removeEventListener("beforeunload", handler);
   }, [_hcDirty, view]);
+  // ── AUTOGUARDADO RÁPIDO CADA 15 SEGUNDOS EN LOCALSTORAGE ─────────────────
+  useEffect(() => {
+    if (view !== "historia" || !data.nombres) return;
+    const autoSaveInterval = setInterval(() => {
+      try {
+        const saveData = { ...data, _autoSaved: new Date().toISOString(), _userId: currentUser?.user };
+        _ls.setItem("siso_active_form", JSON.stringify(saveData));
+        _ls.setItem("siso_autosave_" + (data.id || "new"), JSON.stringify(saveData));
+      } catch (_eAuto) { /* silencioso */ }
+    }, 15000);
+    return () => clearInterval(autoSaveInterval);
+  }, [view, data, currentUser]);
+  // ── GUARDAR EN SUPABASE CADA 60 SEGUNDOS SI HAY CAMBIOS ─────────────────
+  useEffect(() => {
+    if (view !== "historia" || !data.id || !data.nombres) return;
+    const cloudSaveInterval = setInterval(() => {
+      if (_hcDirty) {
+        try {
+          const key = "siso_autosave_cloud_" + (currentUser?.user || "anon") + "_" + data.id;
+          _sbSet(key, { ...data, _cloudSaved: new Date().toISOString() });
+        } catch (_eCloud) { /* silencioso */ }
+      }
+    }, 60000);
+    return () => clearInterval(cloudSaveInterval);
+  }, [view, data, _hcDirty, currentUser]);
   // Auto-IMC
   useEffect(() => {
     if (data.peso && data.talla) {
@@ -6251,27 +6276,44 @@ function AppInner() {
       return "Evalúa la aptitud del trabajador según los hallazgos clínicos actuales. Las recomendaciones deben ser específicas para el cargo, la empresa y los riesgos identificados.";
     })();
 
-    const prompt = `Eres médico especialista en Medicina del Trabajo con más de 15 años de experiencia en evaluaciones ocupacionales en Colombia (ingresos, egresos, periódicos, reintegros, post-incapacidad). Analiza con criterio clínico-ocupacional experto la siguiente historia y genera el concepto médico ocupacional conforme a Res. 1843/2025 (norma vigente - deroga Res. 2346/2007). Devuelve ÚNICAMENTE JSON.
-DATOS DEL TRABAJADOR: Cargo: ${data.cargo} | Empresa: ${data.empresaNombre} (${
-      data.actividadEconomica || "N/E"
-    }) | Tipo examen: ${data.tipoExamen} | Énfasis: ${data.enfasisExamen}
-Edad: ${data.edad}a | Género: ${data.genero} | Escolaridad: ${
-      data.escolaridad
-    } | ARL: ${data.arl || "N/R"}
-Signos vitales: TA ${data.ta || "N/R"} | FC ${data.fc || "N/R"} | IMC ${
-      data.imc || "N/R"
-    } | Talla ${data.talla || "N/R"}cm | Peso ${data.peso || "N/R"}kg
+    const prompt = `Eres médico especialista en Medicina del Trabajo con más de 15 años de experiencia en evaluaciones ocupacionales en Colombia (ingresos, egresos, periódicos, reintegros, post-incapacidad). Analiza con criterio clínico-ocupacional experto la siguiente historia y genera el concepto médico ocupacional conforme a Res. 1843/2025 (norma vigente - deroga Res. 2346/2007). Devuelve ÚNICAMENTE JSON válido sin markdown ni texto adicional.
+
+DATOS DEL TRABAJADOR:
+Cargo: ${data.cargo} | Empresa: ${data.empresaNombre} (${data.actividadEconomica || "N/E"}) | Tipo examen: ${data.tipoExamen} | Énfasis: ${data.enfasisExamen}
+Edad: ${data.edad}a | Género: ${data.genero} | Escolaridad: ${data.escolaridad} | ARL: ${data.arl || "N/R"}
+Signos vitales: TA ${data.ta || "N/R"} | FC ${data.fc || "N/R"} | IMC ${data.imc || "N/R"} | Talla ${data.talla || "N/R"}cm | Peso ${data.peso || "N/R"}kg
 Hallazgos físicos patológicos: ${hallazgos}
 Antecedentes personales relevantes: ${antecedentes}
 Riesgos ocupacionales identificados: ${riesgos}
-Hábitos: Tabaquismo ${data.habitos?.fuma} | Alcohol ${
-      data.habitos?.alcohol
-    } | Actividad física ${data.habitos?.deporte}
+Hábitos: Tabaquismo ${data.habitos?.fuma} | Alcohol ${data.habitos?.alcohol} | Actividad física ${data.habitos?.deporte}
+
 CONTEXTO ESPECÍFICO DEL TIPO DE EXAMEN: ${_contextoTipo}
-CRITERIOS OBLIGATORIOS: 1) El concepto de aptitud debe citar el artículo de la Res. 1843/2025 correspondiente (norma vigente desde 29 abril 2025 - Res. 2346/2007 derogada). 2) Si es egreso o post-incapacidad, incluir análisis de reintegro laboral. 3) Las restricciones deben ser operativas, cuantificables y con base normativa (GTC-45, GATISO). 4) Las recomendaciones deben ser específicas para el cargo y los riesgos, no genéricas, y deben responder al contexto del tipo de examen indicado arriba.
+
+CRITERIOS OBLIGATORIOS:
+1) El concepto de aptitud debe citar el artículo de la Res. 1843/2025 correspondiente (norma vigente desde 29 abril 2025 - Res. 2346/2007 derogada).
+2) Si es egreso o post-incapacidad, incluir análisis de reintegro laboral.
+3) Las restricciones deben ser operativas, cuantificables y con base normativa (GTC-45, GATISO).
+4) Las recomendaciones deben ser específicas para el cargo y los riesgos, no genéricas, y deben responder al contexto del tipo de examen indicado arriba.
+5) DERIVACIONES: Si hay hallazgos anormales, OBLIGATORIO generar MÍNIMO 3 derivaciones a especialidades pertinentes. Especialidades disponibles: Medicina Interna, Cardiología, Neumología, Ortopedia, Traumatología, Neurología, Oftalmología, Otorrinolaringología, Dermatología, Urología, Gastroenterología, Endocrinología, Reumatología, Psiquiatría, Psicología, Fisiatría (Medicina Física y Rehabilitación), Cirugía General, Nutrición, Optometría, Audiología, Fonoaudiología, Terapia Física, Terapia Ocupacional, Salud Ocupacional, Toxicología. Selecciona las más pertinentes según hallazgos clínicos.
+6) RESTRICCIONES: Cada restricción debe incluir TIPO (Temporal/Permanente), DURACIÓN si temporal (ej: "30 días", "3 meses"), SEGMENTO corporal afectado (Columna lumbar, MMSS, MMII, Cervical, Postural, Visual, Auditivo, General), y BASE NORMATIVA (GTC-45:2012, GATISO-DME, GATISO-TME, Res. 1843/2025, Res. 2404/2019). Formato: "[TEMPORAL - 30 días] (Columna lumbar) No levantar cargas >12.5kg — GATISO-DME 2015"
+7) EXÁMENES PARACLÍNICOS: Genera MÍNIMO 5 exámenes específicos según cargo y riesgos. Incluir: laboratorios, imagenología, pruebas funcionales, audiometría, espirometría, optometría, visiometría, electrocardiograma, etc. según aplique.
+8) FÓRMULA MÉDICA: Si los hallazgos requieren tratamiento farmacológico, incluir formulaMedica (texto descriptivo) y formulaMedicamentos (array de objetos con nombre, dosis, frecuencia, duracion, via).
+9) INCAPACIDAD: Si hay hallazgos que limitan temporalmente la capacidad laboral, indicar aplica:true con días y motivo.
+10) SVE: Recomendar Sistemas de Vigilancia Epidemiológica ESPECÍFICOS según hallazgos (no genéricos). Solo los que realmente apliquen.
+
 JSON REQUERIDO (sin markdown, sin texto adicional):
-{"diagnosticoPrincipal":"Z10.0 - EXAMEN MÉDICO OCUPACIONAL","diagnosticoSecundario1":"CIE-10 - Hallazgo clínico identificado o cadena vacía","diagnosticoSecundario2":"CIE-10 - Segundo hallazgo o cadena vacía","conceptoAptitud":"Concepto de aptitud laboral (APTO/APTO CON RESTRICCIONES/NO APTO) con justificación cargo-hallazgos. NO mencionar diagnósticos específicos, medicamentos, ni tratamientos. Solo aptitud y condiciones laborales. Conforme Res. 1843/2025 Art. 20","vigencia":"X meses con justificación clínica","recomendaciones":"Mínimo 10 recomendaciones de medicina preventiva y salud ocupacional enfocadas en cargo y riesgos. NO incluir medicamentos ni tratamiento farmacológico. NO referir tratamiento médico actual","restriccionesTexto":"Restricciones médico-laborales operativas y cuantificables (mínimo 5 si hay hallazgos), formato: [TIPO] (Segmento) Descripción - Base legal","derivaciones":[{"especialidad":"Especialidad médica requerida","motivo":"Motivo clínico concreto","urgencia":"Electiva"}],"examenesSugeridos":["Examen paraclínico 1"],"interconsultaResumen":"Resumen clínico para interconsulta o cadena vacía","incapacidadSugerida":{"aplica":false,"dias":0,"motivo":"","diagnosticoCIE":""},"analisisClinico":"Análisis clínico detallado con lenguaje técnico-formal de médico especialista en medicina laboral con más de 15 años de experiencia. Incluir: interpretación de hallazgos, correlación cargo-riesgos ocupacionales, referencias a normativa colombiana (Dec. 1072/2015, Res. 2346/2007, Res. 1843/2025). Mínimo 200 palabras.","sveRecomendado":["SVE Osteomuscular si aplica según GATISO-DME Res. 2844/2007","SVE Psicosocial si aplica según Res. 2764/2022","SVE Visual / SVE Respiratorio / SVE Neurológico / SVE Dermatológico según hallazgos"]}`;    try {
-      const text = await callAI(prompt, true);
+{"diagnosticoPrincipal":"Z10.0 - EXAMEN MÉDICO OCUPACIONAL","diagnosticoSecundario1":"CIE-10 con descripción del hallazgo clínico o cadena vacía","diagnosticoSecundario2":"CIE-10 con segundo hallazgo o cadena vacía","conceptoAptitud":"Concepto de aptitud laboral (APTO/APTO CON RESTRICCIONES/NO APTO) con justificación cargo-hallazgos. NO mencionar diagnósticos específicos, medicamentos, ni tratamientos. Solo aptitud y condiciones laborales. Conforme Res. 1843/2025 Art. 20","vigencia":"X meses con justificación clínica","recomendaciones":"Mínimo 10 recomendaciones de medicina preventiva y salud ocupacional enfocadas en cargo y riesgos. NO incluir medicamentos ni tratamiento farmacológico. NO referir tratamiento médico actual","restriccionesTexto":"Restricciones médico-laborales con formato: [TIPO - DURACIÓN] (Segmento) Descripción cuantificable — Base normativa. Mínimo 5 si hay hallazgos anormales","derivaciones":[{"especialidad":"Nombre de especialidad","motivo":"Motivo clínico concreto basado en hallazgos","urgencia":"Electiva/Prioritaria/Urgente"}],"examenesSugeridos":["Examen paraclínico específico 1","Examen 2","Examen 3","Examen 4","Examen 5"],"interconsultaResumen":"Resumen clínico para interconsulta o cadena vacía","incapacidadSugerida":{"aplica":false,"dias":0,"motivo":"","diagnosticoCIE":""},"formulaMedica":"Descripción del tratamiento farmacológico si aplica o cadena vacía","formulaMedicamentos":[{"nombre":"Medicamento","dosis":"Dosis","frecuencia":"Frecuencia","duracion":"Duración","via":"Vía de administración"}],"analisisClinico":"Análisis clínico detallado con lenguaje técnico-formal de médico especialista en medicina laboral con más de 15 años de experiencia. Incluir: interpretación de hallazgos, correlación cargo-riesgos ocupacionales, referencias a normativa colombiana (Dec. 1072/2015, Res. 2346/2007, Res. 1843/2025). Mínimo 200 palabras.","sveRecomendado":["Solo SVE que realmente apliquen según hallazgos clínicos encontrados"]}`;    try {
+      let text;
+      try {
+        text = await callAI(prompt, true);
+      } catch (_e1) {
+        // Retry con prompt simplificado
+        try {
+          text = await callAI("Analiza esta HC ocupacional y devuelve JSON con campos: diagnosticoPrincipal, conceptoAptitud, recomendaciones, restriccionesTexto, derivaciones[], examenesSugeridos[], analisisClinico, sveRecomendado[], incapacidadSugerida, formulaMedica, formulaMedicamentos[], vigencia, diagnosticoSecundario1, diagnosticoSecundario2, interconsultaResumen. Datos: " + JSON.stringify({cargo: data.cargo, hallazgos, antecedentes, riesgos, edad: data.edad, tipoExamen: data.tipoExamen, empresa: data.empresaNombre}), true);
+        } catch (_e2) {
+          throw _e1;
+        }
+      }
       const parsed = parseAIJSON(text);
       // Para énfasis OCUPACIONAL: diagnóstico principal siempre Z10.0 (examen ocupacional)
       // Los diagnósticos encontrados pasan a secundarios
@@ -6391,7 +6433,7 @@ JSON REQUERIDO (sin markdown, sin texto adicional):
       if (parsed.sveRecomendado?.length > 0) {
         setData((prev) => ({
           ...prev,
-          sveRecomendado: parsed.sveRecomendado.filter(s => s && !s.includes("si aplica")),
+          sveRecomendado: parsed.sveRecomendado.filter(s => s && s.length > 5),
         }));
       }
       const extraMsg = [
@@ -6408,7 +6450,7 @@ JSON REQUERIDO (sin markdown, sin texto adicional):
           ? `\n• Análisis clínico generado`
           : "",
         parsed.sveRecomendado?.length > 0
-          ? `\n• ${parsed.sveRecomendado.filter(s => s && !s.includes("si aplica")).length} SVE sugerido(s)`
+          ? `\n• ${parsed.sveRecomendado.filter(s => s && s.length > 5).length} SVE sugerido(s)`
           : "",
       ].join("");
       showAlert(
@@ -6436,38 +6478,39 @@ JSON REQUERIDO (sin markdown, sin texto adicional):
       .filter(([, v]) => v.estado === "Anormal")
       .map(([k, v]) => `${k}: ${v.hallazgo}`)
       .join("; ");
-    const prompt = `Eres médico especialista en Medicina del Trabajo con más de 15 años de experiencia en Colombia, experto en restricciones médico-laborales, reintegro laboral y vigilancia epidemiológica. Con base en los hallazgos clínicos del trabajador, genera las restricciones médico-laborales correspondientes. Devuelve ÚNICAMENTE JSON.
-DATOS: Cargo: ${data.cargo} | Empresa: ${data.empresaNombre} | Tipo examen: ${
-      data.tipoExamen
-    }
-Riesgos ocupacionales: ${
-      Object.entries(data.riesgos || {})
-        .filter(([, v]) => v)
-        .map(([k]) => k)
-        .join(", ") || "No reportados"
-    }
+    const prompt = `Eres médico especialista en Medicina del Trabajo con más de 15 años de experiencia en Colombia, experto en restricciones médico-laborales, reintegro laboral y vigilancia epidemiológica. Con base en los hallazgos clínicos del trabajador, genera las restricciones médico-laborales correspondientes. Devuelve ÚNICAMENTE JSON válido sin markdown.
+
+DATOS: Cargo: ${data.cargo} | Empresa: ${data.empresaNombre} | Tipo examen: ${data.tipoExamen}
+Riesgos ocupacionales: ${Object.entries(data.riesgos || {}).filter(([, v]) => v).map(([k]) => k).join(", ") || "No reportados"}
 Hallazgos físicos patológicos: ${hallazgos}
 Maniobras osteomusculares positivas: ${osteo || "Ninguna"}
-IMC: ${data.imc} | TA: ${data.ta} | Diagnóstico principal: ${
-      data.diagnosticoPrincipal
-    }
-INSTRUCCIÓN: Las restricciones deben ser operativas, cuantificables (en kg, min, grados o frecuencias), con segmento anatómico identificado, tipo (TEMPORAL/PERMANENTE/PREVENTIVA), duración si temporal, y base normativa. Si el examen es egreso, post-incapacidad o retorno-laboral (Res. 1843/2025 Art. 13), incluir restricciones de reintegro progresivo.
+IMC: ${data.imc} | TA: ${data.ta} | Diagnóstico principal: ${data.diagnosticoPrincipal}
+
+INSTRUCCIÓN: Genera restricciones médico-laborales en formato estructurado. Cada restricción DEBE incluir:
+- TIPO: "Temporal" o "Permanente" (si es temporal, indicar duración exacta)
+- DURACIÓN: Tiempo específico (ej: "30 días", "3 meses", "6 semanas") o "N/A" si permanente
+- SEGMENTO: Segmento corporal afectado (Columna lumbar, Columna cervical, Miembro superior derecho/izquierdo, Miembro inferior, Mano/muñeca, Hombro, Rodilla, Cadera, Postural, Visual, Auditivo, Cardiovascular, Respiratorio, General)
+- DESCRIPCIÓN: Operativa y cuantificable (en kg, min, grados, ciclos/min o frecuencias)
+- NORMATIVA: Base legal específica (GTC-45:2012, GATISO-DME 2006, GATISO-Hombro doloroso, GATISO-TME, Res. 1843/2025 Art. 13, Res. 2404/2019, Res. 2844/2007)
+
+Si el examen es egreso, post-incapacidad o retorno-laboral (Res. 1843/2025 Art. 13), incluir restricciones de reintegro progresivo.
+
 JSON REQUERIDO (sin markdown):
-{"restricciones":[{"segmento":"Miembro Superior/Lumbar/Cervical/Postural/General","tipo":"TEMPORAL/PERMANENTE/PREVENTIVA","duracion":"X semanas o N/A","descripcion":"Restricción específica, operativa y cuantificable para el puesto de trabajo","normativa":"GTC-45:2012 / GATISO-DME / GATISO-TME / Res. 1843/2025 / Res. 2404/2019"}]}`;
+{"restricciones":[{"texto":"Descripción completa de la restricción","tipo":"Temporal","duracion":"30 días","segmento":"Columna lumbar","normativa":"GATISO-DME 2006","descripcion":"No levantar cargas superiores a 12.5 kg de forma repetitiva"}]}`;
     try {
       const text = await callAI(prompt, true);
       const parsed = parseAIJSON(text);
       const lista = (parsed.restricciones || [])
         .map(
           (r, i) =>
-            `${i + 1}. [${r.tipo}${
+            `${i + 1}. [${(r.tipo || "TEMPORAL").toUpperCase()}${
               r.duracion && r.duracion !== "N/A" ? " - " + r.duracion : ""
-            }] (${r.segmento}) ${r.descripcion} -- ${r.normativa}`
+            }] (${r.segmento || "General"}) ${r.descripcion || r.texto || ""} — ${r.normativa || "GTC-45"}`
         )
         .join("\n");
       setData((prev) => ({ ...prev, analisisRestricciones: lista }));
       showAlert(
-        "✅ Restricciones generadas por IA. Seleccione las adicionales en el checklist."
+        "✅ Restricciones generadas por IA con tipo, duración y base normativa. Revise y ajuste según criterio clínico."
       );
     } catch (e) {
       showAlert(`Error IA Restricciones: ${e.message}`);
@@ -7244,6 +7287,27 @@ const handleLogin = (u, p) => {
       setShowSecretariaPatientModal(p);
       return;
     }
+    // ── Verificar si hay datos autoguardados más recientes ──
+    try {
+      const _autoRaw = _ls.getItem("siso_autosave_" + p.id);
+      if (_autoRaw) {
+        const _autoSaved = JSON.parse(_autoRaw);
+        if (_autoSaved && _autoSaved._autoSaved) {
+          const _autoTime = new Date(_autoSaved._autoSaved);
+          const _dataTime = new Date(p.fechaRegistro || p.fechaExamen || 0);
+          if (_autoTime > _dataTime && (Date.now() - _autoTime.getTime()) < 86400000) {
+            if (window.confirm("Se encontraron datos autoguardados más recientes (" + _autoTime.toLocaleString("es-CO") + "). ¿Desea recuperarlos?")) {
+              setData({ ...p, ..._autoSaved, id: p.id });
+              setDataType((p.type || _autoSaved.type || "ocupacional"));
+              setActiveTab((p.type || _autoSaved.type) === "general" ? "formGeneral" : "form");
+              _setHcDirty(false);
+              setView("historia");
+              return;
+            }
+          }
+        }
+      }
+    } catch (_eRecover) { /* silencioso, continuar con datos originales */ }
     setData(p);
     setDataType(p.type || "ocupacional");
     setActiveTab(p.type === "general" ? "formGeneral" : "form");
@@ -8427,6 +8491,37 @@ Esta historia clínica debe conservarse mínimo 20 años.
   const handlePrint = (title) => {
     const orig = document.title;
     document.title = `[OCUPASALUD] ${title || "Documento"}`;
+    // ── Inyectar estilos de impresión mejorados para reportes ──
+    const _printStyleId = "siso-report-print-styles";
+    let _printStyle = document.getElementById(_printStyleId);
+    if (!_printStyle) {
+      _printStyle = document.createElement("style");
+      _printStyle.id = _printStyleId;
+      _printStyle.textContent = `
+        @media print {
+          @page { size: letter portrait; margin: 1.1cm 1.3cm 1.3cm 1.3cm; }
+          * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; color-adjust: exact !important; }
+          /* Tablas de reportes: bordes y colores */
+          table { width: 100% !important; border-collapse: collapse !important; page-break-inside: auto !important; }
+          table th { background-color: #1e293b !important; color: white !important; padding: 5px 8px !important; font-size: 8.5pt !important; font-weight: 700 !important; text-align: left !important; border: 1px solid #334155 !important; }
+          table td { padding: 4px 8px !important; font-size: 8.5pt !important; border: 1px solid #e2e8f0 !important; }
+          table tr:nth-child(even) { background-color: #f8fafc !important; }
+          /* Gráficos y estadísticas con colores */
+          canvas, svg { max-width: 100% !important; }
+          .chart-container, [class*="chart"], [class*="graph"] { page-break-inside: avoid !important; break-inside: avoid !important; }
+          /* Saltos de página entre secciones de reporte */
+          .report-section, .print-page-break { page-break-before: always !important; break-before: page !important; }
+          .report-section:first-child { page-break-before: auto !important; break-before: auto !important; }
+          /* Estadísticas cards */
+          .stat-card, [class*="stat"] { page-break-inside: avoid !important; break-inside: avoid !important; }
+          /* Ocultar botones y controles */
+          button:not(.print-show), .no-print, nav, [data-no-print] { display: none !important; }
+          /* Body limpio */
+          body { background: white !important; }
+        }
+      `;
+      document.head.appendChild(_printStyle);
+    }
     window.print();
     document.title = orig;
   };
@@ -8656,6 +8751,12 @@ Esta historia clínica debe conservarse mínimo 20 años.
     }
   };
   const _goToDirect = (newView) => {
+    // ── Guardar HC en localStorage antes de cambiar de vista ──
+    if (view === "historia" && data.nombres) {
+      try {
+        _ls.setItem("siso_active_form", JSON.stringify({ ...data, _autoSaved: new Date().toISOString() }));
+      } catch (_eSave) { /* silencioso */ }
+    }
     // Al entrar al dashboard, asegurar que todos los datos del _ls estén cargados
     if (newView === "dashboard") {
       // AISLAMIENTO: usar clave específica del usuario activo (o empresa compartida)
@@ -10856,6 +10957,150 @@ body{padding-top:52px;}
                 className="px-4 bg-gray-100 text-gray-600 font-bold text-xs py-2 rounded-xl hover:bg-gray-200"
               >
                 Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* ── Modal Imprimir Todo (Checklist de documentos) ───────────── */}
+      {showTodoChecklist && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-[210] p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden">
+            <div className="bg-gradient-to-r from-emerald-600 to-teal-600 px-6 py-4 text-white">
+              <h3 className="text-lg font-black">📄 Imprimir Documentos</h3>
+              <p className="text-emerald-100 text-xs mt-0.5">Seleccione los documentos a imprimir para: <span className="font-bold text-white">{data.nombres || "Paciente"}</span></p>
+            </div>
+            <div className="p-5 space-y-3">
+              {[
+                { key: "hcCompleta", label: "📋 Historia Clínica Completa", desc: "HC con todos los hallazgos y concepto" },
+                { key: "certificado", label: "📜 Certificado de Aptitud", desc: "Certificado médico ocupacional" },
+                { key: "formula", label: "💊 Fórmula Médica", desc: "Prescripción de medicamentos" },
+                { key: "incapacidad", label: "🏥 Incapacidad", desc: "Certificado de incapacidad médica" },
+                { key: "derivaciones", label: "🔬 Derivaciones / Interconsultas", desc: "Remisiones a especialistas" },
+                { key: "examenes", label: "🧪 Solicitud de Exámenes", desc: "Exámenes paraclínicos solicitados" },
+              ].map(({ key, label, desc }) => (
+                <label key={key} className="flex items-start gap-3 p-3 rounded-xl border border-gray-100 hover:bg-emerald-50 cursor-pointer transition">
+                  <input
+                    type="checkbox"
+                    checked={todoSelection[key] || false}
+                    onChange={(e) => setTodoSelection((prev) => ({ ...prev, [key]: e.target.checked }))}
+                    className="mt-0.5 w-5 h-5 rounded accent-emerald-600"
+                  />
+                  <div>
+                    <p className="font-bold text-sm text-gray-800">{label}</p>
+                    <p className="text-xs text-gray-500">{desc}</p>
+                  </div>
+                </label>
+              ))}
+            </div>
+            <div className="px-5 pb-5 flex gap-3">
+              <button
+                onClick={() => setShowTodoChecklist(false)}
+                className="flex-1 py-2.5 border border-gray-200 rounded-xl font-bold text-gray-600 hover:bg-gray-50 text-sm"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={() => {
+                  const sel = todoSelection;
+                  const doc = activeDoctorData || {};
+                  const sig = activeSignature || "";
+                  const _miIPS = currentUser?.empresaId ? companies.find(c => c.id === currentUser.empresaId) : null;
+                  const ipsName = _miIPS?.nombre || doc.nombre || "OcupaSalud";
+                  const _e = (v) => String(v || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                  const _nl2br = (v) => _e(v).replace(/\n/g, "<br/>");
+                  const sigHtml = sig ? '<img src="' + sig + '" style="max-height:60px;display:block;margin:0 auto 4px;" alt="Firma"/>' : '<div style="height:55px;"></div>';
+                  const headerHTML = '<div style="display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #065f46;padding-bottom:10px;margin-bottom:12px;">'
+                    + '<div><div style="font-size:12pt;font-weight:900;color:#065f46;">' + _e(ipsName) + '</div>'
+                    + '<p style="font-size:8pt;color:#555;">' + _e(doc.titulo || "Médico Especialista SST") + '</p>'
+                    + '<p style="font-size:8pt;color:#555;">Lic: ' + _e(doc.licencia || "--") + ' · ' + _e(doc.ciudad || "") + '</p></div>'
+                    + '<div style="text-align:right;"><div style="font-size:11pt;font-weight:900;color:#065f46;">OCUPASALUD</div>'
+                    + '<p style="font-size:8pt;color:#555;">Paciente: ' + _e(data.nombres) + '</p>'
+                    + '<p style="font-size:8pt;color:#555;">Doc: ' + _e((data.docTipo || "CC") + " " + (data.docNumero || "")) + '</p>'
+                    + '<p style="font-size:8pt;color:#888;">Fecha: ' + _e(data.fechaExamen || new Date().toLocaleDateString("es-CO")) + '</p></div></div>';
+                  const footerHTML = '<div style="margin-top:20px;text-align:center;border-top:2px solid #065f46;padding-top:10px;">'
+                    + sigHtml
+                    + '<p style="font-size:9pt;font-weight:900;color:#065f46;">' + _e(doc.nombre || "") + '</p>'
+                    + '<p style="font-size:8pt;color:#555;">' + _e(doc.titulo || "") + ' · Lic. ' + _e(doc.licencia || "") + '</p>'
+                    + '</div>';
+                  const pages = [];
+                  if (sel.hcCompleta) {
+                    pages.push('<div>' + headerHTML + '<h2 style="color:#065f46;font-size:11pt;margin:10px 0;">HISTORIA CLÍNICA ' + _e(dataType === "ocupacional" ? "OCUPACIONAL" : "GENERAL") + '</h2>'
+                      + '<table style="width:100%;border-collapse:collapse;font-size:9pt;">'
+                      + '<tr><th style="background:#d1fae5;padding:4px 8px;border:1px solid #ccc;width:25%;">Cargo</th><td style="padding:4px 8px;border:1px solid #ccc;">' + _e(data.cargo) + '</td><th style="background:#d1fae5;padding:4px 8px;border:1px solid #ccc;width:25%;">Empresa</th><td style="padding:4px 8px;border:1px solid #ccc;">' + _e(data.empresaNombre) + '</td></tr>'
+                      + '<tr><th style="background:#d1fae5;padding:4px 8px;border:1px solid #ccc;">Tipo Examen</th><td style="padding:4px 8px;border:1px solid #ccc;">' + _e(data.tipoExamen) + '</td><th style="background:#d1fae5;padding:4px 8px;border:1px solid #ccc;">Concepto</th><td style="padding:4px 8px;border:1px solid #ccc;">' + _e(data.conceptoAptitud) + '</td></tr>'
+                      + '<tr><th style="background:#d1fae5;padding:4px 8px;border:1px solid #ccc;">Dx Principal</th><td style="padding:4px 8px;border:1px solid #ccc;" colspan="3">' + _e(data.diagnosticoPrincipal) + '</td></tr>'
+                      + '</table>'
+                      + (data.recomendaciones ? '<div style="margin-top:10px;"><b style="color:#065f46;">Recomendaciones:</b><p style="font-size:9pt;white-space:pre-wrap;">' + _nl2br(data.recomendaciones) + '</p></div>' : '')
+                      + (data.analisisRestricciones ? '<div style="margin-top:10px;"><b style="color:#065f46;">Restricciones:</b><p style="font-size:9pt;white-space:pre-wrap;">' + _nl2br(data.analisisRestricciones) + '</p></div>' : '')
+                      + footerHTML + '</div>');
+                  }
+                  if (sel.certificado) {
+                    try {
+                      const certHtml = _generarCertificadoHTMLNormalizado(data, doc, sig, _miIPS);
+                      const bodyMatch = certHtml.match(/<body[^>]*>([\s\S]*)<\/body>/i);
+                      pages.push('<div>' + (bodyMatch ? bodyMatch[1] : certHtml) + '</div>');
+                    } catch (_eCert) {
+                      pages.push('<div>' + headerHTML + '<h2 style="color:#065f46;font-size:11pt;margin:10px 0;">CERTIFICADO DE APTITUD</h2><p style="font-size:9pt;">' + _e(data.conceptoAptitud || "No generado") + '</p>' + footerHTML + '</div>');
+                    }
+                  }
+                  if (sel.formula && (data.formulaMedica || data.formulaMedicamentos?.length)) {
+                    let formulaBody = '<h2 style="color:#065f46;font-size:11pt;margin:10px 0;">FÓRMULA MÉDICA</h2>';
+                    if (data.formulaMedica) formulaBody += '<p style="font-size:9pt;white-space:pre-wrap;">' + _nl2br(data.formulaMedica) + '</p>';
+                    if (data.formulaMedicamentos?.length) {
+                      formulaBody += '<table style="width:100%;border-collapse:collapse;font-size:9pt;margin-top:8px;"><tr><th style="background:#1e293b;color:white;padding:4px 8px;border:1px solid #334155;">Medicamento</th><th style="background:#1e293b;color:white;padding:4px 8px;border:1px solid #334155;">Dosis</th><th style="background:#1e293b;color:white;padding:4px 8px;border:1px solid #334155;">Frecuencia</th><th style="background:#1e293b;color:white;padding:4px 8px;border:1px solid #334155;">Duración</th></tr>';
+                      data.formulaMedicamentos.forEach(m => { formulaBody += '<tr><td style="padding:4px 8px;border:1px solid #e2e8f0;">' + _e(m.nombre) + '</td><td style="padding:4px 8px;border:1px solid #e2e8f0;">' + _e(m.dosis) + '</td><td style="padding:4px 8px;border:1px solid #e2e8f0;">' + _e(m.frecuencia) + '</td><td style="padding:4px 8px;border:1px solid #e2e8f0;">' + _e(m.duracion) + '</td></tr>'; });
+                      formulaBody += '</table>';
+                    }
+                    pages.push('<div>' + headerHTML + formulaBody + footerHTML + '</div>');
+                  }
+                  if (sel.incapacidad && data.incapacidad?.dias) {
+                    pages.push('<div>' + headerHTML + '<h2 style="color:#065f46;font-size:11pt;margin:10px 0;">CERTIFICADO DE INCAPACIDAD</h2>'
+                      + '<table style="width:100%;border-collapse:collapse;font-size:9pt;">'
+                      + '<tr><th style="background:#d1fae5;padding:4px 8px;border:1px solid #ccc;width:30%;">Días</th><td style="padding:4px 8px;border:1px solid #ccc;">' + _e(data.incapacidad.dias) + '</td></tr>'
+                      + '<tr><th style="background:#d1fae5;padding:4px 8px;border:1px solid #ccc;">Motivo</th><td style="padding:4px 8px;border:1px solid #ccc;">' + _e(data.incapacidad.motivo) + '</td></tr>'
+                      + '<tr><th style="background:#d1fae5;padding:4px 8px;border:1px solid #ccc;">Diagnóstico CIE</th><td style="padding:4px 8px;border:1px solid #ccc;">' + _e(data.incapacidad.diagnosticoCIE) + '</td></tr>'
+                      + '</table>' + footerHTML + '</div>');
+                  }
+                  if (sel.derivaciones && data.derivaciones?.length) {
+                    let derivBody = '<h2 style="color:#065f46;font-size:11pt;margin:10px 0;">DERIVACIONES / INTERCONSULTAS</h2>'
+                      + '<table style="width:100%;border-collapse:collapse;font-size:9pt;"><tr><th style="background:#1e293b;color:white;padding:4px 8px;border:1px solid #334155;">#</th><th style="background:#1e293b;color:white;padding:4px 8px;border:1px solid #334155;">Especialidad</th><th style="background:#1e293b;color:white;padding:4px 8px;border:1px solid #334155;">Motivo</th><th style="background:#1e293b;color:white;padding:4px 8px;border:1px solid #334155;">Urgencia</th></tr>';
+                    data.derivaciones.forEach((d, i) => { derivBody += '<tr><td style="padding:4px 8px;border:1px solid #e2e8f0;text-align:center;">' + (i+1) + '</td><td style="padding:4px 8px;border:1px solid #e2e8f0;">' + _e(d.especialidad) + '</td><td style="padding:4px 8px;border:1px solid #e2e8f0;">' + _e(d.motivo) + '</td><td style="padding:4px 8px;border:1px solid #e2e8f0;">' + _e(d.urgencia) + '</td></tr>'; });
+                    derivBody += '</table>';
+                    if (data.interconsultaResumen) derivBody += '<div style="margin-top:8px;"><b>Resumen clínico:</b><p style="font-size:9pt;">' + _nl2br(data.interconsultaResumen || "") + '</p></div>';
+                    pages.push('<div>' + headerHTML + derivBody + footerHTML + '</div>');
+                  }
+                  if (sel.examenes && data.solicitudExamenes?.length) {
+                    let examBody = '<h2 style="color:#065f46;font-size:11pt;margin:10px 0;">SOLICITUD DE EXÁMENES PARACLÍNICOS</h2>'
+                      + '<table style="width:100%;border-collapse:collapse;font-size:9pt;"><tr><th style="background:#1e293b;color:white;padding:4px 8px;border:1px solid #334155;">#</th><th style="background:#1e293b;color:white;padding:4px 8px;border:1px solid #334155;">Examen</th><th style="background:#1e293b;color:white;padding:4px 8px;border:1px solid #334155;">Fecha</th><th style="background:#1e293b;color:white;padding:4px 8px;border:1px solid #334155;">Urgente</th></tr>';
+                    data.solicitudExamenes.forEach((ex, i) => { examBody += '<tr><td style="padding:4px 8px;border:1px solid #e2e8f0;text-align:center;">' + (i+1) + '</td><td style="padding:4px 8px;border:1px solid #e2e8f0;">' + _e(ex.nombre) + '</td><td style="padding:4px 8px;border:1px solid #e2e8f0;">' + _e(ex.fecha || "") + '</td><td style="padding:4px 8px;border:1px solid #e2e8f0;">' + (ex.urgente ? "Sí" : "No") + '</td></tr>'; });
+                    examBody += '</table>';
+                    pages.push('<div>' + headerHTML + examBody + footerHTML + '</div>');
+                  }
+                  if (pages.length === 0) { showAlert("No hay documentos seleccionados o los documentos seleccionados no tienen datos."); return; }
+                  const fullHTML = '<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><title>Documentos - ' + _e(data.nombres) + '</title><style>'
+                    + 'body{font-family:Arial,Helvetica,sans-serif;font-size:9pt;margin:20px;color:#111;}'
+                    + 'table{width:100%;border-collapse:collapse;} th{text-align:left;}'
+                    + '@page{size:letter portrait;margin:1.1cm 1.3cm;}'
+                    + '@media print{*{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;color-adjust:exact!important;} button,.np-bar{display:none!important;} body{margin:0;padding:0;}}'
+                    + '.page-section{page-break-after:always;} .page-section:last-child{page-break-after:auto;}'
+                    + '.np-bar{position:fixed;top:0;left:0;right:0;background:#065f46;color:#fff;padding:7px 14px;display:flex;align-items:center;gap:10px;z-index:9999;}'
+                    + '.np-bar span{flex:1;font-size:9pt;font-weight:700;} .np-bar button{border:none;padding:5px 14px;border-radius:6px;font-weight:900;cursor:pointer;font-size:9pt;background:#10b981;color:#fff;}'
+                    + 'body{padding-top:45px;} @media print{body{padding-top:0!important;}}'
+                    + '</style></head><body>'
+                    + '<div class="np-bar"><span>📄 Documentos de ' + _e(data.nombres) + ' (' + pages.length + ' sección' + (pages.length > 1 ? "es" : "") + ')</span>'
+                    + '<button onclick="window.print()">🖨️ Imprimir / PDF</button>'
+                    + '<button onclick="window.close()" style="background:#ef4444;">✕ Cerrar</button></div>'
+                    + pages.map(p => '<div class="page-section">' + p + '</div>').join('')
+                    + '</body></html>';
+                  const w = window.open("", "_blank", "width=900,height=1100");
+                  if (w) { w.document.write(fullHTML); w.document.close(); w.focus(); }
+                  else { showAlert("El navegador bloqueó la ventana emergente. Permita los popups."); }
+                  setShowTodoChecklist(false);
+                }}
+                className="flex-1 py-2.5 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-700 text-sm"
+              >
+                🖨️ Imprimir Selección
               </button>
             </div>
           </div>
