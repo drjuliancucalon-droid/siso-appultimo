@@ -1,6 +1,4 @@
-import React from "react";
-import { useApp } from '../context/AppContext.jsx';
-
+﻿import React from "react";
 const NotificacionModal = ({ data, onCerrar }) => {
   if (!data || !data.nombre) return null;
   const tel = (data.celular || "").replace(/\D/g, "");

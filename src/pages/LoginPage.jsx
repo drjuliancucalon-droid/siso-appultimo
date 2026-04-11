@@ -1,14 +1,13 @@
-import React from 'react';
-import { useApp } from '../context/AppContext.jsx';
+﻿import React from 'react';
 import { Stethoscope, BrainCircuit, UploadCloud } from 'lucide-react';
 
-const LoginPage = () => {
-  const ctx = useApp();
+const LoginPage = (props) => {
+  
   const {
     handleLogin, loginBlockedUntil, loginAttempts,
     setShowAIConfig, fileInputRef, handleImportData,
     LoginForm,
-  } = ctx;
+  } = props;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-900 via-teal-800 to-cyan-900 flex items-center justify-center font-sans p-4">

@@ -1,8 +1,7 @@
-import React from 'react';
-import { useApp } from '../context/AppContext.jsx';
+﻿import React from 'react';
 import { User, FileText, Stethoscope, ClipboardList, Printer, Activity, Building2, FileCheck, AlertCircle, Sparkles, BrainCircuit, Loader2, Save, History, CheckCircle2, Trash2, Eye, LogOut, Users, BarChart3, PlusCircle, Search, Cloud, ShieldCheck, UserPlus, AlertTriangle, Pill, GraduationCap, Clock, ShieldAlert, UploadCloud, FileSignature, Share2, Plus, HardDrive, UserCheck, ChevronDown, Lock, Unlock, FileSearch, Banknote, Receipt, Pencil, X, Heart, CheckSquare, Square, ChevronRight, ChevronLeft, RefreshCw, WifiOff, Wifi, Shield, MessageSquare, Download, Upload } from 'lucide-react';
 
-const PortalTrabajadorPage = () => {
+const PortalTrabajadorPage = (props) => {
   const {
     view, setView, navStack, setNavStack, currentUser, setCurrentUser,
     loginAttempts, setLoginAttempts, loginBlockedUntil, setLoginBlockedUntil,
@@ -106,7 +105,7 @@ const PortalTrabajadorPage = () => {
     _generarCertificadoHTMLNormalizado,
     PLAN_CONFIG, SECRETARIA_PERMISOS_DEFAULT, DEFAULT_DOCTOR_DATA, ORG_DEFAULT_ID,
     _ls, _sbSet, _sbGet, _SB_URL, _SB_KEY, sanitizeInput,
-  } = useApp();
+  } = props;
 
 const handleBuscar = () => {
   const q = portalCodigo.trim();

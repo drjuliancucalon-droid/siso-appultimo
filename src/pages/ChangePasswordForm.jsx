@@ -1,9 +1,7 @@
-import React from "react";
+﻿import React from "react";
 import { Lock } from "lucide-react";
 import { _pbkdf2Hash } from '../utils/crypto.js';
 import { _sbSet } from '../utils/supabase.js';
-import { useApp } from '../context/AppContext.jsx';
-
 // Validación de contraseña (pura, sin dependencias de estado)
 const _validarContrasena = (pw) => {
   const errores = [];

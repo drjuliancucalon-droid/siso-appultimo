@@ -1,5 +1,4 @@
-import React from 'react';
-import { useApp } from '../context/AppContext.jsx';
+﻿import React from 'react';
 import {
   User, FileText, Stethoscope, ClipboardList, Printer, Activity, Building2,
   FileCheck, AlertCircle, Sparkles, BrainCircuit, Loader2, Save, History,
@@ -11,7 +10,7 @@ import {
   Shield, MessageSquare, Download, Upload
 } from 'lucide-react';
 
-const Navbar = () => {
+const Navbar = (props) => {
   const {
     view, setView, currentUser, companies,
     activeDoctorData, activeSignature,
@@ -33,7 +32,7 @@ const Navbar = () => {
     fileInputRef, fileInputSigRef, handleExportData, handleImportData,
     setShowNotifModal, handleSignatureUpload,
     _sync, _secretariaPuede,
-  } = useApp();
+  } = props;
 
     const _aiBg =
       aiStatus === "ok"

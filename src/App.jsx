@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { AppProvider } from './context/AppContext.jsx';
+// AppProvider removed - pages receive props directly via {...appContext}
 import PlanesPage from './pages/PlanesPage.jsx';
 import LoginPage from './pages/LoginPage.jsx';
 import VerificationPage from './pages/VerificationPage.jsx';
@@ -9114,7 +9114,7 @@ Esta historia clínica debe conservarse mínimo 20 años.
   // RENDER HELPERS
   // ─────────────────────────────────────────────────────────────────────────
   // [EXTRACTED: pages/Navbar.jsx]
-  const renderNavbar = () => <Navbar />;
+  const renderNavbar = () => <Navbar {...appContext} />;
   // ─── RENDER: DASHBOARD ────────────────────────────────────────────────────
   // ─── RENDER: HC OCUPACIONAL ───────────────────────────────────────────────
   // [EXTRACTED: pages/HistoriaOcupacional.jsx]
@@ -9503,24 +9503,25 @@ body{font-family:Arial,sans-serif;margin:0;background:#f5f5f5}
             </div>
           </div>
         );
-      return <LoginPage />;
+      return <LoginPage {...appContext} />;
     }
-    if (view === "dashboard") return <DashboardPage />;
-    if (view === "superadmin") return <SuperAdminPage />;
-    if (view === "planes") return <PlanesPage />;
-    if (view === "portaltrabajador") return <PortalTrabajadorPage />;
-    if (view === "portalempresa") return <PortalEmpresaPage />;
-    if (view === "habeasdata") return <HabeasDataPage />;
-    if (view === "arl") return <ARLPage />;
-    if (view === "sve") return <SVEPage />;
-    if (view === "telemedicina") return <TelemedicinaPage />;
-    if (view === "agenda") return <AgendaPage />;
-    if (view === "asistencia") return <AsistenciaAgendaPage />;
-    if (view === "patients") return <PatientsPage />;
+    if (view === "dashboard") return <DashboardPage {...appContext} />;
+    if (view === "superadmin") return <SuperAdminPage {...appContext} />;
+    if (view === "planes") return <PlanesPage {...appContext} />;
+    if (view === "portaltrabajador") return <PortalTrabajadorPage {...appContext} />;
+    if (view === "portalempresa") return <PortalEmpresaPage {...appContext} />;
+    if (view === "habeasdata") return <HabeasDataPage {...appContext} />;
+    if (view === "arl") return <ARLPage {...appContext} />;
+    if (view === "sve") return <SVEPage {...appContext} />;
+    if (view === "telemedicina") return <TelemedicinaPage {...appContext} />;
+    if (view === "agenda") return <AgendaPage {...appContext} />;
+    if (view === "asistencia") return <AsistenciaAgendaPage {...appContext} />;
+    if (view === "patients") return <PatientsPage {...appContext} />;
     // ══ B-07: Pantalla cambio de contraseña obligatorio (primer login o forzado) ══
     if (view === "changePassword")
       return (
         <ChangePasswordForm
+          {...appContext}
           currentUser={currentUser}
           usersList={usersList}
           setUsersList={setUsersList}
@@ -9531,20 +9532,20 @@ body{font-family:Arial,sans-serif;margin:0;background:#f5f5f5}
           showAlert={showAlert}
         />
       );
-    if (view === "companies") return <CompaniesPage />;
-    if (view === "reporte") return <ReportePage />;
-    if (view === "bill") return <BillPage />;
-    if (view === "verification") return <VerificationPage />;
-    if (view === "users") return <UsersPage />;
-    if (view === "portafolio") return <PortafolioPage />;
-    if (view === "caja") return <CajaPage />;
-    if (view === "perfilips") return <PerfilIPSPage />;
-    if (view === "contabilidad") return <ContabilidadPage />;
+    if (view === "companies") return <CompaniesPage {...appContext} />;
+    if (view === "reporte") return <ReportePage {...appContext} />;
+    if (view === "bill") return <BillPage {...appContext} />;
+    if (view === "verification") return <VerificationPage {...appContext} />;
+    if (view === "users") return <UsersPage {...appContext} />;
+    if (view === "portafolio") return <PortafolioPage {...appContext} />;
+    if (view === "caja") return <CajaPage {...appContext} />;
+    if (view === "perfilips") return <PerfilIPSPage {...appContext} />;
+    if (view === "contabilidad") return <ContabilidadPage {...appContext} />;
     if (view === "cotizaciones") {
       if (propModulo !== "cotizacion") setPropModulo("cotizacion");
-      return <PropuestasPage />;
+      return <PropuestasPage {...appContext} />;
     }
-    if (view === "propuestas") return <PropuestasPage />;
+    if (view === "propuestas") return <PropuestasPage {...appContext} />;
     if (view === "historia") {
       // FIX: _billDocData necesario para incapacidad, fórmula, derivación
       const _billDocUser = billData.billDoctorId
@@ -9587,13 +9588,13 @@ body{font-family:Arial,sans-serif;margin:0;background:#f5f5f5}
           <main className="flex-grow p-6 max-w-5xl mx-auto w-full print:p-0">
             {dataType === "ocupacional" &&
               activeTab === "form" &&
-              <HistoriaOcupacional />}
+              <HistoriaOcupacional {...appContext} />}
             {dataType === "general" &&
               activeTab === "formGeneral" &&
-              <HistoriaGeneral />}
+              <HistoriaGeneral {...appContext} />}
             {dataType === "ocupacional" &&
               activeTab === "certificado" &&
-              <CertificadoPage />}
+              <CertificadoPage {...appContext} />}
             {dataType === "ocupacional" &&
               (activeTab === "formulaTab" || activeTab === "derivacionTab") && (
                 <TabFormulaDerivacion
@@ -9618,11 +9619,11 @@ body{font-family:Arial,sans-serif;margin:0;background:#f5f5f5}
                       HC Ocupacional
                     </span>
                   </div>
-                  <div className="p-4"><TabSolicitudExamenes /></div>
+                  <div className="p-4"><TabSolicitudExamenes {...appContext} /></div>
                 </div>
               )}
             {dataType === "ocupacional" && activeTab === "adjuntos" && (
-              <div><TabAdjuntos /></div>
+              <div><TabAdjuntos {...appContext} /></div>
             )}
             {/* B-F1-05: CARNÉ MANIPULACIÓN ALIMENTOS */}
             {dataType === "ocupacional" &&
@@ -9958,11 +9959,11 @@ body{font-family:Arial,sans-serif;margin:0;background:#f5f5f5}
             {/* ══ TAB: SOLICITUD DE EXÁMENES ══ */}
             {dataType === "general" &&
               activeTab === "solicitudExamenes" &&
-              <TabSolicitudExamenes />}
+              <TabSolicitudExamenes {...appContext} />}
             {/* ══ TAB: INCAPACIDAD MÉDICA (HC GENERAL) ══ */}
             {dataType === "general" &&
               activeTab === "incapacidadGeneral" &&
-              <TabIncapacidadGeneral />}
+              <TabIncapacidadGeneral {...appContext} />}
             {activeTab === "ordenMedica" &&
               (() => {
                 const buildGnHeader = (titleDoc, accent) => {
@@ -10940,15 +10941,14 @@ body{padding-top:52px;}
         </div>
       );
     }
-    return <LoginPage />;
+    return <LoginPage {...appContext} />;
   };
   // ─── RETURN PRINCIPAL ─────────────────────────────────────────────────────
   return (
-    <AppProvider value={appContext}>
     <>
       <PrintStyles />
       <SecurityHeaders />
-      {/* renderCurrentView ya está dentro del AppProvider */}
+      {/* renderCurrentView - pages receive props via {...appContext} */}
       {showPortalPublico ? (
         <PortalPublicoTrabajador
           sbUrl={_SB_URL}
@@ -10958,9 +10958,10 @@ body{padding-top:52px;}
       ) : (
         renderCurrentView()
       )}
-      <MensajesOverlay />
+      <MensajesOverlay {...appContext} />
       {showNotifModal && (
         <NotificacionModal
+          {...appContext}
           data={notifData}
           onCerrar={() => setShowNotifModal(false)}
         />
@@ -11438,7 +11439,7 @@ body{padding-top:52px;}
         </div>
       )}
       {/* Modal Evolución Clínica - GLOBAL (visible desde cualquier tab) */}
-      <EvolucionModal />
+      <EvolucionModal {...appContext} />
       {/* Modal Prompt */}
       {promptConfig && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[200] p-4">
@@ -11729,7 +11730,6 @@ body{padding-top:52px;}
         />
       )}
     </>
-    </AppProvider>
   );
 }
 

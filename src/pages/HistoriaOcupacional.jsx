@@ -1,5 +1,4 @@
-import React from 'react';
-import { useApp } from '../context/AppContext.jsx';
+﻿import React from 'react';
 import {
   User, FileText, Stethoscope, ClipboardList, Printer, Activity, Building2,
   FileCheck, AlertCircle, Sparkles, BrainCircuit, Loader2, Save, History,
@@ -11,7 +10,7 @@ import {
   Shield, MessageSquare, Download, Upload
 } from 'lucide-react';
 
-const HistoriaOcupacional = () => {
+const HistoriaOcupacional = (props) => {
   const {
     data, setData, currentUser, companies,
     activeDoctorData, activeSignature,
@@ -30,7 +29,7 @@ const HistoriaOcupacional = () => {
     EPS_LIST, ARL_LIST, AFP_LIST, TURNO_LIST, CONTRATO_LIST,
     DEFAULT_RECOMENDACIONES_SELECTED,
     _isAdmin,
-  } = useApp();
+  } = props;
 
   return (
     <div

@@ -1,5 +1,4 @@
-import React from 'react';
-import { useApp } from '../context/AppContext.jsx';
+﻿import React from 'react';
 import {
   User, FileText, Stethoscope, ClipboardList, Printer, Activity, Building2,
   FileCheck, AlertCircle, Sparkles, BrainCircuit, Loader2, Save, History,
@@ -11,7 +10,7 @@ import {
   Shield, MessageSquare, Download, Upload
 } from 'lucide-react';
 
-const HistoriaGeneral = () => {
+const HistoriaGeneral = (props) => {
   const {
     data, setData, currentUser, patientsList,
     activeDoctorData, activeSignature,
@@ -25,7 +24,7 @@ const HistoriaGeneral = () => {
     analyzeBP, analyzeBMI, NORMAL_DESCRIPTIONS_SYSTEMS,
     _isAdmin,
     generateAIGeneral,
-  } = useApp();
+  } = props;
 
     const _ownPatsGen = _isAdmin(currentUser?.role)
       ? patientsList
