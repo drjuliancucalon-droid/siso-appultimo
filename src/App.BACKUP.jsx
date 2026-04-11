@@ -1,18 +1,4 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { AppProvider } from './context/AppContext.jsx';
-import PlanesPage from './pages/PlanesPage.jsx';
-import LoginPage from './pages/LoginPage.jsx';
-import VerificationPage from './pages/VerificationPage.jsx';
-import PortalTrabajadorPage from './pages/PortalTrabajadorPage.jsx';
-import HabeasDataPage from './pages/HabeasDataPage.jsx';
-import PerfilIPSPage from './pages/PerfilIPSPage.jsx';
-import ReportePage from './pages/ReportePage.jsx';
-import CompaniesPage from './pages/CompaniesPage.jsx';
-import CajaPage from './pages/CajaPage.jsx';
-import AgendaPage from './pages/AgendaPage.jsx';
-import DashboardPage from './pages/DashboardPage.jsx';
-import BillPage from './pages/BillPage.jsx';
-import UsersPage from './pages/UsersPage.jsx';
 import {
   User,
   FileText,
@@ -16677,126 +16663,6 @@ Esta historia clínica debe conservarse mínimo 20 años.
   const goBack = () => {
     _maybeExitHC(_goBackDirect);
   };
-  // ═══ APP CONTEXT — expone todo el estado y helpers a las páginas extraídas ═══
-  const appContext = {
-    view, setView, navStack, setNavStack, currentUser, setCurrentUser,
-    loginAttempts, setLoginAttempts, loginBlockedUntil, setLoginBlockedUntil,
-    privacidadAceptada, setPrivacidadAceptada, syncStatus, setSyncStatus,
-    showSyncReport, setShowSyncReport, syncReport, setSyncReport,
-    alertMsg, setAlertMsg, confirmConfig, setConfirmConfig,
-    promptConfig, setPromptConfig, promptValue, setPromptValue,
-    aiConfig, setAiConfig, showAIConfig, setShowAIConfig, aiStatus, setAiStatus,
-    companies, setCompanies, usersList, setUsersList, usersReady, setUsersReady,
-    patientsList, setPatientsList, savedReports, setSavedReports,
-    savedBills, setSavedBills, atencionesCerradas, setAtencionesCerradas,
-    doctorSignature, setDoctorSignature, auditLog, setAuditLog,
-    activeTab, setActiveTab, data, setData, dataType, setDataType,
-    isGenerating, setIsGenerating, isGeneratingRestr, setIsGeneratingRestr,
-    isGeneratingReco, setIsGeneratingReco, saveStatus, setSaveStatus,
-    patientSuggestions, setPatientSuggestions,
-    historyNotification, setHistoryNotification,
-    showRestriccionesPanel, setShowRestriccionesPanel,
-    showRecomendacionesPanel, setShowRecomendacionesPanel,
-    showHistoryModal, setShowHistoryModal,
-    ripsModalData, setRipsModalData, backupModalData, setBackupModalData,
-    hcChoiceAgenda, setHcChoiceAgenda,
-    historyRecords, setHistoryRecords, patientSearchTerm, setPatientSearchTerm,
-    genPatSearch, setGenPatSearch,
-    examSearch, setExamSearch, examList, setExamList,
-    showExamSuggs, setShowExamSuggs,
-    diagExamen, setDiagExamen, justExamen, setJustExamen,
-    printPreview, setPrintPreview,
-    selectedCompanyReport, setSelectedCompanyReport,
-    selectedMedicoReport, setSelectedMedicoReport,
-    reporteActiveTab, setReporteActiveTab, certSelected, setCertSelected,
-    reportStartDate, setReportStartDate, reportEndDate, setReportEndDate,
-    reportAIResult, setReportAIResult, isGeneratingReport, setIsGeneratingReport,
-    showExportTable, setShowExportTable,
-    precioPorPaciente, setPrecioPorPaciente,
-    showDianPanel, setShowDianPanel,
-    showSecretariaPatientModal, setShowSecretariaPatientModal,
-    showTodoChecklist, setShowTodoChecklist, todoSelection, setTodoSelection,
-    dianProvider, setDianProvider, dianApiKey, setDianApiKey,
-    billData, setBillData, savedBillsList, setSavedBillsList,
-    portafolioItems, setPortafolioItems, portafolioForm, setPortafolioForm,
-    portafolioEditId, setPortafolioEditId,
-    cotizaciones, setCotizaciones, cotizacionForm, setCotizacionForm,
-    cotizacionView, setCotizacionView, cotizacionSelId, setCotizacionSelId,
-    cajaMovimientos, setCajaMovimientos, cajaForm, setCajaForm,
-    cajaTab, setCajaTab, cajaFiltroPeriodo, setCajaFiltroPeriodo,
-    cajaFiltroDesde, setCajaFiltroDesde, cajaFiltroHasta, setCajaFiltroHasta,
-    contabTab, setContabTab, contabPeriodo, setContabPeriodo,
-    asistenciaFecha, setAsistenciaFecha,
-    evolucionForm, setEvolucionForm, showEvolucionModal, setShowEvolucionModal,
-    selectedPackage, setSelectedPackage, packageChecklist, setPackageChecklist,
-    showPackages, setShowPackages, newComp, setNewComp,
-    ipsPerfilForm, setIpsPerfilForm,
-    verificationCode, setVerificationCode, verificationFound, setVerificationFound,
-    activeUserMgmtTab, setActiveUserMgmtTab,
-    pendingActivationPlan, setPendingActivationPlan,
-    sbCloudData, setSbCloudData, sbLoading, setSbLoading,
-    newUserForm, setNewUserForm, userEditId, setUserEditId, editForm, setEditForm,
-    propForm, setPropForm, selSvc, setSelSvc, propModulo, setPropModulo,
-    mensajes, setMensajes, showMensajePanel, setShowMensajePanel,
-    showConsentModal, setShowConsentModal,
-    twoFAStep, setTwoFAStep, twoFAToken, setTwoFAToken, twoFAError, setTwoFAError,
-    habeasRequests, setHabeasRequests, showHabeasModal, setShowHabeasModal,
-    habeasForm, setHabeasForm, showPortalPublico, setShowPortalPublico,
-    arlTab, setArlTab, svePrograma, setSvePrograma,
-    sveFiltroEmpresa, setSveFiltroEmpresa,
-    sveAIAnalisis, setSveAIAnalisis, sveAICargando, setSveAIAnalisisCargando,
-    sveAIFiltroEmpresa, setSveAIFiltroEmpresa,
-    arlForm, setArlForm, arlGuardados, setArlGuardados,
-    showNotifModal, setShowNotifModal, notifData, setNotifData,
-    portalCodigo, setPortalCodigo, portalPaciente, setPortalPaciente,
-    portalMultiple, setPortalMultiple,
-    epiEmpresa, setEpiEmpresa, epiPeriodo, setEpiPeriodo, epiTab, setEpiTab,
-    teleconsultas, setTeleconsultas, teleForm, setTeleForm,
-    teleSalaActiva, setTeleSalaActiva, teleTab, setTeleTab,
-    mensajeRespuesta, setMensajeRespuesta,
-    agendados, setAgendados, showAgenda, setShowAgenda,
-    agendaForm, setAgendaForm, agendaSuggs, setAgendaSuggs, agendaTab, setAgendaTab,
-    showComposeMensaje, setShowComposeMensaje, composeMensaje, setComposeMensaje,
-    companiesTab, setCompaniesTab, editingCompany, setEditingCompany,
-    cajaMedicoPeriodo, setCajaMedicoPeriodo,
-    porcentajeMedico, setPorcentajeMedico,
-    medicoTurnoActivo, setMedicoTurnoActivo,
-    orgsList, setOrgsList, activeOrgId, setActiveOrgId,
-    superAdminTab, setSuperAdminTab, newOrgForm, setNewOrgForm,
-    portalEmpresaCodigo, setPortalEmpresaCodigo,
-    portalEmpresaEncontrada, setPortalEmpresaEncontrada,
-    portalEmpresaPacientes, setPortalEmpresaPacientes,
-    portalEmpresaTab, setPortalEmpresaTab,
-    portalEmpresaBuscando, setPortalEmpresaBuscando,
-    portalEmpresaFiltroDoc, setPortalEmpresaFiltroDoc,
-    portalActivadoInfo, setPortalActivadoInfo,
-    portalEmpresaAdmin, setPortalEmpresaAdmin,
-    portalAdminTab, setPortalAdminTab,
-    portalAdminLoginUser, setPortalAdminLoginUser,
-    portalAdminLoginPass, setPortalAdminLoginPass,
-    nuevoMedicoEmpForm, setNuevoMedicoEmpForm,
-    sedeForm, setSedeForm, ipsCredForm, setIpsCredForm,
-    ipsEditingEmpId, setIpsEditingEmpId,
-    showConsentimiento, setShowConsentimiento,
-    _hcDirty, _setHcDirty, _exitHcConfirm, _setExitHcConfirm,
-    activeDoctorData, activeSignature,
-    fileInputRef, fileInputSigRef, csvInputRef,
-    goTo, goBack, showAlert, handleChange, handleNameChange, handleSavePatient,
-    handleCloseHistory, handleEditHistory, handlePrint, logAccess,
-    canViewPatient, isHcOwner, openPatient, handleNewOccupHistory, handleNewGeneralHistory,
-    selectPatientSuggestion, generateAIAnalysis, generateAIRestricciones, generateAIRecomendaciones,
-    applyRestriccionesChecklist, applyRecomendacionesChecklist, handleManualCloudSave,
-    handleExportData, handleImportData, handleSignatureUpload, handleLogin, handleSaveAIConfig,
-    exportPatientTable, _printHCClean, handleAceptarPrivacidad,
-    renderNavbar,
-    BrandLogo, DoctorSignature, DoctorSignatureMemo, LoginForm,
-    InputGroup, PlanGate,
-    _isAdmin, _isAdminEmpresa, _isAdminOrEmpresa, _canUse, _contarHC,
-    _generarCertificadoHTMLNormalizado,
-    PLAN_CONFIG, SECRETARIA_PERMISOS_DEFAULT, DEFAULT_DOCTOR_DATA, ORG_DEFAULT_ID,
-    _ls, _sbSet, _sbGet, _SB_URL, _SB_KEY,
-    sanitizeInput,
-  };
   // ─────────────────────────────────────────────────────────────────────────
   // RENDER HELPERS
   // ─────────────────────────────────────────────────────────────────────────
@@ -17811,7 +17677,1271 @@ Esta historia clínica debe conservarse mínimo 20 años.
       </nav>
     );
   };
+  const renderLogin = () => (
+    <div className="min-h-screen bg-gradient-to-br from-emerald-900 via-teal-800 to-cyan-900 flex items-center justify-center font-sans p-4">
+      <div className="bg-white rounded-2xl shadow-2xl w-96 overflow-hidden animate-fade-in">
+        <div className="bg-gradient-to-r from-emerald-600 to-teal-500 p-8 text-center">
+          <div className="w-16 h-16 bg-white/20 rounded-2xl mx-auto flex items-center justify-center mb-4 shadow-lg">
+            <Stethoscope className="w-10 h-10 text-white" />
+          </div>
+          <h1 className="text-xl font-black text-white tracking-tight">
+            OCUPASALUD
+          </h1>
+          <p className="text-emerald-100 text-xs font-bold tracking-widest mt-1">
+            PLATAFORMA MÉDICA OCUPACIONAL v3.0
+          </p>
+        </div>
+        <div className="p-8">
+          <LoginForm
+            onLogin={handleLogin}
+            blockedUntil={loginBlockedUntil}
+            attempts={loginAttempts}
+          />
+          <div className="mt-4 space-y-2">
+            <button
+              onClick={() => setShowAIConfig(true)}
+              className="w-full bg-indigo-50 text-indigo-700 border border-indigo-200 py-2 rounded-xl font-bold text-xs flex items-center justify-center gap-2"
+            >
+              <BrainCircuit className="w-4 h-4" /> Configurar IA (Recomendado)
+            </button>
+            <input
+              type="file"
+              ref={fileInputRef}
+              style={{ display: "none" }}
+              accept=".json"
+              onChange={handleImportData}
+            />
+            <button
+              onClick={() => fileInputRef.current.click()}
+              className="w-full bg-gray-50 text-gray-600 border border-gray-200 py-2 rounded-xl font-bold text-xs flex items-center justify-center gap-2"
+            >
+              <UploadCloud className="w-4 h-4" /> Restaurar Copia
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
   // ─── RENDER: DASHBOARD ────────────────────────────────────────────────────
+  const renderDashboard = () => (
+    <div className="min-h-screen bg-gray-50 font-sans">
+      {renderNavbar()}
+      <div className="max-w-6xl mx-auto p-8">
+        <div className="mb-8">
+          {/* ── IPS: Banner de empresa cuando el usuario tiene empresaId ── */}
+          {currentUser?.empresaId &&
+            (() => {
+              const _miEmpBanner = companies.find(
+                (c) => c.id === currentUser.empresaId
+              );
+              return (
+                <div className="bg-gradient-to-r from-teal-600 to-cyan-600 rounded-xl p-4 mb-4 text-white shadow-lg">
+                  <div className="flex items-center gap-3">
+                    <div className="bg-white/20 p-2.5 rounded-xl">
+                      <Building2 className="w-7 h-7 text-white" />
+                    </div>
+                    <div>
+                      <p className="font-black text-lg tracking-tight">
+                        {_miEmpBanner?.nombre || "IPS"}
+                      </p>
+                      <p className="text-teal-100 text-xs">
+                        NIT: {_miEmpBanner?.nit || "—"} ·{" "}
+                        {_miEmpBanner?.ciudad || ""} ·{" "}
+                        {currentUser.role === "admin_empresa"
+                          ? "Admin IPS"
+                          : currentUser.role === "medico"
+                          ? "Médico IPS"
+                          : "Secretaria IPS"}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
+          <div className="flex items-center justify-between flex-wrap gap-3 mb-1">
+            <h2 className="text-2xl font-black text-gray-800">
+              {currentUser?.empresaId ? "Panel IPS" : "Panel Principal"}
+            </h2>
+            {/* FASE 2: Indicador médico de turno */}
+            {_isAdmin(currentUser?.role) && (
+              <div className="flex items-center gap-2">
+                {medicoTurnoActivo ? (
+                  <div
+                    onClick={() =>
+                      goTo("users") ||
+                      setTimeout(() => setActiveUserMgmtTab("reasignacion"), 50)
+                    }
+                    className="flex items-center gap-2 bg-green-50 border border-green-200 rounded-xl px-3 py-1.5 cursor-pointer hover:bg-green-100 transition"
+                    title="Click para cambiar médico de turno"
+                  >
+                    <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                    <span className="text-xs font-black text-green-700">
+                      🩺 Turno:{" "}
+                      {usersList.find((u) => u.user === medicoTurnoActivo)
+                        ?.name || medicoTurnoActivo}
+                    </span>
+                  </div>
+                ) : (
+                  <div
+                    onClick={() =>
+                      goTo("users") ||
+                      setTimeout(() => setActiveUserMgmtTab("reasignacion"), 50)
+                    }
+                    className="flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-xl px-3 py-1.5 cursor-pointer hover:bg-amber-100 transition"
+                  >
+                    <span className="text-xs text-amber-600 font-bold">
+                      ⚠️ Sin médico de turno
+                    </span>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+          <p className="text-gray-500 text-sm">
+            {getSpanishDate(null)} -- {currentUser?.name}
+            {currentUser?.role === "super_admin" && (
+              <span className="ml-2 text-purple-600 font-bold">
+                ⭐ Super Admin · {orgsList.length} orgs
+              </span>
+            )}
+          </p>
+          {/* ── PLAN STATUS BANNER ── */}
+          {(() => {
+            const plan = PLAN_CONFIG[currentUser?.license || "libre"];
+            const hcUsadas = _contarHC(patientsList, currentUser?.user);
+            const pct =
+              plan.maxHC < 9999
+                ? Math.round((hcUsadas / plan.maxHC) * 100)
+                : -1;
+            const _expDays = currentUser?.licenseExpiry
+              ? Math.ceil(
+                  (new Date(currentUser.licenseExpiry) - new Date()) / 86400000
+                )
+              : 99;
+            const isExpiring =
+              plan.price > 0 && _expDays >= 0 && _expDays <= 7
+                ? _expDays
+                : false;
+            const colorMap = {
+              libre: "gray",
+              starter: "teal",
+              pro: "blue",
+              clinica: "purple",
+            };
+            const col = colorMap[currentUser?.license || "libre"];
+            return (
+              <div
+                className={`mt-3 flex flex-wrap items-center gap-3 px-4 py-2.5 rounded-xl bg-${col}-50 border border-${col}-200`}
+              >
+                <span className={`font-black text-${col}-700 text-sm`}>
+                  {plan.label}
+                </span>
+                <span className="text-gray-400 text-xs">·</span>
+                {plan.maxHC < 9999 ? (
+                  <span
+                    className={`text-xs font-bold ${
+                      pct >= 100
+                        ? "text-red-600"
+                        : pct >= 80
+                        ? "text-amber-600"
+                        : "text-gray-600"
+                    }`}
+                  >
+                    📋 {hcUsadas}/{plan.maxHC} HC {pct >= 80 && "⚠️"}
+                  </span>
+                ) : (
+                  <span className="text-xs text-gray-500">
+                    📋 HC ilimitadas
+                  </span>
+                )}
+                {isExpiring !== false && isExpiring >= 0 && (
+                  <span className="text-xs font-bold text-amber-600">
+                    ⏰ Vence en {isExpiring}d
+                  </span>
+                )}
+                {plan.price === 0 && (
+                  <button
+                    onClick={() => goTo("planes")}
+                    className={`ml-auto text-xs font-black bg-${col}-600 text-white px-3 py-1 rounded-lg hover:opacity-90 transition`}
+                  >
+                    ⬆️ Ver planes
+                  </button>
+                )}
+              </div>
+            );
+          })()}
+        </div>
+        {/* Stats Cards */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+          {(() => {
+            // ── IPS: scope stats to empresa patients ──
+            const _scopedPats = currentUser?.empresaId
+              ? patientsList.filter((p) => {
+                  const _scEmp = companies.find(
+                    (c) => c.id === currentUser.empresaId
+                  );
+                  return (
+                    p.empresaId === currentUser.empresaId ||
+                    (_scEmp && p.empresaNit === _scEmp.nit)
+                  );
+                })
+              : patientsList;
+            const _scopedComps = currentUser?.empresaId
+              ? companies.filter((c) => c.id === currentUser.empresaId)
+              : companies;
+            return [
+              {
+                label: "Historias Registradas",
+                value: _scopedPats.filter((p) => p.fechaExamen).length,
+                color: "emerald",
+                icon: FileText,
+              },
+              {
+                label: "Empresas",
+                value: _scopedComps.length,
+                color: "purple",
+                icon: Building2,
+              },
+              {
+                label: "HC Cerradas",
+                value: _scopedPats.filter((p) => p.estadoHistoria === "Cerrada")
+                  .length,
+                color: "red",
+                icon: Lock,
+              },
+              {
+                label: "HC Abiertas",
+                value: _scopedPats.filter(
+                  (p) => p.estadoHistoria !== "Cerrada" && p.fechaExamen
+                ).length,
+                color: "blue",
+                icon: Unlock,
+              },
+              ...(_isAdminOrEmpresa(currentUser?.role)
+                ? [
+                    {
+                      label: currentUser?.empresaId
+                        ? "Médicos IPS"
+                        : "Médicos activos",
+                      value: currentUser?.empresaId
+                        ? usersList.filter(
+                            (u) =>
+                              u.empresaId === currentUser.empresaId &&
+                              u.role === "medico" &&
+                              u.activo !== false
+                          ).length
+                        : usersList.filter(
+                            (u) => u.role === "medico" && u.activo !== false
+                          ).length,
+                      color: "indigo",
+                      icon: Users,
+                    },
+                    {
+                      label: "Cuentas pendientes",
+                      value: savedBillsList.filter((b) => !b.pagada).length,
+                      color: "orange",
+                      icon: Receipt,
+                    },
+                    ...(!currentUser?.empresaId
+                      ? [
+                          {
+                            label: "Convenios por vencer",
+                            value: companies.filter((c) => {
+                              if (!c.convenioVencimiento) return false;
+                              const d = new Date(c.convenioVencimiento);
+                              const h = new Date();
+                              const en30 = new Date(h);
+                              en30.setDate(en30.getDate() + 30);
+                              return d >= h && d <= en30;
+                            }).length,
+                            color: "amber",
+                            icon: Building2,
+                          },
+                        ]
+                      : []),
+                  ]
+                : []),
+            ];
+          })().map((card) => (
+            <div
+              key={card.label}
+              className={`bg-white rounded-xl p-4 shadow-sm border border-${card.color}-100`}
+            >
+              <div className="flex justify-between items-start">
+                <div>
+                  <p className="text-xs text-gray-500 font-bold uppercase">
+                    {card.label}
+                  </p>
+                  <p
+                    className={`text-3xl font-black text-${card.color}-600 mt-1`}
+                  >
+                    {card.value}
+                  </p>
+                </div>
+                <div className={`bg-${card.color}-50 p-2 rounded-lg`}>
+                  <card.icon className={`w-5 h-5 text-${card.color}-600`} />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+        {/* ── ACCIONES PRINCIPALES ── */}
+        {["medico", "administrador", "secretaria", "admin_empresa", "super_admin"].includes(
+          currentUser?.role
+        ) && (
+          <div className="grid grid-cols-2 gap-3 mb-5">
+            <button
+              onClick={handleNewOccupHistory}
+              className="relative overflow-hidden bg-gradient-to-br from-emerald-500 to-teal-600 p-5 rounded-2xl shadow-md hover:shadow-xl hover:-translate-y-0.5 transition-all text-left"
+            >
+              <div className="absolute -top-5 -right-5 w-20 h-20 bg-white/10 rounded-full" />
+              <div className="absolute -bottom-3 -left-3 w-14 h-14 bg-white/5 rounded-full" />
+              <div className="relative">
+                <div className="bg-white/20 w-9 h-9 rounded-xl flex items-center justify-center mb-3">
+                  <Stethoscope className="w-5 h-5 text-white" />
+                </div>
+                <h3 className="font-black text-white text-sm leading-tight">
+                  Nueva HC Ocupacional
+                </h3>
+                <p className="text-emerald-100 text-[11px] mt-0.5">
+                  Evaluación médica del trabajo
+                </p>
+              </div>
+            </button>
+            <button
+              onClick={handleNewGeneralHistory}
+              className="relative overflow-hidden bg-gradient-to-br from-blue-500 to-indigo-600 p-5 rounded-2xl shadow-md hover:shadow-xl hover:-translate-y-0.5 transition-all text-left"
+            >
+              <div className="absolute -top-5 -right-5 w-20 h-20 bg-white/10 rounded-full" />
+              <div className="absolute -bottom-3 -left-3 w-14 h-14 bg-white/5 rounded-full" />
+              <div className="relative">
+                <div className="bg-white/20 w-9 h-9 rounded-xl flex items-center justify-center mb-3">
+                  <Heart className="w-5 h-5 text-white" />
+                </div>
+                <h3 className="font-black text-white text-sm leading-tight">
+                  Nueva HC General
+                </h3>
+                <p className="text-blue-100 text-[11px] mt-0.5">
+                  Consulta medicina general
+                </p>
+              </div>
+            </button>
+          </div>
+        )}
+
+        {/* ── MÓDULOS AGRUPADOS ── */}
+        <div className="space-y-4 mb-6">
+          {/* Gestión Clínica */}
+          <div>
+            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">
+              🩺 Gestión Clínica
+            </p>
+            <div className="grid grid-cols-3 gap-2">
+              <button
+                onClick={() => goTo("patients")}
+                className="bg-white border border-gray-100 rounded-xl p-3 flex items-center gap-2.5 hover:border-teal-200 hover:bg-teal-50/40 transition group shadow-sm"
+              >
+                <div className="bg-teal-50 p-2 rounded-lg group-hover:bg-teal-100 transition flex-shrink-0">
+                  <Users className="w-4 h-4 text-teal-600" />
+                </div>
+                <div className="text-left min-w-0">
+                  <p className="font-black text-gray-800 text-xs leading-tight">
+                    Pacientes
+                  </p>
+                  <p className="text-[10px] text-gray-400 truncate">
+                    Expedientes
+                  </p>
+                </div>
+              </button>
+              <button
+                onClick={() => goTo("agenda")}
+                className="bg-white border border-gray-100 rounded-xl p-3 flex items-center gap-2.5 hover:border-blue-200 hover:bg-blue-50/40 transition group shadow-sm"
+              >
+                <div className="bg-blue-50 p-2 rounded-lg group-hover:bg-blue-100 transition flex-shrink-0 text-base leading-none flex items-center justify-center w-8 h-8">
+                  🗓️
+                </div>
+                <div className="text-left min-w-0">
+                  <p className="font-black text-gray-800 text-xs leading-tight">
+                    Agenda
+                  </p>
+                  <p className="text-[10px] text-gray-400 truncate">
+                    Sala de espera
+                  </p>
+                </div>
+              </button>
+              <button
+                onClick={() => goTo("verification")}
+                className="bg-white border border-gray-100 rounded-xl p-3 flex items-center gap-2.5 hover:border-cyan-200 hover:bg-cyan-50/40 transition group shadow-sm"
+              >
+                <div className="bg-cyan-50 p-2 rounded-lg group-hover:bg-cyan-100 transition flex-shrink-0">
+                  <FileSearch className="w-4 h-4 text-cyan-600" />
+                </div>
+                <div className="text-left min-w-0">
+                  <p className="font-black text-gray-800 text-xs leading-tight">
+                    Verificar
+                  </p>
+                  <p className="text-[10px] text-gray-400 truncate">
+                    Certificados
+                  </p>
+                </div>
+              </button>
+            </div>
+          </div>
+
+          {/* Administración */}
+          <div>
+            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">
+              💼 Administración
+            </p>
+            <div className="grid grid-cols-3 gap-2">
+              <button
+                onClick={() => goTo("companies")}
+                className="bg-white border border-gray-100 rounded-xl p-3 flex items-center gap-2.5 hover:border-purple-200 hover:bg-purple-50/40 transition group shadow-sm"
+              >
+                <div className="bg-purple-50 p-2 rounded-lg group-hover:bg-purple-100 transition flex-shrink-0">
+                  <Building2 className="w-4 h-4 text-purple-600" />
+                </div>
+                <div className="text-left min-w-0">
+                  <p className="font-black text-gray-800 text-xs leading-tight">
+                    Empresas
+                  </p>
+                  <p className="text-[10px] text-gray-400 truncate">Clientes</p>
+                </div>
+              </button>
+              <button
+                onClick={() => {
+                  goTo("users");
+                  if (
+                    !_isAdmin(currentUser?.role) &&
+                    !_isAdminEmpresa(currentUser?.role)
+                  ) {
+                    const me = usersList.find(
+                      (u) => u.user === currentUser?.user
+                    );
+                    if (me) {
+                      setTimeout(() => {
+                        setUserEditId(me.id || me.user);
+                        setEditForm({
+                          ...me,
+                          doctorData: {
+                            ...DEFAULT_DOCTOR_DATA,
+                            ...(me.doctorData || {}),
+                          },
+                        });
+                      }, 50);
+                    }
+                  }
+                }}
+                className="bg-white border border-gray-100 rounded-xl p-3 flex items-center gap-2.5 hover:border-violet-200 hover:bg-violet-50/40 transition group shadow-sm"
+              >
+                <div className="bg-violet-50 p-2 rounded-lg group-hover:bg-violet-100 transition flex-shrink-0">
+                  <UserCheck className="w-4 h-4 text-violet-600" />
+                </div>
+                <div className="text-left min-w-0">
+                  <p className="font-black text-gray-800 text-xs leading-tight">
+                    Usuarios
+                  </p>
+                  <p className="text-[10px] text-gray-400 truncate">
+                    {currentUser?.role === "admin_empresa"
+                      ? "Médicos IPS"
+                      : "Accesos"}
+                  </p>
+                </div>
+              </button>
+              {currentUser?.role === "admin_empresa" ? (
+                <button
+                  onClick={() => goTo("perfilips")}
+                  className="bg-white border border-blue-100 rounded-xl p-3 flex items-center gap-2.5 hover:border-blue-300 hover:bg-blue-50/40 transition group shadow-sm"
+                >
+                  <div className="bg-blue-50 p-2 rounded-lg group-hover:bg-blue-100 transition flex-shrink-0">
+                    <Building2 className="w-4 h-4 text-blue-600" />
+                  </div>
+                  <div className="text-left min-w-0">
+                    <p className="font-black text-gray-800 text-xs leading-tight">
+                      Mi Empresa
+                    </p>
+                    <p className="text-[10px] text-gray-400 truncate">
+                      Logo · NIT · IPS
+                    </p>
+                  </div>
+                </button>
+              ) : (
+                <button
+                  onClick={() => goTo("portafolio")}
+                  className="bg-white border border-gray-100 rounded-xl p-3 flex items-center gap-2.5 hover:border-indigo-200 hover:bg-indigo-50/40 transition group shadow-sm"
+                >
+                  <div className="bg-indigo-50 p-2 rounded-lg group-hover:bg-indigo-100 transition flex-shrink-0 text-base leading-none flex items-center justify-center w-8 h-8">
+                    💼
+                  </div>
+                  <div className="text-left min-w-0">
+                    <p className="font-black text-gray-800 text-xs leading-tight">
+                      Portafolio
+                    </p>
+                    <p className="text-[10px] text-gray-400 truncate">
+                      Precios · Servicios
+                    </p>
+                  </div>
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Financiero y Reportes */}
+          <div>
+            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">
+              💰 Financiero & Reportes
+            </p>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+              <button
+                onClick={() =>
+                  _canUse("factura_basica", currentUser)
+                    ? goTo("bill")
+                    : showAlert(
+                        "🔒 Cuentas de Cobro está disponible en el plan 🌱 Starter ($45.000/mes).\n\nMenú → ⭐ Ver Planes"
+                      )
+                }
+                className="bg-white border border-gray-100 rounded-xl p-3 flex items-center gap-2.5 hover:border-orange-200 hover:bg-orange-50/40 transition group shadow-sm"
+              >
+                <div
+                  className={`${
+                    _canUse("factura_basica", currentUser)
+                      ? "bg-orange-50"
+                      : "bg-gray-50"
+                  } p-2 rounded-lg group-hover:bg-orange-100 transition flex-shrink-0`}
+                >
+                  <Receipt
+                    className={`w-4 h-4 ${
+                      _canUse("factura_basica", currentUser)
+                        ? "text-orange-600"
+                        : "text-gray-400"
+                    }`}
+                  />
+                </div>
+                <div className="text-left min-w-0">
+                  <p className="font-black text-gray-800 text-xs leading-tight">
+                    Cuentas de Cobro{" "}
+                    {!_canUse("factura_basica", currentUser) && (
+                      <span className="text-[8px] bg-amber-100 text-amber-700 px-0.5 rounded">
+                        🔒
+                      </span>
+                    )}
+                  </p>
+                  <p className="text-[10px] text-gray-400 truncate">
+                    Facturación
+                  </p>
+                </div>
+              </button>
+              {(currentUser?.role !== "secretaria" ||
+                _secretariaPuede("caja", currentUser, usersList)) && (
+                <button
+                  onClick={() => goTo("caja")}
+                  className="bg-white border border-gray-100 rounded-xl p-3 flex items-center gap-2.5 hover:border-green-200 hover:bg-green-50/40 transition group shadow-sm"
+                >
+                  <div className="bg-green-50 p-2 rounded-lg group-hover:bg-green-100 transition flex-shrink-0 text-base leading-none flex items-center justify-center w-8 h-8">
+                    💰
+                  </div>
+                  <div className="text-left min-w-0">
+                    <p className="font-black text-gray-800 text-xs leading-tight">
+                      Módulo Financiero
+                    </p>
+                    <p className="text-[10px] text-gray-400 truncate">
+                      Caja · Cuentas
+                    </p>
+                  </div>
+                </button>
+              )}
+              <button
+                onClick={() =>
+                  _canUse("reportes_basicos", currentUser)
+                    ? goTo("reporte")
+                    : showAlert("🔒 Reportes disponible en plan Starter+")
+                }
+                className="bg-white border border-gray-100 rounded-xl p-3 flex items-center gap-2.5 hover:border-indigo-200 hover:bg-indigo-50/40 transition group shadow-sm"
+              >
+                <div className="bg-indigo-50 p-2 rounded-lg group-hover:bg-indigo-100 transition flex-shrink-0">
+                  <BarChart3
+                    className={`w-4 h-4 ${
+                      _canUse("reportes_basicos", currentUser)
+                        ? "text-indigo-600"
+                        : "text-gray-400"
+                    }`}
+                  />
+                </div>
+                <div className="text-left min-w-0">
+                  <p className="font-black text-gray-800 text-xs leading-tight">
+                    Reportes{" "}
+                    {!_canUse("reportes_basicos", currentUser) && (
+                      <span className="text-[8px] bg-amber-100 text-amber-700 px-0.5 rounded">
+                        🔒
+                      </span>
+                    )}
+                  </p>
+                  <p className="text-[10px] text-gray-400 truncate">
+                    Diagnóstico
+                  </p>
+                </div>
+              </button>
+              <button
+                onClick={() =>
+                  _canUse("propuestas", currentUser)
+                    ? goTo("propuestas")
+                    : showAlert(
+                        "🔒 Propuestas Económicas está disponible en el plan 🌱 Starter ($45.000/mes).\n\nMenú → ⭐ Ver Planes"
+                      )
+                }
+                className="bg-white border border-gray-100 rounded-xl p-3 flex items-center gap-2.5 hover:border-teal-200 hover:bg-teal-50/40 transition group shadow-sm"
+              >
+                <div
+                  className={`${
+                    _canUse("propuestas", currentUser)
+                      ? "bg-teal-50"
+                      : "bg-gray-50"
+                  } p-2 rounded-lg group-hover:bg-teal-100 transition flex-shrink-0`}
+                >
+                  <FileText
+                    className={`w-4 h-4 ${
+                      _canUse("propuestas", currentUser)
+                        ? "text-teal-600"
+                        : "text-gray-400"
+                    }`}
+                  />
+                </div>
+                <div className="text-left min-w-0">
+                  <p className="font-black text-gray-800 text-xs leading-tight">
+                    Propuestas{" "}
+                    {!_canUse("propuestas", currentUser) && (
+                      <span className="text-[8px] bg-amber-100 text-amber-700 px-0.5 rounded">
+                        🔒
+                      </span>
+                    )}
+                  </p>
+                  <p className="text-[10px] text-gray-400 truncate">
+                    Cotizaciones
+                  </p>
+                </div>
+              </button>
+              {_isAdminOrEmpresa(currentUser?.role) && (
+                <button
+                  onClick={() => goTo("contabilidad")}
+                  className="bg-white border border-green-100 rounded-xl p-3 flex items-center gap-2.5 hover:border-green-300 hover:bg-green-50/40 transition group shadow-sm"
+                >
+                  <div className="bg-green-50 p-2 rounded-lg group-hover:bg-green-100 transition flex-shrink-0">
+                    <BarChart3 className="w-4 h-4 text-green-600" />
+                  </div>
+                  <div className="text-left min-w-0">
+                    <p className="font-black text-gray-800 text-xs leading-tight">
+                      Contabilidad
+                    </p>
+                    <p className="text-[10px] text-gray-400 truncate">
+                      P&L · KPIs · Fiscal
+                    </p>
+                  </div>
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Módulos Especializados */}
+          <div>
+            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">
+              ⚡ Módulos Especializados
+            </p>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+              <button
+                onClick={() =>
+                  _canUse("sve_starter", currentUser)
+                    ? goTo("sve")
+                    : showAlert(
+                        "🔒 SVE está disponible en el plan 🌱 Starter ($45.000/mes, 2 programas) o ⭐ Pro ($79.000/mes, 7 programas).\n\nMenú → ⭐ Ver Planes"
+                      )
+                }
+                className="bg-white border border-gray-100 rounded-xl p-3 flex items-center gap-2.5 hover:border-teal-200 hover:bg-teal-50/40 transition group shadow-sm"
+              >
+                <div
+                  className={`${
+                    _canUse("sve_starter", currentUser)
+                      ? "bg-teal-50"
+                      : "bg-gray-50"
+                  } p-2 rounded-lg group-hover:bg-teal-100 transition flex-shrink-0`}
+                >
+                  <BarChart3
+                    className={`w-4 h-4 ${
+                      _canUse("sve_starter", currentUser)
+                        ? "text-teal-600"
+                        : "text-gray-400"
+                    }`}
+                  />
+                </div>
+                <div className="text-left min-w-0">
+                  <p className="font-black text-gray-800 text-xs leading-tight">
+                    SVE{" "}
+                    {!_canUse("sve_starter", currentUser) && (
+                      <span className="text-[8px] bg-amber-100 text-amber-700 px-0.5 rounded">
+                        🔒
+                      </span>
+                    )}
+                  </p>
+                  <p className="text-[10px] text-gray-400 truncate">
+                    Vigilancia epidemiológica
+                  </p>
+                </div>
+              </button>
+              <button
+                onClick={() =>
+                  _canUse("arl", currentUser)
+                    ? goTo("arl")
+                    : showAlert(
+                        "🔒 Módulo ARL está disponible en el plan ⭐ Pro ($79.000/mes).\n\nMenú → ⭐ Ver Planes"
+                      )
+                }
+                className="bg-white border border-gray-100 rounded-xl p-3 flex items-center gap-2.5 hover:border-red-200 hover:bg-red-50/40 transition group shadow-sm"
+              >
+                <div
+                  className={`${
+                    _canUse("arl", currentUser) ? "bg-red-50" : "bg-gray-50"
+                  } p-2 rounded-lg group-hover:bg-red-100 transition flex-shrink-0`}
+                >
+                  <AlertTriangle
+                    className={`w-4 h-4 ${
+                      _canUse("arl", currentUser)
+                        ? "text-red-600"
+                        : "text-gray-400"
+                    }`}
+                  />
+                </div>
+                <div className="text-left min-w-0">
+                  <p className="font-black text-gray-800 text-xs leading-tight">
+                    Módulo ARL{" "}
+                    {!_canUse("arl", currentUser) && (
+                      <span className="text-[8px] bg-amber-100 text-amber-700 px-0.5 rounded">
+                        🔒
+                      </span>
+                    )}
+                  </p>
+                  <p className="text-[10px] text-gray-400 truncate">
+                    Reportes AT/EL
+                  </p>
+                </div>
+              </button>
+              <button
+                onClick={() => goTo("portafolio")}
+                className="bg-white border border-gray-100 rounded-xl p-3 flex items-center gap-2.5 hover:border-indigo-200 hover:bg-indigo-50/40 transition group shadow-sm"
+              >
+                <div className="bg-indigo-50 p-2 rounded-lg group-hover:bg-indigo-100 transition flex-shrink-0 text-base leading-none flex items-center justify-center w-8 h-8">
+                  💼
+                </div>
+                <div className="text-left min-w-0">
+                  <p className="font-black text-gray-800 text-xs leading-tight">
+                    Portafolio
+                  </p>
+                  <p className="text-[10px] text-gray-400 truncate">
+                    Precios · Servicios
+                  </p>
+                </div>
+              </button>
+            </div>
+          </div>
+
+          {/* Portales y Acceso Externo */}
+          <div>
+            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">
+              🌐 Portales & Acceso Externo
+            </p>
+            <div className="grid grid-cols-3 gap-2">
+              <button
+                onClick={() => goTo("portaltrabajador")}
+                className="bg-white border border-gray-100 rounded-xl p-3 flex items-center gap-2.5 hover:border-teal-200 hover:bg-teal-50/40 transition group shadow-sm"
+              >
+                <div className="bg-teal-50 p-2 rounded-lg group-hover:bg-teal-100 transition flex-shrink-0">
+                  <Users className="w-4 h-4 text-teal-600" />
+                </div>
+                <div className="text-left min-w-0">
+                  <p className="font-black text-gray-800 text-xs leading-tight">
+                    Portal Trabajador
+                  </p>
+                  <p className="text-[10px] text-gray-400 truncate">
+                    Consulta código
+                  </p>
+                </div>
+              </button>
+              <button
+                onClick={() => goTo("portalempresa")}
+                className="bg-white border border-gray-100 rounded-xl p-3 flex items-center gap-2.5 hover:border-indigo-200 hover:bg-indigo-50/40 transition group shadow-sm"
+              >
+                <div className="bg-indigo-50 p-2 rounded-lg group-hover:bg-indigo-100 transition flex-shrink-0">
+                  <Building2 className="w-4 h-4 text-indigo-600" />
+                </div>
+                <div className="text-left min-w-0">
+                  <p className="font-black text-gray-800 text-xs leading-tight">
+                    Portal Empresa
+                  </p>
+                  <p className="text-[10px] text-gray-400 truncate">
+                    Acceso convenio
+                  </p>
+                </div>
+              </button>
+              <button
+                onClick={() => goTo("habeasdata")}
+                className="bg-white border border-gray-100 rounded-xl p-3 flex items-center gap-2.5 hover:border-indigo-200 hover:bg-indigo-50/40 transition group shadow-sm"
+              >
+                <div className="bg-indigo-50 p-2 rounded-lg group-hover:bg-indigo-100 transition flex-shrink-0">
+                  <Shield className="w-4 h-4 text-indigo-600" />
+                </div>
+                <div className="text-left min-w-0">
+                  <p className="font-black text-gray-800 text-xs leading-tight">
+                    Habeas Data
+                  </p>
+                  <p className="text-[10px] text-gray-400 truncate">
+                    Derechos titulares
+                  </p>
+                </div>
+              </button>
+            </div>
+          </div>
+
+          {/* Super Admin */}
+          {currentUser?.role === "super_admin" && (
+            <div>
+              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">
+                ⭐ Super Admin
+              </p>
+              <button
+                onClick={() => goTo("superadmin")}
+                className="w-full relative overflow-hidden bg-gradient-to-r from-purple-600 to-purple-800 rounded-xl p-4 flex items-center gap-3 hover:shadow-lg hover:-translate-y-0.5 transition-all text-left"
+              >
+                <div className="absolute top-0 right-0 w-24 h-24 bg-white/5 rounded-full -translate-y-8 translate-x-8" />
+                <div className="bg-purple-500/40 p-2.5 rounded-xl flex-shrink-0 relative">
+                  <span className="text-xl">⭐</span>
+                </div>
+                <div className="relative">
+                  <p className="font-black text-white text-sm">Panel Global</p>
+                  <p className="text-purple-200 text-[11px]">
+                    Super Admin · {orgsList.length} organizaciones
+                  </p>
+                </div>
+              </button>
+            </div>
+          )}
+        </div>
+        {/* ADMIN ALERTS PANEL */}
+        {_isAdminOrEmpresa(currentUser?.role) &&
+          (() => {
+            const hoy = new Date();
+            const en30 = new Date(hoy);
+            en30.setDate(en30.getDate() + 30);
+            const conveniosAlerta = companies.filter(
+              (c) =>
+                c.convenioVencimiento &&
+                new Date(c.convenioVencimiento) <= en30 &&
+                new Date(c.convenioVencimiento) >= hoy
+            );
+            const cuentasPend = savedBillsList.filter((b) => !b.pagada);
+            const hcAbiertas = patientsList.filter(
+              (p) =>
+                p.estadoHistoria !== "Cerrada" && p.fechaExamen && !p._archivado
+            );
+            const medsinFirma = usersList.filter(
+              (u) =>
+                u.role === "medico" &&
+                !u.doctorData?.firma &&
+                u.activo !== false
+            );
+            const alertas = [
+              ...conveniosAlerta.map((c) => ({
+                tipo: "amber",
+                msg: `⚠️ Convenio próximo a vencer: ${c.nombre} (${c.convenioVencimiento})`,
+                accion: () => goTo("companies"),
+              })),
+              ...(cuentasPend.length > 5
+                ? [
+                    {
+                      tipo: "red",
+                      msg: `💳 ${
+                        cuentasPend.length
+                      } cuentas de cobro pendientes por $ ${cuentasPend
+                        .reduce((s, b) => s + Number(b.amount || 0), 0)
+                        .toLocaleString("es-CO")}`,
+                      accion: () => {
+                        goTo("caja");
+                        setTimeout(() => setCajaTab("cuentas"), 100);
+                      },
+                    },
+                  ]
+                : []),
+              ...(hcAbiertas.length > 3
+                ? [
+                    {
+                      tipo: "blue",
+                      msg: `📋 ${hcAbiertas.length} HCs sin cerrar`,
+                      accion: () => {},
+                    },
+                  ]
+                : []),
+              ...medsinFirma.map((m) => ({
+                tipo: "purple",
+                msg: `✍️ ${m.name || m.user} no tiene firma digital cargada`,
+                accion: () => goTo("users"),
+              })),
+            ];
+            if (alertas.length === 0) return null;
+            return (
+              <div className="mb-4 space-y-2">
+                {alertas.slice(0, 5).map((a, i) => (
+                  <div
+                    key={i}
+                    onClick={a.accion}
+                    className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer hover:opacity-80 transition bg-${a.tipo}-50 border-${a.tipo}-200`}
+                  >
+                    <p
+                      className={`text-xs font-bold text-${a.tipo}-800 flex-1`}
+                    >
+                      {a.msg}
+                    </p>
+                    <span
+                      className={`text-[10px] text-${a.tipo}-600 font-black`}
+                    >
+                      Ver →
+                    </span>
+                  </div>
+                ))}
+              </div>
+            );
+          })()}
+        {/* ── PRODUCTIVIDAD POR MÉDICO - admin + admin_empresa (FASE 5) ── */}
+        {_isAdminOrEmpresa(currentUser?.role) &&
+          (() => {
+            const medicosActivos = usersList.filter(
+              (u) =>
+                [
+                  "medico",
+                  "administrador",
+                  "super_admin",
+                  "admin_empresa",
+                ].includes(u.role) &&
+                u.activo !== false &&
+                // IPS: scope to empresa doctors
+                (currentUser?.empresaId
+                  ? u.empresaId === currentUser.empresaId
+                  : true)
+            );
+            if (medicosActivos.length === 0) return null;
+            const hoy = new Date();
+            const inicioMes = new Date(hoy.getFullYear(), hoy.getMonth(), 1)
+              .toISOString()
+              .split("T")[0];
+            const movsDelMes = cajaMovimientos.filter(
+              (m) => m.tipo === "ingreso" && m.fecha >= inicioMes
+            );
+            const totalMes = movsDelMes.reduce(
+              (s, m) => s + Number(m.monto || 0),
+              0
+            );
+            return (
+              <div className="mb-4 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                <div className="bg-gray-800 px-4 py-3 flex items-center justify-between">
+                  <h3 className="text-white font-black text-sm flex items-center gap-2">
+                    📊 Productividad por Médico{" "}
+                    <span className="text-gray-400 font-normal text-xs">
+                      (mes actual)
+                    </span>
+                  </h3>
+                  <button
+                    onClick={() => {
+                      goTo("caja");
+                      setTimeout(() => setCajaTab("por_medico"), 100);
+                    }}
+                    className="text-[10px] text-gray-300 hover:text-white font-black"
+                  >
+                    Ver detalle →
+                  </button>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs">
+                    <thead className="bg-gray-100 text-gray-600">
+                      <tr>
+                        {[
+                          "Médico",
+                          "Atenciones",
+                          "HCs cerradas",
+                          "HCs abiertas",
+                          "Ingresos mes",
+                          "% del total",
+                        ].map((h) => (
+                          <th key={h} className="p-2 text-left font-black">
+                            {h}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {medicosActivos.map((med, i) => {
+                        const movsMed = movsDelMes.filter(
+                          (m) =>
+                            m.medicoId === med.user ||
+                            (!m.medicoId && _isAdmin(med.role))
+                        );
+                        const ingresosMed = movsMed.reduce(
+                          (s, m) => s + Number(m.monto || 0),
+                          0
+                        );
+                        const atenMed = movsMed.filter(
+                          (m) => m.pacienteId
+                        ).length;
+                        const pacsMed = patientsList.filter(
+                          (p) =>
+                            !p._archivado &&
+                            (p.medicoId === med.user ||
+                              (!p.medicoId && _isAdmin(med.role)))
+                        );
+                        const hcCerradas = pacsMed.filter(
+                          (p) => p.estadoHistoria === "Cerrada"
+                        ).length;
+                        const hcAbiertas = pacsMed.filter(
+                          (p) => p.estadoHistoria !== "Cerrada" && p.fechaExamen
+                        ).length;
+                        const pct =
+                          totalMes > 0
+                            ? ((ingresosMed / totalMes) * 100).toFixed(1)
+                            : "0";
+                        return (
+                          <tr
+                            key={med.user}
+                            className={i % 2 === 0 ? "bg-white" : "bg-gray-50"}
+                          >
+                            <td className="p-2 font-bold text-gray-800">
+                              {med.name || med.user}
+                            </td>
+                            <td className="p-2 text-center">{atenMed}</td>
+                            <td className="p-2 text-center text-emerald-700 font-bold">
+                              {hcCerradas}
+                            </td>
+                            <td className="p-2 text-center text-amber-600 font-bold">
+                              {hcAbiertas}
+                            </td>
+                            <td className="p-2 font-black text-emerald-700">
+                              $ {ingresosMed.toLocaleString("es-CO")}
+                            </td>
+                            <td className="p-2">
+                              <div className="flex items-center gap-1.5">
+                                <div className="flex-1 bg-gray-200 rounded-full h-1.5">
+                                  <div
+                                    className="bg-indigo-500 h-1.5 rounded-full"
+                                    style={{
+                                      width: `${Math.min(100, Number(pct))}%`,
+                                    }}
+                                  />
+                                </div>
+                                <span className="text-[10px] font-black">
+                                  {pct}%
+                                </span>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            );
+          })()}
+        {/* Recent Records */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+          <div className="p-4 border-b border-gray-100 flex justify-between items-center">
+            <h3 className="font-black text-gray-800 flex items-center gap-2">
+              <Clock className="w-4 h-4 text-gray-400" /> Registros Recientes
+            </h3>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-gray-50 text-gray-500 text-xs font-bold uppercase">
+                <tr>
+                  <th className="p-3 text-left">Fecha</th>
+                  <th className="p-3 text-left">Paciente</th>
+                  <th className="p-3 text-left">Tipo</th>
+                  <th className="p-3 text-left">Concepto</th>
+                  <th className="p-3 text-center">Estado</th>
+                  <th className="p-3 text-center">Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {patientsList
+                  .filter(
+                    (p) => p.fechaExamen && !p._archivado && canViewPatient(p)
+                  )
+                  .slice(-20)
+                  .reverse()
+                  .map((p, i) => (
+                    <tr
+                      key={`${p.id}-${i}`}
+                      className="border-b border-gray-50 hover:bg-gray-50 transition"
+                    >
+                      <td className="p-3 text-xs text-gray-500 whitespace-nowrap">
+                        {p.fechaExamen}
+                      </td>
+                      <td className="p-3">
+                        <div className="font-bold text-gray-800 text-xs">
+                          {p.nombres}
+                        </div>
+                        <div className="text-[10px] text-gray-400">
+                          {p.docNumero} · {p.cargo || "Sin cargo"}
+                        </div>
+                      </td>
+                      <td className="p-3">
+                        <span
+                          className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
+                            p.type === "general"
+                              ? "bg-blue-100 text-blue-700"
+                              : "bg-emerald-100 text-emerald-700"
+                          }`}
+                        >
+                          {p.type === "general" ? "General" : "Ocupacional"}
+                        </span>
+                      </td>
+                      <td className="p-3 text-[10px] text-gray-600 max-w-[200px] truncate">
+                        {p.conceptoAptitud || "--"}
+                      </td>
+                      <td className="p-3 text-center">
+                        <span
+                          className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
+                            p.estadoHistoria === "Cerrada"
+                              ? "bg-red-100 text-red-700"
+                              : "bg-green-100 text-green-700"
+                          }`}
+                        >
+                          {p.estadoHistoria || "Abierta"}
+                        </span>
+                      </td>
+                      <td className="p-3">
+                        <div className="flex justify-center gap-1">
+                          <button
+                            onClick={() => openPatient(p)}
+                            className="p-1.5 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 border border-blue-200"
+                            title="Editar/Ver"
+                          >
+                            <Eye className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            onClick={() => {
+                              if (!canViewPatient(p)) {
+                                showAlert(
+                                  "⛔ Solo puede acceder a historias creadas por usted."
+                                );
+                                return;
+                              }
+                              setData(p);
+                              setDataType(p.type || "ocupacional");
+                              setActiveTab(
+                                p.type === "general"
+                                  ? "formGeneral"
+                                  : "certificado"
+                              );
+                              goTo("historia");
+                            }}
+                            className="p-1.5 bg-emerald-50 text-emerald-600 rounded-lg hover:bg-emerald-100 border border-emerald-200"
+                            title="Certificado"
+                          >
+                            <FileCheck className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            onClick={() => handleDeletePatient(p.id)}
+                            className="p-1.5 bg-red-50 text-red-500 rounded-lg hover:bg-red-100 border border-red-200"
+                            title="Eliminar"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                          {p.estadoHistoria === "Cerrada" &&
+                            p.type === "ocupacional" && (
+                              <button
+                                onClick={async () => {
+                                  try {
+                                    const pkg = await _generarPaqueteRetencion(
+                                      p,
+                                      activeDoctorData
+                                    );
+                                    const blob = new Blob(
+                                      [JSON.stringify(pkg, null, 2)],
+                                      { type: "application/json" }
+                                    );
+                                    const url = URL.createObjectURL(blob);
+                                    const a = document.createElement("a");
+                                    a.href = url;
+                                    a.download =
+                                      "HC_" +
+                                      (p.docNumero || "").replace(/\s+/g, "_") +
+                                      "_SHA256.json";
+                                    a.click();
+                                    URL.revokeObjectURL(url);
+                                    showAlert(
+                                      "✅ Preservado.\nSHA-256: " +
+                                        pkg.hashSHA256.substring(0, 16) +
+                                        "..."
+                                    );
+                                  } catch (e) {
+                                    showAlert("Error: " + e.message);
+                                  }
+                                }}
+                                className="p-1.5 bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 border border-purple-200"
+                                title="Preservar HC 20 años (Res.1995/1999)"
+                              >
+                                <HardDrive className="w-3.5 h-3.5" />
+                              </button>
+                            )}
+                          {p.estadoHistoria === "Cerrada" &&
+                            p.type === "ocupacional" && (
+                              <button
+                                onClick={() => {
+                                  const bundle = _generarFHIRBundle(
+                                    p,
+                                    activeDoctorData
+                                  );
+                                  const blob = new Blob(
+                                    [JSON.stringify(bundle, null, 2)],
+                                    { type: "application/fhir+json" }
+                                  );
+                                  const url = URL.createObjectURL(blob);
+                                  const a = document.createElement("a");
+                                  a.href = url;
+                                  a.download =
+                                    "FHIR_" +
+                                    (p.docNumero || "").replace(/\s+/g, "_") +
+                                    ".json";
+                                  a.click();
+                                  URL.revokeObjectURL(url);
+                                  showAlert(
+                                    "\u2705 FHIR R4 exportado.\nRes. 1888/2025 RDA"
+                                  );
+                                }}
+                                className="p-1.5 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 border border-blue-200"
+                                title="Exportar FHIR R4 (Res. 1888/2025)"
+                              >
+                                <span className="text-[10px] font-black">
+                                  FHIR
+                                </span>
+                              </button>
+                            )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                {patientsList.filter((p) => p.fechaExamen && !p._archivado)
+                  .length === 0 && (
+                  <tr>
+                    <td
+                      colSpan="6"
+                      className="p-8 text-center text-gray-400 text-sm"
+                    >
+                      No hay registros aún. Cree una nueva historia clínica.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
   // ─── RENDER: HC OCUPACIONAL ───────────────────────────────────────────────
   const renderHistoriaOcupacional = () => (
     <div
@@ -21639,6 +22769,1805 @@ Esta historia clínica debe conservarse mínimo 20 años.
     </div>
   );
   // ─── RENDER: REPORTES ─────────────────────────────────────────────────────
+  const renderReporte = () => {
+    // ── SECRETARIA GATE: "Reportes Epidemiológicos" requiere autorización del admin ──
+    if (
+      currentUser?.role === "secretaria" &&
+      !_secretariaPuede("reporte", currentUser, usersList)
+    )
+      return (
+        <div className="min-h-screen bg-gray-50 font-sans">
+          {renderNavbar()}
+          <div className="max-w-xl mx-auto px-4 py-16 text-center">
+            <div className="bg-amber-50 border-2 border-amber-300 rounded-2xl p-8 space-y-3">
+              <div className="text-5xl">🔐</div>
+              <p className="font-black text-amber-800 text-xl">
+                Módulo restringido
+              </p>
+              <p className="text-amber-700 text-sm font-bold">
+                Reportes Epidemiológicos
+              </p>
+              <p className="text-amber-600 text-xs leading-relaxed">
+                Este módulo requiere autorización explícita del administrador.
+                <br />
+                Solicita que habilite el permiso{" "}
+                <strong>"Reportes Epidemiológicos"</strong> en tu perfil.
+                <br />
+                (Usuarios → tu nombre → 🔐 Permisos de secretaria)
+              </p>
+              <button
+                onClick={() => goBack()}
+                className="mt-3 bg-amber-600 text-white px-5 py-2 rounded-lg text-sm font-bold hover:bg-amber-700 transition"
+              >
+                ← Volver al panel
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    // ── IPS: auto-select empresa for empresa users ──
+    const _reportEmpId = currentUser?.empresaId || selectedCompanyReport;
+    if (currentUser?.empresaId && !selectedCompanyReport) {
+      setTimeout(() => setSelectedCompanyReport(currentUser.empresaId), 0);
+    }
+    const _secMedVisibles = (() => {
+      if (currentUser?.role !== "secretaria") return null;
+      const secU = usersList.find(u => u.user === currentUser.user);
+      const asig = secU?.medicosAsignados || [];
+      return asig.length > 0 ? asig : null;
+    })();
+    const filtered = _reportEmpId
+      ? patientsList.filter(
+          (p) =>
+            p.empresaId === _reportEmpId &&
+            p.fechaExamen &&
+            (reportStartDate ? p.fechaExamen >= reportStartDate : true) &&
+            (reportEndDate ? p.fechaExamen <= reportEndDate : true) &&
+            (selectedMedicoReport ? p._medicoId === selectedMedicoReport : true) &&
+            (_secMedVisibles ? _secMedVisibles.includes(p._medicoId) || !p._medicoId : true)
+        )
+      : [];
+    const total = filtered.length;
+    const compName =
+      companies.find((c) => c.id === selectedCompanyReport)?.nombre ||
+      "Empresa";
+    const countBy = (list, fn) =>
+      list.reduce((acc, p) => {
+        const k = fn(p) || "N/R";
+        acc[k] = (acc[k] || 0) + 1;
+        return acc;
+      }, {});
+    const getAgeRange = (a) => {
+      const n = parseInt(a);
+      if (isNaN(n)) return "N/R";
+      if (n < 28) return "18-27";
+      if (n < 38) return "28-37";
+      if (n < 48) return "38-47";
+      if (n < 58) return "48-57";
+      return "58+";
+    };
+    const getIMC = (v) => {
+      const b = parseFloat(v);
+      if (isNaN(b)) return "N/R";
+      if (b < 18.5) return "Bajo Peso";
+      if (b < 25) return "Normal";
+      if (b < 30) return "Sobrepeso";
+      return "Obesidad";
+    };
+    const getTA = (v) => {
+      if (!v || !v.includes("/")) return "N/R";
+      const [s, d] = v.split("/").map(Number);
+      if (s < 120 && d < 80) return "Normal";
+      if (s < 130 && d < 80) return "Elevada";
+      if (s < 140 || d < 90) return "HTA I";
+      return "HTA II";
+    };
+    const getSeniority = (v) => {
+      if (!v) return "N/R";
+      const n = parseFloat((v.match(/\d+(\.\d+)?/) || [0])[0]);
+      if (!n) return "N/R";
+      if (v.toLowerCase().includes("mes")) return "<1 año";
+      if (n < 1) return "<1 año";
+      if (n <= 3) return "1-3 años";
+      if (n <= 5) return "3-5 años";
+      if (n <= 10) return "5-10 años";
+      return ">10 años";
+    };
+    // Antecedentes por grupo
+    const cntAntec = (grupo) =>
+      filtered.filter((p) => p.antecedentesAgrupados?.[grupo]?.val).length;
+    // Revisión por sistemas anormal
+    const cntRevSis = (sis) =>
+      filtered.filter((p) => {
+        const s = p.revisionPorSistemas?.[sis];
+        return (
+          s &&
+          s.toLowerCase() !== "normal" &&
+          s.toLowerCase() !== "negativo" &&
+          s.trim() !== ""
+        );
+      }).length;
+    const stats = {
+      genero: countBy(filtered, (p) => p.genero),
+      edad: countBy(filtered, (p) => getAgeRange(p.edad)),
+      imc: countBy(filtered, (p) => getIMC(p.imc)),
+      ta: countBy(filtered, (p) => getTA(p.ta)),
+      escolaridad: countBy(filtered, (p) => p.escolaridad),
+      estadoCivil: countBy(filtered, (p) => p.estadoCivil),
+      estrato: countBy(filtered, (p) => p.estrato || "N/R"),
+      zonaResidencia: countBy(filtered, (p) => p.zonaResidencia || "N/R"),
+      grupoEtnico: countBy(filtered, (p) => p.grupoEtnico || "N/R"),
+      cargo: countBy(filtered, (p) => p.cargo || "N/R"),
+      tipoContrato: countBy(filtered, (p) => p.tipoContrato || "N/R"),
+      turnoTrabajo: countBy(filtered, (p) => p.turnoTrabajo || "N/R"),
+      antiguedad: countBy(filtered, (p) => getSeniority(p.antiguedadEmpresa)),
+      tipoExamen: countBy(filtered, (p) => p.tipoExamen || "N/R"),
+      conceptoAptitud: countBy(filtered, (p) => p.conceptoAptitud || "N/R"),
+      diagnosticos: countBy(
+        filtered,
+        (p) => p.diagnosticoPrincipal?.split(" - ")[0] || "Z10.0"
+      ),
+      hallazgos: filtered.reduce((acc, p) => {
+        Object.entries(p.examenFisicoSistemas || {}).forEach(([k, v]) => {
+          if (v.estado === "Anormal") acc[k] = (acc[k] || 0) + 1;
+        });
+        return acc;
+      }, {}),
+      riesgos: filtered.reduce((acc, p) => {
+        Object.entries(p.riesgos || {}).forEach(([k, v]) => {
+          if (v) acc[k] = (acc[k] || 0) + 1;
+        });
+        return acc;
+      }, {}),
+      // Antecedentes agrupados
+      antecCardio: cntAntec("cardio"),
+      antecResp: cntAntec("respiratorio"),
+      antecOsteo: cntAntec("osteoarticular"),
+      antecNeuro: cntAntec("neuropsiquiatrico"),
+      antecMetab: cntAntec("metabolico"),
+      antecQuirurg: cntAntec("quirurgico"),
+      // Estilos de vida
+      fumadores: filtered.filter((p) => p.habitos?.fuma === "Si").length,
+      alcohol: filtered.filter((p) => p.habitos?.alcohol === "Si").length,
+      deporte: filtered.filter((p) => p.habitos?.deporte === "Si").length,
+      // Revisión por sistemas
+      revCardio: cntRevSis("cardiovascular"),
+      revResp: cntRevSis("respiratorio"),
+      revOsteo: cntRevSis("osteoarticular"),
+      revNeuro: cntRevSis("neurologico"),
+      revGastro: cntRevSis("gastrointestinal"),
+      // B-30: Analytics avanzado
+      topDx: Object.entries(
+        countBy(
+          filtered,
+          (p) =>
+            (p.diagnosticos || [{ descripcion: p.diagnosticoPrincipal }])[0]
+              ?.descripcion || "Sin dx"
+        )
+      )
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5),
+      tendenciaMensual: filtered.reduce((acc, p) => {
+        const m = (p.fechaExamen || "").substring(0, 7);
+        if (m) acc[m] = (acc[m] || 0) + 1;
+        return acc;
+      }, {}),
+      promedioEdad: filtered.length
+        ? Math.round(
+            filtered.reduce((s, p) => s + (parseInt(p.edad) || 0), 0) /
+              filtered.length
+          )
+        : 0,
+      tasaNoAptos: total
+        ? Math.round(
+            (filtered.filter((p) =>
+              (p.conceptoAptitud || "").toLowerCase().includes("no apto")
+            ).length /
+              total) *
+              100
+          )
+        : 0,
+    };
+    return (
+      <div className="min-h-screen bg-gray-50 font-sans p-8 print:bg-white print:p-0">
+        <div className="max-w-5xl mx-auto bg-white shadow-lg rounded-2xl p-8 print:shadow-none">
+          <div className="flex justify-between items-center mb-6 border-b pb-4 no-print">
+            <button
+              onClick={() => goBack()}
+              className="text-blue-600 font-bold flex items-center gap-1"
+            >
+              <LogOut className="rotate-180 w-4 h-4" /> ← Volver
+            </button>
+            <div className="flex items-center gap-3 flex-wrap">
+              <input
+                type="date"
+                className="text-xs border rounded p-1.5"
+                value={reportStartDate}
+                onChange={(e) => setReportStartDate(e.target.value)}
+              />
+              <span className="text-gray-400 text-xs">--</span>
+              <input
+                type="date"
+                className="text-xs border rounded p-1.5"
+                value={reportEndDate}
+                onChange={(e) => setReportEndDate(e.target.value)}
+              />
+              <select
+                className="border rounded p-1.5 text-sm max-w-[200px]"
+                value={selectedCompanyReport}
+                onChange={(e) => {
+                  setSelectedCompanyReport(e.target.value);
+                  setReportAIResult(null);
+                }}
+              >
+                <option value="">Seleccione empresa...</option>
+                {(currentUser?.empresaId
+                  ? companies.filter((c) => c.id === currentUser.empresaId)
+                  : companies
+                ).map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.nombre}
+                  </option>
+                ))}
+              </select>
+              {(currentUser?.role === "secretaria" || _isAdmin(currentUser?.role)) && (
+                <select
+                  className="border-2 border-indigo-200 rounded-lg p-1.5 text-sm bg-indigo-50 text-indigo-800 font-bold"
+                  value={selectedMedicoReport}
+                  onChange={(e) => { setSelectedMedicoReport(e.target.value); setReportAIResult(null); }}
+                >
+                  <option value="">👨‍⚕️ Todos los médicos</option>
+                  {(() => {
+                    if (currentUser?.role === "secretaria") {
+                      const secUser = usersList.find(u => u.user === currentUser.user);
+                      const asig = secUser?.medicosAsignados || [];
+                      const lista = asig.length > 0
+                        ? usersList.filter(u => asig.includes(u.user))
+                        : usersList.filter(u => ["medico","administrador","super_admin"].includes(u.role) && u.activo !== false);
+                      return lista.map(m => <option key={m.user} value={m.user}>Dr. {m.name||m.user}</option>);
+                    }
+                    return usersList.filter(u => ["medico","administrador","super_admin"].includes(u.role) && u.activo !== false)
+                      .map(m => <option key={m.user} value={m.user}>{m.name||m.user}</option>);
+                  })()}
+                </select>
+              )}
+            </div>
+            <button
+              onClick={() => handlePrint(`Reporte-${compName}`)}
+              className="bg-slate-800 text-white px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2"
+            >
+              <Printer className="w-4 h-4" /> Imprimir
+            </button>
+          </div>
+
+          {/* ── TABS: Estadísticas | Certificados por empresa ── */}
+          {selectedCompanyReport && (
+            <div className="flex gap-1 mb-6 border-b border-gray-200 no-print">
+              {[
+                { k: "estadisticas", l: "📊 Estadísticas y Diagnóstico" },
+                { k: "certificados", l: "📄 Certificados por empresa" },
+              ].map((t) => (
+                <button
+                  key={t.k}
+                  onClick={() => {
+                    setReporteActiveTab(t.k);
+                    setCertSelected({});
+                  }}
+                  className={`px-5 py-2.5 text-xs font-black rounded-t-lg border-b-2 transition ${
+                    reporteActiveTab === t.k
+                      ? "border-blue-600 text-blue-700 bg-blue-50"
+                      : "border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+                  }`}
+                >
+                  {t.l}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {reporteActiveTab === "estadisticas" && (
+            <>
+              <div className="text-center mb-6">
+                <div className="flex justify-center mb-2">
+                  <BrandLogo data={activeDoctorData} />
+                </div>
+                <h1 className="text-xl font-black text-blue-900">
+                  DIAGNÓSTICO DE CONDICIONES DE SALUD
+                </h1>
+                {selectedCompanyReport && (
+                  <div className="mt-2 inline-block p-3 bg-blue-50 rounded-lg border border-blue-100">
+                    <p className="font-bold text-blue-800 text-lg">
+                      {compName}
+                    </p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Población evaluada: <strong>{total} trabajadores</strong>
+                    </p>
+                  </div>
+                )}
+              </div>
+              {total > 0 ? (
+                <>
+                  <div className="grid grid-cols-4 gap-4 mb-6 text-center">
+                    {[
+                      { l: "Total evaluados", v: total, c: "blue" },
+                      {
+                        l: "Con hallazgos",
+                        v: filtered.filter((p) =>
+                          Object.values(p.examenFisicoSistemas || {}).some(
+                            (s) => s.estado === "Anormal"
+                          )
+                        ).length,
+                        c: "yellow",
+                      },
+                      {
+                        l: "Con restricciones",
+                        v: filtered.filter(
+                          (p) =>
+                            p.analisisRestricciones &&
+                            p.analisisRestricciones.length > 10
+                        ).length,
+                        c: "red",
+                      },
+                      {
+                        l: "Con riesgos activos",
+                        v: filtered.filter(
+                          (p) =>
+                            p.riesgos && Object.values(p.riesgos).some(Boolean)
+                        ).length,
+                        c: "orange",
+                      },
+                    ].map((s) => (
+                      <div
+                        key={s.l}
+                        className={`bg-${s.c}-50 border border-${s.c}-200 rounded-xl p-3`}
+                      >
+                        <p className="text-[10px] text-gray-500 uppercase font-bold">
+                          {s.l}
+                        </p>
+                        <p
+                          className={`text-3xl font-black text-${s.c}-600 mt-1`}
+                        >
+                          {s.v}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                  {/* B-30: Analytics Panel */}
+                  <div className="grid grid-cols-2 gap-3 mb-4 no-print">
+                    <div className="bg-violet-50 border border-violet-100 rounded-xl p-3">
+                      <p className="text-[10px] font-black text-violet-600 uppercase mb-2">
+                        🏆 Top 5 Diagnósticos
+                      </p>
+                      {stats.topDx.length === 0 ? (
+                        <p className="text-xs text-gray-400">Sin datos</p>
+                      ) : (
+                        stats.topDx.map(([dx, n]) => (
+                          <div
+                            key={dx}
+                            className="flex justify-between items-center mb-1"
+                          >
+                            <span className="text-[10px] text-gray-700 truncate flex-1">
+                              {dx}
+                            </span>
+                            <span className="text-[10px] font-black text-violet-700 ml-2 bg-violet-100 px-1.5 rounded">
+                              {n}
+                            </span>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                    <div className="bg-blue-50 border border-blue-100 rounded-xl p-3">
+                      <p className="text-[10px] font-black text-blue-600 uppercase mb-2">
+                        📈 Tendencia Mensual
+                      </p>
+                      {Object.entries(stats.tendenciaMensual)
+                        .sort(([a], [b]) => a.localeCompare(b))
+                        .slice(-6)
+                        .map(([m, n]) => (
+                          <div
+                            key={m}
+                            className="flex justify-between items-center mb-1"
+                          >
+                            <span className="text-[10px] text-gray-600">
+                              {m}
+                            </span>
+                            <div className="flex items-center gap-1 flex-1 ml-2">
+                              <div className="flex-1 bg-blue-100 rounded-full h-2 overflow-hidden">
+                                <div
+                                  className="bg-blue-500 h-full rounded-full"
+                                  style={{
+                                    width: `${Math.min(
+                                      100,
+                                      (n / total) * 100 * 3
+                                    )}%`,
+                                  }}
+                                />
+                              </div>
+                              <span className="text-[10px] font-black text-blue-700 w-5 text-right">
+                                {n}
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      <div className="flex gap-3 mt-2 pt-2 border-t border-blue-100">
+                        <div className="text-center flex-1">
+                          <p className="text-[9px] text-gray-400">Edad prom.</p>
+                          <p className="text-xs font-black text-gray-700">
+                            {stats.promedioEdad} años
+                          </p>
+                        </div>
+                        <div className="text-center flex-1">
+                          <p className="text-[9px] text-gray-400">
+                            Tasa No Aptos
+                          </p>
+                          <p className="text-xs font-black text-red-600">
+                            {stats.tasaNoAptos}%
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  {/* Precio por paciente + total + cuenta de cobro */}
+                  <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 mb-4 no-print">
+                    <div className="flex flex-wrap items-center gap-3">
+                      <div className="flex items-center gap-2">
+                        <label className="text-xs font-bold text-gray-700 whitespace-nowrap">
+                          💰 Precio por paciente ($):
+                        </label>
+                        <input
+                          type="number"
+                          min="0"
+                          placeholder="0"
+                          value={precioPorPaciente}
+                          onChange={(e) => setPrecioPorPaciente(e.target.value)}
+                          className="border border-orange-300 rounded-lg px-2 py-1.5 text-sm font-bold w-32 text-right focus:outline-none focus:ring-2 focus:ring-orange-400"
+                        />
+                      </div>
+                      {precioPorPaciente && total > 0 && (
+                        <>
+                          <div className="bg-white border border-orange-300 rounded-lg px-3 py-1.5 text-sm font-black text-orange-700">
+                            Total: $
+                            {(
+                              parseFloat(precioPorPaciente || 0) * total
+                            ).toLocaleString("es-CO")}
+                          </div>
+                          <div className="text-[10px] text-gray-500">
+                            {total} pacientes × $
+                            {parseFloat(precioPorPaciente).toLocaleString(
+                              "es-CO"
+                            )}
+                          </div>
+                          <button
+                            onClick={() => {
+                              const comp = companies.find(
+                                (c) => c.id === selectedCompanyReport
+                              );
+                              const total2 =
+                                parseFloat(precioPorPaciente || 0) * total;
+                              const _maxBill = savedBillsList.reduce(
+                                (mx, b) => {
+                                  const n = parseInt(b.number || "0", 10);
+                                  return n > mx ? n : mx;
+                                },
+                                0
+                              );
+                              const nextNum = String(_maxBill + 1).padStart(
+                                3,
+                                "0"
+                              );
+                              setBillData((p) => ({
+                                ...p,
+                                companyId: selectedCompanyReport || "",
+                                clientName: comp?.nombre || compName,
+                                clientNit: comp
+                                  ? `${comp.nit}${comp.dv ? "-" + comp.dv : ""}`
+                                  : "",
+                                amount: String(total2),
+                                number: nextNum,
+                                date: new Date().toISOString().split("T")[0],
+                                concept: `EXAMENES MEDICOS OCUPACIONALES - ${total} trabajador(es) evaluado(s) · $${parseFloat(
+                                  precioPorPaciente
+                                ).toLocaleString("es-CO")} c/u`,
+                              }));
+                              goTo("bill");
+                            }}
+                            className="bg-orange-600 text-white px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 hover:bg-orange-700 shadow ml-auto"
+                          >
+                            <Receipt className="w-3.5 h-3.5" /> Generar Cuenta
+                            de Cobro
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                  {/* Botones de exportación y tabla */}
+                  <div className="flex flex-wrap gap-2 mb-4 no-print">
+                    <button
+                      onClick={() => exportPatientTable(filtered, compName)}
+                      className="bg-emerald-600 text-white px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 hover:bg-emerald-700 shadow"
+                    >
+                      <HardDrive className="w-3.5 h-3.5" /> Exportar CSV
+                    </button>
+                    <button
+                      onClick={() => {
+                        const compData = companies.find(
+                          (c) => c.id === selectedCompanyReport
+                        );
+                        const _miIPSReport = currentUser?.empresaId
+                          ? companies.find(
+                              (c) => c.id === currentUser.empresaId
+                            ) || null
+                          : null;
+                        const _rptIpsHtml = _miIPSReport
+                          ? `<div style="text-align:right;font-size:9px;color:#555;">
+                              ${
+                                _safeLogoUrl(_miIPSReport.logo || "") // SEC-FIX-02
+                                  ? `<img src="${_safeLogoUrl(_miIPSReport.logo)}" style="max-height:28px;max-width:70px;object-fit:contain;display:block;margin-left:auto;margin-bottom:2px;"/>`
+                                  : ""
+                              }
+                              <b style="font-size:10px;color:#059669;">${_sanitize(
+                                _miIPSReport.nombre || ""
+                              )}</b><br/>
+                              ${
+                                _miIPSReport.nit
+                                  ? `NIT: ${_sanitize(_miIPSReport.nit)}${
+                                      _miIPSReport.dv
+                                        ? "-" + _sanitize(_miIPSReport.dv)
+                                        : ""
+                                    }<br/>`
+                                  : ""
+                              }
+                              Confidencial - Res.1843/2025
+                            </div>`
+                          : `<div style="text-align:right;font-size:9px;color:#555;">Confidencial - Res.1843/2025 Art.19</div>`;
+                        const w = window.open("", "_blank");
+                        w.document
+                          .write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>Tabla Trabajadores - ${_sanitize(
+                          compName
+                        )}</title><style>
+                  body{font-family:Arial,sans-serif;font-size:10px;margin:20px;}
+                  h1{font-size:14px;color:#1e293b;margin:0;}
+                  .header{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #059669;padding-bottom:10px;margin-bottom:12px;}
+                  .company-info{font-size:9px;color:#555;line-height:1.6;}
+                  table{width:100%;border-collapse:collapse;font-size:9px;}
+                  th{background:#1e293b;color:white;padding:5px 6px;text-align:left;white-space:nowrap;}
+                  td{padding:4px 6px;border-bottom:1px solid #e5e7eb;}
+                  tr:nth-child(even){background:#f8fafc;}
+                  .footer{margin-top:10px;font-size:8px;color:#888;text-align:center;}
+                  @media print{body{margin:0;} button{display:none;}}
+                </style></head><body>
+                <div class="header">
+                  <div>
+                    <h1>TABLA DE TRABAJADORES EVALUADOS</h1>
+                    <div class="company-info">
+                      <b>Empresa:</b> ${compName} &nbsp;|&nbsp; <b>NIT:</b> ${
+                          compData
+                            ? compData.nit +
+                              (compData.dv ? "-" + compData.dv : "")
+                            : "N/A"
+                        }<br/>
+                      ${
+                        compData?.direccion
+                          ? "<b>Dirección:</b> " +
+                            compData.direccion +
+                            " &nbsp;|&nbsp; "
+                          : ""
+                      }
+                      ${
+                        compData?.ciudad
+                          ? "<b>Ciudad:</b> " +
+                            compData.ciudad +
+                            " &nbsp;|&nbsp; "
+                          : ""
+                      }
+                      ${
+                        compData?.telefono
+                          ? "<b>Tel:</b> " + compData.telefono
+                          : ""
+                      }<br/>
+                      <b>Total evaluados:</b> ${
+                        filtered.length
+                      } trabajadores &nbsp;|&nbsp; <b>Fecha:</b> ${new Date().toLocaleDateString(
+                          "es-CO"
+                        )}
+                      ${
+                        reportStartDate || reportEndDate
+                          ? " &nbsp;|&nbsp; <b>Período:</b> " +
+                            (reportStartDate || "...") +
+                            " al " +
+                            (reportEndDate || "...")
+                          : ""
+                      }
+                    </div>
+                  </div>
+                  ${_rptIpsHtml}
+                </div>
+                <table>
+                  <thead><tr>
+                    <th>#</th><th>Nombre / Trabajador</th><th>Documento</th><th>Sexo</th><th>Edad</th>
+                    <th>Cargo</th><th>Empresa</th><th>EPS</th><th>ARL</th><th>Tipo Examen</th><th>Énfasis</th><th>Fecha</th>
+                  </tr></thead>
+                  <tbody>${filtered
+                    .map(
+                      (p, i) => `<tr>
+                    <td>${String(i + 1).padStart(3, "0")}</td>
+                    <td><b>${p.nombres || "--"}</b></td>
+                    <td>${p.docTipo || "CC"} ${p.docNumero || "--"}</td>
+                    <td style="text-align:center">${
+                      p.genero === "Masculino"
+                        ? "M"
+                        : p.genero === "Femenino"
+                        ? "F"
+                        : p.genero || "--"
+                    }</td>
+                    <td style="text-align:center">${p.edad || "--"}</td>
+                    <td>${p.cargo || "--"}</td>
+                    <td>${p.empresaNombre || "--"}</td>
+                    <td>${p.eps || "--"}</td>
+                    <td>${p.arl || "--"}</td>
+                    <td>${p.tipoExamen || "--"}</td>
+                    <td>${p.enfasisExamen || "--"}</td>
+                    <td>${p.fechaExamen || "--"}</td>
+                  </tr>`
+                    )
+                    .join("")}</tbody>
+                </table>
+                <div class="footer">OCUPASALUD · Generado: ${new Date().toLocaleString(
+                  "es-CO"
+                )}</div>
+                <br/><button onclick="window.print()" style="background:#1e293b;color:white;padding:6px 16px;border:none;border-radius:6px;cursor:pointer;font-size:11px;">🖨️ Imprimir / Guardar PDF</button>
+                </body></html>`);
+                        w.document.close();
+                      }}
+                      className="bg-slate-700 text-white px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 hover:bg-slate-800 shadow"
+                    >
+                      <FileText className="w-3.5 h-3.5" /> Exportar PDF Tabla
+                    </button>
+                    <button
+                      onClick={() => setShowExportTable((v) => !v)}
+                      className={`px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 shadow border ${
+                        showExportTable
+                          ? "bg-blue-700 text-white border-blue-700"
+                          : "bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100"
+                      }`}
+                    >
+                      <UserCheck className="w-3.5 h-3.5" />{" "}
+                      {showExportTable ? "Ocultar" : "Ver"} Tabla Pantalla
+                    </button>
+                    <span className="ml-auto text-[10px] text-gray-400 italic flex items-center">
+                      ⚠ Res.1843/2025 Art.19 - Confidencial
+                    </span>
+                  </div>
+                  {/* Tabla de pacientes (solo visible en pantalla, no exporta datos sensibles) */}
+                  {showExportTable && (
+                    <div className="mb-6 border border-gray-200 rounded-xl overflow-hidden no-print">
+                      <div className="bg-slate-800 px-4 py-2 flex items-center justify-between">
+                        <span className="text-white text-xs font-bold uppercase tracking-wide">
+                          Tabla de Trabajadores -- {filtered.length} registros
+                        </span>
+                        <span className="text-slate-400 text-[10px]">
+                          ID anonimizado · Res.1843/2025 Art.19 - Confidencial
+                        </span>
+                      </div>
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-[10px]">
+                          <thead>
+                            <tr className="bg-slate-700 text-white">
+                              {[
+                                "ID",
+                                "Nombre / Trabajador",
+                                "Documento",
+                                "Sexo",
+                                "Edad",
+                                "Cargo",
+                                "Empresa",
+                                "EPS",
+                                "ARL",
+                                "Tipo Examen",
+                                "Énfasis",
+                                "Fecha",
+                              ].map((h) => (
+                                <th
+                                  key={h}
+                                  className="px-2 py-1.5 font-bold text-left whitespace-nowrap border-r border-slate-600 last:border-0"
+                                >
+                                  {h}
+                                </th>
+                              ))}
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {filtered.map((p, idx) => (
+                              <tr
+                                key={idx}
+                                className={`border-b border-gray-100 align-middle ${
+                                  idx % 2 === 0 ? "bg-white" : "bg-gray-50"
+                                }`}
+                              >
+                                <td className="px-2 py-1 font-mono font-bold text-slate-700">
+                                  {String(idx + 1).padStart(3, "0")}
+                                </td>
+                                <td
+                                  className="px-2 py-1 font-bold text-gray-800 max-w-[140px] truncate"
+                                  title={p.nombres}
+                                >
+                                  {p.nombres || "--"}
+                                </td>
+                                <td className="px-2 py-1 font-mono">
+                                  {p.docTipo || "CC"} {p.docNumero || "--"}
+                                </td>
+                                <td className="px-2 py-1 text-center font-bold">
+                                  {p.genero === "Masculino"
+                                    ? "M"
+                                    : p.genero === "Femenino"
+                                    ? "F"
+                                    : p.genero || "--"}
+                                </td>
+                                <td className="px-2 py-1 text-center">
+                                  {p.edad || "--"}
+                                </td>
+                                <td
+                                  className="px-2 py-1 max-w-[110px] truncate"
+                                  title={p.cargo}
+                                >
+                                  {p.cargo || "--"}
+                                </td>
+                                <td
+                                  className="px-2 py-1 max-w-[120px] truncate"
+                                  title={p.empresaNombre}
+                                >
+                                  {p.empresaNombre || "--"}
+                                </td>
+                                <td className="px-2 py-1 whitespace-nowrap">
+                                  {p.eps || "--"}
+                                </td>
+                                <td className="px-2 py-1 whitespace-nowrap">
+                                  {p.arl || "--"}
+                                </td>
+                                <td className="px-2 py-1 whitespace-nowrap">
+                                  {p.tipoExamen || "--"}
+                                </td>
+                                <td className="px-2 py-1 whitespace-nowrap">
+                                  {p.enfasisExamen || "--"}
+                                </td>
+                                <td className="px-2 py-1 whitespace-nowrap">
+                                  {p.fechaExamen || "--"}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+                  {/* Tablas sociodemográficas ampliadas (20+ variables) */}
+                  <div className="mb-6">
+                    <h3 className="font-black text-gray-700 uppercase text-xs mb-3 border-b pb-1">
+                      1. Perfil Sociodemográfico y Ocupacional
+                    </h3>
+                    <div className="grid grid-cols-3 gap-3 text-xs">
+                      {[
+                        { title: "Género", data: stats.genero, color: "blue" },
+                        {
+                          title: "Rango Etario",
+                          data: stats.edad,
+                          color: "indigo",
+                        },
+                        {
+                          title: "Escolaridad",
+                          data: stats.escolaridad,
+                          color: "violet",
+                        },
+                        {
+                          title: "Estado Civil",
+                          data: stats.estadoCivil,
+                          color: "purple",
+                        },
+                        {
+                          title: "Estrato",
+                          data: stats.estrato,
+                          color: "fuchsia",
+                        },
+                        {
+                          title: "Zona Residencia",
+                          data: stats.zonaResidencia,
+                          color: "pink",
+                        },
+                        {
+                          title: "Grupo Étnico",
+                          data: stats.grupoEtnico,
+                          color: "rose",
+                        },
+                        {
+                          title: "Cargo/Puesto",
+                          data: stats.cargo,
+                          color: "orange",
+                        },
+                        {
+                          title: "Tipo Contrato",
+                          data: stats.tipoContrato,
+                          color: "amber",
+                        },
+                        {
+                          title: "Turno",
+                          data: stats.turnoTrabajo,
+                          color: "yellow",
+                        },
+                        {
+                          title: "Antigüedad",
+                          data: stats.antiguedad,
+                          color: "lime",
+                        },
+                        {
+                          title: "Tipo Examen",
+                          data: stats.tipoExamen,
+                          color: "green",
+                        },
+                      ].map((t) => (
+                        <div
+                          key={t.title}
+                          className={`bg-${t.color}-50 rounded-xl p-3 border border-${t.color}-100`}
+                        >
+                          <h4
+                            className={`font-bold text-${t.color}-800 mb-2 uppercase text-[10px]`}
+                          >
+                            {t.title}
+                          </h4>
+                          {Object.entries(t.data)
+                            .filter(
+                              ([k]) =>
+                                (k && k !== "N/R") ||
+                                Object.keys(t.data).length <= 3
+                            )
+                            .sort(([, a], [, b]) => b - a)
+                            .slice(0, 6)
+                            .map(([k, v]) => (
+                              <div
+                                key={k}
+                                className="flex justify-between items-center mb-1"
+                              >
+                                <span
+                                  className="text-gray-600 truncate max-w-[120px]"
+                                  title={k}
+                                >
+                                  {k || "N/R"}
+                                </span>
+                                <div className="flex items-center gap-1.5 flex-shrink-0">
+                                  <div className="w-14 h-1.5 bg-white rounded-full overflow-hidden border">
+                                    <div
+                                      className={`h-full bg-${t.color}-500 rounded-full`}
+                                      style={{
+                                        width: `${Math.round(
+                                          (v / total) * 100
+                                        )}%`,
+                                      }}
+                                    />
+                                  </div>
+                                  <span
+                                    className={`font-bold text-${t.color}-700 w-8 text-right text-[9px]`}
+                                  >
+                                    {Math.round((v / total) * 100)}%
+                                  </span>
+                                </div>
+                              </div>
+                            ))}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="mb-6">
+                    <h3 className="font-black text-gray-700 uppercase text-xs mb-3 border-b pb-1">
+                      2. Perfil Clínico y de Salud
+                    </h3>
+                    <div className="grid grid-cols-3 gap-3 text-xs">
+                      {[
+                        { title: "IMC", data: stats.imc, color: "blue" },
+                        {
+                          title: "Tensión Arterial",
+                          data: stats.ta,
+                          color: "red",
+                        },
+                        {
+                          title: "Concepto Aptitud",
+                          data: stats.conceptoAptitud,
+                          color: "emerald",
+                        },
+                        {
+                          title: "Diagnóstico CIE-10",
+                          data: stats.diagnosticos,
+                          color: "indigo",
+                        },
+                      ].map((t) => (
+                        <div
+                          key={t.title}
+                          className={`bg-${t.color}-50 rounded-xl p-3 border border-${t.color}-100`}
+                        >
+                          <h4
+                            className={`font-bold text-${t.color}-800 mb-2 uppercase text-[10px]`}
+                          >
+                            {t.title}
+                          </h4>
+                          {Object.entries(t.data)
+                            .sort(([, a], [, b]) => b - a)
+                            .slice(0, 6)
+                            .map(([k, v]) => (
+                              <div
+                                key={k}
+                                className="flex justify-between items-center mb-1"
+                              >
+                                <span
+                                  className="text-gray-600 truncate max-w-[120px]"
+                                  title={k}
+                                >
+                                  {k || "N/R"}
+                                </span>
+                                <div className="flex items-center gap-1.5 flex-shrink-0">
+                                  <div className="w-14 h-1.5 bg-white rounded-full overflow-hidden border">
+                                    <div
+                                      className={`h-full bg-${t.color}-500 rounded-full`}
+                                      style={{
+                                        width: `${Math.round(
+                                          (v / total) * 100
+                                        )}%`,
+                                      }}
+                                    />
+                                  </div>
+                                  <span
+                                    className={`font-bold text-${t.color}-700 w-8 text-right text-[9px]`}
+                                  >
+                                    {Math.round((v / total) * 100)}%
+                                  </span>
+                                </div>
+                              </div>
+                            ))}
+                        </div>
+                      ))}
+                      {/* Hallazgos físicos anormales */}
+                      <div className="bg-orange-50 rounded-xl p-3 border border-orange-100">
+                        <h4 className="font-bold text-orange-800 mb-2 uppercase text-[10px]">
+                          Hallazgos Físicos Anormales
+                        </h4>
+                        {Object.entries(stats.hallazgos)
+                          .sort(([, a], [, b]) => b - a)
+                          .slice(0, 8)
+                          .map(([k, v]) => (
+                            <div
+                              key={k}
+                              className="flex justify-between items-center mb-1"
+                            >
+                              <span className="text-gray-600 truncate max-w-[120px]">
+                                {k}
+                              </span>
+                              <span className="font-bold text-orange-700 text-[9px]">
+                                {v} ({Math.round((v / total) * 100)}%)
+                              </span>
+                            </div>
+                          ))}
+                        {Object.keys(stats.hallazgos).length === 0 && (
+                          <p className="text-green-600 text-[10px] italic">
+                            Sin hallazgos anormales
+                          </p>
+                        )}
+                      </div>
+                      {/* Antecedentes */}
+                      <div className="bg-yellow-50 rounded-xl p-3 border border-yellow-100">
+                        <h4 className="font-bold text-yellow-800 mb-2 uppercase text-[10px]">
+                          Antecedentes Patológicos
+                        </h4>
+                        {[
+                          ["Cardiovascular", stats.antecCardio],
+                          ["Respiratorio", stats.antecResp],
+                          ["Osteomuscular", stats.antecOsteo],
+                          ["Neuropsiquiátrico", stats.antecNeuro],
+                          ["Metabólico", stats.antecMetab],
+                          ["Quirúrgico", stats.antecQuirurg],
+                        ]
+                          .filter(([, v]) => v > 0)
+                          .map(([k, v]) => (
+                            <div
+                              key={k}
+                              className="flex justify-between items-center mb-1"
+                            >
+                              <span className="text-gray-600">{k}</span>
+                              <span className="font-bold text-yellow-700 text-[9px]">
+                                {v} ({Math.round((v / total) * 100)}%)
+                              </span>
+                            </div>
+                          ))}
+                        {stats.antecCardio +
+                          stats.antecResp +
+                          stats.antecOsteo +
+                          stats.antecNeuro +
+                          stats.antecMetab ===
+                          0 && (
+                          <p className="text-green-600 text-[10px] italic">
+                            Sin antecedentes significativos
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  {/* Riesgos + estilos de vida */}
+                  <div className="grid grid-cols-2 gap-4 mb-6 text-xs">
+                    <div className="bg-orange-50 rounded-xl p-3 border border-orange-100">
+                      <h4 className="font-bold text-orange-800 mb-2 uppercase text-[10px]">
+                        Riesgos Laborales Expuestos
+                      </h4>
+                      {Object.entries(stats.riesgos)
+                        .sort(([, a], [, b]) => b - a)
+                        .map(([k, v]) => (
+                          <div
+                            key={k}
+                            className="flex justify-between items-center mb-1.5"
+                          >
+                            <span className="text-gray-700 capitalize">
+                              {k}
+                            </span>
+                            <div className="flex items-center gap-2">
+                              <div className="w-20 h-2 bg-white rounded-full overflow-hidden border">
+                                <div
+                                  className="h-full bg-orange-500 rounded-full"
+                                  style={{ width: `${(v / total) * 100}%` }}
+                                />
+                              </div>
+                              <span className="font-bold text-orange-700 w-10 text-right">
+                                {((v / total) * 100).toFixed(1)}%
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                    </div>
+                    <div className="bg-teal-50 rounded-xl p-3 border border-teal-100">
+                      <h4 className="font-bold text-teal-800 mb-2 uppercase text-[10px]">
+                        Estilos de Vida y Hábitos
+                      </h4>
+                      {[
+                        {
+                          k: "Fumadores activos",
+                          v: stats.fumadores,
+                          c: "red",
+                        },
+                        {
+                          k: "Consumo de alcohol",
+                          v: stats.alcohol,
+                          c: "amber",
+                        },
+                        { k: "Practica deporte", v: stats.deporte, c: "green" },
+                      ].map(({ k, v, c }) => (
+                        <div
+                          key={k}
+                          className="flex justify-between items-center mb-1.5"
+                        >
+                          <span className="text-gray-700">{k}</span>
+                          <div className="flex items-center gap-2">
+                            <div className="w-20 h-2 bg-white rounded-full overflow-hidden border">
+                              <div
+                                className={`h-full bg-${c}-500 rounded-full`}
+                                style={{ width: `${(v / total) * 100}%` }}
+                              />
+                            </div>
+                            <span
+                              className={`font-bold text-${c}-700 w-10 text-right`}
+                            >
+                              {((v / total) * 100).toFixed(1)}%
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                      <div className="mt-2 pt-2 border-t border-teal-200">
+                        <h5 className="font-bold text-teal-700 text-[10px] uppercase mb-1">
+                          Revisión por Sistemas (alterados)
+                        </h5>
+                        {[
+                          ["Cardiovascular", stats.revCardio],
+                          ["Respiratorio", stats.revResp],
+                          ["Osteomuscular", stats.revOsteo],
+                          ["Neurológico", stats.revNeuro],
+                          ["Gastrointestinal", stats.revGastro],
+                        ]
+                          .filter(([, v]) => v > 0)
+                          .map(([k, v]) => (
+                            <div
+                              key={k}
+                              className="flex justify-between text-[9px] mb-0.5"
+                            >
+                              <span className="text-gray-600">{k}</span>
+                              <span className="font-bold text-teal-700">
+                                {v} ({Math.round((v / total) * 100)}%)
+                              </span>
+                            </div>
+                          ))}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="bg-indigo-50 p-4 rounded-xl border border-indigo-100 mb-4">
+                    <div className="flex justify-between items-center mb-3">
+                      <h3 className="font-black text-indigo-900 flex items-center gap-2">
+                        <BrainCircuit className="w-4 h-4 no-print" /> Análisis
+                        <span className="ai-label-print-hide">Inteligente IA</span>
+                      </h3>
+                      <button
+                        onClick={() => generateAIReport(stats, total, compName)}
+                        disabled={isGeneratingReport}
+                        className="bg-indigo-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 hover:bg-indigo-700 disabled:opacity-50"
+                      >
+                        {isGeneratingReport ? (
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        ) : (
+                          <Sparkles className="w-3.5 h-3.5" />
+                        )}{" "}
+                        Generar Análisis IA
+                      </button>
+                    </div>
+                    {reportAIResult ? (
+                      <div>
+                        {reportAIResult.resumenEjecutivo && (
+                          <div className="bg-white p-3 rounded-lg border border-indigo-200 mb-3 text-xs font-bold text-indigo-900">
+                            {reportAIResult.resumenEjecutivo}
+                          </div>
+                        )}
+                        <div className="text-xs text-justify text-gray-700 leading-relaxed whitespace-pre-wrap mb-3">
+                          {reportAIResult.conclusiones}
+                        </div>
+                        {/* ── Análisis Justificado (Punto 11) ── */}
+                        {reportAIResult.analisisJustificado && (
+                          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-3">
+                            <p className="font-black text-amber-900 text-xs uppercase mb-2 flex items-center gap-1">
+                              <FileSearch className="w-3.5 h-3.5" /> Análisis Justificado — Interpretación Epidemiológica
+                            </p>
+                            <div className="text-xs text-justify text-amber-900 leading-relaxed whitespace-pre-wrap">
+                              {reportAIResult.analisisJustificado}
+                            </div>
+                          </div>
+                        )}
+                        {/* ── Recomendaciones del Informe (Punto 11) ── */}
+                        {reportAIResult.recomendacionesInforme && (
+                          <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4 mb-3">
+                            <p className="font-black text-emerald-900 text-xs uppercase mb-2 flex items-center gap-1">
+                              <CheckCircle2 className="w-3.5 h-3.5" /> Recomendaciones — Acciones Correctivas y PVE
+                            </p>
+                            <div className="text-xs text-justify text-emerald-900 leading-relaxed whitespace-pre-wrap">
+                              {reportAIResult.recomendacionesInforme}
+                            </div>
+                          </div>
+                        )}
+                        {reportAIResult.tabla?.length > 0 && (
+                          <div className="overflow-x-auto mb-4">
+                            <p className="font-black text-gray-700 text-xs uppercase mb-2">📊 Morbilidad Prevalente</p>
+                            <table className="w-full text-xs border border-gray-300">
+                              <thead>
+                                <tr className="bg-slate-800 text-white">
+                                  <th className="py-2.5 px-3 text-left font-bold">
+                                    Diagnóstico (CIE-10)
+                                  </th>
+                                  <th className="py-2.5 px-3 text-center font-bold w-20">Casos</th>
+                                  <th className="py-2.5 px-3 text-center font-bold w-20">%</th>
+                                  <th className="py-2.5 px-3 text-left font-bold w-32">Relación</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {reportAIResult.tabla.map((r, i) => (
+                                  <tr key={i} className={i % 2 === 0 ? "bg-white" : "bg-gray-50"}>
+                                    <td className="py-2 px-3 border-b border-gray-200 font-semibold">{r.diagnostico}</td>
+                                    <td className="py-2 px-3 border-b border-gray-200 text-center font-bold">
+                                      {r.cantidad}
+                                    </td>
+                                    <td className="py-2 px-3 border-b border-gray-200 text-center font-bold text-indigo-700">
+                                      {r.porcentaje}
+                                    </td>
+                                    <td className="py-2 px-3 border-b border-gray-200 text-gray-600">
+                                      {r.relacion || "—"}
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <p className="text-center text-gray-400 text-xs py-4 italic">
+                        Haga clic en "Generar Análisis IA" para obtener el
+                        diagnóstico poblacional completo.
+                      </p>
+                    )}
+                    {reportAIResult?.matrizLegalNormativa && (
+                      <div className="mt-4 bg-blue-50 border border-blue-200 rounded-lg p-4 text-xs text-blue-900">
+                        <p className="font-black mb-2 flex items-center gap-1 uppercase text-blue-800">
+                          <ShieldCheck className="w-3.5 h-3.5" /> Cumplimiento
+                          Normativo
+                        </p>
+                        <p className="text-justify leading-relaxed">
+                          {reportAIResult.matrizLegalNormativa}
+                        </p>
+                      </div>
+                    )}
+                    {/* PVE Recomendados */}
+                    {reportAIResult?.pveRecomendados?.length > 0 && (
+                      <div className="mt-4 bg-teal-50 border border-teal-200 rounded-lg p-4 text-xs">
+                        <p className="font-black text-teal-900 uppercase mb-2 flex items-center gap-1">
+                          <Shield className="w-3.5 h-3.5" /> Programas de Vigilancia Epidemiológica Recomendados
+                        </p>
+                        <div className="grid grid-cols-2 gap-2">
+                          {reportAIResult.pveRecomendados.map((pve, i) => (
+                            <div key={i} className="flex items-center gap-2 bg-white border border-teal-100 rounded-lg px-3 py-2">
+                              <span className="text-teal-600 font-bold">✓</span>
+                              <span className="text-teal-900 font-semibold">{pve}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  {/* PUNTO 4: MATRIZ LEGAL DE CONDICIONES DE SALUD */}
+                  <div className="mt-6 border-t-2 border-gray-200 pt-6">
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="bg-blue-900 text-white w-8 h-8 rounded-full flex items-center justify-center font-black text-sm flex-shrink-0">
+                        4
+                      </div>
+                      <div>
+                        <h2 className="text-base font-black text-blue-900 uppercase">
+                          Matriz Legal de Condiciones de Salud y Tabulación
+                        </h2>
+                        <p className="text-xs text-gray-500">
+                          Cumplimiento Normativo SST - Res. 1843/2025 · Dec.
+                          1072/2015 · Res. 0312/2019 · Ley 1562/2012
+                        </p>
+                      </div>
+                    </div>
+                    <div className="overflow-x-auto border border-gray-200 rounded-xl">
+                      <table className="w-full text-xs">
+                        <thead>
+                          <tr className="bg-blue-900 text-white">
+                            <th className="p-2 text-left font-bold">
+                              ID / Trabajador
+                            </th>
+                            <th className="p-2 font-bold">Sexo</th>
+                            <th className="p-2 font-bold">Edad</th>
+                            <th className="p-2 font-bold text-left">
+                              Riesgos Ocupacionales
+                            </th>
+                            <th className="p-2 font-bold text-left">
+                              Sintomatología / Motivo
+                            </th>
+                            <th className="p-2 font-bold text-left">
+                              Diagnóstico (CIE-10)
+                            </th>
+                            <th
+                              className="p-2 font-bold text-left"
+                              style={{ minWidth: "220px" }}
+                            >
+                              Recomendaciones y Restricciones
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {filtered.map((p, i) => {
+                            const riesgosActivos = Object.entries(
+                              p.riesgos || {}
+                            )
+                              .filter(([, v]) => v)
+                              .map(
+                                ([k]) => k.charAt(0).toUpperCase() + k.slice(1)
+                              )
+                              .join(", ");
+                            const bmiInfo = analyzeBMI(p.imc);
+                            const bpInfo = analyzeBP(p.ta);
+                            return (
+                              <tr
+                                key={`${p.id}-${i}`}
+                                className={`border-b ${
+                                  i % 2 === 0 ? "bg-white" : "bg-gray-50"
+                                } hover:bg-blue-50 align-top`}
+                              >
+                                <td className="p-2">
+                                  <p className="font-bold text-blue-900">
+                                    {p.docNumero}
+                                  </p>
+                                  <p className="text-gray-600 text-[10px]">
+                                    {p.nombres?.substring(0, 28)}
+                                    {p.nombres?.length > 28 ? "..." : ""}
+                                  </p>
+                                </td>
+                                <td className="p-2 text-center font-bold">
+                                  {p.genero === "Masculino"
+                                    ? "M"
+                                    : p.genero === "Femenino"
+                                    ? "F"
+                                    : p.genero || "--"}
+                                </td>
+                                <td className="p-2 text-center">
+                                  {p.edad || "--"}
+                                </td>
+                                <td
+                                  className="p-2"
+                                  style={{ maxWidth: "130px" }}
+                                >
+                                  <p className="text-gray-700 leading-relaxed">
+                                    {riesgosActivos || (
+                                      <span className="text-gray-400 italic">
+                                        No registrados
+                                      </span>
+                                    )}
+                                  </p>
+                                </td>
+                                <td
+                                  className="p-2"
+                                  style={{ maxWidth: "110px" }}
+                                >
+                                  <p>
+                                    {p.motivoConsulta ||
+                                      p.tipoExamen ||
+                                      "Examen de rutina"}
+                                  </p>
+                                  {p.ta && (
+                                    <p className="text-[10px] mt-0.5">
+                                      TA: {p.ta}{" "}
+                                      {bpInfo && (
+                                        <span
+                                          className={`px-1 rounded ${bpInfo.color}`}
+                                        >
+                                          {bpInfo.text}
+                                        </span>
+                                      )}
+                                    </p>
+                                  )}
+                                  {p.imc && (
+                                    <p className="text-[10px]">
+                                      IMC: {p.imc}{" "}
+                                      {bmiInfo && (
+                                        <span
+                                          className={`px-1 rounded ${bmiInfo.color}`}
+                                        >
+                                          {bmiInfo.text}
+                                        </span>
+                                      )}
+                                    </p>
+                                  )}
+                                </td>
+                                <td
+                                  className="p-2"
+                                  style={{ maxWidth: "140px" }}
+                                >
+                                  <p className="font-bold text-blue-900">
+                                    {p.diagnosticoPrincipal || "Z10.0"}
+                                  </p>
+                                  {p.diagnosticoSecundario1 && (
+                                    <p className="text-gray-500 text-[10px] mt-0.5">
+                                      {p.diagnosticoSecundario1}
+                                    </p>
+                                  )}
+                                </td>
+                                <td
+                                  className="p-2"
+                                  style={{ minWidth: "220px" }}
+                                >
+                                  {p.recomendaciones && (
+                                    <div className="mb-2">
+                                      <p className="text-[9px] font-black text-emerald-700 uppercase mb-0.5">
+                                        ✓ Recomendaciones:
+                                      </p>
+                                      <p className="text-gray-700 leading-relaxed text-[10px] whitespace-pre-wrap">
+                                        {p.recomendaciones}
+                                      </p>
+                                    </div>
+                                  )}
+                                  {p.analisisRestricciones && (
+                                    <div>
+                                      <p className="text-[9px] font-black text-red-700 uppercase mb-0.5">
+                                        ⚠ Restricciones:
+                                      </p>
+                                      <p className="text-red-800 leading-relaxed text-[10px] whitespace-pre-wrap">
+                                        {p.analisisRestricciones}
+                                      </p>
+                                    </div>
+                                  )}
+                                  {!p.recomendaciones &&
+                                    !p.analisisRestricciones && (
+                                      <span className="text-gray-400 italic text-[10px]">
+                                        Sin restricciones registradas
+                                      </span>
+                                    )}
+                                </td>
+                              </tr>
+                            );
+                          })}
+                          {filtered.length === 0 && (
+                            <tr>
+                              <td
+                                colSpan="7"
+                                className="p-8 text-center text-gray-400 italic"
+                              >
+                                No hay registros para esta empresa en el período
+                                seleccionado.
+                              </td>
+                            </tr>
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                    {/* Normativa SST aplicable */}
+                    <div className="mt-4 bg-blue-50 border border-blue-200 rounded-xl p-4">
+                      <h4 className="font-black text-blue-900 text-xs uppercase mb-3 flex items-center gap-2">
+                        <ShieldCheck className="w-4 h-4" /> Marco Normativo SST
+                        Aplicado
+                      </h4>
+                      <div className="grid grid-cols-2 gap-2 text-[10px]">
+                        {[
+                          {
+                            ley: "Resolución 1843/2025",
+                            desc: "Evaluaciones médicas ocupacionales - Norma vigente (deroga Res. 2346/2007 y 1918/2009)",
+                          },
+                          {
+                            ley: "Decreto 1072/2015 Art. 2.2.4.6",
+                            desc: "Obligaciones del empleador en el Sistema de Gestión SST",
+                          },
+                          {
+                            ley: "Resolución 0312/2019",
+                            desc: "Estándares mínimos del SG-SST -- exámenes de ingreso, periódicos y egreso",
+                          },
+                          {
+                            ley: "Ley 1562/2012 Art. 11",
+                            desc: "Sistema General de Riesgos Laborales -- EPS y ARL",
+                          },
+                          {
+                            ley: "GTC-45:2012",
+                            desc: "Identificación de peligros y valoración de riesgos laborales",
+                          },
+                          {
+                            ley: "Resolución 2404/2019",
+                            desc: "Guías técnicas de vigilancia epidemiológica",
+                          },
+                          {
+                            ley: "GATISO-DME (2015)",
+                            desc: "Desórdenes musculoesqueléticos relacionados con el trabajo",
+                          },
+                          {
+                            ley: "Res. 1995/1999 Art. 15",
+                            desc: "Custodia y retención de historias clínicas - mínimo 20 años (Gestión 5 + Central 10 + Histórico 5)",
+                          },
+                          {
+                            ley: "Resolución 1442/2024",
+                            desc: "CIE-11 Colombia - transición gradual desde CIE-10 (implementado en SISO en paralelo)",
+                          },
+                          {
+                            ley: "Res. 2175/2015 CUPS-MSPS",
+                            desc: "Códigos Únicos de Procedimientos - integrados en solicitud de exámenes con autocomplete",
+                          },
+                          ,
+                        ].map((n, i) => (
+                          <div
+                            key={i}
+                            className="flex gap-2 bg-white p-2 rounded border border-blue-100"
+                          >
+                            <span className="font-bold text-blue-800 min-w-[140px]">
+                              {n.ley}
+                            </span>
+                            <span className="text-gray-600">{n.desc}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <div className="text-center py-16 text-gray-400">
+                  <BarChart3 className="w-16 h-16 mx-auto mb-3 opacity-30" />
+                  <p>Seleccione una empresa para ver su informe.</p>
+                </div>
+              )}
+            </>
+          )}
+          {/* ══ TAB: CERTIFICADOS POR EMPRESA ══ */}
+          {reporteActiveTab === "certificados" &&
+            selectedCompanyReport &&
+            (() => {
+              const allIds = filtered.map((p) => p.id);
+              const allChecked =
+                allIds.length > 0 && allIds.every((id) => certSelected[id]);
+              const someChecked = allIds.some((id) => certSelected[id]);
+              const selectedList = filtered.filter((p) => certSelected[p.id]);
+
+              // ── CERT-FIX: Reportes usa EXACTAMENTE el mismo HTML que la HC ──────
+              // _generarCertificadoHTMLNormalizado produce el HTML canónico.
+              // Para 1 cert → abre el documento completo sin modificarlo.
+              // Para N certs → reutiliza el CSS del mismo generador + concatena cuerpos.
+              const printSelectedCerts = () => {
+                if (selectedList.length === 0) return;
+                const docData = activeDoctorData || {};
+                const sig = activeSignature || "";
+                if (selectedList.length === 1) {
+                  // ── Certificado individual: idéntico a "Ver Certificado" en la HC ──
+                  const _miIPSCert = currentUser?.empresaId
+                    ? companies.find((c) => c.id === currentUser.empresaId) ||
+                      null
+                    : null;
+                  const html = _generarCertificadoHTMLNormalizado(
+                    selectedList[0],
+                    docData,
+                    sig,
+                    _miIPSCert
+                  );
+                  const w = window.open("", "_blank", "width=920,height=1150");
+                  if (!w) {
+                    showAlert(
+                      "El navegador bloqueó la ventana emergente. Permita los popups."
+                    );
+                    return;
+                  }
+                  const htmlBtn = html.replace(
+                    "</body>",
+                    '<div class="np-dl"><button onclick="window.print()">📥 Guardar / Imprimir PDF</button>' +
+                      "<p>En el diálogo, selecciona <b>Guardar como PDF</b></p></div></body>"
+                  );
+                  w.document.write(htmlBtn);
+                  w.document.close();
+                  w.focus();
+                } else {
+                  // ── Múltiples certificados: mismo CSS, un <body> por página ─────
+                  const _miIPSCertM = currentUser?.empresaId
+                    ? companies.find((c) => c.id === currentUser.empresaId) ||
+                      null
+                    : null;
+                  const sampleFull = _generarCertificadoHTMLNormalizado(
+                    { nombres: "_sample_" },
+                    docData,
+                    sig,
+                    _miIPSCertM
+                  );
+                  const headMatch = sampleFull.match(
+                    /<head>([\s\S]*?)<\/head>/i
+                  );
+                  const sharedHead = headMatch ? headMatch[1] : "";
+                  const certs = selectedList
+                    .map((p, idx) => {
+                      const full = _generarCertificadoHTMLNormalizado(
+                        p,
+                        docData,
+                        sig,
+                        _miIPSCertM
+                      );
+                      const bm = full.match(/<body[^>]*>([\s\S]*)<\/body>/i);
+                      const body = bm ? bm[1] : full;
+                      const isLast = idx === selectedList.length - 1;
+                      return (
+                        '<div style="' +
+                        (isLast ? "" : "page-break-after:always;") +
+                        '">' +
+                        body +
+                        "</div>"
+                      );
+                    })
+                    .join("");
+                  const w = window.open("", "_blank", "width=900,height=1100");
+                  if (!w) {
+                    showAlert(
+                      "El navegador bloqueó la ventana emergente. Permita los popups."
+                    );
+                    return;
+                  }
+                  w.document.write(
+                    '<!DOCTYPE html><html lang="es"><head>' +
+                      sharedHead +
+                      "<style>@page{size:letter portrait;margin:1cm 1.2cm;}" +
+                      ".np-bar{position:fixed;top:0;left:0;right:0;background:#065f46;color:#fff;" +
+                      "padding:7px 14px;display:flex;align-items:center;gap:10px;z-index:9999;}" +
+                      ".np-bar span{flex:1;font-size:9pt;font-weight:700;}" +
+                      ".np-bar button{border:none;padding:5px 14px;border-radius:6px;font-weight:900;cursor:pointer;font-size:9pt;}" +
+                      ".np-bp{background:#10b981;color:#fff;}.np-bc{background:#ef4444;color:#fff;}" +
+                      "body{padding-top:50px!important;}" +
+                      "@media print{.np-bar{display:none!important;}body{padding-top:0!important;}}" +
+                      "</style></head><body>" +
+                      '<div class="np-bar">' +
+                      "<span>📄 Certificados - " +
+                      compName +
+                      " (" +
+                      selectedList.length +
+                      " trabajadores)</span>" +
+                      '<button class="np-bp" onclick="window.print()">🖨️ Imprimir todos</button>' +
+                      '<button class="np-bc" onclick="window.close()">✕ Cerrar</button></div>' +
+                      certs +
+                      "</body></html>"
+                  );
+                  w.document.close();
+                  w.focus();
+                }
+              };
+
+              return (
+                <div className="space-y-4">
+                  <div className="bg-white rounded-2xl shadow-sm border border-blue-100 p-5">
+                    <div className="flex items-center justify-between flex-wrap gap-3">
+                      <div>
+                        <h3 className="font-black text-blue-900 text-base flex items-center gap-2">
+                          📄 Certificados de Aptitud - {compName}
+                        </h3>
+                        <p className="text-xs text-gray-400 mt-0.5">
+                          {filtered.length} trabajador
+                          {filtered.length !== 1 ? "es" : ""} en el período
+                          {selectedList.length > 0 && (
+                            <span className="ml-2 font-black text-blue-700">
+                              · {selectedList.length} seleccionado
+                              {selectedList.length !== 1 ? "s" : ""}
+                            </span>
+                          )}
+                        </p>
+                      </div>
+                      <div className="flex gap-2 flex-wrap">
+                        <button
+                          onClick={() => {
+                            const newSel = {};
+                            if (!allChecked)
+                              filtered.forEach((p) => {
+                                newSel[p.id] = true;
+                              });
+                            setCertSelected(newSel);
+                          }}
+                          className={`px-4 py-2 rounded-xl text-xs font-black border-2 transition flex items-center gap-1.5 ${
+                            allChecked
+                              ? "bg-blue-600 border-blue-600 text-white"
+                              : "bg-white border-blue-300 text-blue-700 hover:bg-blue-50"
+                          }`}
+                        >
+                          {allChecked
+                            ? "☑ Deseleccionar todos"
+                            : "☐ Seleccionar todos"}
+                        </button>
+                        <button
+                          onClick={printSelectedCerts}
+                          disabled={selectedList.length === 0}
+                          className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs font-black rounded-xl flex items-center gap-1.5 transition"
+                        >
+                          <Printer className="w-3.5 h-3.5" />
+                          Imprimir seleccionados ({selectedList.length})
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                  {filtered.length === 0 ? (
+                    <div className="text-center py-16 text-gray-400">
+                      <p className="text-sm">
+                        No hay trabajadores en el período seleccionado.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                      <div className="bg-gray-50 px-4 py-2.5 border-b border-gray-200 flex items-center gap-3">
+                        <input
+                          type="checkbox"
+                          checked={allChecked}
+                          ref={(el) => {
+                            if (el)
+                              el.indeterminate = someChecked && !allChecked;
+                          }}
+                          onChange={() => {
+                            const n = {};
+                            if (!allChecked)
+                              filtered.forEach((p) => {
+                                n[p.id] = true;
+                              });
+                            setCertSelected(n);
+                          }}
+                          className="w-4 h-4 accent-blue-600 cursor-pointer"
+                        />
+                        <span className="text-[10px] font-black text-gray-500 uppercase tracking-wide">
+                          Seleccionar todo
+                        </span>
+                        <span className="ml-auto text-[10px] text-gray-400">
+                          {filtered.length} certificados disponibles
+                        </span>
+                      </div>
+                      <div className="divide-y divide-gray-100">
+                        {filtered.map((p, idx) => {
+                          const isChecked = !!certSelected[p.id];
+                          const conceptoLower = (
+                            p.conceptoAptitud || ""
+                          ).toLowerCase();
+                          const esApto =
+                            conceptoLower.includes("apto") &&
+                            !conceptoLower.includes("no apto");
+                          const esNoApto = conceptoLower.includes("no apto");
+                          return (
+                            <div
+                              key={p.id || idx}
+                              className={`flex items-center gap-3 px-4 py-3 transition ${
+                                isChecked ? "bg-blue-50" : "hover:bg-gray-50"
+                              }`}
+                            >
+                              <input
+                                type="checkbox"
+                                checked={isChecked}
+                                onChange={() =>
+                                  setCertSelected((prev) => ({
+                                    ...prev,
+                                    [p.id]: !prev[p.id],
+                                  }))
+                                }
+                                className="w-4 h-4 accent-blue-600 shrink-0 cursor-pointer"
+                              />
+                              <div className="w-7 h-7 rounded-full bg-gray-200 text-gray-600 font-black text-[10px] flex items-center justify-center shrink-0">
+                                {String(idx + 1).padStart(2, "0")}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="font-black text-gray-900 text-sm truncate">
+                                  {p.nombres || "--"}
+                                </p>
+                                <p className="text-[10px] text-gray-500">
+                                  {p.docTipo || "CC"}: {p.docNumero || "--"}{" "}
+                                  &nbsp;·&nbsp; {p.cargo || "--"} &nbsp;·&nbsp;{" "}
+                                  {p.tipoExamen || "--"}
+                                </p>
+                              </div>
+                              <div className="text-right shrink-0">
+                                <span
+                                  className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-black ${
+                                    esApto
+                                      ? "bg-emerald-100 text-emerald-700"
+                                      : esNoApto
+                                      ? "bg-red-100 text-red-700"
+                                      : "bg-gray-100 text-gray-500"
+                                  }`}
+                                >
+                                  {p.conceptoAptitud
+                                    ? p.conceptoAptitud
+                                        .split(" ")
+                                        .slice(0, 3)
+                                        .join(" ")
+                                    : "Sin concepto"}
+                                </span>
+                                <p className="text-[9px] text-gray-400 mt-0.5">
+                                  {p.fechaExamen || "--"}
+                                </p>
+                              </div>
+                              <button
+                                onClick={() => {
+                                  const doc = activeDoctorData || {};
+                                  const sig = activeSignature || "";
+                                  // ── Usa el MISMO generador que la HC - certificado idéntico ──
+                                  const _miIPSC2 = currentUser?.empresaId
+                                    ? companies.find(
+                                        (c) => c.id === currentUser.empresaId
+                                      ) || null
+                                    : null;
+                                  const html =
+                                    _generarCertificadoHTMLNormalizado(
+                                      p,
+                                      doc,
+                                      sig,
+                                      _miIPSC2
+                                    );
+                                  const w = window.open(
+                                    "",
+                                    "_blank",
+                                    "width=900,height=1100"
+                                  );
+                                  if (!w) {
+                                    showAlert(
+                                      "El navegador bloqueó la ventana emergente. Permita los popups."
+                                    );
+                                    return;
+                                  }
+                                  w.document.write(html);
+                                  w.document.close();
+                                  w.focus();
+                                }}
+                                className="shrink-0 no-print bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg px-2.5 py-1.5 text-[10px] font-bold flex items-center gap-1 transition"
+                              >
+                                <Printer className="w-3 h-3" /> Ver
+                              </button>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
+        </div>
+      </div>
+    );
+  };
   // ─── RENDER: PACIENTES ────────────────────────────────────────────────────
   // ══ B-12: Helper de periodicidad - Res. 1843/2025 Art. 4 (max 3 años entre evaluaciones) ══
   const _getPeriodicidadStatus = (p) => {
@@ -21966,12 +24895,3104 @@ Esta historia clínica debe conservarse mínimo 20 años.
     );
   };
   // ─── RENDER: EMPRESAS ─────────────────────────────────────────────────────
+  const renderCompanies = () => {
+    if (
+      currentUser?.role === "secretaria" &&
+      !_secretariaMedicoAsignado(currentUser, currentUser?.user, usersList) &&
+      !_secretariaPuede("empresas", currentUser, usersList)
+    )
+      return (
+        <div className="min-h-screen bg-gray-50 font-sans">
+          {renderNavbar()}
+          <div className="max-w-xl mx-auto px-4 py-16 text-center">
+            <div className="bg-amber-50 border-2 border-amber-300 rounded-2xl p-8 space-y-3">
+              <div className="text-5xl">🔐</div>
+              <p className="font-black text-amber-800 text-xl">
+                Módulo restringido
+              </p>
+              <p className="text-amber-600 text-xs leading-relaxed">
+                Solicita que el administrador habilite el permiso "Empresas" en
+                tu perfil.
+              </p>
+              <button
+                onClick={() => goBack()}
+                className="mt-3 bg-amber-600 text-white px-5 py-2 rounded-lg text-sm font-bold"
+              >
+                ← Volver
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    // Calcular alertas de convenios próximos a vencer
+    const hoy = new Date();
+    const en30 = new Date(hoy);
+    en30.setDate(en30.getDate() + 30);
+    const conveniosAlerta = companies.filter(
+      (c) =>
+        c.convenioVencimiento &&
+        new Date(c.convenioVencimiento) <= en30 &&
+        new Date(c.convenioVencimiento) >= hoy
+    );
+    const medicos = usersList.filter(
+      (u) =>
+        ["medico", "administrador", "super_admin"].includes(u.role) &&
+        u.activo !== false
+    );
+    // Secretaria: filtra empresas por médicos asignados
+    const _visibleCompanies = (() => {
+      if (currentUser?.role !== "secretaria") return companies;
+      const secU = usersList.find(u => u.user === currentUser.user);
+      const asig = secU?.medicosAsignados || [];
+      if (asig.length === 0) return companies;
+      return companies.filter(c =>
+        !c.medicoResponsableId ||
+        asig.includes(c.medicoResponsableId) ||
+        (c.medicoIds || []).some(mid => asig.includes(mid))
+      );
+    })();
+    // companiesTab, editingCompany are component-level state (avoid React #310)
+    return (
+      <div className="min-h-screen bg-gray-50 font-sans">
+        {renderNavbar()}
+        <div className="max-w-5xl mx-auto px-4 py-6">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-black text-purple-900 flex items-center gap-2">
+              <Building2 className="w-5 h-5" /> Empresas / Convenios (
+              {_visibleCompanies.length})
+            </h2>
+            <button
+              onClick={() => goBack()}
+              className="text-gray-500 font-bold text-sm flex items-center gap-1"
+            >
+              <LogOut className="rotate-180 w-4 h-4" /> Volver
+            </button>
+          </div>
+          {/* Alerta convenios próximos a vencer */}
+          {conveniosAlerta.length > 0 && (
+            <div className="bg-amber-50 border border-amber-300 rounded-xl p-3 mb-4 flex items-center gap-3">
+              <span className="text-2xl">⚠️</span>
+              <div>
+                <p className="text-xs font-black text-amber-800">
+                  {conveniosAlerta.length} convenio(s) próximo(s) a vencer:
+                </p>
+                <p className="text-[10px] text-amber-700">
+                  {conveniosAlerta
+                    .map((c) => `${c.nombre} (${c.convenioVencimiento})`)
+                    .join(" · ")}
+                </p>
+              </div>
+            </div>
+          )}
+          {/* Tabs */}
+          <div className="flex gap-1 mb-4 bg-white rounded-xl p-1 shadow-sm border border-gray-100">
+            {[
+              { k: "lista", l: "🏢 Empresas" },
+              { k: "nueva", l: "➕ Nueva Empresa" },
+              { k: "convenios", l: "🤝 Convenios" },
+            ].map((t) => (
+              <button
+                key={t.k}
+                onClick={() => setCompaniesTab(t.k)}
+                className={`flex-1 py-2 text-xs font-black rounded-lg transition ${
+                  companiesTab === t.k
+                    ? "bg-purple-700 text-white"
+                    : "text-gray-600 hover:bg-gray-100"
+                }`}
+              >
+                {t.l}
+              </button>
+            ))}
+          </div>
+
+          {/* TAB: LISTA */}
+          {companiesTab === "lista" && (
+            <div className="space-y-3">
+              {companies.length === 0 && (
+                <div className="bg-white rounded-2xl p-8 text-center text-gray-400 text-sm">
+                  Sin empresas registradas. Use ➕ Nueva Empresa.
+                </div>
+              )}
+              {companies.map((c, i) => {
+                const pac = patientsList.filter(
+                  (p) => p.empresaId === c.id || p.empresaNit === c.nit
+                ).length;
+                const medResp = medicos.find(
+                  (m) => m.user === c.medicoResponsableId
+                );
+                const vence = c.convenioVencimiento
+                  ? new Date(c.convenioVencimiento)
+                  : null;
+                const venceProx = vence && vence <= en30 && vence >= hoy;
+                const vencido = vence && vence < hoy;
+                return (
+                  <div
+                    key={c.id || i}
+                    className={`bg-white rounded-2xl shadow-sm border p-4 ${
+                      vencido
+                        ? "border-red-300"
+                        : venceProx
+                        ? "border-amber-300"
+                        : "border-gray-100"
+                    }`}
+                  >
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <p className="font-black text-sm text-gray-800">
+                          {c.nombre}
+                        </p>
+                        <p className="text-[10px] text-gray-500">
+                          NIT: {c.nit}
+                          {c.dv ? `-${c.dv}` : ""} · {c.ciudad} ·{" "}
+                          {c.actividad?.slice(0, 40)}
+                        </p>
+                        {/* FASE 2: multi-médico badges */}
+                        <div className="flex flex-wrap gap-1 mt-0.5">
+                          {medResp && (
+                            <span className="text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-bold">
+                              👨‍⚕️ {medResp.name} ⭐
+                            </span>
+                          )}
+                          {(c.medicoIds || [])
+                            .filter((id) => id !== c.medicoResponsableId)
+                            .slice(0, 2)
+                            .map((id) => {
+                              const m = medicos.find((x) => x.user === id);
+                              return m ? (
+                                <span
+                                  key={id}
+                                  className="text-[10px] bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded-full font-bold"
+                                >
+                                  👨‍⚕️ {m.name || m.user}
+                                </span>
+                              ) : null;
+                            })}
+                          {(c.medicoIds || []).filter(
+                            (id) => id !== c.medicoResponsableId
+                          ).length > 2 && (
+                            <span className="text-[10px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">
+                              +
+                              {(c.medicoIds || []).filter(
+                                (id) => id !== c.medicoResponsableId
+                              ).length - 2}{" "}
+                              más
+                            </span>
+                          )}
+                          {(c.sedes || []).length > 0 && (
+                            <span className="text-[10px] bg-orange-50 text-orange-600 px-2 py-0.5 rounded-full font-bold">
+                              🏢 {(c.sedes || []).length} sede(s)
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {vencido && (
+                          <span className="text-[10px] px-2 py-0.5 bg-red-100 text-red-700 rounded-full font-black">
+                            ⛔ Convenio vencido
+                          </span>
+                        )}
+                        {venceProx && !vencido && (
+                          <span className="text-[10px] px-2 py-0.5 bg-amber-100 text-amber-700 rounded-full font-black">
+                            ⚠️ Vence pronto
+                          </span>
+                        )}
+                        <span className="text-[10px] text-gray-500">
+                          {pac} paciente(s)
+                        </span>
+                        <button
+                          onClick={() => setEditingCompany(c)}
+                          className="px-2 py-1 bg-blue-100 text-blue-700 rounded-lg text-[10px] font-black hover:bg-blue-200"
+                        >
+                          ✏️ Editar
+                        </button>
+                        <button
+                          onClick={() =>
+                            showConfirm("¿Eliminar empresa?", () => {
+                              const upd = companies.filter(
+                                (x) => x.id !== c.id
+                              );
+                              setCompanies(upd);
+                              _syncCompanies(upd);
+                            })
+                          }
+                          className="px-2 py-1 bg-red-100 text-red-600 rounded-lg text-[10px] font-black hover:bg-red-200"
+                        >
+                          🗑️
+                        </button>
+                      </div>
+                    </div>
+                    {/* Tarifas rápidas */}
+                    {(c.tarifaIngreso ||
+                      c.tarifaPeriodico ||
+                      c.tarifaConsulta) && (
+                      <div className="mt-2 flex gap-2 flex-wrap">
+                        {c.tarifaIngreso && (
+                          <span className="text-[10px] bg-emerald-50 border border-emerald-200 text-emerald-700 px-2 py-0.5 rounded-full font-bold">
+                            Ingreso: $
+                            {Number(c.tarifaIngreso).toLocaleString("es-CO")}
+                          </span>
+                        )}
+                        {c.tarifaPeriodico && (
+                          <span className="text-[10px] bg-blue-50 border border-blue-200 text-blue-700 px-2 py-0.5 rounded-full font-bold">
+                            Periódico: $
+                            {Number(c.tarifaPeriodico).toLocaleString("es-CO")}
+                          </span>
+                        )}
+                        {c.tarifaEgreso && (
+                          <span className="text-[10px] bg-purple-50 border border-purple-200 text-purple-700 px-2 py-0.5 rounded-full font-bold">
+                            Egreso: $
+                            {Number(c.tarifaEgreso).toLocaleString("es-CO")}
+                          </span>
+                        )}
+                        {c.tarifaConsulta && (
+                          <span className="text-[10px] bg-gray-50 border border-gray-200 text-gray-700 px-2 py-0.5 rounded-full font-bold">
+                            Consulta: $
+                            {Number(c.tarifaConsulta).toLocaleString("es-CO")}
+                          </span>
+                        )}
+                        {c.condicionesPago && (
+                          <span className="text-[10px] bg-orange-50 border border-orange-200 text-orange-700 px-2 py-0.5 rounded-full font-bold">
+                            Pago: {c.condicionesPago}
+                          </span>
+                        )}
+                      </div>
+                    )}
+                    {/* Portal status */}
+                    <div className="mt-2 flex items-center gap-2 flex-wrap">
+                      {c.portalActivo && c.portalCode ? (
+                        <>
+                          <span className="text-[10px] bg-indigo-100 border border-indigo-300 text-indigo-700 px-2 py-0.5 rounded-full font-black">
+                            🌐 Portal ACTIVO
+                          </span>
+                          <span className="text-[10px] font-mono font-black text-indigo-800 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded-full">
+                            {c.portalCode}
+                          </span>
+                          <button
+                            onClick={() => {
+                              if (navigator.clipboard) {
+                                navigator.clipboard
+                                  .writeText(c.portalCode)
+                                  .then(() =>
+                                    showAlert(
+                                      "✅ Código " + c.portalCode + " copiado."
+                                    )
+                                  );
+                              } else showAlert("Código: " + c.portalCode);
+                            }}
+                            className="text-[10px] bg-white border border-indigo-200 text-indigo-600 px-2 py-0.5 rounded-full font-bold hover:bg-indigo-50"
+                          >
+                            📋 Copiar código
+                          </button>
+                          <button
+                            onClick={() => setPortalActivadoInfo(c)}
+                            className="text-[10px] bg-white border border-indigo-200 text-indigo-600 px-2 py-0.5 rounded-full font-bold hover:bg-indigo-50"
+                          >
+                            📨 Ver instrucciones
+                          </button>
+                        </>
+                      ) : c.portalActivo ? (
+                        <span className="text-[10px] bg-amber-100 border border-amber-300 text-amber-700 px-2 py-0.5 rounded-full font-black">
+                          🔑 Portal activo - sin código (editar para generar)
+                        </span>
+                      ) : (
+                        <span className="text-[10px] bg-gray-100 border border-gray-200 text-gray-500 px-2 py-0.5 rounded-full font-bold">
+                          🔒 Portal desactivado
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* TAB: NUEVA EMPRESA */}
+          {companiesTab === "nueva" && (
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
+              <p className="text-xs font-black text-gray-700 uppercase mb-4">
+                📋 Datos de la empresa
+              </p>
+              <div className="flex flex-wrap -mx-1.5">
+                <InputGroup
+                  label="Razón Social *"
+                  name="nombre"
+                  value={newComp.nombre}
+                  onChange={(e) =>
+                    setNewComp((p) => ({ ...p, nombre: e.target.value }))
+                  }
+                  required
+                  width="w-1/2"
+                />
+                <InputGroup
+                  label="NIT"
+                  name="nit"
+                  value={newComp.nit}
+                  onChange={(e) =>
+                    setNewComp((p) => ({ ...p, nit: e.target.value }))
+                  }
+                  width="w-1/4"
+                />
+                <InputGroup
+                  label="DV"
+                  name="dv"
+                  value={newComp.dv}
+                  onChange={(e) =>
+                    setNewComp((p) => ({ ...p, dv: e.target.value }))
+                  }
+                  width="w-1/8 min-w-[70px]"
+                />
+                <InputGroup
+                  label="Ciudad"
+                  name="ciudad"
+                  value={newComp.ciudad}
+                  onChange={(e) =>
+                    setNewComp((p) => ({ ...p, ciudad: e.target.value }))
+                  }
+                  width="w-1/4"
+                />
+                <InputGroup
+                  label="Actividad Económica"
+                  value={newComp.actividad}
+                  onChange={(e) =>
+                    setNewComp((p) => ({ ...p, actividad: e.target.value }))
+                  }
+                  width="w-1/2"
+                />
+                <InputGroup
+                  label="Correo"
+                  value={newComp.correo}
+                  onChange={(e) =>
+                    setNewComp((p) => ({ ...p, correo: e.target.value }))
+                  }
+                  width="w-1/2"
+                />
+                <InputGroup
+                  label="Teléfono"
+                  value={newComp.telefono}
+                  onChange={(e) =>
+                    setNewComp((p) => ({ ...p, telefono: e.target.value }))
+                  }
+                  width="w-1/4"
+                />
+                <InputGroup
+                  label="ARL"
+                  value={newComp.arl}
+                  onChange={(e) =>
+                    setNewComp((p) => ({ ...p, arl: e.target.value }))
+                  }
+                  width="w-1/4"
+                  list="arl-list"
+                />
+                <InputGroup
+                  label="Gerente / Contacto"
+                  value={newComp.gerente}
+                  onChange={(e) =>
+                    setNewComp((p) => ({ ...p, gerente: e.target.value }))
+                  }
+                  width="w-1/2"
+                />
+              </div>
+              <div className="border-t border-gray-100 pt-4 mt-2">
+                <p className="text-xs font-black text-gray-700 uppercase mb-3">
+                  🤝 Convenio
+                </p>
+                <div className="flex flex-wrap -mx-1.5">
+                  <div className="px-1.5 mb-3 w-1/3">
+                    <label className="block text-[10px] font-black text-gray-600 uppercase mb-1">
+                      Médico responsable
+                    </label>
+                    <select
+                      value={newComp.medicoResponsableId}
+                      onChange={(e) =>
+                        setNewComp((p) => ({
+                          ...p,
+                          medicoResponsableId: e.target.value,
+                        }))
+                      }
+                      className="w-full p-1.5 border rounded-lg text-xs"
+                    >
+                      <option value="">- Sin asignar -</option>
+                      {medicos.map((m) => (
+                        <option key={m.user} value={m.user}>
+                          {m.name || m.user}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <InputGroup
+                    label="Tarifa Ingreso COP"
+                    value={newComp.tarifaIngreso}
+                    onChange={(e) =>
+                      setNewComp((p) => ({
+                        ...p,
+                        tarifaIngreso: e.target.value,
+                      }))
+                    }
+                    width="w-1/6"
+                    type="number"
+                  />
+                  <InputGroup
+                    label="Tarifa Periódico"
+                    value={newComp.tarifaPeriodico}
+                    onChange={(e) =>
+                      setNewComp((p) => ({
+                        ...p,
+                        tarifaPeriodico: e.target.value,
+                      }))
+                    }
+                    width="w-1/6"
+                    type="number"
+                  />
+                  <InputGroup
+                    label="Tarifa Egreso"
+                    value={newComp.tarifaEgreso}
+                    onChange={(e) =>
+                      setNewComp((p) => ({
+                        ...p,
+                        tarifaEgreso: e.target.value,
+                      }))
+                    }
+                    width="w-1/6"
+                    type="number"
+                  />
+                  <InputGroup
+                    label="Tarifa Consulta"
+                    value={newComp.tarifaConsulta}
+                    onChange={(e) =>
+                      setNewComp((p) => ({
+                        ...p,
+                        tarifaConsulta: e.target.value,
+                      }))
+                    }
+                    width="w-1/6"
+                    type="number"
+                  />
+                  <div className="px-1.5 mb-3 w-1/4">
+                    <label className="block text-[10px] font-black text-gray-600 uppercase mb-1">
+                      Condición de pago
+                    </label>
+                    <select
+                      value={newComp.condicionesPago}
+                      onChange={(e) =>
+                        setNewComp((p) => ({
+                          ...p,
+                          condicionesPago: e.target.value,
+                        }))
+                      }
+                      className="w-full p-1.5 border rounded-lg text-xs"
+                    >
+                      {["contado", "30 días", "60 días", "90 días"].map((o) => (
+                        <option key={o} value={o}>
+                          {o}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <InputGroup
+                    label="Inicio convenio"
+                    value={newComp.convenioFecha}
+                    onChange={(e) =>
+                      setNewComp((p) => ({
+                        ...p,
+                        convenioFecha: e.target.value,
+                      }))
+                    }
+                    width="w-1/4"
+                    type="date"
+                  />
+                  <InputGroup
+                    label="Vencimiento convenio"
+                    value={newComp.convenioVencimiento}
+                    onChange={(e) =>
+                      setNewComp((p) => ({
+                        ...p,
+                        convenioVencimiento: e.target.value,
+                      }))
+                    }
+                    width="w-1/4"
+                    type="date"
+                  />
+                  <InputGroup
+                    label="Descuento %"
+                    value={newComp.descuento}
+                    onChange={(e) =>
+                      setNewComp((p) => ({ ...p, descuento: e.target.value }))
+                    }
+                    width="w-1/8 min-w-[80px]"
+                    type="number"
+                  />
+                </div>
+                <div className="flex gap-4 mt-1">
+                  <label className="flex items-center gap-1.5 text-xs font-bold cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={!!newComp.portalActivo}
+                      onChange={(e) =>
+                        setNewComp((p) => ({
+                          ...p,
+                          portalActivo: e.target.checked,
+                        }))
+                      }
+                      className="accent-purple-600"
+                    />{" "}
+                    Portal cliente activo
+                  </label>
+                  <label className="flex items-center gap-1.5 text-xs font-bold cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={!!newComp.facturacionAgrupada}
+                      onChange={(e) =>
+                        setNewComp((p) => ({
+                          ...p,
+                          facturacionAgrupada: e.target.checked,
+                        }))
+                      }
+                      className="accent-purple-600"
+                    />{" "}
+                    Facturación agrupada
+                  </label>
+                </div>
+              </div>
+              {/* ── MULTI-MÉDICO (FASE 2) ── */}
+              <div className="border-t border-gray-100 pt-4 mt-2">
+                <p className="text-xs font-black text-gray-700 uppercase mb-2">
+                  👨‍⚕️ Médicos asignados a esta empresa
+                </p>
+                <p className="text-[10px] text-gray-500 mb-2">
+                  El médico responsable es el principal; los adicionales también
+                  pueden atender pacientes de esta empresa.
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {medicos.map((m) => (
+                    <label
+                      key={m.user}
+                      className="flex items-center gap-1.5 text-xs cursor-pointer bg-indigo-50 border border-indigo-200 rounded-lg px-2 py-1"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={
+                          (newComp.medicoIds || []).includes(m.user) ||
+                          newComp.medicoResponsableId === m.user
+                        }
+                        onChange={(e) => {
+                          if (m.user === newComp.medicoResponsableId) return; // responsable siempre incluido
+                          setNewComp((p) => {
+                            const ids = p.medicoIds || [];
+                            return {
+                              ...p,
+                              medicoIds: e.target.checked
+                                ? [...ids, m.user]
+                                : ids.filter((x) => x !== m.user),
+                            };
+                          });
+                        }}
+                        className="accent-indigo-600"
+                        disabled={m.user === newComp.medicoResponsableId}
+                      />
+                      <span
+                        className={
+                          m.user === newComp.medicoResponsableId
+                            ? "font-black text-indigo-700"
+                            : "text-gray-700"
+                        }
+                      >
+                        {m.name || m.user}
+                        {m.user === newComp.medicoResponsableId && " ⭐"}
+                      </span>
+                    </label>
+                  ))}
+                  {medicos.length === 0 && (
+                    <p className="text-xs text-gray-400 italic">
+                      No hay médicos registrados aún.
+                    </p>
+                  )}
+                </div>
+              </div>
+              {/* ── SEDES (FASE 2) ── */}
+              <div className="border-t border-gray-100 pt-4 mt-2">
+                <p className="text-xs font-black text-gray-700 uppercase mb-2">
+                  🏢 Sedes de la empresa
+                </p>
+                <div className="space-y-1 mb-2">
+                  {(newComp.sedes || []).map((s, i) => (
+                    <div
+                      key={i}
+                      className="flex items-center justify-between bg-blue-50 border border-blue-200 rounded-lg px-3 py-1.5"
+                    >
+                      <span className="text-xs font-bold text-blue-800">
+                        {s.nombre} — {s.ciudad}
+                      </span>
+                      <button
+                        onClick={() =>
+                          setNewComp((p) => ({
+                            ...p,
+                            sedes: p.sedes.filter((_, j) => j !== i),
+                          }))
+                        }
+                        className="text-red-500 hover:text-red-700 text-xs font-black"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))}
+                </div>
+                <div className="flex gap-2 items-end">
+                  <input
+                    placeholder="Nombre sede"
+                    value={sedeForm.nombre}
+                    onChange={(e) =>
+                      setSedeForm((p) => ({ ...p, nombre: e.target.value }))
+                    }
+                    className="border rounded-lg p-1.5 text-xs flex-1"
+                  />
+                  <input
+                    placeholder="Ciudad"
+                    value={sedeForm.ciudad}
+                    onChange={(e) =>
+                      setSedeForm((p) => ({ ...p, ciudad: e.target.value }))
+                    }
+                    className="border rounded-lg p-1.5 text-xs w-28"
+                  />
+                  <input
+                    placeholder="Dirección"
+                    value={sedeForm.direccion}
+                    onChange={(e) =>
+                      setSedeForm((p) => ({ ...p, direccion: e.target.value }))
+                    }
+                    className="border rounded-lg p-1.5 text-xs flex-1"
+                  />
+                  <button
+                    onClick={() => {
+                      if (!sedeForm.nombre) return;
+                      setNewComp((p) => ({
+                        ...p,
+                        sedes: [...(p.sedes || []), { ...sedeForm }],
+                      }));
+                      setSedeForm({ nombre: "", ciudad: "", direccion: "" });
+                    }}
+                    className="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs font-black hover:bg-blue-700"
+                  >
+                    + Sede
+                  </button>
+                </div>
+              </div>
+              {/* ── ADMIN DEL PORTAL (FASE 2) ── */}
+              {newComp.portalActivo && (
+                <div className="border-t border-purple-100 pt-4 mt-2 bg-purple-50 rounded-xl p-3">
+                  <p className="text-xs font-black text-purple-700 uppercase mb-1">
+                    🔐 Acceso Admin del Portal
+                  </p>
+                  <p className="text-[10px] text-purple-600 mb-2">
+                    El admin de la empresa usará estas credenciales para
+                    ingresar al portal y gestionar sus médicos/secretarias.
+                  </p>
+                  <div className="flex gap-2">
+                    <div className="flex-1">
+                      <label className="block text-[10px] font-black text-purple-700 uppercase mb-1">
+                        Usuario admin
+                      </label>
+                      <input
+                        value={newComp.portalAdminUser}
+                        onChange={(e) =>
+                          setNewComp((p) => ({
+                            ...p,
+                            portalAdminUser: e.target.value,
+                          }))
+                        }
+                        placeholder="ej: admin_empresa"
+                        className="w-full border border-purple-200 rounded-lg p-1.5 text-xs"
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <label className="block text-[10px] font-black text-purple-700 uppercase mb-1">
+                        Contraseña temporal
+                      </label>
+                      <input
+                        type="password"
+                        value={newComp.portalAdminPassPlain || ""}
+                        onChange={(e) =>
+                          setNewComp((p) => ({
+                            ...p,
+                            portalAdminPassPlain: e.target.value,
+                          }))
+                        }
+                        placeholder="mín. 8 caracteres"
+                        className="w-full border border-purple-200 rounded-lg p-1.5 text-xs"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+              <button
+                onClick={async () => {
+                  if (!newComp.nombre) {
+                    showAlert("Ingrese la razón social.");
+                    return;
+                  }
+                  // Auto-generar código de portal si está activo y no tiene código aún
+                  let finalComp = {
+                    ...newComp,
+                    id: Date.now().toString(),
+                    _userId: currentUser?.user,
+                    orgId:
+                      newComp.orgId || currentUser?.orgId || ORG_DEFAULT_ID,
+                  };
+                  // FASE 2: asegurar medicoIds incluye al responsable
+                  if (
+                    finalComp.medicoResponsableId &&
+                    !(finalComp.medicoIds || []).includes(
+                      finalComp.medicoResponsableId
+                    )
+                  ) {
+                    finalComp.medicoIds = [
+                      ...(finalComp.medicoIds || []),
+                      finalComp.medicoResponsableId,
+                    ];
+                  }
+                  // FASE 2: hashear contraseña admin portal
+                  if (finalComp.portalAdminPassPlain) {
+                    finalComp.portalAdminPassHash = await _sha256(
+                      finalComp.portalAdminPassPlain
+                    );
+                    delete finalComp.portalAdminPassPlain;
+                  }
+                  if (finalComp.portalActivo && !finalComp.portalCode) {
+                    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+                    const rand = (n) =>
+                      Array.from(
+                        { length: n },
+                        () => chars[Math.floor(Math.random() * chars.length)]
+                      ).join("");
+                    finalComp.portalCode = `EMP-${rand(4)}-${rand(4)}`;
+                  }
+                  const upd = [...companies, finalComp];
+                  setCompanies(upd);
+                  _syncCompanies(upd);
+                  setNewComp(initialCompanyState);
+                  setSedeForm({ nombre: "", ciudad: "", direccion: "" });
+                  if (finalComp.portalActivo) {
+                    setPortalActivadoInfo(finalComp);
+                    setCompaniesTab("lista");
+                  } else {
+                    showAlert("✅ Empresa registrada.");
+                    setCompaniesTab("lista");
+                  }
+                }}
+                className="w-full mt-4 bg-purple-700 hover:bg-purple-800 text-white py-2.5 rounded-xl text-sm font-black"
+              >
+                💾 Guardar Empresa
+              </button>
+            </div>
+          )}
+
+          {/* TAB: CONVENIOS RESUMEN */}
+          {companiesTab === "convenios" && (
+            <div className="space-y-3">
+              <div className="grid grid-cols-3 gap-3 mb-2">
+                <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-center">
+                  <p className="text-xs font-black text-emerald-700">
+                    Con convenio activo
+                  </p>
+                  <p className="text-2xl font-black text-emerald-800">
+                    {
+                      companies.filter(
+                        (c) =>
+                          c.convenioVencimiento &&
+                          new Date(c.convenioVencimiento) >= hoy
+                      ).length
+                    }
+                  </p>
+                </div>
+                <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 text-center">
+                  <p className="text-xs font-black text-amber-700">
+                    Próximos a vencer (&lt;30d)
+                  </p>
+                  <p className="text-2xl font-black text-amber-800">
+                    {conveniosAlerta.length}
+                  </p>
+                </div>
+                <div className="bg-red-50 border border-red-200 rounded-xl p-3 text-center">
+                  <p className="text-xs font-black text-red-700">
+                    Sin convenio / vencido
+                  </p>
+                  <p className="text-2xl font-black text-red-800">
+                    {
+                      companies.filter(
+                        (c) =>
+                          !c.convenioVencimiento ||
+                          new Date(c.convenioVencimiento) < hoy
+                      ).length
+                    }
+                  </p>
+                </div>
+              </div>
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                <table className="w-full text-xs">
+                  <thead className="bg-gray-800 text-white">
+                    <tr>
+                      {[
+                        "Empresa",
+                        "Médico Resp.",
+                        "Tarifa Ingreso",
+                        "Vencimiento",
+                        "Estado",
+                      ].map((h) => (
+                        <th key={h} className="p-2 text-left font-black">
+                          {h}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {companies.map((c, i) => {
+                      const med = medicos.find(
+                        (m) => m.user === c.medicoResponsableId
+                      );
+                      const vence = c.convenioVencimiento
+                        ? new Date(c.convenioVencimiento)
+                        : null;
+                      const estado = !vence
+                        ? "Sin fecha"
+                        : vence < hoy
+                        ? "⛔ Vencido"
+                        : vence <= en30
+                        ? "⚠️ Próximo"
+                        : "✅ Vigente";
+                      return (
+                        <tr
+                          key={c.id || i}
+                          className={i % 2 === 0 ? "bg-white" : "bg-gray-50"}
+                        >
+                          <td className="p-2 font-bold">{c.nombre}</td>
+                          <td className="p-2 text-gray-600">
+                            {med?.name || "-"}
+                          </td>
+                          <td className="p-2">
+                            {c.tarifaIngreso
+                              ? "$" +
+                                Number(c.tarifaIngreso).toLocaleString("es-CO")
+                              : "-"}
+                          </td>
+                          <td className="p-2">
+                            {c.convenioVencimiento || "-"}
+                          </td>
+                          <td className="p-2 font-bold">{estado}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* MODAL EDITAR EMPRESA */}
+          {editingCompany && (
+            <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+              <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+                <div className="bg-purple-700 p-4 rounded-t-2xl flex justify-between items-center">
+                  <p className="text-white font-black">
+                    ✏️ Editar: {editingCompany.nombre}
+                  </p>
+                  <button
+                    onClick={() => setEditingCompany(null)}
+                    className="text-white font-black text-xl"
+                  >
+                    ✕
+                  </button>
+                </div>
+                <div className="p-4">
+                  <div className="flex flex-wrap -mx-1.5">
+                    <InputGroup
+                      label="Razón Social"
+                      value={editingCompany.nombre}
+                      onChange={(e) =>
+                        setEditingCompany((p) => ({
+                          ...p,
+                          nombre: e.target.value,
+                        }))
+                      }
+                      required
+                      width="w-1/2"
+                    />
+                    <InputGroup
+                      label="NIT"
+                      value={editingCompany.nit}
+                      onChange={(e) =>
+                        setEditingCompany((p) => ({
+                          ...p,
+                          nit: e.target.value,
+                        }))
+                      }
+                      width="w-1/4"
+                    />
+                    <InputGroup
+                      label="Ciudad"
+                      value={editingCompany.ciudad}
+                      onChange={(e) =>
+                        setEditingCompany((p) => ({
+                          ...p,
+                          ciudad: e.target.value,
+                        }))
+                      }
+                      width="w-1/4"
+                    />
+                    <InputGroup
+                      label="Correo"
+                      value={editingCompany.correo || ""}
+                      onChange={(e) =>
+                        setEditingCompany((p) => ({
+                          ...p,
+                          correo: e.target.value,
+                        }))
+                      }
+                      width="w-1/2"
+                    />
+                    <InputGroup
+                      label="Teléfono"
+                      value={editingCompany.telefono || ""}
+                      onChange={(e) =>
+                        setEditingCompany((p) => ({
+                          ...p,
+                          telefono: e.target.value,
+                        }))
+                      }
+                      width="w-1/4"
+                    />
+                    <InputGroup
+                      label="Gerente"
+                      value={editingCompany.gerente || ""}
+                      onChange={(e) =>
+                        setEditingCompany((p) => ({
+                          ...p,
+                          gerente: e.target.value,
+                        }))
+                      }
+                      width="w-1/4"
+                    />
+                  </div>
+                  <div className="border-t pt-3 mt-1">
+                    <p className="text-xs font-black text-gray-700 uppercase mb-2">
+                      🤝 Convenio
+                    </p>
+                    <div className="flex flex-wrap -mx-1.5">
+                      <div className="px-1.5 mb-2 w-1/2">
+                        <label className="block text-[10px] font-black text-gray-600 uppercase mb-1">
+                          Médico responsable
+                        </label>
+                        <select
+                          value={editingCompany.medicoResponsableId || ""}
+                          onChange={(e) =>
+                            setEditingCompany((p) => ({
+                              ...p,
+                              medicoResponsableId: e.target.value,
+                            }))
+                          }
+                          className="w-full p-1.5 border rounded-lg text-xs"
+                        >
+                          <option value="">- Sin asignar -</option>
+                          {medicos.map((m) => (
+                            <option key={m.user} value={m.user}>
+                              {m.name || m.user}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <InputGroup
+                        label="Tarifa Ingreso"
+                        value={editingCompany.tarifaIngreso || ""}
+                        onChange={(e) =>
+                          setEditingCompany((p) => ({
+                            ...p,
+                            tarifaIngreso: e.target.value,
+                          }))
+                        }
+                        width="w-1/4"
+                        type="number"
+                      />
+                      <InputGroup
+                        label="Tarifa Periódico"
+                        value={editingCompany.tarifaPeriodico || ""}
+                        onChange={(e) =>
+                          setEditingCompany((p) => ({
+                            ...p,
+                            tarifaPeriodico: e.target.value,
+                          }))
+                        }
+                        width="w-1/4"
+                        type="number"
+                      />
+                      <InputGroup
+                        label="Tarifa Egreso"
+                        value={editingCompany.tarifaEgreso || ""}
+                        onChange={(e) =>
+                          setEditingCompany((p) => ({
+                            ...p,
+                            tarifaEgreso: e.target.value,
+                          }))
+                        }
+                        width="w-1/4"
+                        type="number"
+                      />
+                      <InputGroup
+                        label="Tarifa Consulta"
+                        value={editingCompany.tarifaConsulta || ""}
+                        onChange={(e) =>
+                          setEditingCompany((p) => ({
+                            ...p,
+                            tarifaConsulta: e.target.value,
+                          }))
+                        }
+                        width="w-1/4"
+                        type="number"
+                      />
+                      <InputGroup
+                        label="Vencimiento"
+                        value={editingCompany.convenioVencimiento || ""}
+                        onChange={(e) =>
+                          setEditingCompany((p) => ({
+                            ...p,
+                            convenioVencimiento: e.target.value,
+                          }))
+                        }
+                        width="w-1/3"
+                        type="date"
+                      />
+                      <div className="px-1.5 mb-2 w-1/3">
+                        <label className="block text-[10px] font-black text-gray-600 uppercase mb-1">
+                          Condición pago
+                        </label>
+                        <select
+                          value={editingCompany.condicionesPago || "contado"}
+                          onChange={(e) =>
+                            setEditingCompany((p) => ({
+                              ...p,
+                              condicionesPago: e.target.value,
+                            }))
+                          }
+                          className="w-full p-1.5 border rounded-lg text-xs"
+                        >
+                          {["contado", "30 días", "60 días", "90 días"].map(
+                            (o) => (
+                              <option key={o} value={o}>
+                                {o}
+                              </option>
+                            )
+                          )}
+                        </select>
+                      </div>
+                    </div>
+                    <div className="flex gap-4">
+                      <label className="flex items-center gap-1.5 text-xs font-bold cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={!!editingCompany.portalActivo}
+                          onChange={(e) =>
+                            setEditingCompany((p) => ({
+                              ...p,
+                              portalActivo: e.target.checked,
+                            }))
+                          }
+                          className="accent-purple-600"
+                        />{" "}
+                        Portal activo
+                      </label>
+                      <label className="flex items-center gap-1.5 text-xs font-bold cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={!!editingCompany.facturacionAgrupada}
+                          onChange={(e) =>
+                            setEditingCompany((p) => ({
+                              ...p,
+                              facturacionAgrupada: e.target.checked,
+                            }))
+                          }
+                          className="accent-purple-600"
+                        />{" "}
+                        Facturación agrupada
+                      </label>
+                    </div>
+                  </div>
+                  {/* Portal code section in edit modal */}
+                  {editingCompany.portalActivo && (
+                    <div className="mt-3 bg-indigo-50 border border-indigo-200 rounded-xl p-3">
+                      <p className="text-[10px] font-black text-indigo-700 uppercase mb-2">
+                        🌐 Portal cliente
+                      </p>
+                      {editingCompany.portalCode ? (
+                        <div className="flex items-center gap-2">
+                          <span className="font-mono font-black text-indigo-900 text-sm bg-white border border-indigo-300 px-3 py-1 rounded-lg flex-1 text-center">
+                            {editingCompany.portalCode}
+                          </span>
+                          <button
+                            onClick={() => {
+                              const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+                              const rand = (n) =>
+                                Array.from(
+                                  { length: n },
+                                  () =>
+                                    chars[
+                                      Math.floor(Math.random() * chars.length)
+                                    ]
+                                ).join("");
+                              const newCode = `EMP-${rand(4)}-${rand(4)}`;
+                              setEditingCompany((p) => ({
+                                ...p,
+                                portalCode: newCode,
+                              }));
+                              showAlert(
+                                "🔄 Código regenerado: " +
+                                  newCode +
+                                  "\n\n⚠️ Guarda los cambios y envía el nuevo código a la empresa."
+                              );
+                            }}
+                            className="px-3 py-1.5 bg-amber-100 text-amber-700 text-[10px] font-black rounded-lg hover:bg-amber-200"
+                          >
+                            🔄 Regenerar
+                          </button>
+                          <button
+                            onClick={() => {
+                              setPortalActivadoInfo(editingCompany);
+                            }}
+                            className="px-3 py-1.5 bg-indigo-100 text-indigo-700 text-[10px] font-black rounded-lg hover:bg-indigo-200"
+                          >
+                            📨 Enviar
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2">
+                          <p className="text-[10px] text-amber-700 flex-1">
+                            Sin código generado - se creará al guardar
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  {/* FASE 2: Multi-médico en editar empresa */}
+                  <div className="border-t border-gray-100 pt-3 mt-2">
+                    <p className="text-xs font-black text-gray-700 uppercase mb-2">
+                      👨‍⚕️ Médicos asignados
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {medicos.map((m) => (
+                        <label
+                          key={m.user}
+                          className="flex items-center gap-1.5 text-xs cursor-pointer bg-indigo-50 border border-indigo-200 rounded-lg px-2 py-1"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={
+                              (editingCompany.medicoIds || []).includes(
+                                m.user
+                              ) || editingCompany.medicoResponsableId === m.user
+                            }
+                            onChange={(e) => {
+                              if (m.user === editingCompany.medicoResponsableId)
+                                return;
+                              setEditingCompany((p) => {
+                                const ids = p.medicoIds || [];
+                                return {
+                                  ...p,
+                                  medicoIds: e.target.checked
+                                    ? [...ids, m.user]
+                                    : ids.filter((x) => x !== m.user),
+                                };
+                              });
+                            }}
+                            className="accent-indigo-600"
+                            disabled={
+                              m.user === editingCompany.medicoResponsableId
+                            }
+                          />
+                          <span
+                            className={
+                              m.user === editingCompany.medicoResponsableId
+                                ? "font-black text-indigo-700"
+                                : "text-gray-700"
+                            }
+                          >
+                            {m.name || m.user}
+                            {m.user === editingCompany.medicoResponsableId &&
+                              " ⭐"}
+                          </span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                  {/* FASE 2: Sedes en editar empresa */}
+                  <div className="border-t border-gray-100 pt-3 mt-2">
+                    <p className="text-xs font-black text-gray-700 uppercase mb-2">
+                      🏢 Sedes
+                    </p>
+                    <div className="space-y-1 mb-2">
+                      {(editingCompany.sedes || []).map((s, i) => (
+                        <div
+                          key={i}
+                          className="flex items-center justify-between bg-blue-50 border border-blue-200 rounded-lg px-3 py-1.5"
+                        >
+                          <span className="text-xs font-bold text-blue-800">
+                            {s.nombre} — {s.ciudad}
+                            {s.direccion && ` · ${s.direccion}`}
+                          </span>
+                          <button
+                            onClick={() =>
+                              setEditingCompany((p) => ({
+                                ...p,
+                                sedes: (p.sedes || []).filter(
+                                  (_, j) => j !== i
+                                ),
+                              }))
+                            }
+                            className="text-red-500 text-xs font-black ml-2"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="flex gap-2 items-end">
+                      <input
+                        placeholder="Nombre sede"
+                        value={sedeForm.nombre}
+                        onChange={(e) =>
+                          setSedeForm((p) => ({ ...p, nombre: e.target.value }))
+                        }
+                        className="border rounded-lg p-1.5 text-xs flex-1"
+                      />
+                      <input
+                        placeholder="Ciudad"
+                        value={sedeForm.ciudad}
+                        onChange={(e) =>
+                          setSedeForm((p) => ({ ...p, ciudad: e.target.value }))
+                        }
+                        className="border rounded-lg p-1.5 text-xs w-24"
+                      />
+                      <button
+                        onClick={() => {
+                          if (!sedeForm.nombre) return;
+                          setEditingCompany((p) => ({
+                            ...p,
+                            sedes: [...(p.sedes || []), { ...sedeForm }],
+                          }));
+                          setSedeForm({
+                            nombre: "",
+                            ciudad: "",
+                            direccion: "",
+                          });
+                        }}
+                        className="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs font-black hover:bg-blue-700"
+                      >
+                        + Sede
+                      </button>
+                    </div>
+                  </div>
+                  {/* FASE 2: Admin portal en editar empresa */}
+                  {editingCompany.portalActivo && (
+                    <div className="border-t border-purple-100 pt-3 mt-2 bg-purple-50 rounded-xl p-3">
+                      <p className="text-xs font-black text-purple-700 uppercase mb-1">
+                        🔐 Admin del Portal
+                      </p>
+                      <div className="flex gap-2">
+                        <div className="flex-1">
+                          <label className="block text-[10px] font-black text-purple-700 mb-1">
+                            Usuario admin
+                          </label>
+                          <input
+                            value={editingCompany.portalAdminUser || ""}
+                            onChange={(e) =>
+                              setEditingCompany((p) => ({
+                                ...p,
+                                portalAdminUser: e.target.value,
+                              }))
+                            }
+                            placeholder="usuario_admin"
+                            className="w-full border border-purple-200 rounded-lg p-1.5 text-xs"
+                          />
+                        </div>
+                        <div className="flex-1">
+                          <label className="block text-[10px] font-black text-purple-700 mb-1">
+                            Nueva contraseña (vacío = sin cambio)
+                          </label>
+                          <input
+                            type="password"
+                            value={editingCompany.portalAdminPassPlain || ""}
+                            onChange={(e) =>
+                              setEditingCompany((p) => ({
+                                ...p,
+                                portalAdminPassPlain: e.target.value,
+                              }))
+                            }
+                            placeholder="••••••••"
+                            className="w-full border border-purple-200 rounded-lg p-1.5 text-xs"
+                          />
+                        </div>
+                      </div>
+                      {editingCompany.portalAdminPassHash &&
+                        !editingCompany.portalAdminPassPlain && (
+                          <p className="text-[10px] text-purple-500 mt-1">
+                            ✅ Admin configurado. Dejar vacía la contraseña para
+                            no cambiarla.
+                          </p>
+                        )}
+                    </div>
+                  )}
+                  <button
+                    onClick={async () => {
+                      let saved = { ...editingCompany };
+                      // FASE 2: medicoIds incluye responsable
+                      if (
+                        saved.medicoResponsableId &&
+                        !(saved.medicoIds || []).includes(
+                          saved.medicoResponsableId
+                        )
+                      ) {
+                        saved.medicoIds = [
+                          ...(saved.medicoIds || []),
+                          saved.medicoResponsableId,
+                        ];
+                      }
+                      // FASE 2: hashear contraseña admin portal si se proporcionó
+                      if (saved.portalAdminPassPlain) {
+                        saved.portalAdminPassHash = await _sha256(
+                          saved.portalAdminPassPlain
+                        );
+                        delete saved.portalAdminPassPlain;
+                      }
+                      // Auto-generar código si portal activo y no tiene código
+                      if (saved.portalActivo && !saved.portalCode) {
+                        const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+                        const rand = (n) =>
+                          Array.from(
+                            { length: n },
+                            () =>
+                              chars[Math.floor(Math.random() * chars.length)]
+                          ).join("");
+                        saved.portalCode = `EMP-${rand(4)}-${rand(4)}`;
+                      }
+                      const upd = companies.map((c) =>
+                        c.id === saved.id ? saved : c
+                      );
+                      setCompanies(upd);
+                      _syncCompanies(upd);
+                      setEditingCompany(null);
+                      if (saved.portalActivo) {
+                        setPortalActivadoInfo(saved);
+                      } else {
+                        showAlert("✅ Empresa actualizada.");
+                      }
+                    }}
+                    className="w-full mt-4 bg-purple-700 hover:bg-purple-800 text-white py-2.5 rounded-xl text-sm font-black"
+                  >
+                    💾 Guardar cambios
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+          <datalist id="arl-list">
+            {ARL_LIST.map((o) => (
+              <option key={o} value={o} />
+            ))}
+          </datalist>
+        </div>
+
+        {/* ═══ MODAL PORTAL ACTIVADO ═══ */}
+        {portalActivadoInfo &&
+          (() => {
+            const baseUrl = window.location.href.split("#")[0];
+            const portalUrl = `${baseUrl}#portalempresa?code=${portalActivadoInfo.portalCode}`;
+            const msgWhatsapp = [
+              `🏢 *Portal SISO OcupaSalud - ${portalActivadoInfo.nombre}*`,
+              ``,
+              `Estimado cliente, su portal de seguimiento médico ya está disponible.`,
+              ``,
+              `📋 *¿Qué puede ver en su portal?*`,
+              `✅ Listado de trabajadores evaluados`,
+              `✅ Conceptos de aptitud laboral`,
+              `✅ Estado de cuentas y pagos`,
+              `✅ Trabajadores con restricciones activas`,
+              `🔒 Los diagnósticos médicos son CONFIDENCIALES y no se muestran`,
+              ``,
+              `*Opción 1 - Enlace directo (recomendado):*`,
+              portalUrl,
+              ``,
+              `*Opción 2 - Acceso manual:*`,
+              `1. Abrir SISO OcupaSalud`,
+              `2. Inicio → botón 🏢 Portal Empresa`,
+              `3. Escribir código: *${portalActivadoInfo.portalCode}*`,
+              `   (o su NIT: ${portalActivadoInfo.nit})`,
+              ``,
+              `Saludos,`,
+              `${currentUser?.name || "Su médico ocupacional"}`,
+            ].join("\n");
+            return (
+              <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4 overflow-y-auto">
+                <div className="bg-white rounded-2xl shadow-2xl w-full max-w-xl my-4">
+                  {/* Header */}
+                  <div className="bg-gradient-to-r from-indigo-600 to-purple-700 p-5 rounded-t-2xl">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <p className="text-white font-black text-lg">
+                          🎉 ¡Portal empresa activado!
+                        </p>
+                        <p className="text-indigo-200 text-sm font-bold">
+                          {portalActivadoInfo.nombre}
+                        </p>
+                        <p className="text-indigo-300 text-[11px]">
+                          NIT: {portalActivadoInfo.nit}
+                          {portalActivadoInfo.dv
+                            ? `-${portalActivadoInfo.dv}`
+                            : ""}
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => setPortalActivadoInfo(null)}
+                        className="text-indigo-200 hover:text-white text-xl font-black"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  </div>
+                  <div className="p-5 space-y-4 overflow-y-auto max-h-[75vh]">
+                    {/* ─── CÓMO FUNCIONA ─── */}
+                    <div className="bg-blue-50 border border-blue-200 rounded-xl p-3">
+                      <p className="text-xs font-black text-blue-800 mb-1">
+                        📌 ¿Cómo funciona el portal por empresa?
+                      </p>
+                      <p className="text-[11px] text-blue-700 leading-relaxed">
+                        SISO usa <strong>un portal inteligente</strong> que cada
+                        empresa accede con su código exclusivo. Al ingresar el
+                        código, el portal filtra y muestra{" "}
+                        <strong>únicamente los datos de esa empresa</strong>.
+                        Ninguna empresa puede ver datos de otra.
+                      </p>
+                    </div>
+
+                    {/* ─── CÓDIGO ─── */}
+                    <div className="bg-indigo-50 border-2 border-indigo-400 rounded-xl p-4">
+                      <p className="text-[10px] font-black text-indigo-600 uppercase tracking-wider mb-2 text-center">
+                        🔑 Código de acceso exclusivo
+                      </p>
+                      <div className="flex items-center gap-2 mb-2">
+                        <p className="text-3xl font-black text-indigo-900 tracking-[0.25em] font-mono flex-1 text-center bg-white border border-indigo-200 rounded-lg py-2">
+                          {portalActivadoInfo.portalCode}
+                        </p>
+                        <button
+                          onClick={() => {
+                            if (navigator.clipboard) {
+                              navigator.clipboard
+                                .writeText(portalActivadoInfo.portalCode)
+                                .then(() => showAlert("✅ Código copiado"));
+                            } else
+                              showAlert(
+                                "Código: " + portalActivadoInfo.portalCode
+                              );
+                          }}
+                          className="px-3 py-2 bg-indigo-600 text-white text-[10px] font-black rounded-lg hover:bg-indigo-700 whitespace-nowrap"
+                        >
+                          📋 Copiar
+                        </button>
+                      </div>
+                      <p className="text-[10px] text-indigo-500 text-center">
+                        Código único e intransferible para{" "}
+                        <strong>{portalActivadoInfo.nombre}</strong>
+                      </p>
+                    </div>
+
+                    {/* ─── URL DIRECTA ─── */}
+                    <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3">
+                      <p className="text-[10px] font-black text-emerald-700 uppercase mb-2">
+                        🔗 Enlace directo (recomendado - 1 click para entrar)
+                      </p>
+                      <div className="flex items-center gap-2">
+                        <p className="text-[10px] text-emerald-800 font-mono bg-white border border-emerald-200 rounded-lg px-2 py-1.5 flex-1 truncate">
+                          {portalUrl}
+                        </p>
+                        <button
+                          onClick={() => {
+                            if (navigator.clipboard) {
+                              navigator.clipboard
+                                .writeText(portalUrl)
+                                .then(() =>
+                                  showAlert(
+                                    "✅ Enlace copiado.\nPuede pegarlo en WhatsApp o correo."
+                                  )
+                                );
+                            } else showAlert("Enlace: " + portalUrl);
+                          }}
+                          className="px-3 py-1.5 bg-emerald-600 text-white text-[10px] font-black rounded-lg hover:bg-emerald-700 whitespace-nowrap"
+                        >
+                          📋 Copiar
+                        </button>
+                      </div>
+                      <p className="text-[10px] text-emerald-600 mt-1">
+                        Al abrir este enlace el código se pre-carga - la empresa
+                        solo presiona "Acceder"
+                      </p>
+                    </div>
+
+                    {/* ─── QUÉ VE ─── */}
+                    <div>
+                      <p className="text-[10px] font-black text-gray-600 uppercase mb-2">
+                        Lo que verá <strong>{portalActivadoInfo.nombre}</strong>
+                        :
+                      </p>
+                      <div className="grid grid-cols-3 gap-2">
+                        {[
+                          {
+                            icon: "👥",
+                            label: "Trabajadores",
+                            desc: "Nombres, cargos y aptitud",
+                          },
+                          {
+                            icon: "💳",
+                            label: "Cuentas",
+                            desc: "Facturas y estado de pagos",
+                          },
+                          {
+                            icon: "⛔",
+                            label: "Restricciones",
+                            desc: "Trabajadores no aptos",
+                          },
+                        ].map((item) => (
+                          <div
+                            key={item.label}
+                            className="bg-gray-50 border border-gray-100 rounded-xl p-3 text-center"
+                          >
+                            <p className="text-xl mb-1">{item.icon}</p>
+                            <p className="text-[10px] font-black text-gray-700">
+                              {item.label}
+                            </p>
+                            <p className="text-[9px] text-gray-400 mt-0.5">
+                              {item.desc}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                      <p className="text-[10px] text-red-600 font-bold text-center mt-2">
+                        🔒 Diagnósticos clínicos = CONFIDENCIALES - nunca
+                        visibles (Art. 16 Res. 1843/2025)
+                      </p>
+                    </div>
+
+                    {/* ─── PRÓXIMOS PASOS ─── */}
+                    <div className="bg-amber-50 border border-amber-200 rounded-xl p-3">
+                      <p className="text-[10px] font-black text-amber-800 uppercase mb-2">
+                        📌 Próximos pasos
+                      </p>
+                      <div className="space-y-2">
+                        {[
+                          {
+                            n: "1",
+                            txt: `Copie el mensaje de abajo y envíelo al gerente o contacto de ${portalActivadoInfo.nombre} por WhatsApp o correo`,
+                          },
+                          {
+                            n: "2",
+                            txt: "La empresa abre el enlace directo (o ingresa el código manualmente en Portal Empresa)",
+                          },
+                          {
+                            n: "3",
+                            txt: "Verán en tiempo real sus trabajadores evaluados, aptitudes y estado de cuentas",
+                          },
+                          {
+                            n: "4",
+                            txt: "Cada nueva HC cerrada de esta empresa aparecerá automáticamente en su portal",
+                          },
+                        ].map((s) => (
+                          <div key={s.n} className="flex gap-2 items-start">
+                            <span className="min-w-[20px] h-5 w-5 bg-amber-400 text-white text-[10px] font-black rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                              {s.n}
+                            </span>
+                            <p className="text-[11px] text-amber-800">
+                              {s.txt}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* ─── BOTONES ─── */}
+                    <button
+                      onClick={() => {
+                        if (navigator.clipboard) {
+                          navigator.clipboard
+                            .writeText(msgWhatsapp)
+                            .then(() =>
+                              showAlert(
+                                "✅ Mensaje copiado.\n\nPéguelo en WhatsApp, correo o Teams."
+                              )
+                            );
+                        } else {
+                          const ta = document.createElement("textarea");
+                          ta.value = msgWhatsapp;
+                          document.body.appendChild(ta);
+                          ta.select();
+                          document.execCommand("copy");
+                          document.body.removeChild(ta);
+                          showAlert("✅ Copiado.");
+                        }
+                      }}
+                      className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-black rounded-xl"
+                    >
+                      📱 Copiar mensaje completo para WhatsApp / Email
+                    </button>
+
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => {
+                          setPortalActivadoInfo(null);
+                          setPortalEmpresaCodigo(portalActivadoInfo.portalCode);
+                          goTo("portalempresa");
+                        }}
+                        className="flex-1 py-2.5 bg-indigo-100 text-indigo-700 text-xs font-black rounded-xl hover:bg-indigo-200"
+                      >
+                        🌐 Vista previa del portal
+                      </button>
+                      <button
+                        onClick={() => setPortalActivadoInfo(null)}
+                        className="flex-1 py-2.5 bg-gray-100 text-gray-600 text-xs font-black rounded-xl hover:bg-gray-200"
+                      >
+                        ✓ Cerrar
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
+      </div>
+    );
+  };
   // ─── RENDER: VERIFICACIÓN ─────────────────────────────────────────────────
+  const renderVerification = () => {
+    const code = verificationCode;
+    const setCode = setVerificationCode;
+    const found = verificationFound;
+    const setFound = setVerificationFound;
+    const search = () => {
+      const q = code.trim();
+      if (!q) {
+        showAlert("Ingrese un código de verificación o número de documento.");
+        return;
+      }
+      // Verificación pública: busca en TODOS los pacientes sin importar médico ni rol
+      // Cualquier perfil puede verificar un certificado cerrado
+      const allPats = patientsList; // ya contiene todos los registros del usuario/sistema
+      const byCode = allPats.find(
+        (p) =>
+          p.codigoVerificacion &&
+          p.codigoVerificacion.toUpperCase() === q.toUpperCase()
+      );
+      const byDoc = !byCode
+        ? allPats.filter(
+            (p) => p.docNumero === q && p.estadoHistoria === "Cerrada"
+          )
+        : [];
+      if (byCode) {
+        setFound(byCode);
+      } else if (byDoc.length === 1) {
+        setFound(byDoc[0]);
+      } else if (byDoc.length > 1) {
+        // Multiple closed HC for same doc - show selector
+        setFound({ _multiple: byDoc });
+      } else {
+        showAlert(
+          "No se encontró ningún certificado cerrado con ese código o documento."
+        );
+      }
+    };
+    return (
+      <div className="min-h-screen bg-gray-50 p-8 font-sans print:bg-white print:p-0">
+        <div className="max-w-4xl mx-auto">
+          <div className="bg-white shadow rounded-2xl p-6 mb-6 no-print">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-black text-indigo-900 flex items-center gap-2">
+                <FileSearch className="w-5 h-5" /> Validación de Certificados
+              </h2>
+              <button
+                onClick={() => goBack()}
+                className="text-gray-500 font-bold text-sm flex items-center gap-1"
+              >
+                <LogOut className="rotate-180 w-4 h-4" /> Volver
+              </button>
+            </div>
+            <div className="bg-indigo-50 p-4 rounded-xl border border-indigo-100">
+              <p className="text-xs text-indigo-600 font-bold mb-2">
+                Buscar por código de verificación{" "}
+                <span className="font-normal">o</span> número de documento del
+                paciente:
+              </p>
+              <div className="flex gap-3">
+                <input
+                  value={code}
+                  onChange={(e) => setCode(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && search()}
+                  className="flex-1 p-2.5 border border-indigo-300 rounded-xl font-mono text-lg tracking-wider focus:ring-2 focus:ring-indigo-400 outline-none"
+                  placeholder="Código de verificación Ej: CV-X9Y8Z7"
+                />
+                <button
+                  onClick={search}
+                  className="bg-indigo-600 text-white px-6 py-2 rounded-xl font-bold hover:bg-indigo-700 flex items-center gap-2"
+                >
+                  <Search className="w-4 h-4" /> Consultar
+                </button>
+              </div>
+            </div>
+          </div>
+          {/* Multiple results selector */}
+          {found?._multiple && (
+            <div className="bg-white shadow rounded-2xl p-4 mb-4">
+              <p className="text-sm font-black text-gray-700 mb-3">
+                📋 Se encontraron {found._multiple.length} certificados para ese
+                documento. Seleccione:
+              </p>
+              <div className="space-y-2">
+                {found._multiple.map((p, i) => (
+                  <button
+                    key={p.id}
+                    onClick={() => setVerificationFound(p)}
+                    className="w-full text-left p-3 border border-gray-200 rounded-xl hover:bg-indigo-50 hover:border-indigo-300 transition"
+                  >
+                    <p className="font-bold text-sm text-gray-800">
+                      {p.nombres}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {p.fechaExamen} · {p.conceptoAptitud || "-"} · Código:{" "}
+                      {p.codigoVerificacion}
+                    </p>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+          {found && !found._multiple && (
+            <div
+              className="bg-white shadow-2xl print:shadow-none carta-visual mx-auto"
+              style={{
+                width: "21.59cm",
+                minHeight: "auto",
+                padding: "1.5cm",
+                boxSizing: "border-box",
+              }}
+            >
+              <div className="flex justify-end mb-4 no-print">
+                <button
+                  onClick={() => handlePrint(`Certificado-${found.nombres}`)}
+                  className="bg-gray-800 text-white px-4 py-2 rounded-lg font-bold text-sm flex items-center gap-2"
+                >
+                  <Printer className="w-4 h-4" /> Imprimir
+                </button>
+              </div>
+              <div className="text-center border-b-2 border-gray-800 pb-2 mb-4">
+                <div className="flex justify-center">
+                  <BrandLogo data={activeDoctorData} />
+                </div>
+                <h2 className="text-xl font-black uppercase mt-2">
+                  Certificado de Aptitud Laboral Verificado
+                </h2>
+              </div>
+              <div className="bg-gray-50 p-3 rounded border border-gray-200 mb-4 text-xs grid grid-cols-2 gap-2 print:bg-transparent">
+                <p>
+                  <strong>Nombre:</strong> {found.nombres}
+                </p>
+                <p>
+                  <strong>ID:</strong> {found.docNumero}
+                </p>
+                <p>
+                  <strong>Cargo:</strong> {found.cargo}
+                </p>
+                <p>
+                  <strong>Empresa:</strong> {found.empresaNombre}
+                </p>
+                <p>
+                  <strong>Fecha:</strong> {found.fechaExamen}
+                </p>
+                <p>
+                  <strong>Tipo:</strong> {found.tipoExamen}
+                </p>
+              </div>
+              <div className="text-center p-3 border-2 border-gray-800 rounded-xl mb-4">
+                <h3 className="text-xs font-bold text-gray-500 mb-1 uppercase">
+                  Concepto Emitido
+                </h3>
+                <div className="text-xl font-black uppercase">
+                  {found.conceptoAptitud}
+                </div>
+              </div>
+              {found.recomendaciones && (
+                <div className="mb-3">
+                  <h4 className="font-bold uppercase border-b mb-1 text-xs text-gray-500">
+                    Recomendaciones
+                  </h4>
+                  <p className="text-xs whitespace-pre-wrap">
+                    {found.recomendaciones}
+                  </p>
+                </div>
+              )}
+              {found.estadoHistoria === "Cerrada" && (
+                <div className="mx-4 mb-3 bg-emerald-50 border-2 border-emerald-400 rounded-xl px-4 py-3 flex items-center gap-3 no-print">
+                  <div className="w-8 h-8 bg-emerald-500 rounded-full flex items-center justify-center flex-shrink-0">
+                    <Lock className="w-4 h-4 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-black text-emerald-800">
+                      Historia Clínica Firmada y Cerrada
+                    </p>
+                    <p className="text-[10px] text-emerald-600">
+                      Código de verificación:{" "}
+                      <span className="font-mono font-bold">
+                        {found.codigoVerificacion || "--"}
+                      </span>
+                    </p>
+                  </div>
+                </div>
+              )}
+              <div className="mt-6 flex justify-between items-end px-4 print-break-avoid">
+                <div className="text-center w-1/3">
+                  <div className="border-t border-gray-800 pt-1 text-[10px] font-bold">
+                    Firma del Trabajador
+                  </div>
+                </div>
+                <div className="text-center w-1/3">
+                  <div className="border-2 border-gray-300 p-2 rounded text-[10px]">
+                    <p className="font-bold">
+                      <CheckCircle2 className="w-3 h-3 inline mr-1" />
+                      Verificado
+                    </p>
+                    <p className="font-mono text-sm font-black">
+                      {found.codigoVerificacion}
+                    </p>
+                  </div>
+                </div>
+                <div className="text-center w-1/3">
+                  <DoctorSignature
+                    signature={activeSignature}
+                    data={activeDoctorData}
+                    showData={true}
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
   // ─── RENDER: CUENTAS DE COBRO ─────────────────────────────────────────────
+  const renderBill = () => {
+    if (!_canUse("factura_basica", currentUser))
+      return (
+        <div className="min-h-screen bg-gray-50 font-sans">
+          {renderNavbar()}
+          <div className="max-w-2xl mx-auto px-4 py-12">
+            <PlanGate
+              feature="factura_basica"
+              requiredPlan="starter"
+              currentUser={currentUser}
+            />
+            <div className="mt-4 text-center">
+              <button
+                onClick={() => goBack()}
+                className="text-sm text-gray-500 hover:text-gray-700"
+              >
+                ← Volver
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    // ── SECRETARIA GATE: "Cuentas de Cobro" requiere autorización del admin ──
+    if (
+      currentUser?.role === "secretaria" &&
+      !_secretariaPuede("bill", currentUser, usersList)
+    )
+      return (
+        <div className="min-h-screen bg-gray-50 font-sans">
+          {renderNavbar()}
+          <div className="max-w-xl mx-auto px-4 py-16 text-center">
+            <div className="bg-amber-50 border-2 border-amber-300 rounded-2xl p-8 space-y-3">
+              <div className="text-5xl">🔐</div>
+              <p className="font-black text-amber-800 text-xl">
+                Módulo restringido
+              </p>
+              <p className="text-amber-700 text-sm font-bold">
+                Cuentas de Cobro
+              </p>
+              <p className="text-amber-600 text-xs leading-relaxed">
+                Este módulo requiere autorización explícita del administrador.
+                <br />
+                Solicita que habilite el permiso{" "}
+                <strong>"Cuentas de Cobro"</strong> en tu perfil.
+                <br />
+                (Usuarios → tu nombre → 🔐 Permisos de secretaria)
+              </p>
+              <button
+                onClick={() => goBack()}
+                className="mt-3 bg-amber-600 text-white px-5 py-2 rounded-lg text-sm font-bold hover:bg-amber-700 transition"
+              >
+                ← Volver al panel
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    const _billDocUser = billData.billDoctorId
+      ? usersList.find((u) => u.user === billData.billDoctorId)
+      : null;
+    const _billDocData = _billDocUser?.doctorData || activeDoctorData;
+    const _billDocSig = _billDocUser?.doctorData?.firma || activeSignature;
+    return (
+      <div className="min-h-screen bg-gray-50 font-sans p-8 print:bg-white print:p-0">
+        <div className="max-w-4xl mx-auto">
+          <div className="bg-white shadow rounded-2xl p-6 mb-6 no-print">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-black text-orange-800 flex items-center gap-2">
+                <Receipt className="w-5 h-5" /> Cuentas de Cobro
+              </h2>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => goBack()}
+                  className="text-gray-500 font-bold text-sm flex items-center gap-1"
+                >
+                  <LogOut className="rotate-180 w-4 h-4" /> Volver
+                </button>
+                <button
+                  onClick={() => {
+                    if (!billData.clientName && !billData.companyId) {
+                      showAlert("Seleccione cliente.");
+                      return;
+                    }
+                    const nb = {
+                      ...billData,
+                      id: "bill_" + Date.now(),
+                      savedAt: new Date().toISOString(),
+                      pagada: false,
+                    };
+                    const upd = [...savedBillsList, nb];
+                    setSavedBillsList(upd);
+                    {
+                      const _bSuf = currentUser?.empresaId
+                        ? "empresa_" + currentUser.empresaId
+                        : currentUser?.user || "shared";
+                      _sync(`siso_saved_bills_${_bSuf}`, JSON.stringify(upd));
+                    }
+                    showAlert(
+                      "✅ Cuenta de cobro guardada.\nPuede verla en Módulo Financiero → 💳 Cuentas"
+                    );
+                  }}
+                  className="bg-emerald-600 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-1 hover:bg-emerald-700"
+                >
+                  <Save className="w-4 h-4" /> Guardar
+                </button>
+                <button
+                  onClick={() => {
+                    goTo("caja");
+                    setTimeout(() => setCajaTab("cuentas"), 100);
+                  }}
+                  className="bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-1 hover:bg-blue-800"
+                >
+                  💳 Ver cuentas (
+                  {savedBillsList.filter((b) => !b.pagada).length} pend.)
+                </button>
+                <button
+                  onClick={() => handlePrint("Cuenta-de-Cobro")}
+                  className="bg-gray-800 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-1"
+                >
+                  <Printer className="w-4 h-4" /> Imprimir
+                </button>
+                <button
+                  onClick={() => {
+                    if (!_canUse("dian_xml", currentUser)) {
+                      showAlert(
+                        "🔒 Factura Electrónica DIAN está disponible en el plan ⭐ Pro ($79.000/mes).\n\nMenú → ⭐ Ver Planes"
+                      );
+                      return;
+                    }
+                    setShowDianPanel((v) => !v);
+                  }}
+                  className={`px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 ${
+                    showDianPanel
+                      ? "bg-green-700 text-white"
+                      : "bg-green-600 text-white hover:bg-green-700"
+                  }`}
+                >
+                  🧾{" "}
+                  {showDianPanel
+                    ? "Ocultar DIAN"
+                    : "⚡ Factura Electrónica DIAN"}
+                </button>
+              </div>{" "}
+            </div>
+            {/* Selector de médico para secretaria */}
+            {["secretaria", "administrador"].includes(currentUser?.role) &&
+              (() => {
+                const medicos = usersList.filter(
+                  (u) =>
+                    ["medico", "administrador", "super_admin"].includes(
+                      u.role
+                    ) && u.activo !== false
+                );
+                const selDoc = medicos.find(
+                  (u) => u.user === (billData.billDoctorId || currentUser?.user)
+                );
+                return (
+                  <>
+                    {/* FASE 2 Componente 7: Facturación mixta — Emitida por */}
+                    <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-3 mb-3">
+                      <p className="text-xs font-black text-indigo-800 mb-2">
+                        🏢 Emitida por (Facturación Mixta — Fase 2)
+                      </p>
+                      <div className="flex gap-2 flex-wrap mb-2">
+                        {[
+                          {
+                            v: "organizacion",
+                            l: "🏢 Organización",
+                            desc: "Usa datos de OcupaSalud Popayán",
+                          },
+                          {
+                            v: "medico_independiente",
+                            l: "👨‍⚕️ Médico independiente",
+                            desc: "Usa datos del médico seleccionado",
+                          },
+                        ].map(({ v, l, desc }) => (
+                          <button
+                            key={v}
+                            onClick={() =>
+                              setBillData((p) => ({ ...p, emitidaPor: v }))
+                            }
+                            className={`flex-1 min-w-[160px] p-2 rounded-lg border-2 text-left text-xs transition ${
+                              billData.emitidaPor === v
+                                ? "border-indigo-500 bg-indigo-100 text-indigo-800"
+                                : "border-gray-200 bg-white text-gray-600 hover:border-indigo-200"
+                            }`}
+                          >
+                            <p className="font-black">{l}</p>
+                            <p className="text-[10px] text-gray-500 mt-0.5">
+                              {desc}
+                            </p>
+                          </button>
+                        ))}
+                      </div>
+                      {billData.emitidaPor === "organizacion" && (
+                        <div className="bg-white rounded-lg p-2 text-xs border border-indigo-100">
+                          <p className="font-black text-gray-700">
+                            {orgsList.find(
+                              (o) =>
+                                o.orgId ===
+                                (currentUser?.orgId || ORG_DEFAULT_ID)
+                            )?.orgName || "OcupaSalud Popayán"}
+                          </p>
+                          <p className="text-gray-400">
+                            NIT:{" "}
+                            {orgsList.find(
+                              (o) =>
+                                o.orgId ===
+                                (currentUser?.orgId || ORG_DEFAULT_ID)
+                            )?.orgNit || "Configurar en Panel Global"}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                    <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 mb-3">
+                      <p className="text-xs font-black text-blue-800 mb-2">
+                        👨‍⚕️ Médico que emite la cuenta de cobro
+                      </p>
+                      <div className="flex gap-3 flex-wrap">
+                        <div className="flex-1 min-w-[200px]">
+                          <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">
+                            Seleccionar Médico
+                          </label>
+                          <select
+                            className="w-full p-2 border border-blue-200 rounded-lg text-sm bg-white"
+                            value={billData.billDoctorId || ""}
+                            onChange={(e) =>
+                              setBillData((p) => ({
+                                ...p,
+                                billDoctorId: e.target.value,
+                              }))
+                            }
+                          >
+                            <option value="">-- Mi perfil --</option>
+                            {medicos.map((u) => (
+                              <option key={u.user} value={u.user}>
+                                {u.doctorData?.nombre || u.nombre || u.user} (
+                                {u.role})
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                        {selDoc && (
+                          <div className="flex-1 min-w-[200px] bg-white rounded-lg border border-blue-100 p-2 text-xs">
+                            <p className="font-black text-gray-700">
+                              {selDoc.doctorData?.nombre ||
+                                selDoc.nombre ||
+                                selDoc.user}
+                            </p>
+                            <p className="text-gray-500">
+                              {selDoc.doctorData?.titulo || ""} · Lic:{" "}
+                              {selDoc.doctorData?.licencia || "--"}
+                            </p>
+                            <p className="text-gray-500">
+                              {selDoc.doctorData?.ciudad || ""}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                      {/* Estadísticas de trabajadores por empresa */}
+                      {billData.companyId &&
+                        (() => {
+                          const doctorId =
+                            billData.billDoctorId || currentUser?.user;
+                          const docPatients = patientsList.filter(
+                            (p) =>
+                              p.empresaId === billData.companyId &&
+                              (!doctorId ||
+                                p._medicoId === doctorId ||
+                                !p._medicoId)
+                          );
+                          const byType = docPatients.reduce((a, p) => {
+                            const t = p.tipoExamen || "INGRESO";
+                            a[t] = (a[t] || 0) + 1;
+                            return a;
+                          }, {});
+                          return docPatients.length > 0 ? (
+                            <div className="mt-2 bg-white rounded-lg border border-blue-100 p-2">
+                              <p className="text-[10px] font-black text-blue-700 mb-1">
+                                📊 Trabajadores atendidos de esta empresa:{" "}
+                                <span className="text-blue-900">
+                                  {docPatients.length}
+                                </span>
+                              </p>
+                              <div className="flex flex-wrap gap-2">
+                                {Object.entries(byType).map(([t, n]) => (
+                                  <span
+                                    key={t}
+                                    className="text-[9px] bg-blue-50 border border-blue-200 rounded px-2 py-0.5 font-bold text-blue-700"
+                                  >
+                                    {t}: {n}
+                                  </span>
+                                ))}
+                              </div>
+                              <button
+                                onClick={() =>
+                                  setBillData((p) => ({
+                                    ...p,
+                                    totalPacientes: docPatients.length,
+                                    amount: String(
+                                      docPatients.length *
+                                        (parseInt(p.precioPaciente) || 0)
+                                    ),
+                                  }))
+                                }
+                                className="mt-1.5 text-[10px] bg-blue-600 text-white px-3 py-1 rounded-lg font-bold hover:bg-blue-700"
+                              >
+                                ↑ Usar {docPatients.length} trabajadores para
+                                calcular valor
+                              </button>
+                            </div>
+                          ) : null;
+                        })()}
+                    </div>
+                  </>
+                );
+              })()}
+            <div className="grid grid-cols-2 gap-4 bg-orange-50 p-4 rounded-xl border border-orange-100">
+              <div>
+                <label className="block text-xs font-bold text-gray-600 mb-1 uppercase">
+                  Empresa / Cliente
+                </label>
+                <select
+                  className="w-full p-2 border rounded-lg text-sm"
+                  value={billData.companyId}
+                  onChange={(e) => {
+                    const c = companies.find((x) => x.id === e.target.value);
+                    setBillData((p) => ({
+                      ...p,
+                      companyId: e.target.value,
+                      clientName: c?.nombre || "",
+                      clientNit: c ? `${c.nit}${c.dv ? "-" + c.dv : ""}` : "",
+                      medicoId: c?.medicoResponsableId || p.medicoId || "",
+                      amount: c
+                        ? c.tarifaIngreso || c.tarifaConsulta || p.amount
+                        : p.amount,
+                    }));
+                  }}
+                >
+                  <option value="">Particular...</option>
+                  {companies.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.nombre}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <InputGroup
+                label="NIT / CC"
+                name="clientNit"
+                value={billData.clientNit}
+                onChange={(e) =>
+                  setBillData((p) => ({ ...p, clientNit: e.target.value }))
+                }
+                width="w-full"
+              />
+              <InputGroup
+                label="No. Consecutivo"
+                name="number"
+                value={billData.number}
+                onChange={(e) =>
+                  setBillData((p) => ({ ...p, number: e.target.value }))
+                }
+                width="w-full"
+              />
+              <InputGroup
+                label="Fecha"
+                name="date"
+                value={billData.date}
+                onChange={(e) =>
+                  setBillData((p) => ({ ...p, date: e.target.value }))
+                }
+                type="date"
+                width="w-full"
+              />
+              <InputGroup
+                label="Valor ($)"
+                name="amount"
+                value={billData.amount}
+                onChange={(e) =>
+                  setBillData((p) => ({ ...p, amount: e.target.value }))
+                }
+                type="number"
+                width="w-full"
+              />
+              <InputGroup
+                label="Banco"
+                name="bankName"
+                value={billData.bankName}
+                onChange={(e) =>
+                  setBillData((p) => ({ ...p, bankName: e.target.value }))
+                }
+                width="w-full"
+              />
+            </div>
+          </div>
+
+          <style>{`
+          .doc-editable [contenteditable]:hover { outline: 2px dashed #3b82f6; outline-offset:2px; border-radius:3px; cursor:text; }
+          .doc-editable [contenteditable]:focus { outline: 2px solid #2563eb; outline-offset:2px; border-radius:3px; background:#eff6ff; }
+          .doc-editable [contenteditable]:empty:before { content: attr(data-placeholder); color: #9ca3af; font-style: italic; }
+          @media print { .doc-editable [contenteditable] { outline:none !important; background:transparent !important; } }
+        `}</style>
+          <div className="doc-editable">
+            <div
+              className="bg-white mx-auto shadow-2xl print:shadow-none carta-visual"
+              style={{
+                width: "21.59cm",
+                minHeight: "auto",
+                padding: "2.5cm",
+                boxSizing: "border-box",
+              }}
+            >
+              <div className="flex justify-between items-center border-b-4 border-emerald-600 pb-5 mb-7">
+                <div className="scale-110 origin-left">
+                  <BrandLogo data={_billDocData} />
+                </div>
+                <div className="text-right">
+                  <h2
+                    className="text-3xl font-black text-gray-800 uppercase tracking-tight"
+                    contentEditable
+                    suppressContentEditableWarning
+                    data-placeholder="Título"
+                  >
+                    Cuenta de Cobro
+                  </h2>
+                  <div
+                    contentEditable
+                    suppressContentEditableWarning
+                    className="bg-emerald-600 text-white font-bold px-3 py-0.5 rounded-l mt-1 inline-block"
+                  >
+                    No. {(billData.number || "01").padStart(3, "0")}
+                  </div>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-6 mb-7">
+                <div className="p-4 bg-gray-50 rounded-xl border border-gray-100 print:bg-transparent">
+                  <p className="text-xs font-bold text-gray-400 uppercase mb-1">
+                    Cliente
+                  </p>
+                  <p
+                    contentEditable
+                    suppressContentEditableWarning
+                    className="text-lg font-black text-gray-800 uppercase"
+                    data-placeholder="Nombre cliente"
+                  >
+                    {billData.clientName || ""}
+                  </p>
+                  <p
+                    contentEditable
+                    suppressContentEditableWarning
+                    className="text-sm font-medium text-gray-600 mt-1"
+                    data-placeholder="NIT/CC"
+                  >
+                    NIT/CC: {billData.clientNit || ""}
+                  </p>
+                </div>
+                <div className="text-right flex flex-col justify-center">
+                  <p className="text-sm font-bold text-gray-400 uppercase">
+                    Fecha de Emisión
+                  </p>
+                  <p
+                    contentEditable
+                    suppressContentEditableWarning
+                    className="text-base font-medium text-gray-800"
+                    data-placeholder="Fecha"
+                  >
+                    {getSpanishDate(billData.date)}
+                  </p>
+                </div>
+              </div>
+              <div className="mb-6">
+                <div className="bg-emerald-600 text-white p-2 rounded-t-xl text-xs font-bold uppercase flex justify-between">
+                  <span
+                    contentEditable
+                    suppressContentEditableWarning
+                    data-placeholder="Concepto"
+                  >
+                    Concepto del Servicio
+                  </span>
+                  <span>Valor</span>
+                </div>
+                <div className="border border-emerald-600 rounded-b-xl p-5 flex justify-between items-center">
+                  <div className="w-3/4 pr-4">
+                    <p
+                      contentEditable
+                      suppressContentEditableWarning
+                      className="text-sm font-medium text-gray-800 uppercase leading-relaxed"
+                      data-placeholder="Descripción del servicio prestado..."
+                    >
+                      {billData.concept}
+                    </p>
+                  </div>
+                  <div className="w-1/4 text-right">
+                    <p
+                      contentEditable
+                      suppressContentEditableWarning
+                      className="text-2xl font-black text-gray-900"
+                      data-placeholder="$ 0"
+                    >
+                      ${" "}
+                      {parseFloat(billData.amount || 0).toLocaleString("es-CO")}
+                    </p>
+                  </div>
+                </div>
+                <div className="mt-1 text-right">
+                  <p
+                    contentEditable
+                    suppressContentEditableWarning
+                    className="text-xs italic text-gray-500 bg-gray-50 p-1.5 rounded inline-block"
+                    data-placeholder="Son: ..."
+                  >
+                    Son: {billData.amountWords || "____________________"}
+                  </p>
+                </div>
+              </div>
+              <div className="mb-7 grid grid-cols-2 gap-6">
+                <div>
+                  <p className="text-xs font-bold text-gray-400 uppercase mb-2 border-b pb-1">
+                    Información de Pago
+                  </p>
+                  <div className="bg-blue-50 p-3 rounded-xl border border-blue-100 text-xs print:bg-transparent">
+                    <p
+                      contentEditable
+                      suppressContentEditableWarning
+                      className="font-bold uppercase"
+                      data-placeholder="Banco"
+                    >
+                      {_billDocData.banco || billData.bankName || "BANCOLOMBIA"}
+                    </p>
+                    <p
+                      contentEditable
+                      suppressContentEditableWarning
+                      data-placeholder="Tipo cuenta"
+                    >
+                      Tipo:{" "}
+                      {_billDocData.tipoCuenta ||
+                        billData.accountType ||
+                        "Ahorros"}
+                    </p>
+                    <p
+                      contentEditable
+                      suppressContentEditableWarning
+                      className="font-mono text-sm mt-1"
+                      data-placeholder="No. cuenta"
+                    >
+                      No.{" "}
+                      {_billDocData.numeroCuenta ||
+                        billData.accountNumber ||
+                        "--"}
+                    </p>
+                    {_billDocData.rut && (
+                      <p
+                        contentEditable
+                        suppressContentEditableWarning
+                        className="text-gray-500 mt-1"
+                        data-placeholder="RUT"
+                      >
+                        RUT: {_billDocData.rut}
+                      </p>
+                    )}
+                  </div>
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-gray-400 uppercase mb-2 border-b pb-1">
+                    Acreedor
+                  </p>
+                  <div className="text-xs text-gray-700">
+                    <p
+                      contentEditable
+                      suppressContentEditableWarning
+                      className="font-black text-sm"
+                      data-placeholder="Nombre"
+                    >
+                      {_billDocData.nombre}
+                    </p>
+                    <p
+                      contentEditable
+                      suppressContentEditableWarning
+                      data-placeholder="NIT/CC"
+                    >
+                      NIT/CC: {_billDocData.cedula.split(" ")[0]}
+                    </p>
+                    <p
+                      contentEditable
+                      suppressContentEditableWarning
+                      data-placeholder="Licencia"
+                    >
+                      Lic: {_billDocData.licencia}
+                    </p>
+                    <p
+                      contentEditable
+                      suppressContentEditableWarning
+                      data-placeholder="Celular"
+                    >
+                      Cel: {_billDocData.celular}
+                    </p>
+                    <p
+                      contentEditable
+                      suppressContentEditableWarning
+                      data-placeholder="Email"
+                    >
+                      {_billDocData.email}
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div className="mt-10 flex justify-between items-end">
+                <div className="w-1/2">
+                  <DoctorSignature
+                    signature={_billDocSig}
+                    data={_billDocData}
+                    showData={true}
+                  />
+                </div>
+                <div className="w-2/5 text-right text-[8px] text-gray-400">
+                  <p
+                    contentEditable
+                    suppressContentEditableWarning
+                    data-placeholder="Nota legal"
+                  >
+                    Me acojo al Art. 383 E.T. Tarifa mínima 0%. No practicar
+                    retención.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+          {/* /doc-editable */}
+
+          {/* ─── B-20: PANEL FACTURACIÓN ELECTRÓNICA DIAN ─── */}
+          {showDianPanel && (
+            <div className="mt-6 bg-white rounded-2xl shadow-lg border-2 border-green-300 no-print overflow-hidden">
+              <div className="bg-green-700 px-5 py-3 flex items-center justify-between">
+                <div>
+                  <p className="text-white font-black text-sm">
+                    🧾 Facturación Electrónica DIAN
+                  </p>
+                  <p className="text-green-200 text-[10px]">
+                    Decreto 358/2020 · Resolución DIAN 000012/2021 · UBL 2.1
+                  </p>
+                </div>
+                <button
+                  onClick={() => setShowDianPanel(false)}
+                  className="text-green-200 hover:text-white font-black text-lg"
+                >
+                  ✕
+                </button>
+              </div>
+              <div className="p-5 space-y-4">
+                {/* Selector de software autorizado */}
+                <div className="grid md:grid-cols-3 gap-3">
+                  {[
+                    {
+                      id: "siigo",
+                      label: "Siigo",
+                      desc: "Integración API REST",
+                      color: "blue",
+                    },
+                    {
+                      id: "alegra",
+                      label: "Alegra",
+                      desc: "Integración API REST",
+                      color: "orange",
+                    },
+                    {
+                      id: "manual",
+                      label: "XML Manual",
+                      desc: "Descargar UBL 2.1",
+                      color: "gray",
+                    },
+                  ].map((p) => (
+                    <button
+                      key={p.id}
+                      onClick={() => setDianProvider(p.id)}
+                      className={`p-3 rounded-xl border-2 text-left transition ${
+                        dianProvider === p.id
+                          ? `border-${p.color}-500 bg-${p.color}-50`
+                          : "border-gray-200 hover:border-gray-300"
+                      }`}
+                    >
+                      <p className="font-black text-sm text-gray-800">
+                        {p.label}
+                      </p>
+                      <p className="text-[10px] text-gray-500">{p.desc}</p>
+                    </button>
+                  ))}
+                </div>
+
+                {/* Panel Siigo */}
+                {dianProvider === "siigo" && (
+                  <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 space-y-3">
+                    <p className="text-xs font-black text-blue-800">
+                      Configuración Siigo Nube API
+                    </p>
+                    <div className="grid md:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-[10px] font-bold text-gray-600 uppercase mb-1">
+                          API Key Siigo (subscription-key)
+                        </label>
+                        <input
+                          type="password"
+                          value={dianApiKey}
+                          onChange={(e) => {
+                            setDianApiKey(e.target.value);
+                            _ss.setItem("siso_dian_apikey", e.target.value);
+                          }}
+                          className="w-full p-2 border rounded-lg text-sm bg-white"
+                          placeholder="Tu API Key de Siigo Nube"
+                        />
+                      </div>
+                      <div className="flex items-end">
+                        <button
+                          onClick={async () => {
+                            if (!dianApiKey) {
+                              showAlert(
+                                "⚠️ Ingrese su API Key de Siigo primero."
+                              );
+                              return;
+                            }
+                            const xml = _generarFacturaDIAN_UBL(
+                              billData,
+                              activeDoctorData,
+                              billData.number || "001"
+                            );
+                            showAlert(
+                              "⚡ Para integración real con Siigo:\n1. Ingresar al Portal Siigo Nube\n2. Ir a Facturación Electrónica → API\n3. Usar el XML descargado como payload\n\nEl XML UBL 2.1 ya fue generado y está listo para descargar."
+                            );
+                          }}
+                          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-black text-sm rounded-lg"
+                        >
+                          Preparar para Siigo
+                        </button>
+                      </div>
+                    </div>
+                    <div className="text-[10px] text-blue-700 space-y-0.5">
+                      <p>
+                        📌 Documentación:{" "}
+                        <span className="font-bold">
+                          developer.siigo.com/reference
+                        </span>
+                      </p>
+                      <p>
+                        📌 Endpoint: POST /v1/invoices (con autenticación
+                        Bearer)
+                      </p>
+                      <p>
+                        📌 El XML generado cumple con el esquema UBL 2.1
+                        requerido por DIAN
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Panel Alegra */}
+                {dianProvider === "alegra" && (
+                  <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 space-y-3">
+                    <p className="text-xs font-black text-orange-800">
+                      Configuración Alegra API
+                    </p>
+                    <div>
+                      <label className="block text-[10px] font-bold text-gray-600 uppercase mb-1">
+                        API Token Alegra
+                      </label>
+                      <input
+                        type="password"
+                        value={dianApiKey}
+                        onChange={(e) => {
+                          setDianApiKey(e.target.value);
+                          _ss.setItem("siso_dian_apikey", e.target.value);
+                        }}
+                        className="w-full p-2 border rounded-lg text-sm bg-white"
+                        placeholder="user:token en Base64"
+                      />
+                    </div>
+                    <div className="text-[10px] text-orange-700 space-y-0.5">
+                      <p>
+                        📌 Documentación:{" "}
+                        <span className="font-bold">developer.alegra.com</span>
+                      </p>
+                      <p>📌 Endpoint: POST /api/v1/invoices</p>
+                      <p>
+                        📌 Authorization: Basic {"{"}Base64(user:token){"}"}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Botón descarga XML UBL 2.1 */}
+                <div className="flex flex-wrap gap-3 items-center">
+                  <button
+                    onClick={() => {
+                      try {
+                        const xml = _generarFacturaDIAN_UBL(
+                          billData,
+                          activeDoctorData,
+                          billData.number || "001"
+                        );
+                        const blob = new Blob([xml], {
+                          type: "application/xml",
+                        });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement("a");
+                        a.href = url;
+                        a.download = `FE-SISO-${String(
+                          billData.number || "001"
+                        ).padStart(6, "0")}-${
+                          new Date().toISOString().split("T")[0]
+                        }.xml`;
+                        a.click();
+                        URL.revokeObjectURL(url);
+                        showAlert(
+                          "✅ XML UBL 2.1 descargado. Cárguelo en su software de facturación autorizado por DIAN."
+                        );
+                      } catch (e) {
+                        showAlert("Error: " + e.message);
+                      }
+                    }}
+                    className="px-5 py-2.5 bg-green-600 hover:bg-green-700 text-white font-black text-sm rounded-xl flex items-center gap-2"
+                  >
+                    ⬇ Descargar XML UBL 2.1
+                  </button>
+                  <button
+                    onClick={() => {
+                      const xml = _generarFacturaDIAN_UBL(
+                        billData,
+                        activeDoctorData,
+                        billData.number || "001"
+                      );
+                      navigator.clipboard
+                        ?.writeText(xml)
+                        .then(() =>
+                          showAlert("✅ XML copiado al portapapeles.")
+                        )
+                        .catch(() => showAlert("Use el botón Descargar."));
+                    }}
+                    className="px-5 py-2.5 bg-gray-600 hover:bg-gray-700 text-white font-bold text-sm rounded-xl"
+                  >
+                    📋 Copiar XML
+                  </button>
+                </div>
+
+                {/* Nota legal */}
+                <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-[10px] text-amber-800 space-y-1">
+                  <p className="font-black">
+                    ⚖️ Marco normativo Decreto 358 de 2020
+                  </p>
+                  <p>
+                    Los profesionales de salud que presten servicios médicos y
+                    facturen más de 3.500 UVT al año están obligados a expedir
+                    factura electrónica de venta ante la DIAN. Los servicios
+                    médicos ocupacionales están <strong>exentos de IVA</strong>{" "}
+                    (Art. 476 E.T. num. 1). El CUFE es generado por el software
+                    autorizado; el XML aquí generado es el insumo base.
+                  </p>
+                  <p>
+                    Obligatorio inscribirse como facturador electrónico en el{" "}
+                    <span className="font-bold">
+                      Portal DIAN → Factura Electrónica → Habilitación
+                    </span>{" "}
+                    antes de emitir facturas electrónicas.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
   // ══════════════════════════════════════════════════════════════════════════
   // B-24: PORTAL DEL TRABAJADOR - Solo lectura con código de verificación
   // Res. 2346/2007 Art. 14 · Ley 1581/2012 - Acceso del titular a su HC
   // ══════════════════════════════════════════════════════════════════════════
+  const renderPortalTrabajador = () => {
+    const handleBuscar = () => {
+      const q = portalCodigo.trim();
+      if (!q) {
+        showAlert("Ingrese su código de verificación o número de cédula.");
+        return;
+      }
+      // 1️⃣ Buscar por código de verificación (cualquier formato: SISO-... o CV-...)
+      const qUp = q.toUpperCase();
+      let pac = patientsList.find(
+        (p) => p.codigoVerificacion && p.codigoVerificacion.toUpperCase() === qUp
+      );
+      if (pac) {
+        setPortalMultiple([]);
+        setPortalPaciente(pac);
+        return;
+      }
+      // 2️⃣ Buscar por número de documento (cédula) — solo HCs cerradas
+      const qDoc = q.replace(/\s/g, "");
+      const byDoc = patientsList.filter(
+        (p) =>
+          p.docNumero &&
+          p.docNumero.replace(/\s/g, "") === qDoc &&
+          p.estadoHistoria === "Cerrada" &&
+          !p._archivado
+      );
+      if (byDoc.length === 1) {
+        setPortalMultiple([]);
+        setPortalPaciente(byDoc[0]);
+        return;
+      }
+      if (byDoc.length > 1) {
+        // Múltiples HCs para ese documento — mostrar selector
+        setPortalPaciente(null);
+        setPortalMultiple(byDoc);
+        return;
+      }
+      // 3️⃣ No encontrado
+      showAlert("❌ Código o cédula no encontrado.\nVerifique el dato e intente de nuevo.");
+      setPortalPaciente(null);
+      setPortalMultiple([]);
+    };
+
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-teal-50 to-blue-50 font-sans">
+        {renderNavbar()}
+        <div className="p-6 max-w-3xl mx-auto space-y-5">
+          {/* Header */}
+          <div className="bg-gradient-to-r from-teal-700 to-blue-700 rounded-2xl p-5 text-white">
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => goBack()}
+                className="bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-lg text-xs font-bold flex-shrink-0"
+              >
+                ← Volver
+              </button>
+              <div>
+                <h2 className="text-lg font-black flex items-center gap-2">
+                  🧑‍💼 Portal del Trabajador
+                </h2>
+                <p className="text-teal-200 text-xs mt-0.5">
+                  Res. 2346/2007 Art. 14 · Acceso a su Historia Clínica
+                  Ocupacional
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Buscador por código */}
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
+            {/* Link de acceso externo */}
+            <div className="mb-4 p-3 bg-teal-50 border border-teal-200 rounded-xl">
+              <p className="text-[10px] font-black text-teal-700 uppercase mb-1">
+                🔗 Link de acceso para el trabajador
+              </p>
+              <p className="text-[10px] text-teal-600 font-mono break-all select-all mb-2">
+                https://fw5fnt.csb.app/#portaltrabajador
+              </p>
+              <div className="flex gap-2 flex-wrap">
+                <button
+                  onClick={() => {
+                    navigator.clipboard
+                      ?.writeText("https://fw5fnt.csb.app/#portaltrabajador")
+                      .then(() =>
+                        showAlert(
+                          "✅ Enlace copiado.\nComparta: https://fw5fnt.csb.app/#portaltrabajador\n\nEl trabajador ingresa con su código o cédula."
+                        )
+                      )
+                      .catch(() =>
+                        showAlert(
+                          "URL: https://fw5fnt.csb.app/#portaltrabajador"
+                        )
+                      );
+                  }}
+                  className="text-[10px] bg-teal-600 text-white px-3 py-1 rounded-lg font-bold flex items-center gap-1 hover:bg-teal-700"
+                >
+                  📋 Copiar enlace
+                </button>
+                <a
+                  href="https://fw5fnt.csb.app/#portaltrabajador"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-[10px] bg-white border border-teal-300 text-teal-700 px-3 py-1 rounded-lg font-bold flex items-center gap-1 hover:bg-teal-50"
+                >
+                  🔗 Abrir enlace
+                </a>
+                <button
+                  onClick={() => setShowPortalPublico(true)}
+                  className="text-[10px] bg-teal-50 border border-teal-200 text-teal-700 px-3 py-1 rounded-lg font-bold flex items-center gap-1 hover:bg-teal-100"
+                >
+                  🧑‍💼 Vista previa
+                </button>
+              </div>
+              <p className="text-[9px] text-teal-500 mt-1.5 leading-relaxed">
+                El trabajador abre ese link en su teléfono o computador, ingresa
+                su código o cédula, y ve su resultado sin necesidad de cuenta.
+              </p>
+            </div>
+            <p className="text-sm font-black text-gray-800 mb-3">
+              Consulta con código de verificación o número de cédula
+            </p>
+            <div className="flex gap-3">
+              <input
+                value={portalCodigo}
+                onChange={(e) => setPortalCodigo(e.target.value.toUpperCase())}
+                onKeyDown={(e) => e.key === "Enter" && handleBuscar()}
+                className="flex-1 p-2.5 border-2 border-teal-200 rounded-xl text-sm font-mono font-black tracking-widest uppercase"
+                placeholder="Código (SISO-... / CV-...) o número de cédula"
+                maxLength={50}
+              />
+              <button
+                onClick={handleBuscar}
+                className="px-5 py-2.5 bg-teal-600 hover:bg-teal-700 text-white font-black text-sm rounded-xl"
+              >
+                🔍 Consultar
+              </button>
+            </div>
+            <p className="text-[10px] text-gray-400 mt-2">
+              Ingrese el código de verificación entregado por el médico, <strong>o su número de cédula</strong> para ver todas sus evaluaciones.
+            </p>
+          </div>
+
+          {/* Selector múltiples HC por cédula */}
+          {portalMultiple.length > 1 && !portalPaciente && (
+            <div className="bg-white rounded-2xl shadow-sm border border-teal-200 overflow-hidden">
+              <div className="bg-teal-50 px-5 py-3 border-b border-teal-100">
+                <p className="text-sm font-black text-teal-800">
+                  📋 Se encontraron {portalMultiple.length} evaluaciones para esa cédula
+                </p>
+                <p className="text-[10px] text-teal-600 mt-0.5">Seleccione la que desea consultar:</p>
+              </div>
+              <div className="divide-y divide-gray-100">
+                {portalMultiple.map((p) => (
+                  <button
+                    key={p.id}
+                    onClick={() => { setPortalPaciente(p); setPortalMultiple([]); }}
+                    className="w-full text-left px-5 py-3 hover:bg-teal-50 transition flex justify-between items-center"
+                  >
+                    <div>
+                      <p className="text-sm font-black text-gray-800">{p.tipoExamen || "Evaluación"} — {p.fechaExamen || "--"}</p>
+                      <p className="text-[10px] text-gray-500">{p.empresaNombre || "--"} · {p.cargo || "--"}</p>
+                    </div>
+                    <span className={`text-[10px] font-black px-2 py-1 rounded-full ${
+                      (p.conceptoAptitud || "").toLowerCase().includes("no apto")
+                        ? "bg-red-100 text-red-700"
+                        : (p.conceptoAptitud || "").toLowerCase().includes("condicion")
+                        ? "bg-amber-100 text-amber-700"
+                        : "bg-emerald-100 text-emerald-700"
+                    }`}>
+                      {p.conceptoAptitud || "Pendiente"}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Resultado */}
+          {portalPaciente && (
+            <div className="bg-white rounded-2xl shadow-sm border border-teal-200 overflow-hidden">
+              <div className="bg-teal-50 px-5 py-3 border-b border-teal-100 flex items-center justify-between">
+                <p className="text-sm font-black text-teal-800">
+                  📋 Resumen de su evaluación médica
+                </p>
+                <span
+                  className={`text-[10px] font-black px-2 py-1 rounded-full ${
+                    (portalPaciente.conceptoAptitud || "")
+                      .toLowerCase()
+                      .includes("no apto")
+                      ? "bg-red-100 text-red-700"
+                      : (portalPaciente.conceptoAptitud || "")
+                          .toLowerCase()
+                          .includes("condicion")
+                      ? "bg-amber-100 text-amber-700"
+                      : "bg-emerald-100 text-emerald-700"
+                  }`}
+                >
+                  {portalPaciente.conceptoAptitud || "Pendiente"}
+                </span>
+              </div>
+              <div className="p-5 grid md:grid-cols-2 gap-4">
+                {[
+                  ["Nombre", portalPaciente.nombres],
+                  [
+                    "Documento",
+                    `${portalPaciente.docTipo || "CC"} ${
+                      portalPaciente.docNumero
+                    }`,
+                  ],
+                  ["Empresa", portalPaciente.empresaNombre || "--"],
+                  ["Cargo", portalPaciente.cargo || "--"],
+                  ["Tipo de examen", portalPaciente.tipoExamen || "--"],
+                  ["Fecha de evaluación", portalPaciente.fechaExamen || "--"],
+                  [
+                    "Concepto de aptitud",
+                    portalPaciente.conceptoAptitud || "Pendiente",
+                  ],
+                  ["Médico evaluador", portalPaciente.medicoNombre || "--"],
+                  [
+                    "Código verificación",
+                    portalPaciente.codigoVerificacion || "--",
+                  ],
+                  ["Estado HC", portalPaciente.estadoHistoria || "--"],
+                ].map(([k, v]) => (
+                  <div key={k}>
+                    <p className="text-[10px] font-black text-gray-400 uppercase">
+                      {k}
+                    </p>
+                    <p className="text-sm font-bold text-gray-800 mt-0.5">
+                      {v}
+                    </p>
+                  </div>
+                ))}
+              </div>
+              {portalPaciente.restricciones && (
+                <div className="px-5 pb-4">
+                  <p className="text-[10px] font-black text-gray-400 uppercase mb-1">
+                    Restricciones / Recomendaciones
+                  </p>
+                  <p className="text-xs text-gray-700 bg-amber-50 rounded-lg p-2 border border-amber-100">
+                    {portalPaciente.restricciones}
+                  </p>
+                </div>
+              )}
+              {/* ── BOTÓN DESCARGAR CERTIFICADO PDF ─────────────────── */}
+              <div className="px-5 pb-3">
+                <button
+                  onClick={() => {
+                    const docData = portalPaciente._doctorData || {
+                      nombre:
+                        portalPaciente.medicoNombre || "MÉDICO OCUPACIONAL",
+                      titulo: "Médico Especialista en Salud Ocupacional",
+                      licencia: "--",
+                      ciudad: "Popayán",
+                      email: "",
+                    };
+                    const firma = portalPaciente._firma || "";
+                    const _miIPSPortal = currentUser?.empresaId
+                      ? companies.find((c) => c.id === currentUser.empresaId) ||
+                        null
+                      : null;
+                    const html = _generarCertificadoHTMLNormalizado(
+                      portalPaciente,
+                      docData,
+                      firma,
+                      _miIPSPortal
+                    );
+                    const w = window.open(
+                      "",
+                      "_blank",
+                      "width=920,height=1100"
+                    );
+                    if (!w) {
+                      showAlert(
+                        "El navegador bloqueó la ventana emergente. Permita los popups para descargar el certificado."
+                      );
+                      return;
+                    }
+                    w.document.write(
+                      html.replace(
+                        "</body>",
+                        `<div id="np-dl" style="position:fixed;bottom:20px;right:20px;z-index:9999;display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
+                        <button onclick="window.print()" style="background:#065f46;color:#fff;border:none;padding:10px 22px;border-radius:10px;font-weight:900;font-size:11pt;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,0.22);">📥 Guardar / Imprimir PDF</button>
+                        <p style="font-size:8pt;color:#6b7280;text-align:right;">En el diálogo, selecciona <b>"Guardar como PDF"</b></p>
+                      </div><style>@media print{#np-dl{display:none!important;}}</style></body>`
+                      )
+                    );
+                    w.document.close();
+                    w.focus();
+                  }}
+                  className="w-full py-3 bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white font-black text-sm rounded-xl flex items-center justify-center gap-2.5 shadow transition"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="w-4 h-4"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={2.5}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M12 10v6m0 0l-3-3m3 3l3-3M3 17a3 3 0 003 3h12a3 3 0 003-3v-1M3 17V7a3 3 0 013-3h8l5 5v8"
+                    />
+                  </svg>
+                  📄 Descargar Certificado de Aptitud PDF
+                </button>
+              </div>
+              <div className="px-5 pb-5">
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-[10px] text-blue-700">
+                  <p className="font-black">🔒 Información confidencial</p>
+                  <p className="mt-0.5">
+                    Este acceso solo muestra información del resumen de su
+                    evaluación. Su historia clínica completa es custodiada por
+                    el médico ocupacional según la Res. 1995/1999 (20 años). Ley
+                    1581/2012 garantiza sus derechos como titular de la
+                    información.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {!portalPaciente && (
+            <div className="text-center py-12 text-gray-400">
+              <p className="text-5xl mb-3">🧑‍💼</p>
+              <p className="font-bold text-gray-600">
+                Ingrese su código de verificación para consultar su evaluación
+              </p>
+              <p className="text-xs mt-1">
+                El código fue entregado por el médico al finalizar su evaluación
+                médica ocupacional
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
 
   // ══════════════════════════════════════════════════════════════════════════
   // B-31: SVE - Sistema Vigilancia Epidemiológica - Res. 2346/2007 · Res. 1843/2025
@@ -23178,6 +29199,398 @@ RESPONDE ÚNICAMENTE JSON VÁLIDO sin texto previo ni bloques markdown:
   // B-22: HABEAS DATA - Módulo de Derechos del Titular
   // Ley 1581 de 2012 · Decreto 1078 de 2015 (DUR MinTIC) · Res. SIC 2023
   // ══════════════════════════════════════════════════════════════════════════
+  const renderHabeasData = () => {
+    const TIPOS_SOLICITUD = [
+      { valor: "conocer", etiqueta: "🔍 Conocer mis datos (Art. 8a Ley 1581)" },
+      {
+        valor: "actualizar",
+        etiqueta: "✏️ Actualizar / rectificar datos (Art. 8b)",
+      },
+      { valor: "suprimir", etiqueta: "🗑 Suprimir / eliminar datos (Art. 8c)" },
+      {
+        valor: "revocar",
+        etiqueta: "🚫 Revocar autorización de tratamiento (Art. 8e)",
+      },
+      { valor: "queja", etiqueta: "⚠️ Presentar queja ante SIC (Art. 8f)" },
+      {
+        valor: "acceder",
+        etiqueta: "📋 Acceder a Historia Clínica (Res. 1995/1999)",
+      },
+    ];
+    const ESTADOS = ["Recibida", "En trámite", "Respondida", "Cerrada"];
+
+    const _syncHabeas = (lista) => {
+      setHabeasRequests(lista);
+      _ls.setItem("siso_habeas_requests", JSON.stringify(lista));
+      _sbSet(`siso_habeas_${currentUser?.user || "shared"}`, lista);
+    };
+
+    const handleRegistrarSolicitud = () => {
+      const f = habeasForm;
+      if (!f.nombre.trim()) {
+        showAlert("⚠️ Ingrese el nombre del titular.");
+        return;
+      }
+      if (!f.documento.trim()) {
+        showAlert("⚠️ Ingrese el documento del titular.");
+        return;
+      }
+      if (!f.tipo) {
+        showAlert("⚠️ Seleccione el tipo de solicitud.");
+        return;
+      }
+      if (!f.descripcion.trim()) {
+        showAlert("⚠️ Ingrese la descripción de la solicitud.");
+        return;
+      }
+      const nueva = {
+        id: `hd_${Date.now()}`,
+        ...f,
+        estado: "Recibida",
+        creadaEn: new Date().toISOString(),
+        creadaPor: currentUser?.user,
+        respuesta: "",
+        respondidaEn: "",
+      };
+      const lista = [nueva, ...habeasRequests];
+      _syncHabeas(lista);
+      setHabeasForm({
+        nombre: "",
+        documento: "",
+        tipo: "",
+        descripcion: "",
+        fecha: new Date().toISOString().split("T")[0],
+      });
+      showAlert(
+        "✅ Solicitud de Habeas Data registrada. Plazo de respuesta: 10 días hábiles (Art. 14 Ley 1581/2012)."
+      );
+    };
+
+    const handleCambiarEstado = (id, nuevoEstado) => {
+      const lista = habeasRequests.map((r) =>
+        r.id === id
+          ? {
+              ...r,
+              estado: nuevoEstado,
+              respondidaEn:
+                nuevoEstado === "Respondida"
+                  ? new Date().toISOString()
+                  : r.respondidaEn,
+            }
+          : r
+      );
+      _syncHabeas(lista);
+    };
+
+    const diasRestantes = (creadaEn) => {
+      const ms = 10 * 24 * 60 * 60 * 1000; // 10 días hábiles ≈ 14 días calendario
+      const diff = Math.ceil(
+        (new Date(creadaEn).getTime() + 14 * 24 * 60 * 60 * 1000 - Date.now()) /
+          (24 * 60 * 60 * 1000)
+      );
+      return diff;
+    };
+
+    const pendientes = habeasRequests.filter(
+      (r) => r.estado === "Recibida" || r.estado === "En trámite"
+    );
+
+    return (
+      <div className="min-h-screen bg-gray-50 font-sans">
+        {renderNavbar()}
+        <div className="p-4 max-w-5xl mx-auto space-y-4">
+          {/* Header */}
+          <div className="bg-gradient-to-r from-indigo-700 to-purple-700 rounded-2xl p-5 text-white">
+            <div className="flex items-center justify-between flex-wrap gap-3">
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => goBack()}
+                  className="bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-lg text-xs font-bold flex-shrink-0"
+                >
+                  ← Volver
+                </button>
+                <div>
+                  <h2 className="text-lg font-black flex items-center gap-2">
+                    <Shield className="w-5 h-5" /> Habeas Data
+                  </h2>
+                  <p className="text-indigo-200 text-xs mt-0.5">
+                    Ley 1581 de 2012 · Decreto 1078 de 2015
+                  </p>
+                </div>
+              </div>
+              {pendientes.length > 0 && (
+                <div className="bg-red-500 text-white text-xs font-black px-3 py-1.5 rounded-full">
+                  ⏰ {pendientes.length} solicitud
+                  {pendientes.length > 1 ? "es" : ""} pendiente
+                  {pendientes.length > 1 ? "s" : ""}
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-4">
+            {/* PANEL IZQUIERDO: Registrar nueva solicitud */}
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 space-y-3">
+              <h3 className="text-sm font-black text-gray-800">
+                📋 Registrar solicitud del titular
+              </h3>
+              <div>
+                <label className="block text-[10px] font-bold text-gray-600 mb-1 uppercase">
+                  Nombre del titular *
+                </label>
+                <input
+                  value={habeasForm.nombre}
+                  onChange={(e) =>
+                    setHabeasForm((p) => ({ ...p, nombre: e.target.value }))
+                  }
+                  className="w-full p-2 border rounded-lg text-sm"
+                  placeholder="Nombre completo"
+                />
+              </div>
+              <div>
+                <label className="block text-[10px] font-bold text-gray-600 mb-1 uppercase">
+                  Documento de identidad *
+                </label>
+                <input
+                  value={habeasForm.documento}
+                  onChange={(e) =>
+                    setHabeasForm((p) => ({ ...p, documento: e.target.value }))
+                  }
+                  className="w-full p-2 border rounded-lg text-sm"
+                  placeholder="CC / CE / PP"
+                />
+              </div>
+              <div>
+                <label className="block text-[10px] font-bold text-gray-600 mb-1 uppercase">
+                  Tipo de solicitud *
+                </label>
+                <select
+                  value={habeasForm.tipo}
+                  onChange={(e) =>
+                    setHabeasForm((p) => ({ ...p, tipo: e.target.value }))
+                  }
+                  className="w-full p-2 border rounded-lg text-sm bg-white"
+                >
+                  <option value="">-- Seleccionar --</option>
+                  {TIPOS_SOLICITUD.map((t) => (
+                    <option key={t.valor} value={t.valor}>
+                      {t.etiqueta}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-[10px] font-bold text-gray-600 mb-1 uppercase">
+                  Descripción de la solicitud *
+                </label>
+                <textarea
+                  value={habeasForm.descripcion}
+                  onChange={(e) =>
+                    setHabeasForm((p) => ({
+                      ...p,
+                      descripcion: e.target.value,
+                    }))
+                  }
+                  rows={3}
+                  className="w-full p-2 border rounded-lg text-sm resize-none"
+                  placeholder="Describa qué datos desea conocer, corregir o eliminar..."
+                />
+              </div>
+              <div>
+                <label className="block text-[10px] font-bold text-gray-600 mb-1 uppercase">
+                  Fecha de recepción
+                </label>
+                <input
+                  type="date"
+                  value={habeasForm.fecha}
+                  onChange={(e) =>
+                    setHabeasForm((p) => ({ ...p, fecha: e.target.value }))
+                  }
+                  className="w-full p-2 border rounded-lg text-sm"
+                />
+              </div>
+              <button
+                onClick={handleRegistrarSolicitud}
+                className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-black text-sm rounded-xl"
+              >
+                📥 Registrar solicitud
+              </button>
+              <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-[10px] text-amber-800 space-y-1">
+                <p className="font-black">⚖️ Plazos legales (Ley 1581/2012):</p>
+                <p>
+                  • <strong>Consultas:</strong> 10 días hábiles (Art. 14)
+                </p>
+                <p>
+                  • <strong>Reclamos:</strong> 15 días hábiles (Art. 15)
+                </p>
+                <p>
+                  • <strong>Incumplimiento:</strong> denuncia ante SIC
+                  (Superintendencia de Industria y Comercio)
+                </p>
+              </div>
+            </div>
+
+            {/* PANEL DERECHO: Política de privacidad resumida */}
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 space-y-3">
+              <h3 className="text-sm font-black text-gray-800">
+                📜 Política de tratamiento de datos personales
+              </h3>
+              <div className="text-[11px] text-gray-700 space-y-2 leading-relaxed">
+                <p>
+                  <span className="font-black text-gray-900">Responsable:</span>{" "}
+                  El profesional médico registrado en el sistema (Ley 1581/2012
+                  Art. 3).
+                </p>
+                <p>
+                  <span className="font-black text-gray-900">
+                    Datos tratados:
+                  </span>{" "}
+                  Identificación personal, datos de salud (historia clínica
+                  ocupacional), datos laborales, resultados de paraclínicos.
+                </p>
+                <p>
+                  <span className="font-black text-gray-900">Finalidad:</span>{" "}
+                  Evaluaciones médicas ocupacionales, certificados de aptitud
+                  laboral, vigilancia epidemiológica, facturación de servicios
+                  médicos.
+                </p>
+                <p>
+                  <span className="font-black text-gray-900">Base legal:</span>{" "}
+                  Art. 10 Ley 1581/2012 - datos de salud tratados por
+                  profesional de la salud vinculado con el titular.
+                </p>
+                <p>
+                  <span className="font-black text-gray-900">
+                    Transferencia:
+                  </span>{" "}
+                  Solo a la empresa empleadora del trabajador (certificado de
+                  aptitud) y a autoridades de salud pública cuando la ley lo
+                  exija.
+                </p>
+                <p>
+                  <span className="font-black text-gray-900">Retención:</span>{" "}
+                  20 años según Res. 1995/1999 Art. 15. Después: destrucción
+                  certificada o anonimización.
+                </p>
+                <p>
+                  <span className="font-black text-gray-900">Seguridad:</span>{" "}
+                  Datos almacenados con cifrado en Supabase. Acceso restringido
+                  por credenciales del médico.
+                </p>
+                <p>
+                  <span className="font-black text-gray-900">Derechos:</span>{" "}
+                  Conocer · Actualizar · Rectificar · Suprimir · Revocar · Queja
+                  ante SIC (canalizar a través de este módulo).
+                </p>
+              </div>
+              <div className="border-t pt-3">
+                <p className="text-[10px] text-gray-500 font-bold">
+                  📧 Canal de contacto para ejercer derechos
+                </p>
+                <p className="text-[11px] text-gray-700 mt-1">
+                  {activeDoctorData?.email ||
+                    "Registre su email en Configuración de Usuario"}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Historial de solicitudes */}
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div className="px-5 py-3 border-b border-gray-100 bg-indigo-50 flex items-center justify-between">
+              <p className="text-sm font-black text-indigo-800">
+                Historial de solicitudes
+              </p>
+              <p className="text-xs text-gray-400">
+                {habeasRequests.length} solicitud
+                {habeasRequests.length !== 1 ? "es" : ""}
+              </p>
+            </div>
+            {habeasRequests.length === 0 ? (
+              <div className="text-center py-12 text-gray-400">
+                <p className="text-3xl mb-2">🔐</p>
+                <p className="text-sm font-bold">Sin solicitudes registradas</p>
+              </div>
+            ) : (
+              <div className="divide-y divide-gray-100">
+                {habeasRequests.map((r) => {
+                  const dias =
+                    r.estado === "Recibida" || r.estado === "En trámite"
+                      ? diasRestantes(r.creadaEn)
+                      : null;
+                  return (
+                    <div key={r.id} className="p-4 hover:bg-gray-50">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-bold text-gray-800">
+                            {r.nombre}{" "}
+                            <span className="font-normal text-gray-400">
+                              · {r.documento}
+                            </span>
+                          </p>
+                          <p className="text-[10px] text-indigo-600 font-bold mt-0.5">
+                            {TIPOS_SOLICITUD.find((t) => t.valor === r.tipo)
+                              ?.etiqueta || r.tipo}
+                          </p>
+                          <p className="text-[10px] text-gray-600 mt-1 line-clamp-2">
+                            {r.descripcion}
+                          </p>
+                          <p className="text-[10px] text-gray-400 mt-1">
+                            📅 {r.fecha} · Registrada por {r.creadaPor}
+                          </p>
+                          {dias !== null && (
+                            <p
+                              className={`text-[10px] font-black mt-1 ${
+                                dias < 3
+                                  ? "text-red-600"
+                                  : dias < 7
+                                  ? "text-amber-600"
+                                  : "text-emerald-600"
+                              }`}
+                            >
+                              {dias > 0
+                                ? `⏰ ${dias} días hábiles para responder`
+                                : "🚨 Plazo vencido - responder urgente"}
+                            </p>
+                          )}
+                        </div>
+                        <div className="flex flex-col gap-1 flex-shrink-0">
+                          <span
+                            className={`text-[10px] font-black px-2 py-1 rounded-full text-center ${
+                              r.estado === "Recibida"
+                                ? "bg-amber-100 text-amber-700"
+                                : r.estado === "En trámite"
+                                ? "bg-blue-100 text-blue-700"
+                                : r.estado === "Respondida"
+                                ? "bg-emerald-100 text-emerald-700"
+                                : "bg-gray-100 text-gray-500"
+                            }`}
+                          >
+                            {r.estado}
+                          </span>
+                          <select
+                            value={r.estado}
+                            onChange={(e) =>
+                              handleCambiarEstado(r.id, e.target.value)
+                            }
+                            className="text-[9px] p-1 border rounded bg-white"
+                          >
+                            {ESTADOS.map((e) => (
+                              <option key={e}>{e}</option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   // ══════════════════════════════════════════════════════════════════════════
   // B-17: TELEMEDICINA - Jitsi Meet (Res. 2654/2019)
@@ -23877,7 +30290,3484 @@ RESPONDE ÚNICAMENTE JSON VÁLIDO sin texto previo ni bloques markdown:
 
   // ─── ROUTER ───────────────────────────────────────────────────────────────
   // ─── RENDER: GESTIÓN DE USUARIOS ─────────────────────────────────────────
+  const renderUsers = () => {
+    // Médico (sin empresa): solo puede ver/editar su propio perfil
+    if (currentUser?.role === "medico" && !currentUser?.empresaId) {
+      const me = usersList.find((u) => u.user === currentUser?.user);
+      if (me && !userEditId) {
+        setTimeout(() => {
+          setUserEditId(me.id || me.user);
+          setEditForm({
+            ...me,
+            doctorData: { ...DEFAULT_DOCTOR_DATA, ...(me.doctorData || {}) },
+          });
+        }, 0);
+      }
+      if (activeUserMgmtTab !== "list")
+        setTimeout(() => setActiveUserMgmtTab("list"), 0);
+    }
+    // Médico de empresa: puede ver su perfil y la lista de usuarios de su empresa (solo lectura)
+    if (currentUser?.role === "medico" && currentUser?.empresaId) {
+      if (activeUserMgmtTab !== "list")
+        setTimeout(() => setActiveUserMgmtTab("list"), 0);
+    }
+    const startEdit = (u) => {
+      setUserEditId(u.id || u.user);
+      setEditForm({
+        ...u,
+        doctorData: { ...DEFAULT_DOCTOR_DATA, ...(u.doctorData || {}) },
+      });
+    };
+    const saveEdit = () => {
+      // FIX M-06: validar complejidad de contraseña si se cambia
+      const saveUser = async () => {
+        let userData = { ...editForm };
+        if (editForm.pass && editForm.pass.length > 0) {
+          const pw = editForm.pass;
+          const { valida: pwVal2, errores: pwErr2 } = _validarContrasena(pw);
+          if (!pwVal2) {
+            showAlert(
+              "⚠️ Contraseña no cumple la política:\n• " + pwErr2.join("\n• ")
+            );
+            return;
+          }
+          const { hash: pwHash, salt: pwSalt } = await _pbkdf2Hash(pw);
+          userData.passHash = pwHash;
+          userData.passSalt = pwSalt;
+          delete userData.pass; // nunca guardar texto plano
+        }
+        const upd = usersList.map((u) => (u.id === userEditId ? userData : u));
+        setUsersList(upd);
+        _sync("siso_users", JSON.stringify(upd));
+        // ── SYNC INMEDIATO A SUPABASE (aplica para todos los usuarios activos) ──
+        _sbSet("siso_users", upd);
+        // ── Si es secretaria: guardar permisos en clave dedicada para recarga en tiempo real ──
+        if (userData.role === "secretaria") {
+          const permKey = `siso_permisos_${userData.user}`;
+          const permData = {
+            secretariaPermisos: userData.secretariaPermisos || SECRETARIA_PERMISOS_DEFAULT,
+            medicosAsignados: userData.medicosAsignados || [],
+            updatedAt: new Date().toISOString(),
+            updatedBy: currentUser?.user || "admin",
+          };
+          _sbSet(permKey, permData);
+          _ls.setItem(permKey, JSON.stringify(permData));
+        }
+        // ── Si el usuario editó su propio perfil, actualizar currentUser en memoria ──
+        if (
+          userData.id === currentUser?.id ||
+          userData.user === currentUser?.user
+        ) {
+          setCurrentUser((prev) => ({ ...prev, ...userData }));
+          if (userData.doctorData) {
+            _sbSet(`siso_doctor_data_${userData.user}`, userData.doctorData);
+          }
+          if (userData.doctorData?.signature) {
+            setDoctorSignature(userData.doctorData.signature);
+            _sync("siso_doctor_signature", userData.doctorData.signature);
+            _sbSet("siso_doctor_signature", userData.doctorData.signature);
+          }
+        }
+        setUserEditId(null);
+        showAlert("✅ Perfil guardado. Los cambios se aplican de inmediato para " + (userData.name || userData.user) + ".");
+      };
+      saveUser();
+    };
+    const dd = editForm.doctorData || {};
+    const setDD = (field, val) =>
+      setEditForm((p) => ({
+        ...p,
+        doctorData: { ...(p.doctorData || {}), [field]: val },
+      }));
+    return (
+      <div className="min-h-screen bg-gray-50 font-sans p-6">
+        <div className="max-w-5xl mx-auto">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-xl font-black text-violet-900 flex items-center gap-2">
+              <UserCheck className="w-5 h-5" />{" "}
+              {_isAdmin(currentUser?.role)
+                ? "Gestión de Usuarios y Perfiles Médicos"
+                : currentUser?.role === "admin_empresa"
+                ? "Gestión de Equipo IPS"
+                : "Mi Perfil Profesional"}
+            </h2>
+            <button
+              onClick={() => {
+                if (currentUser?.role === "medico") {
+                  setView("dashboard");
+                } else {
+                  goBack();
+                }
+              }}
+              className="text-gray-500 font-bold text-sm flex items-center gap-1 hover:text-gray-700"
+            >
+              <LogOut className="rotate-180 w-4 h-4" /> Volver
+            </button>
+          </div>
+          <div className="flex gap-2 mb-6 border-b border-gray-200 flex-wrap">
+            {[
+              {
+                k: "list",
+                l:
+                  currentUser?.role === "admin_empresa"
+                    ? "👥 Equipo IPS"
+                    : "Mi Perfil",
+                showFor: "all",
+              },
+              { k: "new", l: "➕ Crear Usuario", showFor: "admin" },
+              { k: "reasignacion", l: "🔀 Reasignación", showFor: "admin" },
+              { k: "licencias", l: "💼 Licencias", showFor: "admin" },
+              { k: "auditoria", l: "📋 Auditoría", showFor: "admin" },
+              { k: "storage", l: "💾 Almacenamiento", showFor: "admin" },
+            ]
+              .filter(
+                ({ showFor }) =>
+                  showFor === "all" ||
+                  _isAdmin(currentUser?.role) ||
+                  _isAdminEmpresa(currentUser?.role)
+              )
+              .map(({ k, l }) => (
+                <button
+                  key={k}
+                  onClick={() => {
+                    setActiveUserMgmtTab(k);
+                    setUserEditId(null);
+                  }}
+                  className={`px-4 py-2 text-sm font-bold rounded-t-lg border-b-2 transition ${
+                    activeUserMgmtTab === k
+                      ? "border-violet-600 text-violet-700 bg-violet-50"
+                      : "border-transparent text-gray-500 hover:text-gray-700"
+                  }`}
+                >
+                  {l}
+                </button>
+              ))}
+          </div>
+          {/* ── LISTA USUARIOS ── */}
+          {activeUserMgmtTab === "list" &&
+            !userEditId &&
+            currentUser?.role === "medico" &&
+            !currentUser?.empresaId &&
+            (() => {
+              const me = usersList.find(
+                (u) => u.id === currentUser?.id || u.user === currentUser?.user
+              );
+              if (me) {
+                setTimeout(() => startEdit(me), 0);
+              }
+              return (
+                <div className="flex flex-col items-center justify-center py-16 gap-3">
+                  <div className="w-10 h-10 border-4 border-violet-200 border-t-violet-600 rounded-full animate-spin" />
+                  <p className="text-sm text-gray-400 font-bold">
+                    Cargando tu perfil...
+                  </p>
+                </div>
+              );
+            })()}
+          {activeUserMgmtTab === "list" &&
+            !userEditId &&
+            (currentUser?.role !== "medico" || currentUser?.empresaId) && (
+              <div className="space-y-3">
+                {/* ── IPS banner en lista de usuarios ── */}
+                {currentUser?.role === "admin_empresa" &&
+                  (() => {
+                    const _miEmpU = companies.find(
+                      (c) => c.id === currentUser.empresaId
+                    );
+                    return (
+                      <div className="bg-teal-50 border border-teal-200 rounded-xl p-3 mb-2">
+                        <p className="text-xs font-black text-teal-700">
+                          🏥 Equipo IPS: {_miEmpU?.nombre || "Empresa"}
+                        </p>
+                        <p className="text-[10px] text-teal-500">
+                          Cree médicos y secretarias que ingresarán al sistema
+                          con sus propias credenciales, vinculados a esta
+                          empresa.
+                        </p>
+                      </div>
+                    );
+                  })()}
+                {usersList
+                  .filter((u) =>
+                    // ── IPS: admin_empresa solo ve usuarios de su empresa ──
+                    currentUser?.role === "admin_empresa"
+                      ? u.empresaId === currentUser.empresaId ||
+                        u.user === currentUser.user
+                      : currentUser?.role === "medico" && currentUser?.empresaId
+                      ? u.empresaId === currentUser.empresaId ||
+                        u.user === currentUser.user
+                      : _isAdmin(currentUser?.role) ||
+                        u.user === currentUser?.user
+                  )
+                  .map((u, i) => (
+                    <div
+                      key={u.id}
+                      className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm hover:shadow-md transition"
+                    >
+                      <div className="flex justify-between items-start">
+                        <div className="flex items-center gap-3">
+                          <div className="w-12 h-12 rounded-full bg-violet-100 flex items-center justify-center text-violet-700 font-black text-lg">
+                            {u.name?.charAt(0) || "U"}
+                          </div>
+                          <div>
+                            <p className="font-black text-base text-gray-900">
+                              {u.name}
+                            </p>
+                            <p className="text-sm text-gray-500 font-mono">
+                              @{u.user}
+                            </p>
+                            <span
+                              className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
+                                u.role === "super_admin"
+                                  ? "bg-purple-100 text-purple-800"
+                                  : u.role === "admin_empresa"
+                                  ? "bg-teal-100 text-teal-800"
+                                  : u.role === "administrador"
+                                  ? "bg-red-100 text-red-700"
+                                  : u.role === "secretaria"
+                                  ? "bg-orange-100 text-orange-700"
+                                  : "bg-blue-100 text-blue-700"
+                              }`}
+                            >
+                              {u.role === "super_admin"
+                                ? "⭐ Super Admin"
+                                : u.role === "admin_empresa"
+                                ? "🏥 Admin IPS"
+                                : u.role === "administrador"
+                                ? "Administrador"
+                                : u.role === "secretaria"
+                                ? "Secretaria"
+                                : "Médico"}
+                            </span>
+                            {u.activo === false && (
+                              <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-gray-200 text-gray-500 ml-1">
+                                ⏸ Inactivo
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
+                          {/* Médico puede editar su propio perfil; admin puede editar cualquiera */}
+                          {(u.user === currentUser?.user ||
+                            _isAdmin(currentUser?.role)) && (
+                            <button
+                              onClick={() => startEdit(u)}
+                              className={`px-3 py-1.5 rounded-lg text-xs font-black flex items-center gap-1 transition ${
+                                u.user === currentUser?.user
+                                  ? "bg-violet-600 text-white hover:bg-violet-700"
+                                  : "bg-violet-50 text-violet-700 border border-violet-200 hover:bg-violet-100"
+                              }`}
+                            >
+                              <Pencil className="w-3 h-3" />
+                              {u.user === currentUser?.user
+                                ? "✏️ Mi Perfil"
+                                : "✏️ Editar perfil"}
+                            </button>
+                          )}
+                          {/* Solo admin puede activar/desactivar y eliminar usuarios (no a sí mismo) */}
+                          {_isAdmin(currentUser?.role) &&
+                            u.user !== currentUser?.user && (
+                              <button
+                                title={
+                                  u.activo === false
+                                    ? "Activar usuario"
+                                    : "Desactivar usuario"
+                                }
+                                onClick={() => {
+                                  const upd = usersList.map((x) =>
+                                    x.id === u.id
+                                      ? {
+                                          ...x,
+                                          activo:
+                                            u.activo === false ? true : false,
+                                        }
+                                      : x
+                                  );
+                                  setUsersList(upd);
+                                  _sync("siso_users", JSON.stringify(upd));
+                                  showAlert(
+                                    u.activo === false
+                                      ? `✅ Usuario @${u.user} activado.`
+                                      : `⏸️ Usuario @${u.user} desactivado. No podrá iniciar sesión.`
+                                  );
+                                }}
+                                className={`p-1.5 rounded-lg text-xs font-bold flex items-center gap-1 ${
+                                  u.activo === false
+                                    ? "bg-green-50 text-green-600 hover:bg-green-100"
+                                    : "bg-yellow-50 text-yellow-600 hover:bg-yellow-100"
+                                }`}
+                              >
+                                {u.activo === false ? (
+                                  <span className="text-[10px]">▶ Activar</span>
+                                ) : (
+                                  <span className="text-[10px]">
+                                    ⏸ Desactivar
+                                  </span>
+                                )}
+                              </button>
+                            )}
+                          {_isAdmin(currentUser?.role) &&
+                            u.user !== currentUser?.user &&
+                            usersList.length > 1 && (
+                              <button
+                                onClick={() =>
+                                  showConfirm("¿Eliminar usuario?", () => {
+                                    const upd = usersList.filter(
+                                      (x) => x.id !== u.id
+                                    );
+                                    setUsersList(upd);
+                                    _sync("siso_users", JSON.stringify(upd));
+                                    showAlert("Usuario eliminado.");
+                                  })
+                                }
+                                className="p-1.5 text-red-400 hover:text-red-600 rounded-lg hover:bg-red-50"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            )}
+                        </div>
+                      </div>
+                      {u.doctorData && (
+                        <div className="mt-3 grid grid-cols-3 gap-2 text-[11px] text-gray-500 bg-gray-50 rounded-xl p-3 border border-gray-100">
+                          <div>
+                            <span className="font-bold text-gray-700">CC:</span>{" "}
+                            {u.doctorData.cedula}
+                          </div>
+                          <div>
+                            <span className="font-bold text-gray-700">
+                              Licencia:
+                            </span>{" "}
+                            {u.doctorData.licencia}
+                          </div>
+                          <div>
+                            <span className="font-bold text-gray-700">
+                              Cel:
+                            </span>{" "}
+                            {u.doctorData.celular}
+                          </div>
+                          <div>
+                            <span className="font-bold text-gray-700">
+                              Banco:
+                            </span>{" "}
+                            {u.doctorData.banco}
+                          </div>
+                          <div>
+                            <span className="font-bold text-gray-700">
+                              Cuenta:
+                            </span>{" "}
+                            {u.doctorData.numeroCuenta}
+                          </div>
+                          <div>
+                            <span className="font-bold text-gray-700">
+                              Tarifa examen:
+                            </span>{" "}
+                            $
+                            {parseInt(
+                              u.doctorData.tarifaExamenOcup || 0
+                            ).toLocaleString("es-CO")}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+              </div>
+            )}
+          {/* ── EDITAR USUARIO (perfil completo) ── */}
+          {activeUserMgmtTab === "list" && userEditId && (
+            <div className="bg-white rounded-2xl shadow-lg p-6">
+              {/* Banner: quién se está editando */}
+              {_isAdmin(currentUser?.role) &&
+                editForm.user !== currentUser?.user && (
+                  <div className="mb-4 flex items-center gap-3 bg-amber-50 border-2 border-amber-300 rounded-xl px-4 py-3">
+                    <span className="text-amber-600 text-xl">⚙️</span>
+                    <div>
+                      <p className="text-xs font-black text-amber-800 uppercase">
+                        Editando perfil de otro usuario
+                      </p>
+                      <p className="text-sm font-bold text-amber-900">
+                        @{editForm.user} - {editForm.name}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => setUserEditId(null)}
+                      className="ml-auto text-amber-500 hover:text-amber-700 text-xs font-bold underline"
+                    >
+                      ← Volver a la lista
+                    </button>
+                  </div>
+                )}
+              <div className="flex justify-between items-center mb-5">
+                <h3 className="font-black text-lg text-violet-900 flex items-center gap-2">
+                  <Pencil className="w-4 h-4" /> Editar Perfil: {editForm.name}
+                </h3>
+                <button
+                  onClick={() => setUserEditId(null)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              {/* Acceso */}
+              <div className="bg-violet-50 rounded-xl p-4 mb-4 border border-violet-100">
+                <p className="text-xs font-black text-violet-800 uppercase mb-3 flex items-center gap-1">
+                  <Lock className="w-3 h-3" /> Datos de Acceso
+                  {!_isAdmin(currentUser?.role) && (
+                    <span className="text-[9px] font-normal text-violet-500 normal-case ml-1">
+                      (Solo puedes cambiar tu contraseña y datos profesionales)
+                    </span>
+                  )}
+                </p>
+                <div className="grid grid-cols-3 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold text-gray-600 mb-1">
+                      Nombre Completo
+                    </label>
+                    <input
+                      value={editForm.name || ""}
+                      onChange={(e) =>
+                        setEditForm((p) => ({ ...p, name: e.target.value }))
+                      }
+                      disabled={
+                        currentUser?.role !== "administrador" &&
+                        editForm.user !== currentUser?.user
+                      }
+                      className="w-full p-2 border rounded-lg text-sm disabled:bg-gray-100 disabled:text-gray-400"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-600 mb-1">
+                      Usuario
+                    </label>
+                    <input
+                      value={editForm.user || ""}
+                      onChange={(e) =>
+                        setEditForm((p) => ({ ...p, user: e.target.value }))
+                      }
+                      disabled={currentUser?.role !== "administrador"}
+                      className="w-full p-2 border rounded-lg text-sm font-mono disabled:bg-gray-100 disabled:text-gray-400"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-600 mb-1">
+                      Nueva Contraseña
+                    </label>
+                    <input
+                      type="password"
+                      value={editForm.pass || ""}
+                      onChange={(e) =>
+                        setEditForm((p) => ({ ...p, pass: e.target.value }))
+                      }
+                      className="w-full p-2 border rounded-lg text-sm"
+                      placeholder="Dejar igual si no cambia"
+                    />
+                    {editForm.pass && editForm.pass.length > 0 && (
+                      <p
+                        className={`text-[10px] mt-0.5 font-semibold ${
+                          editForm.pass.length >= 8 &&
+                          (/[A-Z]/.test(editForm.pass) ||
+                            /[0-9]/.test(editForm.pass))
+                            ? "text-emerald-600"
+                            : "text-red-500"
+                        }`}
+                      >
+                        {editForm.pass.length < 8
+                          ? `⚠ Mín. 8 caracteres`
+                          : !/[A-Z]/.test(editForm.pass) &&
+                            !/[0-9]/.test(editForm.pass)
+                          ? "⚠ Agrega mayúscula o número"
+                          : "✅ Contraseña segura"}
+                      </p>
+                    )}
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-600 mb-1">
+                      Rol
+                    </label>
+                    <select
+                      value={editForm.role || "medico"}
+                      onChange={(e) =>
+                        setEditForm((p) => ({ ...p, role: e.target.value }))
+                      }
+                      disabled={!_isAdmin(currentUser?.role)}
+                      className="w-full p-2 border rounded-lg text-sm disabled:bg-gray-100 disabled:text-gray-400"
+                    >
+                      {currentUser?.role === "super_admin" && (
+                        <option value="super_admin">⭐ Super Admin</option>
+                      )}
+                      <option value="administrador">Administrador</option>
+                      <option value="medico">Médico</option>
+                      <option value="secretaria">Secretaria</option>
+                    </select>
+                  </div>
+                </div>
+                {/* FASE 2 Componente 10: % Honorarios (solo para médicos) */}
+                {editForm.role === "medico" && _isAdmin(currentUser?.role) && (
+                  <div className="bg-teal-50 rounded-xl p-3 border border-teal-200 mt-2">
+                    <p className="text-xs font-black text-teal-700 mb-1">
+                      💰 Distribución de Honorarios (hook futuro)
+                    </p>
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="range"
+                        min={0}
+                        max={100}
+                        value={editForm.porcentajeHonorarios ?? 100}
+                        onChange={(e) =>
+                          setEditForm((p) => ({
+                            ...p,
+                            porcentajeHonorarios: Number(e.target.value),
+                          }))
+                        }
+                        className="flex-1 accent-teal-600"
+                      />
+                      <span className="font-black text-teal-700 text-sm w-16 text-right">
+                        {editForm.porcentajeHonorarios ?? 100}% médico
+                      </span>
+                    </div>
+                    <p className="text-[10px] text-teal-500 mt-1">
+                      Clínica: {100 - (editForm.porcentajeHonorarios ?? 100)}% —
+                      El cálculo automático se activará en fase futura.
+                    </p>
+                  </div>
+                )}
+                {/* FASE 2: orgId del usuario (solo super_admin puede cambiar) */}
+                {currentUser?.role === "super_admin" && (
+                  <div className="mt-2">
+                    <label className="block text-xs font-bold text-gray-600 mb-1">
+                      🏢 Organización
+                    </label>
+                    <select
+                      value={editForm.orgId || ORG_DEFAULT_ID}
+                      onChange={(e) =>
+                        setEditForm((p) => ({ ...p, orgId: e.target.value }))
+                      }
+                      className="w-full p-2 border rounded-lg text-sm"
+                    >
+                      {orgsList.map((o) => (
+                        <option key={o.orgId} value={o.orgId}>
+                          {o.orgName}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+              </div>
+
+              {/* ── 🔐 PERMISOS DE SECRETARIA - solo admin puede ver/editar ── */}
+              {_isAdmin(currentUser?.role) &&
+                editForm.role === "secretaria" && (
+                  <div className="bg-amber-50 rounded-xl p-4 mb-4 border-2 border-amber-300">
+                    <div className="flex items-center gap-2 mb-3">
+                      <span className="text-lg">🔐</span>
+                      <div>
+                        <p className="text-xs font-black text-amber-800 uppercase">
+                          Permisos de Secretaria
+                        </p>
+                        <p className="text-[10px] text-amber-600">
+                          Solo el administrador puede activar o desactivar
+                          módulos. Por defecto todo está BLOQUEADO.
+                        </p>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                      {Object.entries({
+                        agenda: {
+                          label: "🗓️ Agenda del Día",
+                          desc: "Ver y gestionar citas",
+                        },
+                        bill: {
+                          label: "🧾 Cuentas de Cobro",
+                          desc: "Generar y ver facturas",
+                        },
+                        propuestas: {
+                          label: "📄 Propuestas Económicas",
+                          desc: "Crear cotizaciones",
+                        },
+                        telemedicina: {
+                          label: "🩺 Telemedicina",
+                          desc: "Acceder a teleconsultas",
+                        },
+                        empresas: {
+                          label: "🏢 Empresas",
+                          desc: "Ver y editar clientes",
+                        },
+                        pacientes_lista: {
+                          label: "👥 Lista de Pacientes",
+                          desc: "Ver expedientes (solo lectura)",
+                        },
+                        pacientes_crear: {
+                          label: "➕ Crear Pacientes",
+                          desc: "Registrar nuevos pacientes",
+                        },
+                        reporte: {
+                          label: "📊 Reportes",
+                          desc: "Ver reportes epidemiológicos",
+                        },
+                        sve: {
+                          label: "🔬 SVE",
+                          desc: "Ver vigilancia epidemiológica",
+                        },
+                        caja: {
+                          label: "💰 Módulo Financiero",
+                          desc: "Caja diaria e ingresos",
+                        },
+                        adjuntos: {
+                          label: "📎 Adjuntos HC",
+                          desc: "Subir archivos a HC",
+                        },
+                        cuentas_cobro: {
+                          label: "💳 Estado Cuentas",
+                          desc: "Ver cuentas pendientes",
+                        },
+                      }).map(([key, { label, desc }]) => {
+                        const permisos =
+                          editForm.secretariaPermisos ||
+                          SECRETARIA_PERMISOS_DEFAULT;
+                        const isOn = permisos[key] === true;
+                        return (
+                          <button
+                            key={key}
+                            onClick={() =>
+                              setEditForm((p) => ({
+                                ...p,
+                                secretariaPermisos: {
+                                  ...(p.secretariaPermisos ||
+                                    SECRETARIA_PERMISOS_DEFAULT),
+                                  [key]: !isOn,
+                                },
+                              }))
+                            }
+                            className={`p-2.5 rounded-xl border-2 text-left transition select-none ${
+                              isOn
+                                ? "border-emerald-400 bg-emerald-50"
+                                : "border-gray-200 bg-white hover:border-amber-300"
+                            }`}
+                          >
+                            <div className="flex items-center justify-between mb-1">
+                              <span className="text-xs font-black text-gray-800">
+                                {label}
+                              </span>
+                              <span
+                                className={`text-[10px] font-black px-1.5 py-0.5 rounded-full ${
+                                  isOn
+                                    ? "bg-emerald-500 text-white"
+                                    : "bg-gray-200 text-gray-500"
+                                }`}
+                              >
+                                {isOn ? "ON" : "OFF"}
+                              </span>
+                            </div>
+                            <p className="text-[10px] text-gray-500">{desc}</p>
+                          </button>
+                        );
+                      })}
+                    </div>
+                    <p className="text-[10px] text-amber-700 mt-3 font-bold">
+                      ⚠️ Recuerda guardar los cambios para que los permisos
+                      tengan efecto.
+                    </p>
+                    {/* Médicos asignados */}
+                    <div className="mt-4 pt-3 border-t border-amber-200">
+                      <p className="text-xs font-black text-amber-800 mb-2">
+                        👨‍⚕️ Médicos asignados a esta secretaria
+                      </p>
+                      <p className="text-[10px] text-amber-600 mb-2">
+                        Si no selecciona ninguno, la secretaria verá pacientes
+                        de TODOS los médicos.
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {usersList
+                          .filter(
+                            (u) =>
+                              [
+                                "medico",
+                                "administrador",
+                                "super_admin",
+                              ].includes(u.role) && u.activo !== false
+                          )
+                          .map((med) => {
+                            const asignados = editForm.medicosAsignados || [];
+                            const seleccionado = asignados.includes(med.user);
+                            return (
+                              <button
+                                key={med.user}
+                                onClick={() =>
+                                  setEditForm((p) => ({
+                                    ...p,
+                                    medicosAsignados: seleccionado
+                                      ? (p.medicosAsignados || []).filter(
+                                          (id) => id !== med.user
+                                        )
+                                      : [
+                                          ...(p.medicosAsignados || []),
+                                          med.user,
+                                        ],
+                                  }))
+                                }
+                                className={`px-3 py-1.5 rounded-xl border-2 text-xs font-bold transition ${
+                                  seleccionado
+                                    ? "border-blue-500 bg-blue-50 text-blue-800"
+                                    : "border-gray-200 bg-white text-gray-600 hover:border-blue-300"
+                                }`}
+                              >
+                                {seleccionado ? "✅ " : ""}
+                                {med.name || med.user}
+                              </button>
+                            );
+                          })}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+              {/* B-18: Configuración 2FA */}
+              {(_isAdmin(currentUser?.role) ||
+                currentUser?.user === editForm.user) && (
+                <div className="bg-indigo-50 rounded-xl p-4 mb-4 border border-indigo-100">
+                  <p className="text-xs font-black text-indigo-800 uppercase mb-3 flex items-center gap-2">
+                    <Lock className="w-3.5 h-3.5" /> Autenticación 2FA (TOTP) -
+                    Res. 3100/2019
+                  </p>
+                  {editForm.twoFA?.enabled ? (
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-xs font-bold text-emerald-700">
+                          ✅ 2FA Activo
+                        </p>
+                        <p className="text-[10px] text-gray-500">
+                          Código requerido en cada inicio de sesión
+                        </p>
+                      </div>
+                      <button
+                        onClick={() =>
+                          setEditForm((p) => ({
+                            ...p,
+                            twoFA: { enabled: false, secret: "" },
+                          }))
+                        }
+                        className="px-3 py-1.5 bg-red-100 text-red-700 text-xs font-bold rounded-lg hover:bg-red-200"
+                      >
+                        🔓 Desactivar 2FA
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <p className="text-xs text-gray-600">
+                        2FA no configurado. Active para mayor seguridad.
+                      </p>
+                      <button
+                        onClick={() => {
+                          const secret = _totpGenSecret();
+                          setEditForm((p) => ({
+                            ...p,
+                            twoFA: { enabled: true, secret },
+                          }));
+                          showAlert(
+                            "✅ 2FA activado. Secret: " +
+                              secret +
+                              "\n\nEscanee el código QR con Google Authenticator / Authy.\n\n⚠ Guarde este código en lugar seguro."
+                          );
+                        }}
+                        className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-black rounded-lg"
+                      >
+                        🔐 Activar 2FA
+                      </button>
+                    </div>
+                  )}
+                  {editForm.twoFA?.enabled && editForm.twoFA?.secret && (
+                    <div className="mt-3 p-3 bg-white rounded-lg border border-indigo-200 space-y-2">
+                      <p className="text-[10px] font-bold text-gray-700">
+                        Escanee con su app autenticadora:
+                      </p>
+                      <img
+                        src={_totpGetQRCodeUrl(
+                          editForm.twoFA.secret,
+                          editForm.user || "usuario"
+                        )}
+                        alt="QR 2FA"
+                        className="w-36 h-36 rounded"
+                        onError={(e) => {
+                          e.target.style.display = "none";
+                        }}
+                      />
+                      <p className="text-[9px] text-gray-500">Clave manual:</p>
+                      <code className="text-[10px] bg-gray-100 px-2 py-1 rounded font-mono font-black text-indigo-700 break-all">
+                        {editForm.twoFA.secret}
+                      </code>
+                    </div>
+                  )}
+                </div>
+              )}
+              {/* Datos profesionales */}
+              <div className="bg-blue-50 rounded-xl p-4 mb-4 border border-blue-100">
+                <p className="text-xs font-black text-blue-800 uppercase mb-3 flex items-center gap-1">
+                  <GraduationCap className="w-3 h-3" /> Perfil Profesional
+                  (aparece en documentos)
+                </p>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold text-gray-600 mb-1">
+                      Nombre completo (documentos)
+                    </label>
+                    <input
+                      value={dd.nombre || ""}
+                      onChange={(e) => setDD("nombre", e.target.value)}
+                      className="w-full p-2 border rounded-lg text-sm font-bold uppercase"
+                      placeholder="DR. NOMBRE APELLIDO"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-600 mb-1">
+                      Cédula
+                    </label>
+                    <input
+                      value={dd.cedula || ""}
+                      onChange={(e) => setDD("cedula", e.target.value)}
+                      className="w-full p-2 border rounded-lg text-sm"
+                      placeholder="1.000.000.000 de Ciudad"
+                    />
+                  </div>
+                  <div className="col-span-2">
+                    <label className="block text-xs font-bold text-gray-600 mb-1">
+                      Título / Especialidad
+                    </label>
+                    <input
+                      value={dd.titulo || ""}
+                      onChange={(e) => setDD("titulo", e.target.value)}
+                      className="w-full p-2 border rounded-lg text-sm"
+                      placeholder="Especialista en..."
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-600 mb-1">
+                      Registro Médico (RM / Tarjeta Profesional)
+                    </label>
+                    <input
+                      value={dd.licencia || ""}
+                      onChange={(e) => setDD("licencia", e.target.value)}
+                      className="w-full p-2 border-2 border-emerald-300 rounded-lg text-sm focus:border-emerald-500"
+                      placeholder="Ej: TP-12345-6789 o No. Tarjeta Profesional"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-600 mb-1">
+                      Ciudad
+                    </label>
+                    <input
+                      value={dd.ciudad || ""}
+                      onChange={(e) => setDD("ciudad", e.target.value)}
+                      className="w-full p-2 border rounded-lg text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-600 mb-1">
+                      Celular
+                    </label>
+                    <input
+                      value={dd.celular || ""}
+                      onChange={(e) => setDD("celular", e.target.value)}
+                      className="w-full p-2 border rounded-lg text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-600 mb-1">
+                      Email
+                    </label>
+                    <input
+                      value={dd.email || ""}
+                      onChange={(e) => setDD("email", e.target.value)}
+                      className="w-full p-2 border rounded-lg text-sm"
+                    />
+                  </div>
+                  <div className="col-span-2">
+                    <label className="block text-xs font-bold text-gray-600 mb-1">
+                      Dirección consultorio
+                    </label>
+                    <input
+                      value={dd.direccion || ""}
+                      onChange={(e) => setDD("direccion", e.target.value)}
+                      className="w-full p-2 border rounded-lg text-sm"
+                    />
+                  </div>
+                  {/* B-F1-02: Foto del médico */}
+                  <div className="col-span-2">
+                    <label className="block text-xs font-bold text-gray-600 mb-2">
+                      📷 Foto de perfil del médico
+                    </label>
+                    <div className="flex items-center gap-4">
+                      {dd.fotoPerfil ? (
+                        <div className="relative">
+                          <img
+                            src={dd.fotoPerfil}
+                            alt="Foto médico"
+                            className="w-20 h-20 rounded-full object-cover border-2 border-blue-300 shadow"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setDD("fotoPerfil", null)}
+                            className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white rounded-full text-[10px] font-black flex items-center justify-center hover:bg-red-600"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="w-20 h-20 rounded-full border-2 border-dashed border-blue-300 flex items-center justify-center bg-white text-2xl">
+                          👤
+                        </div>
+                      )}
+                      <label className="cursor-pointer">
+                        <span className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-black rounded-lg">
+                          {dd.fotoPerfil ? "🔄 Cambiar foto" : "📁 Subir foto"}
+                        </span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => {
+                            const file = e.target.files[0];
+                            if (!file) return;
+                            const reader = new FileReader();
+                            reader.onload = (ev) => {
+                              const img = new window.Image();
+                              img.onload = () => {
+                                const canvas = document.createElement("canvas");
+                                const maxSize = 200;
+                                const ratio = Math.min(
+                                  maxSize / img.width,
+                                  maxSize / img.height,
+                                  1
+                                );
+                                canvas.width = Math.round(img.width * ratio);
+                                canvas.height = Math.round(img.height * ratio);
+                                canvas
+                                  .getContext("2d")
+                                  .drawImage(
+                                    img,
+                                    0,
+                                    0,
+                                    canvas.width,
+                                    canvas.height
+                                  );
+                                setDD(
+                                  "fotoPerfil",
+                                  canvas.toDataURL("image/jpeg", 0.8)
+                                );
+                              };
+                              img.src = ev.target.result;
+                            };
+                            reader.readAsDataURL(file);
+                            e.target.value = "";
+                          }}
+                        />
+                      </label>
+                      <p className="text-[10px] text-gray-500">
+                        JPG/PNG · Máx 200×200px · Se guarda en el perfil
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              {/* Datos financieros */}
+              <div className="bg-emerald-50 rounded-xl p-4 mb-4 border border-emerald-100">
+                <p className="text-xs font-black text-emerald-800 uppercase mb-3 flex items-center gap-1">
+                  <Banknote className="w-3 h-3" /> Datos Financieros (Cuentas de
+                  Cobro)
+                </p>
+                <div className="grid grid-cols-3 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold text-gray-600 mb-1">
+                      Banco
+                    </label>
+                    <input
+                      value={dd.banco || ""}
+                      onChange={(e) => setDD("banco", e.target.value)}
+                      className="w-full p-2 border rounded-lg text-sm"
+                      placeholder="BANCOLOMBIA"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-600 mb-1">
+                      Tipo de Cuenta
+                    </label>
+                    <select
+                      value={dd.tipoCuenta || "Ahorros"}
+                      onChange={(e) => setDD("tipoCuenta", e.target.value)}
+                      className="w-full p-2 border rounded-lg text-sm"
+                    >
+                      <option>Ahorros</option>
+                      <option>Corriente</option>
+                      <option>Nequi</option>
+                      <option>Daviplata</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-600 mb-1">
+                      Número de Cuenta
+                    </label>
+                    <input
+                      value={dd.numeroCuenta || ""}
+                      onChange={(e) => setDD("numeroCuenta", e.target.value)}
+                      className="w-full p-2 border rounded-lg text-sm font-mono"
+                      placeholder="261-617858-81"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-600 mb-1">
+                      RUT / NIT
+                    </label>
+                    <input
+                      value={dd.rut || ""}
+                      onChange={(e) => setDD("rut", e.target.value)}
+                      className="w-full p-2 border rounded-lg text-sm"
+                      placeholder="1061750704-1"
+                    />
+                  </div>
+                  <div className="col-span-2">
+                    <label className="block text-xs font-bold text-gray-600 mb-1">
+                      Régimen tributario
+                    </label>
+                    <input
+                      value={dd.regimen || ""}
+                      onChange={(e) => setDD("regimen", e.target.value)}
+                      className="w-full p-2 border rounded-lg text-sm"
+                      placeholder="Simple -- Art. 383 E.T."
+                    />
+                  </div>
+                </div>
+              </div>
+              {/* Tarifas */}
+              <div className="bg-orange-50 rounded-xl p-4 mb-5 border border-orange-100">
+                <p className="text-xs font-black text-orange-800 uppercase mb-3 flex items-center gap-1">
+                  <Receipt className="w-3 h-3" /> Tarifas para Propuestas
+                  Económicas
+                </p>
+                <div className="grid grid-cols-4 gap-3">
+                  {[
+                    { f: "tarifaExamenOcup", l: "Examen ocupacional" },
+                    { f: "tarifaInforme", l: "Informe de salud" },
+                    { f: "tarifaDiaPVE", l: "PVE / día" },
+                    { f: "tarifaHora", l: "Hora consulta" },
+                  ].map((t) => (
+                    <div key={t.f}>
+                      <label className="block text-xs font-bold text-gray-600 mb-1">
+                        {t.l}
+                      </label>
+                      <div className="relative">
+                        <span className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-500 text-sm font-bold">
+                          $
+                        </span>
+                        <input
+                          type="number"
+                          value={dd[t.f] || ""}
+                          onChange={(e) => setDD(t.f, e.target.value)}
+                          className="w-full pl-5 p-2 border rounded-lg text-sm font-mono"
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              {/* ── Firma Digital ── */}
+              <div className="bg-violet-50 rounded-xl p-4 mb-5 border border-violet-200">
+                <p className="text-xs font-black text-violet-800 uppercase mb-3 flex items-center gap-2">
+                  <FileSignature className="w-3.5 h-3.5" /> Firma Digital del
+                  Profesional
+                  <span className="text-[9px] font-normal text-violet-500 normal-case">
+                    (aparece en HC, Certificados, Fórmulas, Informes y
+                    Propuestas)
+                  </span>
+                </p>
+                <div className="flex items-center gap-5">
+                  {/* Preview */}
+                  <div className="w-48 h-24 border-2 border-dashed border-violet-300 rounded-xl flex items-center justify-center bg-white overflow-hidden flex-shrink-0">
+                    {editForm.doctorData?.signature || doctorSignature ? (
+                      <img
+                        src={editForm.doctorData?.signature || doctorSignature}
+                        alt="Firma"
+                        className="max-h-full max-w-full object-contain p-1"
+                      />
+                    ) : (
+                      <div className="text-center">
+                        <FileSignature className="w-6 h-6 text-gray-300 mx-auto mb-1" />
+                        <p className="text-[10px] text-gray-400">
+                          Sin firma cargada
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                  {/* Acciones */}
+                  <div className="flex-1 space-y-2">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      style={{ display: "none" }}
+                      id="editUserSigInput"
+                      onChange={(e) => {
+                        const file = e.target.files[0];
+                        if (!file) return;
+                        const r = new FileReader();
+                        r.onloadend = () => {
+                          const sig = r.result;
+                          setEditForm((p) => ({
+                            ...p,
+                            doctorData: {
+                              ...(p.doctorData || {}),
+                              signature: sig,
+                            },
+                          }));
+                          // Si es el usuario actual, actualizar firma activa también
+                          if (
+                            currentUser?.id === editForm.id ||
+                            currentUser?.user === editForm.user
+                          ) {
+                            setDoctorSignature(sig);
+                            _sync("siso_doctor_signature", sig);
+                          }
+                        };
+                        r.readAsDataURL(file);
+                        e.target.value = null;
+                      }}
+                    />
+                    <button
+                      onClick={() =>
+                        document.getElementById("editUserSigInput").click()
+                      }
+                      className="w-full bg-violet-600 text-white px-4 py-2.5 rounded-xl text-sm font-bold hover:bg-violet-700 flex items-center justify-center gap-2 shadow"
+                    >
+                      <UploadCloud className="w-4 h-4" /> Subir Firma (PNG /
+                      JPG)
+                    </button>
+                    {(editForm.doctorData?.signature || doctorSignature) && (
+                      <button
+                        onClick={() => {
+                          setEditForm((p) => ({
+                            ...p,
+                            doctorData: {
+                              ...(p.doctorData || {}),
+                              signature: null,
+                            },
+                          }));
+                          if (
+                            currentUser?.id === editForm.id ||
+                            currentUser?.user === editForm.user
+                          ) {
+                            setDoctorSignature(null);
+                            _ls.removeItem("siso_doctor_signature");
+                          }
+                        }}
+                        className="w-full bg-white text-red-500 border border-red-200 px-3 py-1.5 rounded-xl text-xs font-bold hover:bg-red-50 flex items-center justify-center gap-1"
+                      >
+                        <X className="w-3 h-3" /> Eliminar firma actual
+                      </button>
+                    )}
+                    <p className="text-[9px] text-gray-400 text-center">
+                      Recomendado: PNG fondo transparente · máx. 2 MB
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <button
+                onClick={saveEdit}
+                className="w-full bg-violet-600 text-white py-3 rounded-xl font-black text-sm hover:bg-violet-700 flex items-center justify-center gap-2"
+              >
+                <Save className="w-4 h-4" /> Guardar Perfil Completo
+              </button>
+            </div>
+          )}
+          {/* ── TAB LICENCIAS (solo admin) ── */}
+          {activeUserMgmtTab === "licencias" && _isAdmin(currentUser?.role) && (
+            <LicenciasTab
+              usersList={usersList}
+              setUsersList={setUsersList}
+              patientsList={patientsList}
+              currentUser={currentUser}
+              setCurrentUser={setCurrentUser}
+              _sync={_sync}
+              pendingActivationPlan={pendingActivationPlan}
+              setPendingActivationPlan={setPendingActivationPlan}
+            />
+          )}
+          {/* ── CREAR USUARIO ── */}
+          {/* ── NORMATIVO: Res. 1918/2009 Art.8 - Registro de Auditoría ── */}
+          {activeUserMgmtTab === "auditoria" && (
+            <div className="space-y-3">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h3 className="text-sm font-black text-gray-800 flex items-center gap-2">
+                    <Shield className="w-4 h-4 text-violet-600" /> Registro de
+                    Auditoría de Accesos
+                  </h3>
+                  <p className="text-[10px] text-gray-400 mt-0.5">
+                    Res. 1918/2009 Art. 8 · {auditLog.length} registros · Máximo
+                    500
+                  </p>
+                </div>
+                <button
+                  onClick={() => {
+                    // FIX M-05: solo admin puede borrar el log de auditoría
+                    if (currentUser?.role !== "administrador") {
+                      showAlert(
+                        "⛔ Solo el administrador puede limpiar el registro de auditoría."
+                      );
+                      return;
+                    }
+                    if (
+                      window.confirm(
+                        "¿Limpiar el log de auditoría? Esta acción quedará registrada y no se puede deshacer."
+                      )
+                    ) {
+                      // Registrar el evento de borrado ANTES de ejecutarlo
+                      const entradaBorrado = {
+                        id: Date.now(),
+                        fecha: new Date().toISOString(),
+                        usuario: currentUser?.user || "desconocido",
+                        accion: "BORRADO_AUDIT_LOG",
+                        pacienteId: null,
+                        tipo: "SEGURIDAD",
+                      };
+                      const logFinal = [entradaBorrado];
+                      setAuditLog(logFinal);
+                      _sync("siso_audit_log", JSON.stringify(logFinal));
+                    }
+                  }}
+                  className="text-xs text-red-400 hover:text-red-600 font-bold border border-red-200 px-3 py-1.5 rounded-lg"
+                >
+                  {_isAdmin(currentUser?.role)
+                    ? "Limpiar log"
+                    : "🔒 Solo admin"}
+                </button>
+              </div>
+              {auditLog.length === 0 ? (
+                <div className="text-center py-12 text-gray-400">
+                  <Shield className="w-10 h-10 mx-auto mb-2 opacity-30" />
+                  <p className="font-bold text-sm">
+                    Sin registros de auditoría aún
+                  </p>
+                  <p className="text-xs">
+                    Las acciones se registran automáticamente
+                  </p>
+                </div>
+              ) : (
+                <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+                  <table className="w-full text-xs">
+                    <thead className="bg-gray-50 border-b border-gray-200">
+                      <tr>
+                        <th className="p-2 text-left font-bold text-gray-500 uppercase">
+                          Fecha / Hora
+                        </th>
+                        <th className="p-2 text-left font-bold text-gray-500 uppercase">
+                          Usuario
+                        </th>
+                        <th className="p-2 text-left font-bold text-gray-500 uppercase">
+                          Acción
+                        </th>
+                        <th className="p-2 text-left font-bold text-gray-500 uppercase">
+                          ID Paciente
+                        </th>
+                        <th className="p-2 text-left font-bold text-gray-500 uppercase">
+                          Tipo
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {auditLog.map((entry, i) => (
+                        <tr
+                          key={entry.id}
+                          className={i % 2 === 0 ? "bg-white" : "bg-gray-50"}
+                        >
+                          <td className="p-2 font-mono text-[10px] text-gray-500">
+                            {new Date(entry.fecha).toLocaleString("es-CO")}
+                          </td>
+                          <td className="p-2">
+                            <p className="font-bold text-violet-700 text-[10px]">
+                              {entry.usuario}
+                            </p>
+                            {entry.nombreUsuario && (
+                              <p className="text-[9px] text-gray-400">
+                                {entry.nombreUsuario} · {entry.rol || ""}
+                              </p>
+                            )}
+                          </td>
+                          <td className="p-2">
+                            <span
+                              className={`px-2 py-0.5 rounded-full text-[10px] font-black ${
+                                entry.accion === "Login"
+                                  ? "bg-blue-100 text-blue-700"
+                                  : entry.accion === "Cierre"
+                                  ? "bg-red-100 text-red-700"
+                                  : entry.accion === "Guardado"
+                                  ? "bg-emerald-100 text-emerald-700"
+                                  : entry.accion === "Edicion"
+                                  ? "bg-yellow-100 text-yellow-700"
+                                  : "bg-gray-100 text-gray-700"
+                              }`}
+                            >
+                              {entry.accion}
+                            </span>
+                          </td>
+                          <td className="p-2 font-mono text-[10px] text-gray-400">
+                            {entry.pacienteId
+                              ? "···" + String(entry.pacienteId).slice(-6)
+                              : "-"}
+                          </td>
+                          <td className="p-2 text-gray-500">
+                            {entry.tipo || "-"}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          )}
+          {activeUserMgmtTab === "new" && (
+            <div className="bg-white rounded-2xl shadow-lg p-6 max-w-3xl overflow-y-auto max-h-[90vh]">
+              <h3 className="font-black text-base text-violet-800 mb-4 flex items-center gap-2">
+                <UserPlus className="w-4 h-4" /> Nuevo Usuario Médico -- Perfil
+                Completo
+              </h3>
+              <p className="text-xs text-blue-600 bg-blue-50 rounded-lg p-2 mb-4">
+                Complete todos los datos ahora para que Cuentas de Cobro y
+                Propuesta Económica queden prellenadas automáticamente.
+              </p>
+              {/* ── Acceso ── */}
+              <p className="text-[10px] font-black text-violet-700 uppercase border-b border-violet-200 pb-1 mb-3">
+                Datos de Acceso
+              </p>
+              <div className="grid grid-cols-2 gap-3 mb-4">
+                <div className="col-span-2">
+                  <label className="block text-xs font-bold text-gray-600 mb-1">
+                    Nombre Completo *
+                  </label>
+                  <input
+                    value={newUserForm.name || ""}
+                    onChange={(e) =>
+                      setNewUserForm((p) => ({ ...p, name: e.target.value }))
+                    }
+                    className="w-full p-2 border rounded-lg text-sm"
+                    placeholder="Dr. Nombre Completo Apellidos"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-600 mb-1">
+                    Usuario *
+                  </label>
+                  <input
+                    value={newUserForm.user || ""}
+                    onChange={(e) =>
+                      setNewUserForm((p) => ({ ...p, user: e.target.value }))
+                    }
+                    className="w-full p-2 border rounded-lg text-sm font-mono"
+                    placeholder="usuario123"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-600 mb-1">
+                    Contraseña *
+                  </label>
+                  <input
+                    type="password"
+                    value={newUserForm.pass || ""}
+                    onChange={(e) =>
+                      setNewUserForm((p) => ({ ...p, pass: e.target.value }))
+                    }
+                    className="w-full p-2 border rounded-lg text-sm"
+                    placeholder="••••••••"
+                  />
+                  {newUserForm.pass && (
+                    <p
+                      className={`text-[10px] mt-0.5 font-semibold ${
+                        newUserForm.pass.length >= 8 &&
+                        (/[A-Z]/.test(newUserForm.pass) ||
+                          /[0-9]/.test(newUserForm.pass))
+                          ? "text-emerald-600"
+                          : "text-red-500"
+                      }`}
+                    >
+                      {newUserForm.pass.length < 8
+                        ? `⚠ Mín. 8 caracteres (${newUserForm.pass.length}/8)`
+                        : !/[A-Z]/.test(newUserForm.pass) &&
+                          !/[0-9]/.test(newUserForm.pass)
+                        ? "⚠ Agrega mayúscula o número"
+                        : "✅ Contraseña segura"}
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-600 mb-1">
+                    Rol
+                  </label>
+                  <select
+                    value={newUserForm.role || "medico"}
+                    onChange={(e) =>
+                      setNewUserForm((p) => ({ ...p, role: e.target.value }))
+                    }
+                    className="w-full p-2 border rounded-lg text-sm"
+                  >
+                    {currentUser?.role === "admin_empresa" ? (
+                      <>
+                        <option value="medico">Médico</option>
+                        <option value="secretaria">Secretaria</option>
+                      </>
+                    ) : (
+                      <>
+                        {currentUser?.role === "super_admin" && (
+                          <option value="super_admin">⭐ Super Admin</option>
+                        )}
+                        <option value="administrador">Administrador</option>
+                        <option value="medico">Médico</option>
+                        <option value="secretaria">Secretaria</option>
+                      </>
+                    )}
+                  </select>
+                </div>
+                {/* FASE 2: orgId del nuevo usuario (solo super_admin puede elegir) */}
+                {currentUser?.role === "super_admin" && (
+                  <div>
+                    <label className="block text-xs font-bold text-gray-600 mb-1">
+                      🏢 Organización
+                    </label>
+                    <select
+                      value={newUserForm.orgId || ORG_DEFAULT_ID}
+                      onChange={(e) =>
+                        setNewUserForm((p) => ({ ...p, orgId: e.target.value }))
+                      }
+                      className="w-full p-2 border rounded-lg text-sm"
+                    >
+                      {orgsList.map((o) => (
+                        <option key={o.orgId} value={o.orgId}>
+                          {o.orgName}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+              </div>
+              {/* ── Permisos de Secretaria - nueva secretaria ── */}
+              {newUserForm.role === "secretaria" && (
+                <div className="bg-amber-50 rounded-xl p-4 mb-4 border-2 border-amber-300">
+                  <p className="text-xs font-black text-amber-800 uppercase mb-1">
+                    🔐 Permisos de Secretaria
+                  </p>
+                  <p className="text-[10px] text-amber-600 mb-3">
+                    Seleccione los módulos a los que tendrá acceso. Todo
+                    bloqueado por defecto.
+                  </p>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-3">
+                    {Object.entries({
+                      agenda: "🗓️ Agenda",
+                      bill: "🧾 Cuentas de Cobro",
+                      propuestas: "📄 Propuestas",
+                      telemedicina: "🩺 Telemedicina",
+                      empresas: "🏢 Empresas",
+                      pacientes_lista: "👥 Lista Pacientes",
+                      pacientes_crear: "➕ Crear Pacientes",
+                      reporte: "📊 Reportes",
+                      sve: "🔬 SVE",
+                      caja: "💰 Financiero",
+                      adjuntos: "📎 Adjuntos",
+                      cuentas_cobro: "💳 Cuentas",
+                    }).map(([key, label]) => {
+                      const permisos =
+                        newUserForm.secretariaPermisos ||
+                        SECRETARIA_PERMISOS_DEFAULT;
+                      const isOn = permisos[key] === true;
+                      return (
+                        <button
+                          key={key}
+                          onClick={() =>
+                            setNewUserForm((p) => ({
+                              ...p,
+                              secretariaPermisos: {
+                                ...(p.secretariaPermisos ||
+                                  SECRETARIA_PERMISOS_DEFAULT),
+                                [key]: !isOn,
+                              },
+                            }))
+                          }
+                          className={`p-2 rounded-xl border-2 text-left text-xs font-bold transition ${
+                            isOn
+                              ? "border-emerald-400 bg-emerald-50 text-emerald-800"
+                              : "border-gray-200 bg-white text-gray-500 hover:border-amber-300"
+                          }`}
+                        >
+                          {label} {isOn ? "✅" : ""}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <p className="text-[10px] text-amber-700 font-black mb-2">
+                    👨‍⚕️ Médicos asignados (dejar vacío = todos):
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {usersList
+                      .filter(
+                        (u) =>
+                          ["medico", "administrador", "super_admin"].includes(
+                            u.role
+                          ) && u.activo !== false
+                      )
+                      .map((med) => {
+                        const sel = (
+                          newUserForm.medicosAsignados || []
+                        ).includes(med.user);
+                        return (
+                          <button
+                            key={med.user}
+                            onClick={() =>
+                              setNewUserForm((p) => ({
+                                ...p,
+                                medicosAsignados: sel
+                                  ? (p.medicosAsignados || []).filter(
+                                      (id) => id !== med.user
+                                    )
+                                  : [...(p.medicosAsignados || []), med.user],
+                              }))
+                            }
+                            className={`px-2 py-1 rounded-xl border text-xs font-bold ${
+                              sel
+                                ? "border-blue-500 bg-blue-50 text-blue-800"
+                                : "border-gray-200 bg-white text-gray-500"
+                            }`}
+                          >
+                            {sel ? "✅ " : ""}
+                            {med.name || med.user}
+                          </button>
+                        );
+                      })}
+                  </div>
+                </div>
+              )}
+              {/* ── Datos Profesionales ── */}
+              {(["medico", "administrador", "super_admin"].includes(
+                newUserForm.role
+              ) ||
+                !newUserForm.role) && (
+                <>
+                  <p className="text-[10px] font-black text-violet-700 uppercase border-b border-violet-200 pb-1 mb-3">
+                    Datos Profesionales (para Firmas y Documentos)
+                  </p>
+                  <div className="grid grid-cols-2 gap-3 mb-4">
+                    <div className="col-span-2">
+                      <label className="block text-xs font-bold text-gray-600 mb-1">
+                        Cédula
+                      </label>
+                      <input
+                        value={newUserForm.doctorData?.cedula || ""}
+                        onChange={(e) =>
+                          setNewUserForm((p) => ({
+                            ...p,
+                            doctorData: {
+                              ...(p.doctorData || {}),
+                              cedula: e.target.value,
+                            },
+                          }))
+                        }
+                        className="w-full p-2 border rounded-lg text-sm"
+                        placeholder="1.234.567.890 de Ciudad"
+                      />
+                    </div>
+                    <div className="col-span-2">
+                      <label className="block text-xs font-bold text-gray-600 mb-1">
+                        Título / Especialidad
+                      </label>
+                      <input
+                        value={newUserForm.doctorData?.titulo || ""}
+                        onChange={(e) =>
+                          setNewUserForm((p) => ({
+                            ...p,
+                            doctorData: {
+                              ...(p.doctorData || {}),
+                              titulo: e.target.value,
+                            },
+                          }))
+                        }
+                        className="w-full p-2 border rounded-lg text-sm"
+                        placeholder="Esp. Gerencia SST / Médico Ocupacional..."
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-gray-600 mb-1">
+                        Registro Médico (RM / Tarjeta Profesional)
+                      </label>
+                      <input
+                        value={newUserForm.doctorData?.licencia || ""}
+                        onChange={(e) =>
+                          setNewUserForm((p) => ({
+                            ...p,
+                            doctorData: {
+                              ...(p.doctorData || {}),
+                              licencia: e.target.value,
+                            },
+                          }))
+                        }
+                        className="w-full p-2 border-2 border-emerald-300 rounded-lg text-sm focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200"
+                        placeholder="Ej: TP-12345-6789 o No. Tarjeta Profesional"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-gray-600 mb-1">
+                        Ciudad
+                      </label>
+                      <input
+                        value={newUserForm.doctorData?.ciudad || ""}
+                        onChange={(e) =>
+                          setNewUserForm((p) => ({
+                            ...p,
+                            doctorData: {
+                              ...(p.doctorData || {}),
+                              ciudad: e.target.value,
+                            },
+                          }))
+                        }
+                        className="w-full p-2 border rounded-lg text-sm"
+                        placeholder="Ciudad - Departamento"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-gray-600 mb-1">
+                        Celular
+                      </label>
+                      <input
+                        value={newUserForm.doctorData?.celular || ""}
+                        onChange={(e) =>
+                          setNewUserForm((p) => ({
+                            ...p,
+                            doctorData: {
+                              ...(p.doctorData || {}),
+                              celular: e.target.value,
+                            },
+                          }))
+                        }
+                        className="w-full p-2 border rounded-lg text-sm"
+                        placeholder="3XXXXXXXXX"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-gray-600 mb-1">
+                        Email profesional
+                      </label>
+                      <input
+                        value={newUserForm.doctorData?.email || ""}
+                        onChange={(e) =>
+                          setNewUserForm((p) => ({
+                            ...p,
+                            doctorData: {
+                              ...(p.doctorData || {}),
+                              email: e.target.value,
+                            },
+                          }))
+                        }
+                        className="w-full p-2 border rounded-lg text-sm"
+                        placeholder="correo@dominio.com"
+                      />
+                    </div>
+                    <div className="col-span-2">
+                      <label className="block text-xs font-bold text-gray-600 mb-1">
+                        Dirección
+                      </label>
+                      <input
+                        value={newUserForm.doctorData?.direccion || ""}
+                        onChange={(e) =>
+                          setNewUserForm((p) => ({
+                            ...p,
+                            doctorData: {
+                              ...(p.doctorData || {}),
+                              direccion: e.target.value,
+                            },
+                          }))
+                        }
+                        className="w-full p-2 border rounded-lg text-sm"
+                        placeholder="Calle XX N° X-XX, Ciudad"
+                      />
+                    </div>
+                  </div>
+                  {/* ── Datos Financieros (Cuentas de Cobro / Propuesta Económica) ── */}
+                  <p className="text-[10px] font-black text-violet-700 uppercase border-b border-violet-200 pb-1 mb-3">
+                    Datos Financieros (Cuentas de Cobro y Propuesta Económica)
+                  </p>
+                  <div className="grid grid-cols-2 gap-3 mb-4">
+                    <div>
+                      <label className="block text-xs font-bold text-gray-600 mb-1">
+                        Banco
+                      </label>
+                      <input
+                        value={newUserForm.doctorData?.banco || ""}
+                        onChange={(e) =>
+                          setNewUserForm((p) => ({
+                            ...p,
+                            doctorData: {
+                              ...(p.doctorData || {}),
+                              banco: e.target.value,
+                            },
+                          }))
+                        }
+                        className="w-full p-2 border rounded-lg text-sm"
+                        placeholder="BANCOLOMBIA"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-gray-600 mb-1">
+                        Tipo de Cuenta
+                      </label>
+                      <select
+                        value={newUserForm.doctorData?.tipoCuenta || "Ahorros"}
+                        onChange={(e) =>
+                          setNewUserForm((p) => ({
+                            ...p,
+                            doctorData: {
+                              ...(p.doctorData || {}),
+                              tipoCuenta: e.target.value,
+                            },
+                          }))
+                        }
+                        className="w-full p-2 border rounded-lg text-sm"
+                      >
+                        <option>Ahorros</option>
+                        <option>Corriente</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-gray-600 mb-1">
+                        No. Cuenta
+                      </label>
+                      <input
+                        value={newUserForm.doctorData?.numeroCuenta || ""}
+                        onChange={(e) =>
+                          setNewUserForm((p) => ({
+                            ...p,
+                            doctorData: {
+                              ...(p.doctorData || {}),
+                              numeroCuenta: e.target.value,
+                            },
+                          }))
+                        }
+                        className="w-full p-2 border rounded-lg text-sm"
+                        placeholder="XXX-XXXXXXX-XX"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-gray-600 mb-1">
+                        RUT / NIT
+                      </label>
+                      <input
+                        value={newUserForm.doctorData?.rut || ""}
+                        onChange={(e) =>
+                          setNewUserForm((p) => ({
+                            ...p,
+                            doctorData: {
+                              ...(p.doctorData || {}),
+                              rut: e.target.value,
+                            },
+                          }))
+                        }
+                        className="w-full p-2 border rounded-lg text-sm"
+                        placeholder="XXXXXXXXXX-X"
+                      />
+                    </div>
+                    <div className="col-span-2">
+                      <label className="block text-xs font-bold text-gray-600 mb-1">
+                        Régimen Tributario
+                      </label>
+                      <input
+                        value={newUserForm.doctorData?.regimen || ""}
+                        onChange={(e) =>
+                          setNewUserForm((p) => ({
+                            ...p,
+                            doctorData: {
+                              ...(p.doctorData || {}),
+                              regimen: e.target.value,
+                            },
+                          }))
+                        }
+                        className="w-full p-2 border rounded-lg text-sm"
+                        placeholder="Simple / DRME / Otro"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-gray-600 mb-1">
+                        Tarifa por Hora ($)
+                      </label>
+                      <input
+                        type="number"
+                        value={newUserForm.doctorData?.tarifaHora || ""}
+                        onChange={(e) =>
+                          setNewUserForm((p) => ({
+                            ...p,
+                            doctorData: {
+                              ...(p.doctorData || {}),
+                              tarifaHora: e.target.value,
+                            },
+                          }))
+                        }
+                        className="w-full p-2 border rounded-lg text-sm"
+                        placeholder="120000"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-gray-600 mb-1">
+                        Tarifa Examen Ocup ($)
+                      </label>
+                      <input
+                        type="number"
+                        value={newUserForm.doctorData?.tarifaExamenOcup || ""}
+                        onChange={(e) =>
+                          setNewUserForm((p) => ({
+                            ...p,
+                            doctorData: {
+                              ...(p.doctorData || {}),
+                              tarifaExamenOcup: e.target.value,
+                            },
+                          }))
+                        }
+                        className="w-full p-2 border rounded-lg text-sm"
+                        placeholder="90000"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-gray-600 mb-1">
+                        Tarifa Informe ($)
+                      </label>
+                      <input
+                        type="number"
+                        value={newUserForm.doctorData?.tarifaInforme || ""}
+                        onChange={(e) =>
+                          setNewUserForm((p) => ({
+                            ...p,
+                            doctorData: {
+                              ...(p.doctorData || {}),
+                              tarifaInforme: e.target.value,
+                            },
+                          }))
+                        }
+                        className="w-full p-2 border rounded-lg text-sm"
+                        placeholder="250000"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-gray-600 mb-1">
+                        Tarifa Día PVE ($)
+                      </label>
+                      <input
+                        type="number"
+                        value={newUserForm.doctorData?.tarifaDiaPVE || ""}
+                        onChange={(e) =>
+                          setNewUserForm((p) => ({
+                            ...p,
+                            doctorData: {
+                              ...(p.doctorData || {}),
+                              tarifaDiaPVE: e.target.value,
+                            },
+                          }))
+                        }
+                        className="w-full p-2 border rounded-lg text-sm"
+                        placeholder="350000"
+                      />
+                    </div>
+                  </div>
+                </>
+              )}
+              {/* ── Firma del médico ── */}
+              {(["medico", "administrador", "super_admin"].includes(
+                newUserForm.role
+              ) ||
+                !newUserForm.role) && (
+                <div className="mb-4">
+                  <p className="text-[10px] font-black text-violet-700 uppercase border-b border-violet-200 pb-1 mb-3">
+                    Firma Digital (aparece en HC, Certificados, Informes y
+                    Propuestas)
+                  </p>
+                  <div className="flex items-center gap-4">
+                    <div className="w-36 h-20 border-2 border-dashed border-gray-300 rounded-xl flex items-center justify-center bg-gray-50 overflow-hidden">
+                      {newUserForm.doctorData?.signature ? (
+                        <img
+                          src={newUserForm.doctorData.signature}
+                          alt="Firma"
+                          className="max-h-full max-w-full object-contain p-1"
+                        />
+                      ) : (
+                        <p className="text-[9px] text-gray-400 text-center px-2">
+                          Sin firma
+                          <br />
+                          cargada
+                        </p>
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        style={{ display: "none" }}
+                        id="newUserSigInput"
+                        onChange={(e) => {
+                          const file = e.target.files[0];
+                          if (!file) return;
+                          const r = new FileReader();
+                          r.onloadend = () =>
+                            setNewUserForm((p) => ({
+                              ...p,
+                              doctorData: {
+                                ...(p.doctorData || {}),
+                                signature: r.result,
+                              },
+                            }));
+                          r.readAsDataURL(file);
+                          e.target.value = null;
+                        }}
+                      />
+                      <button
+                        onClick={() =>
+                          document.getElementById("newUserSigInput").click()
+                        }
+                        className="w-full bg-violet-50 text-violet-700 border border-violet-300 px-3 py-2 rounded-lg text-xs font-bold hover:bg-violet-100 flex items-center justify-center gap-2 mb-2"
+                      >
+                        <UploadCloud className="w-3.5 h-3.5" /> Subir Firma
+                        (PNG/JPG)
+                      </button>
+                      {newUserForm.doctorData?.signature && (
+                        <button
+                          onClick={() =>
+                            setNewUserForm((p) => ({
+                              ...p,
+                              doctorData: {
+                                ...(p.doctorData || {}),
+                                signature: null,
+                              },
+                            }))
+                          }
+                          className="w-full bg-red-50 text-red-600 border border-red-200 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-red-100 flex items-center justify-center gap-1"
+                        >
+                          <X className="w-3 h-3" /> Eliminar firma
+                        </button>
+                      )}
+                      <p className="text-[9px] text-gray-400 mt-1">
+                        Se recomienda imagen PNG fondo transparente
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+              <button
+                onClick={() => {
+                  if (
+                    !newUserForm.name ||
+                    !newUserForm.user ||
+                    !newUserForm.pass
+                  ) {
+                    showAlert("Complete los campos obligatorios (*).");
+                    return;
+                  }
+                  // FIX M-06: validar complejidad de contraseña
+                  const pw = newUserForm.pass;
+                  if (pw.length < 8) {
+                    showAlert(
+                      "⚠️ La contraseña debe tener mínimo 8 caracteres."
+                    );
+                    return;
+                  }
+                  if (!/[A-Z]/.test(pw) && !/[0-9]/.test(pw)) {
+                    showAlert(
+                      "⚠️ La contraseña debe incluir al menos una mayúscula o un número."
+                    );
+                    return;
+                  }
+                  if (usersList.find((u) => u.user === newUserForm.user)) {
+                    showAlert("El nombre de usuario ya existe.");
+                    return;
+                  }
+                  const doctorData = {
+                    ...DEFAULT_DOCTOR_DATA,
+                    nombre: newUserForm.name.toUpperCase(),
+                    ...(newUserForm.doctorData || {}),
+                  };
+                  // SEGURIDAD: hashear contraseña antes de guardar
+                  _sha256(newUserForm.pass).then((hash) => {
+                    const secureUser = { ...newUserForm, passHash: hash };
+                    delete secureUser.pass;
+                    // ── IPS: admin_empresa auto-asigna empresaId + orgId a los usuarios que crea ──
+                    if (
+                      currentUser?.role === "admin_empresa" &&
+                      currentUser.empresaId
+                    ) {
+                      secureUser.empresaId = currentUser.empresaId;
+                      secureUser.orgId = currentUser.orgId || ORG_DEFAULT_ID;
+                      secureUser.mustChangePassword = true;
+                      // Agregar médico al medicoIds de la empresa
+                      if (secureUser.role === "medico") {
+                        const _empIdx = companies.findIndex(
+                          (c) => c.id === currentUser.empresaId
+                        );
+                        if (_empIdx >= 0) {
+                          const _updComps = [...companies];
+                          _updComps[_empIdx] = {
+                            ..._updComps[_empIdx],
+                            medicoIds: [
+                              ...new Set([
+                                ...(_updComps[_empIdx].medicoIds || []),
+                                secureUser.user,
+                              ]),
+                            ],
+                          };
+                          setCompanies(_updComps);
+                          _syncCompanies(_updComps);
+                        }
+                      }
+                    }
+                    const updSec = [
+                      ...usersList,
+                      { ...secureUser, id: Date.now(), doctorData },
+                    ];
+                    setUsersList(updSec);
+                    _sync("siso_users", JSON.stringify(updSec));
+                    // Sincronizar nuevo usuario a Supabase inmediatamente
+                    _sbSet("siso_users", updSec).then((ok) => {
+                      if (ok)
+                        showAlert(
+                          "✅ Usuario creado y guardado en la nube correctamente."
+                        );
+                      else
+                        showAlert(
+                          "✅ Usuario creado localmente. Se sincronizará cuando haya conexión."
+                        );
+                    });
+                  });
+                  setNewUserForm({
+                    user: "",
+                    pass: "",
+                    name: "",
+                    role: "medico",
+                    license: "libre",
+                    secretariaPermisos: { ...SECRETARIA_PERMISOS_DEFAULT },
+                    medicosAsignados: [],
+                    doctorData: {},
+                  });
+                  setActiveUserMgmtTab("list");
+                  showAlert(
+                    "✅ Usuario creado con todos sus datos profesionales y financieros."
+                  );
+                }}
+                className="w-full bg-violet-600 text-white py-3 rounded-xl font-bold text-sm hover:bg-violet-700 mt-2 flex items-center justify-center gap-2"
+              >
+                <UserPlus className="w-4 h-4" /> Crear Usuario Completo
+              </button>
+            </div>
+          )}
+          {/* ══ FASE 2 — PANEL REASIGNACIÓN DE PACIENTES ══ */}
+          {activeUserMgmtTab === "reasignacion" &&
+            _isAdmin(currentUser?.role) &&
+            (() => {
+              const myOrgId = currentUser?.orgId || ORG_DEFAULT_ID;
+              const sinMedico = patientsList.filter(
+                (p) =>
+                  !p._medicoId &&
+                  !p._archivado &&
+                  (currentUser?.role === "super_admin" ||
+                    (p._orgId || ORG_DEFAULT_ID) === myOrgId)
+              );
+              const conMedico = patientsList.filter(
+                (p) =>
+                  p._medicoId &&
+                  !p._archivado &&
+                  (currentUser?.role === "super_admin" ||
+                    (p._orgId || ORG_DEFAULT_ID) === myOrgId)
+              );
+              const medicos = usersList.filter(
+                (u) =>
+                  (u.role === "medico" ||
+                    u.role === "administrador" ||
+                    u.role === "super_admin") &&
+                  u.activo !== false &&
+                  (currentUser?.role === "super_admin" ||
+                    (u.orgId || ORG_DEFAULT_ID) === myOrgId)
+              );
+              // Distribución equitativa: calcula cuántos le tocan a cada médico
+              const distribuirEquitativamente = () => {
+                if (!medicos.length || !sinMedico.length) return;
+                const updated = patientsList.map((p) => {
+                  if (p._medicoId || p._archivado) return p;
+                  if (
+                    (p._orgId || ORG_DEFAULT_ID) !== myOrgId &&
+                    currentUser?.role !== "super_admin"
+                  )
+                    return p;
+                  return p;
+                });
+                let idx = 0;
+                const asignados = sinMedico.map((p) => {
+                  // Preferir médico que ya trató al paciente (misma empresa o historial)
+                  const medAnterior = patientsList.find(
+                    (hp) =>
+                      hp._medicoId && hp.cedula === p.cedula && hp.id !== p.id
+                  );
+                  const medId =
+                    medAnterior?._medicoId &&
+                    medicos.find((m) => m.user === medAnterior._medicoId)
+                      ? medAnterior._medicoId
+                      : medicos[idx % medicos.length].user;
+                  if (!medAnterior?._medicoId) idx++;
+                  return { ...p, _medicoId: medId };
+                });
+                const final = patientsList.map(
+                  (p) => asignados.find((a) => a.id === p.id) || p
+                );
+                setPatientsList(final);
+                _syncPatients(final);
+                showAlert(
+                  `✅ ${sinMedico.length} pacientes distribuidos entre ${medicos.length} médicos.`
+                );
+              };
+              return (
+                <div className="space-y-6">
+                  {/* Cabecera */}
+                  <div className="bg-gradient-to-r from-teal-50 to-cyan-50 rounded-2xl p-5 border border-teal-200">
+                    <h3 className="font-black text-teal-800 text-lg flex items-center gap-2 mb-1">
+                      🔀 Panel de Reasignación de Pacientes
+                    </h3>
+                    <p className="text-sm text-teal-700">
+                      Asigna pacientes sin médico, redistribuye equitativamente
+                      y gestiona la continuidad del cuidado. · Org:{" "}
+                      <strong>
+                        {orgsList.find((o) => o.orgId === myOrgId)?.orgName ||
+                          myOrgId}
+                      </strong>
+                    </p>
+                    <div className="flex gap-3 mt-3 flex-wrap">
+                      <div className="bg-white rounded-xl px-4 py-2 border border-teal-200 text-center">
+                        <p className="text-2xl font-black text-red-600">
+                          {sinMedico.length}
+                        </p>
+                        <p className="text-[10px] text-gray-500">Sin médico</p>
+                      </div>
+                      <div className="bg-white rounded-xl px-4 py-2 border border-teal-200 text-center">
+                        <p className="text-2xl font-black text-green-600">
+                          {conMedico.length}
+                        </p>
+                        <p className="text-[10px] text-gray-500">Asignados</p>
+                      </div>
+                      <div className="bg-white rounded-xl px-4 py-2 border border-teal-200 text-center">
+                        <p className="text-2xl font-black text-blue-600">
+                          {medicos.length}
+                        </p>
+                        <p className="text-[10px] text-gray-500">
+                          Médicos activos
+                        </p>
+                      </div>
+                      {sinMedico.length > 0 && (
+                        <button
+                          onClick={distribuirEquitativamente}
+                          className="ml-auto bg-teal-600 text-white px-4 py-2 rounded-xl text-sm font-black hover:bg-teal-700 flex items-center gap-2"
+                        >
+                          ⚖️ Distribuir equitativamente
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Médico de Turno */}
+                  <div className="bg-amber-50 rounded-xl p-4 border border-amber-200">
+                    <p className="text-xs font-black text-amber-700 mb-2">
+                      🩺 Médico de Turno Activo
+                    </p>
+                    <div className="flex gap-2 flex-wrap">
+                      <select
+                        value={medicoTurnoActivo}
+                        onChange={(e) => {
+                          setMedicoTurnoActivo(e.target.value);
+                          try {
+                            localStorage.setItem(
+                              "siso_medico_turno",
+                              e.target.value
+                            );
+                          } catch {
+                            /**/
+                          }
+                        }}
+                        className="flex-1 p-2 border rounded-lg text-sm min-w-[200px]"
+                      >
+                        <option value="">— Sin turno activo —</option>
+                        {medicos.map((m) => (
+                          <option key={m.user} value={m.user}>
+                            {m.name}
+                          </option>
+                        ))}
+                      </select>
+                      <span
+                        className={`text-xs px-3 py-2 rounded-lg font-bold ${
+                          medicoTurnoActivo
+                            ? "bg-green-100 text-green-700"
+                            : "bg-gray-100 text-gray-500"
+                        }`}
+                      >
+                        {medicoTurnoActivo
+                          ? `✅ Turno: ${
+                              medicos.find((m) => m.user === medicoTurnoActivo)
+                                ?.name || medicoTurnoActivo
+                            }`
+                          : "Sin turno asignado"}
+                      </span>
+                    </div>
+                    <p className="text-[10px] text-amber-600 mt-1">
+                      Los pacientes nuevos se sugerirán para asignar a este
+                      médico.
+                    </p>
+                  </div>
+
+                  {/* Tabla pacientes sin médico */}
+                  {sinMedico.length === 0 ? (
+                    <div className="text-center py-10 text-gray-400">
+                      <p className="text-3xl mb-2">✅</p>
+                      <p className="font-bold">
+                        Todos los pacientes tienen médico asignado
+                      </p>
+                    </div>
+                  ) : (
+                    <div>
+                      <h4 className="font-black text-red-700 mb-3 text-sm">
+                        ⚠️ Pacientes sin médico asignado ({sinMedico.length})
+                      </h4>
+                      <div className="overflow-x-auto rounded-xl border border-red-100">
+                        <table className="w-full text-sm">
+                          <thead className="bg-red-50">
+                            <tr>
+                              <th className="p-2 text-left text-xs font-black text-red-700">
+                                Paciente
+                              </th>
+                              <th className="p-2 text-left text-xs font-black text-red-700">
+                                Empresa
+                              </th>
+                              <th className="p-2 text-left text-xs font-black text-red-700">
+                                Tipo HC
+                              </th>
+                              <th className="p-2 text-xs font-black text-red-700">
+                                Asignar a
+                              </th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {sinMedico.slice(0, 50).map((p) => {
+                              // Detectar si este paciente ya fue atendido por algún médico antes (continuidad)
+                              const medPrevio = patientsList.find(
+                                (hp) =>
+                                  hp._medicoId &&
+                                  hp.cedula === p.cedula &&
+                                  hp.id !== p.id
+                              );
+                              return (
+                                <tr
+                                  key={p.id}
+                                  className="border-t border-red-50 hover:bg-red-50/40"
+                                >
+                                  <td className="p-2">
+                                    <p className="font-bold text-xs">
+                                      {p.nombre || p.paciente || "Sin nombre"}
+                                    </p>
+                                    <p className="text-[10px] text-gray-400">
+                                      {p.cedula || "Sin cédula"}
+                                    </p>
+                                    {medPrevio && (
+                                      <span className="text-[9px] bg-blue-100 text-blue-700 px-1 rounded">
+                                        Antes:{" "}
+                                        {medicos.find(
+                                          (m) => m.user === medPrevio._medicoId
+                                        )?.name || medPrevio._medicoId}
+                                      </span>
+                                    )}
+                                  </td>
+                                  <td className="p-2 text-xs text-gray-600">
+                                    {p.empresa || "—"}
+                                  </td>
+                                  <td className="p-2 text-xs text-gray-600">
+                                    {p.tipoExamen || p.type || "—"}
+                                  </td>
+                                  <td className="p-2">
+                                    <select
+                                      defaultValue={
+                                        medPrevio?._medicoId ||
+                                        medicoTurnoActivo ||
+                                        ""
+                                      }
+                                      onChange={(e) => {
+                                        const upd = patientsList.map((x) =>
+                                          x.id === p.id
+                                            ? {
+                                                ...x,
+                                                _medicoId: e.target.value,
+                                              }
+                                            : x
+                                        );
+                                        setPatientsList(upd);
+                                        _syncPatients(upd);
+                                      }}
+                                      className="w-full text-xs p-1 border rounded"
+                                    >
+                                      <option value="">— Sin asignar —</option>
+                                      {medicos.map((m) => (
+                                        <option key={m.user} value={m.user}>
+                                          {m.name}
+                                        </option>
+                                      ))}
+                                    </select>
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
+
+          {/* ── GESTIÓN DE ALMACENAMIENTO ── */}
+          {activeUserMgmtTab === "storage" &&
+            (() => {
+              // Cargar datos reales desde Supabase al abrir el panel
+              const loadSbData = () => {
+                setSbLoading(true);
+                _sbGetAll()
+                  .then((cloud) => {
+                    setSbCloudData(cloud || {});
+                    setSbLoading(false);
+                  })
+                  .catch(() => {
+                    setSbLoading(false);
+                    setSbCloudData({});
+                  });
+              };
+              // Calcular stats por usuario usando datos de Supabase + localStorage como fallback
+              const stats = usersList.map((u) => {
+                const cloudKey = `siso_patients_${u.user}`;
+                const localKey = `siso_db_patients_${u.user}`;
+                // Preferir Supabase; si no hay datos cargados aún, usar localStorage
+                let pats = [];
+                let source = "local";
+                if (sbCloudData && sbCloudData[cloudKey]?.value) {
+                  pats = Array.isArray(sbCloudData[cloudKey].value)
+                    ? sbCloudData[cloudKey].value
+                    : [];
+                  source = "supabase";
+                } else {
+                  const raw = _ls.getItem(localKey) || "[]";
+                  try {
+                    pats = JSON.parse(raw);
+                  } catch {}
+                  source = "local";
+                }
+                // También revisar si tiene pacientes con la clave genérica legacy
+                if (pats.length === 0 && sbCloudData) {
+                  const legacyKey = "siso_db_patients";
+                  if (sbCloudData[legacyKey]?.value) {
+                    const legacyPats = Array.isArray(
+                      sbCloudData[legacyKey].value
+                    )
+                      ? sbCloudData[legacyKey].value
+                      : [];
+                    pats = legacyPats.filter(
+                      (p) => p._medicoId === u.user || !p._medicoId
+                    );
+                    if (pats.length > 0) source = "supabase-legacy";
+                  }
+                }
+                const rawStr = JSON.stringify(pats);
+                const bytes = new Blob([rawStr]).size;
+                const kb = (bytes / 1024).toFixed(1);
+                const mb = (bytes / (1024 * 1024)).toFixed(3);
+                const certs = pats.filter(
+                  (p) => p.estadoHistoria === "Cerrada" || p.codigoVerificacion
+                ).length;
+                const moves = auditLog.filter((a) => a.usuario === u.user);
+                return {
+                  ...u,
+                  bytes,
+                  kb,
+                  mb,
+                  total: pats.length,
+                  certs,
+                  moves,
+                  source,
+                };
+              });
+              const totalBytes = stats.reduce((s, u) => s + u.bytes, 0);
+              const totalKB = (totalBytes / 1024).toFixed(1);
+              const totalMB = (totalBytes / (1024 * 1024)).toFixed(3);
+              const allMoves = stats
+                .flatMap((u) =>
+                  u.moves.map((m) => ({ ...m, uName: u.name, uLogin: u.user }))
+                )
+                .sort((a, b) => b.id - a.id)
+                .slice(0, 100);
+              return (
+                <div className="space-y-5">
+                  {/* Encabezado + botón recargar */}
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="font-black text-violet-900 flex items-center gap-2 text-sm">
+                        <HardDrive className="w-4 h-4" /> Gestión del
+                        Almacenamiento - Supabase
+                      </h3>
+                      <p className="text-[10px] text-gray-400 mt-0.5">
+                        {sbCloudData
+                          ? `${
+                              Object.keys(sbCloudData).length
+                            } claves en Supabase · datos reales`
+                          : "Cargando desde Supabase..."}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <button
+                        onClick={loadSbData}
+                        disabled={sbLoading}
+                        className="flex items-center gap-1.5 px-3 py-1.5 bg-violet-600 text-white rounded-lg text-xs font-bold hover:bg-violet-700 disabled:opacity-50"
+                      >
+                        {sbLoading ? "⏳ Cargando..." : "🔄 Recargar Supabase"}
+                      </button>
+                      {!sbCloudData && !sbLoading && (
+                        <button onClick={loadSbData} className="hidden" />
+                      )}
+                      <div className="bg-violet-50 border border-violet-200 rounded-xl px-4 py-2 text-center min-w-[100px]">
+                        <p className="text-[10px] text-violet-500 font-black uppercase">
+                          Total
+                        </p>
+                        <p className="text-xl font-black text-violet-700">
+                          {totalKB} <span className="text-xs">KB</span>
+                        </p>
+                        <p className="text-[10px] text-gray-400">
+                          {totalMB} MB
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  {/* Aviso si no ha cargado Supabase */}
+                  {!sbCloudData && !sbLoading && (
+                    <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-center gap-3">
+                      <span className="text-2xl">☁️</span>
+                      <div>
+                        <p className="font-black text-amber-800 text-sm">
+                          Datos de Supabase no cargados
+                        </p>
+                        <p className="text-xs text-amber-600 mt-0.5">
+                          Haga clic en "Recargar Supabase" para ver los datos
+                          reales de todos los usuarios. Los valores mostrados
+                          son del almacenamiento local.
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                  {/* Resumen de perfiles */}
+                  <div className="grid grid-cols-3 gap-3">
+                    {[
+                      {
+                        label: "Total usuarios",
+                        value: usersList.length,
+                        color: "violet",
+                        icon: "👥",
+                      },
+                      {
+                        label: "Activos",
+                        value: usersList.filter((u) => u.activo !== false)
+                          .length,
+                        color: "emerald",
+                        icon: "✅",
+                      },
+                      {
+                        label: "Inactivos",
+                        value: usersList.filter((u) => u.activo === false)
+                          .length,
+                        color: "gray",
+                        icon: "⏸️",
+                      },
+                    ].map((card) => (
+                      <div
+                        key={card.label}
+                        className={`bg-white border border-${card.color}-100 rounded-xl p-4 text-center shadow-sm`}
+                      >
+                        <p className="text-2xl">{card.icon}</p>
+                        <p
+                          className={`text-2xl font-black text-${card.color}-600`}
+                        >
+                          {card.value}
+                        </p>
+                        <p className="text-[10px] text-gray-500 font-bold uppercase">
+                          {card.label}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                  {/* Tabla por usuario */}
+                  <div className="overflow-x-auto rounded-xl border border-gray-100 shadow-sm">
+                    <table className="w-full text-xs">
+                      <thead>
+                        <tr className="bg-violet-50 text-violet-700 font-black uppercase text-[10px]">
+                          <th className="p-3 text-left">Usuario</th>
+                          <th className="p-3 text-left">Rol</th>
+                          <th className="p-3 text-center">Estado</th>
+                          <th className="p-3 text-center">Pacientes</th>
+                          <th className="p-3 text-center">Certificados</th>
+                          <th className="p-3 text-center">Almacenamiento</th>
+                          <th className="p-3 text-center">Movimientos</th>
+                          <th className="p-3 text-center">Fuente</th>
+                          <th className="p-3 text-center">Acciones</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {stats.map((u, i) => (
+                          <tr
+                            key={u.user}
+                            className={`border-b border-gray-50 ${
+                              i % 2 === 0 ? "bg-white" : "bg-gray-50/50"
+                            }`}
+                          >
+                            <td className="p-3">
+                              <p className="font-black text-gray-900">
+                                {u.name}
+                              </p>
+                              <p className="text-[10px] font-mono text-gray-400">
+                                @{u.user}
+                              </p>
+                            </td>
+                            <td className="p-3">
+                              <span
+                                className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
+                                  u.role === "super_admin"
+                                    ? "bg-purple-100 text-purple-800"
+                                    : u.role === "administrador"
+                                    ? "bg-red-100 text-red-700"
+                                    : u.role === "secretaria"
+                                    ? "bg-orange-100 text-orange-700"
+                                    : "bg-blue-100 text-blue-700"
+                                }`}
+                              >
+                                {u.role === "super_admin"
+                                  ? "⭐ Super Admin"
+                                  : u.role === "administrador"
+                                  ? "Administrador"
+                                  : u.role === "secretaria"
+                                  ? "Secretaria"
+                                  : "Médico"}
+                              </span>
+                            </td>
+                            <td className="p-3 text-center">
+                              {u.activo === false ? (
+                                <span className="text-[10px] px-2 py-0.5 rounded-full bg-gray-200 text-gray-500 font-bold">
+                                  ⏸ Inactivo
+                                </span>
+                              ) : (
+                                <span className="text-[10px] px-2 py-0.5 rounded-full bg-green-100 text-green-700 font-bold">
+                                  ✅ Activo
+                                </span>
+                              )}
+                            </td>
+                            <td className="p-3 text-center">
+                              <span className="text-2xl font-black text-teal-600">
+                                {u.total}
+                              </span>
+                              <p className="text-[10px] text-gray-400">
+                                registros
+                              </p>
+                            </td>
+                            <td className="p-3 text-center">
+                              <span className="text-2xl font-black text-emerald-600">
+                                {u.certs}
+                              </span>
+                              <p className="text-[10px] text-gray-400">
+                                emitidos
+                              </p>
+                            </td>
+                            <td className="p-3 text-center min-w-[110px]">
+                              <p className="font-black text-violet-700">
+                                {u.kb} KB
+                              </p>
+                              <p className="text-[10px] text-gray-400 mb-1">
+                                {u.mb} MB
+                              </p>
+                              <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+                                <div
+                                  className="h-2 rounded-full bg-gradient-to-r from-violet-400 to-violet-600 transition-all"
+                                  style={{
+                                    width:
+                                      totalBytes > 0
+                                        ? `${Math.min(
+                                            100,
+                                            (u.bytes / totalBytes) * 100
+                                          )}%`
+                                        : "0%",
+                                  }}
+                                />
+                              </div>
+                            </td>
+                            <td className="p-3 text-center">
+                              <span className="text-2xl font-black text-blue-600">
+                                {u.moves.length}
+                              </span>
+                              <p className="text-[10px] text-gray-400">
+                                acciones
+                              </p>
+                            </td>
+                            <td className="p-3 text-center">
+                              <span
+                                className={`text-[9px] px-1.5 py-0.5 rounded font-bold ${
+                                  u.source === "supabase"
+                                    ? "bg-green-100 text-green-700"
+                                    : u.source === "supabase-legacy"
+                                    ? "bg-blue-100 text-blue-700"
+                                    : "bg-gray-100 text-gray-500"
+                                }`}
+                              >
+                                {u.source === "supabase"
+                                  ? "☁️ Supabase"
+                                  : u.source === "supabase-legacy"
+                                  ? "☁️ Legacy"
+                                  : "💾 Local"}
+                              </span>
+                            </td>
+                            <td className="p-3 text-center">
+                              <div className="flex flex-col gap-1.5 items-center">
+                                <button
+                                  title="Descargar base de datos de pacientes"
+                                  onClick={() => {
+                                    showPrompt(
+                                      "Código de administrador (9207) para descargar:",
+                                      (inputCode) => {
+                                        if (
+                                          (inputCode || "").trim() !== "9207"
+                                        ) {
+                                          showAlert(
+                                            "⛔ Código incorrecto. Use el código 9207."
+                                          );
+                                          return;
+                                        }
+                                        const cloudKey = `siso_patients_${u.user}`;
+                                        const localKey = `siso_db_patients_${u.user}`;
+                                        let pats = [];
+                                        if (
+                                          sbCloudData &&
+                                          sbCloudData[cloudKey]?.value
+                                        ) {
+                                          pats = Array.isArray(
+                                            sbCloudData[cloudKey].value
+                                          )
+                                            ? sbCloudData[cloudKey].value
+                                            : [];
+                                        } else {
+                                          const raw =
+                                            _ls.getItem(localKey) || "[]";
+                                          try {
+                                            pats = JSON.parse(raw);
+                                          } catch {}
+                                        }
+                                        const _patStr = JSON.stringify(
+                                          pats,
+                                          null,
+                                          2
+                                        );
+                                        const _patB64 = btoa(
+                                          unescape(encodeURIComponent(_patStr))
+                                        );
+                                        const a = document.createElement("a");
+                                        a.href =
+                                          "data:application/json;base64," +
+                                          _patB64;
+                                        a.download = `pacientes_${u.user}_${
+                                          new Date().toISOString().split("T")[0]
+                                        }.json`;
+                                        a.click();
+                                        document.body &&
+                                          document.body.removeChild &&
+                                          a.parentNode &&
+                                          a.parentNode.removeChild(a);
+                                        const entry = {
+                                          id: Date.now(),
+                                          fecha: new Date().toISOString(),
+                                          usuario: currentUser?.user,
+                                          accion: "Descarga DB",
+                                          pacienteId: `usuario:${u.user}`,
+                                          tipo: "admin",
+                                        };
+                                        setAuditLog((prev) => {
+                                          const n = [entry, ...prev].slice(
+                                            0,
+                                            500
+                                          );
+                                          _sync(
+                                            "siso_audit_log",
+                                            JSON.stringify(n)
+                                          );
+                                          return n;
+                                        });
+                                      }
+                                    );
+                                  }}
+                                  className="px-2 py-1 bg-blue-50 text-blue-700 rounded-lg text-[10px] font-bold hover:bg-blue-100 flex items-center gap-1 whitespace-nowrap"
+                                >
+                                  ⬇ Descargar
+                                </button>
+                                <button
+                                  title="Eliminar TODOS los datos de este usuario (pacientes, empresas, facturas)"
+                                  onClick={() => {
+                                    showPrompt(
+                                      `⚠️ ELIMINACIÓN TOTAL de @${u.user}. Ingrese código 9207 para confirmar:`,
+                                      (inputCode) => {
+                                        if (
+                                          (inputCode || "").trim() !== "9207"
+                                        ) {
+                                          showAlert(
+                                            "⛔ Código incorrecto. El código de eliminación es 9207."
+                                          );
+                                          return;
+                                        }
+                                        showConfirm(
+                                          `¿Eliminar ABSOLUTAMENTE TODOS los datos de @${u.user}? Pacientes, empresas, facturas. Esta acción NO se puede deshacer.`,
+                                          () => {
+                                            // Claves locales a eliminar
+                                            const localKeys = [
+                                              _patKey(u.user),
+                                              _compKey(u.user),
+                                              `siso_saved_bills_${u.user}`,
+                                              `siso_saved_reports_${u.user}`,
+                                              `siso_active_form_${u.user}`,
+                                              "siso_db_patients", // legacy key
+                                              "siso_companies", // legacy key
+                                            ];
+                                            // Claves Supabase a eliminar
+                                            const cloudKeys = [
+                                              _patKeyCloud(u.user),
+                                              _compKeyCloud(u.user),
+                                              `siso_bills_${u.user}`,
+                                              `siso_reports_${u.user}`,
+                                              `siso_ai_keys_${u.user}`,
+                                              `siso_portal_doc_${u.user}`,
+                                              `siso_doctor_signature_${u.user}`,
+                                              "siso_db_patients", // legacy cloud key
+                                              "siso_companies", // legacy cloud key
+                                            ];
+                                            // 1. Borrar localStorage
+                                            localKeys.forEach((k) =>
+                                              _ls.removeItem(k)
+                                            );
+                                            // 2. Borrar en React state si es el usuario activo
+                                            if (currentUser?.user === u.user) {
+                                              setPatientsList([]);
+                                              setCompanies([]);
+                                            }
+                                            // 3. Borrar en Supabase - DELETE real de cada clave
+                                            const deleteAll = cloudKeys.map(
+                                              (k) => _sbDelete(k)
+                                            );
+                                            Promise.all(deleteAll).then(
+                                              (results) => {
+                                                const ok =
+                                                  results.every(Boolean);
+                                                // 4. Actualizar sbCloudData local para reflejar borrado
+                                                setSbCloudData((prev) => {
+                                                  if (!prev) return prev;
+                                                  const updated = { ...prev };
+                                                  cloudKeys.forEach((k) => {
+                                                    delete updated[k];
+                                                  });
+                                                  return updated;
+                                                });
+                                                // 5. Registrar en auditoría
+                                                const entry = {
+                                                  id: Date.now(),
+                                                  fecha:
+                                                    new Date().toISOString(),
+                                                  usuario: currentUser?.user,
+                                                  accion: "Eliminación Total",
+                                                  pacienteId: `usuario:${u.user}`,
+                                                  tipo: "admin",
+                                                };
+                                                setAuditLog((prev) => {
+                                                  const n = [
+                                                    entry,
+                                                    ...prev,
+                                                  ].slice(0, 500);
+                                                  _sync(
+                                                    "siso_audit_log",
+                                                    JSON.stringify(n)
+                                                  );
+                                                  return n;
+                                                });
+                                                showAlert(
+                                                  ok
+                                                    ? `✅ Todos los datos de @${u.user} eliminados de Supabase y memoria.`
+                                                    : `⚠️ Eliminación parcial: algunos datos en Supabase no pudieron borrarse. Reintente.`
+                                                );
+                                              }
+                                            );
+                                          }
+                                        );
+                                      }
+                                    );
+                                  }}
+                                  className="px-2 py-1 bg-red-50 text-red-600 rounded-lg text-[10px] font-bold hover:bg-red-100 flex items-center gap-1 whitespace-nowrap"
+                                >
+                                  🗑 Eliminar todo
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  {/* Log movimientos */}
+                  <div>
+                    <h4 className="text-xs font-black text-gray-700 mb-3 flex items-center gap-1.5">
+                      <Activity className="w-3.5 h-3.5 text-violet-500" />{" "}
+                      Últimos movimientos por usuario
+                    </h4>
+                    <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
+                      {allMoves.length === 0 ? (
+                        <p className="text-center text-gray-400 text-xs py-6">
+                          Sin movimientos registrados aún
+                        </p>
+                      ) : (
+                        allMoves.map((m, idx) => (
+                          <div
+                            key={idx}
+                            className="bg-white border border-gray-100 rounded-lg p-2.5 flex items-center gap-3 hover:border-violet-200 transition"
+                          >
+                            <div className="bg-violet-50 rounded-lg p-1.5 flex-shrink-0">
+                              <Activity className="w-3 h-3 text-violet-500" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <span className="font-black text-[11px] text-gray-900">
+                                  {m.uName}
+                                </span>
+                                <span className="text-[10px] font-mono text-violet-600 bg-violet-50 px-1.5 py-0.5 rounded">
+                                  @{m.uLogin}
+                                </span>
+                                <span className="text-[10px] font-semibold text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded">
+                                  {m.accion}
+                                </span>
+                              </div>
+                              <p className="text-[10px] text-gray-400 mt-0.5">
+                                {new Date(m.fecha).toLocaleString("es-CO")}
+                              </p>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
+        </div>
+      </div>
+    );
+  };
   // ─── RENDER: PLANES Y PRECIOS ────────────────────────────────────────────
+  const renderPlanes = () => {
+    const planOrder = ["libre", "starter", "pro", "clinica"];
+    const currentPlan = currentUser?.license || "libre";
+    const features = [
+      {
+        label: "HC Ocupacional",
+        libre: true,
+        starter: true,
+        pro: true,
+        clinica: true,
+      },
+      {
+        label: "HC General",
+        libre: true,
+        starter: true,
+        pro: true,
+        clinica: true,
+      },
+      {
+        label: "Firma digital + QR",
+        libre: true,
+        starter: true,
+        pro: true,
+        clinica: true,
+      },
+      {
+        label: "Portal Trabajador",
+        libre: true,
+        starter: true,
+        pro: true,
+        clinica: true,
+      },
+      {
+        label: "Habeas Data (Ley 1581)",
+        libre: true,
+        starter: true,
+        pro: true,
+        clinica: true,
+      },
+      {
+        label: "Verificación externa",
+        libre: true,
+        starter: true,
+        pro: true,
+        clinica: true,
+      },
+      {
+        label: "Backup / Restaurar",
+        libre: true,
+        starter: true,
+        pro: true,
+        clinica: true,
+      },
+      {
+        label: "Offline (PWA)",
+        libre: true,
+        starter: true,
+        pro: true,
+        clinica: true,
+      },
+      {
+        label: "Límite HC",
+        libre: "30 total",
+        starter: "200/mes",
+        pro: "Ilimitadas",
+        clinica: "Ilimitadas",
+      },
+      {
+        label: "Empresas",
+        libre: "5",
+        starter: "30",
+        pro: "Ilimitadas",
+        clinica: "Ilimitadas",
+      },
+      {
+        label: "Agenda de citas",
+        libre: false,
+        starter: true,
+        pro: true,
+        clinica: true,
+      },
+      {
+        label: "Propuestas Económicas",
+        libre: false,
+        starter: true,
+        pro: true,
+        clinica: true,
+      },
+      {
+        label: "Cuentas de Cobro",
+        libre: false,
+        starter: true,
+        pro: true,
+        clinica: true,
+      },
+      {
+        label: "Solicitud de Exámenes",
+        libre: false,
+        starter: true,
+        pro: true,
+        clinica: true,
+      },
+      {
+        label: "Certificado de Incapacidad",
+        libre: false,
+        starter: true,
+        pro: true,
+        clinica: true,
+      },
+      {
+        label: "Reportes Epidemiológicos",
+        libre: false,
+        starter: true,
+        pro: true,
+        clinica: true,
+      },
+      {
+        label: "Sync Supabase (nube)",
+        libre: false,
+        starter: true,
+        pro: true,
+        clinica: true,
+      },
+      {
+        label: "SVE (programas)",
+        libre: false,
+        starter: "2 programas",
+        pro: "7 programas",
+        clinica: "7 programas",
+      },
+      {
+        label: "Telemedicina",
+        libre: false,
+        starter: "10 ses/mes",
+        pro: "Ilimitada",
+        clinica: "Ilimitada",
+      },
+      {
+        label: "Módulo ARL (AT/EL)",
+        libre: false,
+        starter: false,
+        pro: true,
+        clinica: true,
+      },
+      {
+        label: "IA - Análisis HC",
+        libre: false,
+        starter: false,
+        pro: true,
+        clinica: true,
+      },
+      {
+        label: "IA - Resumen clínico",
+        libre: false,
+        starter: false,
+        pro: true,
+        clinica: true,
+      },
+      {
+        label: "IA - Reporte empresa",
+        libre: false,
+        starter: false,
+        pro: true,
+        clinica: true,
+      },
+      {
+        label: "FHIR R4 (Res. 1888/2025)",
+        libre: false,
+        starter: false,
+        pro: true,
+        clinica: true,
+      },
+      {
+        label: "RIPS JSON v2 export",
+        libre: false,
+        starter: false,
+        pro: true,
+        clinica: true,
+      },
+      {
+        label: "Factura electrónica DIAN",
+        libre: false,
+        starter: false,
+        pro: true,
+        clinica: true,
+      },
+      {
+        label: "Adjuntos clínicos",
+        libre: false,
+        starter: false,
+        pro: true,
+        clinica: true,
+      },
+      {
+        label: "Auditoría completa",
+        libre: false,
+        starter: false,
+        pro: true,
+        clinica: true,
+      },
+      {
+        label: "2FA (doble factor)",
+        libre: false,
+        starter: false,
+        pro: true,
+        clinica: true,
+      },
+      {
+        label: "Multi-usuario",
+        libre: "1",
+        starter: "1 médico",
+        pro: "1 médico",
+        clinica: "3 base + $45K c/u extra",
+      },
+      {
+        label: "Almacenamiento nube",
+        libre: "Local",
+        starter: "500 MB",
+        pro: "3 GB",
+        clinica: "10 GB",
+      },
+    ];
+    const planColors2 = {
+      libre: {
+        bg: "bg-gray-600",
+        light: "bg-gray-50",
+        border: "border-gray-200",
+        text: "text-gray-700",
+      },
+      starter: {
+        bg: "bg-teal-600",
+        light: "bg-teal-50",
+        border: "border-teal-200",
+        text: "text-teal-700",
+      },
+      pro: {
+        bg: "bg-blue-600",
+        light: "bg-blue-50",
+        border: "border-blue-200",
+        text: "text-blue-700",
+      },
+      clinica: {
+        bg: "bg-purple-600",
+        light: "bg-purple-50",
+        border: "border-purple-200",
+        text: "text-purple-700",
+      },
+    };
+    const renderCell = (val) => {
+      if (val === true)
+        return <span className="text-emerald-500 font-black text-base">✓</span>;
+      if (val === false)
+        return <span className="text-gray-300 text-base">-</span>;
+      return <span className="text-xs font-bold text-gray-700">{val}</span>;
+    };
+    return (
+      <div className="min-h-screen bg-gray-50 font-sans">
+        {renderNavbar()}
+        <div className="max-w-5xl mx-auto px-4 py-8">
+          <div className="text-center mb-8">
+            <h1 className="text-2xl font-black text-gray-800 mb-1">
+              ⭐ Planes y Precios
+            </h1>
+            <p className="text-gray-500 text-sm">
+              Elige el plan que mejor se ajuste a tu práctica médica. Sin
+              permanencia.
+            </p>
+          </div>
+          {/* ═══ SECCIÓN 1: PLANES PARA PROFESIONALES INDIVIDUALES ═══ */}
+          <div className="mb-2">
+            <div className="flex items-center gap-3 mb-4">
+              <span className="text-xl">👨‍⚕️</span>
+              <div>
+                <h2 className="font-black text-gray-800 text-base">
+                  Para Profesionales - Médico Individual
+                </h2>
+                <p className="text-xs text-gray-400">
+                  Un solo médico trabajando de forma independiente
+                </p>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+              {["libre", "starter", "pro"].map((pk) => {
+                const plan = PLAN_CONFIG[pk];
+                const c = planColors2[pk];
+                const isCurrent = pk === currentPlan;
+                return (
+                  <div
+                    key={pk}
+                    className={`rounded-2xl border-2 overflow-hidden ${
+                      isCurrent
+                        ? "border-blue-400 shadow-lg ring-2 ring-blue-100"
+                        : "border-gray-100 shadow-sm"
+                    }`}
+                  >
+                    {isCurrent && (
+                      <div className="bg-blue-600 text-white text-[10px] font-black text-center py-1 tracking-widest">
+                        ✅ PLAN ACTUAL
+                      </div>
+                    )}
+                    <div className={`${c.bg} px-4 py-4 text-center`}>
+                      <p className="text-white font-black text-base">
+                        {plan.label}
+                      </p>
+                      <p className="text-white/80 text-[11px] mt-0.5">
+                        {plan.priceLabel}
+                      </p>
+                      {pk !== "libre" && (
+                        <p className="text-white/60 text-[10px]">
+                          {plan.price > 0
+                            ? `$${(plan.price * 10).toLocaleString(
+                                "es-CO"
+                              )}/año - ahorra 2 meses`
+                            : ""}
+                        </p>
+                      )}
+                    </div>
+                    <div className={`${c.light} px-4 py-4 space-y-1.5`}>
+                      <p className="text-xs text-gray-600">
+                        <span className="font-black">HC:</span>{" "}
+                        {plan.maxHC < 9999
+                          ? plan.maxHC + " total/mes"
+                          : "Ilimitadas"}
+                      </p>
+                      <p className="text-xs text-gray-600">
+                        <span className="font-black">Empresas:</span>{" "}
+                        {plan.maxEmpresas < 9999 ? plan.maxEmpresas : "∞"}
+                      </p>
+                      <p className="text-xs text-gray-600">
+                        <span className="font-black">Médicos:</span>{" "}
+                        {plan.maxMedicos < 9999 ? plan.maxMedicos : "∞"}
+                      </p>
+                      <p className="text-xs text-gray-600">
+                        <span className="font-black">SVE:</span>{" "}
+                        {plan.maxSVEprogramas === 0
+                          ? "-"
+                          : plan.maxSVEprogramas === 7
+                          ? "7 programas"
+                          : plan.maxSVEprogramas + " prog."}
+                      </p>
+                      <p className="text-xs text-gray-600">
+                        <span className="font-black">Nube:</span>{" "}
+                        {plan.storageMB === 0
+                          ? "Local"
+                          : plan.storageMB >= 1024
+                          ? `${plan.storageMB / 1024}GB`
+                          : `${plan.storageMB}MB`}
+                      </p>
+                    </div>
+                    <div className="px-4 pb-4">
+                      {isCurrent ? (
+                        <div className="w-full text-center py-2 bg-emerald-100 text-emerald-700 rounded-xl text-xs font-black">
+                          ✅ Plan actual
+                        </div>
+                      ) : _isAdmin(currentUser?.role) ? (
+                        <button
+                          onClick={() => {
+                            setPendingActivationPlan(pk);
+                            setActiveUserMgmtTab("licencias");
+                            setUserEditId(null);
+                            goTo("users");
+                          }}
+                          className={`w-full py-2 ${c.bg} text-white rounded-xl text-xs font-black hover:opacity-90 transition`}
+                        >
+                          Activar para usuario
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() =>
+                            showAlert(
+                              `Para activar el plan ${plan.label}, comunícate con el administrador.\n\nPrecio: ${plan.priceLabel}`
+                            )
+                          }
+                          className={`w-full py-2 ${c.bg} text-white rounded-xl text-xs font-black hover:opacity-90 transition`}
+                        >
+                          {plan.price === 0
+                            ? "Plan actual gratis"
+                            : "Suscribirme ↗"}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* ═══ SECCIÓN 2: PLAN PARA EMPRESAS / CLÍNICAS IPS ═══ */}
+          <div className="mb-8">
+            <div className="flex items-center gap-3 mb-4">
+              <span className="text-xl">🏢</span>
+              <div>
+                <h2 className="font-black text-gray-800 text-base">
+                  Para Empresas - Clínica / IPS / Multi-médico
+                </h2>
+                <p className="text-xs text-gray-400">
+                  Múltiples médicos, secretarias y módulos avanzados - sin
+                  límite de usuarios
+                </p>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {["clinica"].map((pk) => {
+                const plan = PLAN_CONFIG[pk];
+                const c = planColors2[pk];
+                const isCurrent = pk === currentPlan;
+                return (
+                  <div
+                    key={pk}
+                    className={`rounded-2xl border-2 overflow-hidden ${
+                      isCurrent
+                        ? "border-purple-400 shadow-lg ring-2 ring-purple-100"
+                        : "border-purple-100 shadow-sm"
+                    }`}
+                  >
+                    {isCurrent && (
+                      <div className="bg-purple-600 text-white text-[10px] font-black text-center py-1 tracking-widest">
+                        ✅ PLAN ACTUAL
+                      </div>
+                    )}
+                    <div
+                      className={`${c.bg} px-6 py-5 flex justify-between items-center`}
+                    >
+                      <div>
+                        <p className="text-white font-black text-lg">
+                          {plan.label}
+                        </p>
+                        <p className="text-white/80 text-sm mt-0.5">
+                          {plan.priceLabel}
+                        </p>
+                        <p className="text-white/60 text-[11px]">
+                          $${(plan.price * 10).toLocaleString("es-CO")}/año -
+                          ahorra 2 meses
+                        </p>
+                      </div>
+                      <div className="text-right text-white/80 text-xs space-y-1">
+                        <p>✅ Médicos ilimitados</p>
+                        <p>✅ Secretarias ilimitadas</p>
+                        <p>✅ HC ilimitadas</p>
+                        <p>✅ Todas las funciones</p>
+                      </div>
+                    </div>
+                    <div className="px-6 py-4 grid grid-cols-2 gap-2">
+                      {[
+                        ["Médicos", "Ilimitados"],
+                        ["Secretarias", "Ilimitadas"],
+                        ["HC/mes", "Ilimitadas"],
+                        ["Empresas-convenio", "Ilimitadas"],
+                        ["SVE programas", "7 programas"],
+                        ["Nube", `${plan.storageMB / 1024}GB`],
+                        ["Telemedicina", "Ilimitada"],
+                        ["IA / Análisis", "Incluido"],
+                        ["Portal Empresa", "✅ Incluido"],
+                        ["Facturación DIAN", "✅ Incluido"],
+                        ["FHIR R4", "✅ Incluido"],
+                        ["Soporte prioritario", "✅ Incluido"],
+                      ].map(([k, v]) => (
+                        <div
+                          key={k}
+                          className="flex justify-between items-center text-xs py-1 border-b border-gray-50"
+                        >
+                          <span className="text-gray-600 font-bold">{k}</span>
+                          <span className="font-black text-gray-800">{v}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="px-6 pb-5">
+                      {isCurrent ? (
+                        <div className="w-full text-center py-3 bg-emerald-100 text-emerald-700 rounded-xl text-sm font-black">
+                          ✅ Plan actual activo
+                        </div>
+                      ) : _isAdmin(currentUser?.role) ? (
+                        <button
+                          onClick={() => {
+                            setPendingActivationPlan(pk);
+                            setActiveUserMgmtTab("licencias");
+                            setUserEditId(null);
+                            goTo("users");
+                          }}
+                          className={`w-full py-3 ${c.bg} text-white rounded-xl text-sm font-black hover:opacity-90 transition`}
+                        >
+                          🏢 Activar Plan Clínica
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() =>
+                            showAlert(
+                              `Para activar el Plan Clínica, comunícate con el administrador.\n\nPrecio: ${plan.priceLabel}`
+                            )
+                          }
+                          className={`w-full py-3 ${c.bg} text-white rounded-xl text-sm font-black hover:opacity-90 transition`}
+                        >
+                          Contactar para activar ↗
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+              {/* Card de contacto/personalizado */}
+              <div className="rounded-2xl border-2 border-dashed border-purple-200 bg-purple-50/50 p-6 flex flex-col justify-center items-center text-center gap-3">
+                <span className="text-4xl">🤝</span>
+                <p className="font-black text-purple-800">
+                  ¿Necesita un plan personalizado?
+                </p>
+                <p className="text-xs text-purple-600">
+                  Para IPS grandes, múltiples sedes o necesidades específicas,
+                  ofrecemos planes a medida con soporte dedicado.
+                </p>
+                <button
+                  onClick={() =>
+                    showAlert(
+                      "Para un plan personalizado, comuníquese al:\n\n📧 siso@ocupasalud.com\n📱 +57 300 XXX XXXX\n\nLe atenderemos en menos de 24 horas."
+                    )
+                  }
+                  className="px-5 py-2.5 bg-purple-700 text-white text-sm font-black rounded-xl hover:bg-purple-800 transition"
+                >
+                  💬 Solicitar cotización
+                </button>
+              </div>
+            </div>
+          </div>
+          {/* Tabla comparativa */}
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-8">
+            <div className="px-4 py-3 border-b border-gray-100">
+              <h2 className="font-black text-gray-800 text-sm">
+                Comparación detallada de funciones
+              </h2>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs">
+                <thead>
+                  <tr className="bg-gray-50">
+                    <th className="text-left px-4 py-3 font-black text-gray-600 w-1/3">
+                      Función
+                    </th>
+                    {planOrder.map((pk) => (
+                      <th
+                        key={pk}
+                        className={`text-center px-3 py-3 font-black ${
+                          planColors2[pk].text
+                        } ${pk === currentPlan ? "bg-blue-50" : ""}`}
+                      >
+                        {PLAN_CONFIG[pk].label}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {features.map((f, i) => (
+                    <tr
+                      key={f.label}
+                      className={i % 2 === 0 ? "bg-white" : "bg-gray-50/40"}
+                    >
+                      <td className="px-4 py-2 text-gray-700 font-bold">
+                        {f.label}
+                      </td>
+                      {planOrder.map((pk) => (
+                        <td
+                          key={pk}
+                          className={`text-center px-3 py-2 ${
+                            pk === currentPlan ? "bg-blue-50/50" : ""
+                          }`}
+                        >
+                          {renderCell(f[pk])}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+          {/* FAQ */}
+          <div className="bg-amber-50 border border-amber-200 rounded-xl p-5 text-xs space-y-2">
+            <p className="font-black text-amber-800 text-sm">
+              ❓ Preguntas frecuentes
+            </p>
+            {[
+              [
+                "¿Mis datos se borran si no pago?",
+                "No. Sus HC, pacientes y empresas siempre son suyos. Al vencer el plan puede seguir viendo todo en modo lectura.",
+              ],
+              [
+                "¿Hay permanencia?",
+                "No. Puede cancelar cuando quiera sin penalidad.",
+              ],
+              [
+                "¿Puedo bajar de plan?",
+                "Sí. El plan Libre siempre está disponible con sus 30 HC ya creadas.",
+              ],
+              [
+                "¿Cómo pago?",
+                "Transferencia, Nequi o Daviplata. Comuníquese con el administrador para activar su plan.",
+              ],
+            ].map(([q, a]) => (
+              <div key={q}>
+                <p className="font-bold text-amber-800">• {q}</p>
+                <p className="text-amber-700 ml-3">{a}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   // ─── RENDER: PROPUESTAS ECONÓMICAS ───────────────────────────────────────
   // ══════════════════════════════════════════════════════
@@ -26327,6 +36217,1469 @@ th{background:#fee2e2;font-weight:900;text-align:left;color:#7f1d1d;}
     );
   };
   // ─── RENDER: AGENDA / SALA DE ESPERA ───────────────────────────────────────
+  const renderAgenda = () => {
+    if (!_canUse("agenda", currentUser))
+      return (
+        <div className="min-h-screen bg-gray-50 font-sans">
+          {renderNavbar()}
+          <div className="max-w-2xl mx-auto px-4 py-12">
+            <PlanGate
+              feature="agenda"
+              requiredPlan="starter"
+              currentUser={currentUser}
+            />
+            <div className="mt-4 text-center">
+              <button
+                onClick={() => goBack()}
+                className="text-sm text-gray-500 hover:text-gray-700"
+              >
+                ← Volver
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    // ── SECRETARIA GATE: "Agenda del Día" requiere autorización del admin ──
+    if (
+      currentUser?.role === "secretaria" &&
+      !_secretariaPuede("agenda", currentUser, usersList)
+    )
+      return (
+        <div className="min-h-screen bg-gray-50 font-sans">
+          {renderNavbar()}
+          <div className="max-w-xl mx-auto px-4 py-16 text-center">
+            <div className="bg-amber-50 border-2 border-amber-300 rounded-2xl p-8 space-y-3">
+              <div className="text-5xl">🔐</div>
+              <p className="font-black text-amber-800 text-xl">
+                Módulo restringido
+              </p>
+              <p className="text-amber-700 text-sm font-bold">Agenda del Día</p>
+              <p className="text-amber-600 text-xs leading-relaxed">
+                Este módulo requiere autorización explícita del administrador.
+                <br />
+                Solicita que habilite el permiso{" "}
+                <strong>"Agenda del Día"</strong> en tu perfil.
+                <br />
+                (Usuarios → tu nombre → 🔐 Permisos de secretaria)
+              </p>
+              <button
+                onClick={() => goBack()}
+                className="mt-3 bg-amber-600 text-white px-5 py-2 rounded-lg text-sm font-bold hover:bg-amber-700 transition"
+              >
+                ← Volver al panel
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    const isAdminOrSec = [
+      "administrador",
+      "secretaria",
+      "admin_empresa",
+    ].includes(currentUser?.role);
+    const today = new Date().toISOString().split("T")[0];
+    // ── IPS: scope agenda to empresa if applicable ──
+    const _agendaEmpresaId = currentUser?.empresaId || null;
+    // ── Duración por tipo de consulta ──────────────────────────────
+    const DURACION = {
+      ingreso: 20,
+      egreso: 20,
+      periodico: 20,
+      seguimiento: 40,
+      post_incapacidad: 40,
+    };
+    const TIPOS_CONSULTA = [
+      { v: "ingreso", l: "Ingreso", mins: 20 },
+      { v: "egreso", l: "Egreso", mins: 20 },
+      { v: "periodico", l: "Periódico", mins: 20 },
+      { v: "seguimiento", l: "Seguimiento", mins: 40 },
+      { v: "post_incapacidad", l: "Post-Incapacidad", mins: 40 },
+    ];
+    // ── Helpers de hora ────────────────────────────────────────────
+    const addMins = (hhmm, mins) => {
+      const [h, m] = hhmm.split(":").map(Number);
+      const total = h * 60 + m + mins;
+      return `${String(Math.floor(total / 60) % 24).padStart(2, "0")}:${String(
+        total % 60
+      ).padStart(2, "0")}`;
+    };
+    const horaActual = () =>
+      new Date()
+        .toLocaleTimeString("es-CO", {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: false,
+        })
+        .replace(".", ":");
+    const nowISO = () => new Date().toISOString();
+    // ── Filtrar agenda por fecha y usuario ─────────────────────────
+    const filterAgenda = (fecha) =>
+      agendados
+        .filter((a) => {
+          if (a.fecha !== fecha) return false;
+          // IPS: si el usuario pertenece a empresa, filtrar por empresa
+          if (_agendaEmpresaId)
+            return (
+              a.empresaId === _agendaEmpresaId ||
+              a.medicoEmpresaId === _agendaEmpresaId
+            );
+          if (isAdminOrSec) return true;
+          return a.medicoId === currentUser?.user;
+        })
+        .sort(
+          (a, b) =>
+            a.horaCita?.localeCompare(b.horaCita) ||
+            a.hora?.localeCompare(b.hora)
+        );
+    const miAgendaHoy = filterAgenda(today);
+    const enEspera = miAgendaHoy.filter((a) => a.estado === "espera");
+    const atendiendo = miAgendaHoy.filter((a) => a.estado === "atendiendo");
+    const atendidos = miAgendaHoy.filter((a) => a.estado === "atendido");
+    // Próximas citas (fechas futuras)
+    const proximas = agendados
+      .filter((a) => {
+        if (a.fecha <= today) return false;
+        // IPS: scope by empresa
+        if (_agendaEmpresaId)
+          return (
+            a.empresaId === _agendaEmpresaId ||
+            a.medicoEmpresaId === _agendaEmpresaId
+          );
+        if (isAdminOrSec) return true;
+        return a.medicoId === currentUser?.user;
+      })
+      .sort(
+        (a, b) =>
+          a.fecha.localeCompare(b.fecha) ||
+          a.horaCita?.localeCompare(b.horaCita)
+      );
+    // ── Guardar agendados ──────────────────────────────────────────
+    const saveAgendados = (upd) => {
+      setAgendados(upd);
+      // PASO 6: clave aislada por empresa/usuario
+      const _agSuf = currentUser?.empresaId
+        ? "empresa_" + currentUser.empresaId
+        : currentUser?.user || "shared";
+      _sync(`siso_agendados_${_agSuf}`, JSON.stringify(upd));
+      _sbSet(`siso_agendados_${_agSuf}`, upd);
+    };
+    // ── Autocompletar desde pacientes existentes ───────────────────
+    const handleBusqueda = (val) => {
+      setAgendaForm((p) => ({ ...p, nombre: val, _busquedaQuery: val }));
+      if (val.length < 2) {
+        setAgendaSuggs([]);
+        return;
+      }
+      const q = val.toLowerCase();
+      let _agendaSearchBase = patientsList;
+      // IPS: scope patient search to empresa
+      if (_agendaEmpresaId) {
+        const _asEmp = companies.find((c) => c.id === _agendaEmpresaId);
+        _agendaSearchBase = patientsList.filter(
+          (p) =>
+            p.empresaId === _agendaEmpresaId ||
+            (_asEmp && p.empresaNit === _asEmp.nit)
+        );
+      }
+      // SECRETARIA: busca en pacientes de TODOS los médicos asignados
+      if (currentUser?.role === "secretaria") {
+        const secU = usersList.find(u => u.user === currentUser.user);
+        const asig = secU?.medicosAsignados || [];
+        if (asig.length > 0) {
+          _agendaSearchBase = patientsList.filter(p => !p._medicoId || asig.includes(p._medicoId));
+        } else {
+          _agendaSearchBase = patientsList;
+        }
+      }
+      const found = _agendaSearchBase
+        .filter(
+          (p) =>
+            p.nombres?.toLowerCase().includes(q) ||
+            p.docNumero?.toLowerCase().includes(q) ||
+            p.celular?.toLowerCase().includes(q)
+        )
+        .slice(0, 8);
+      setAgendaSuggs(found);
+    };
+    const seleccionarPaciente = (p) => {
+      setAgendaForm((prev) => ({
+        ...prev,
+        nombre: p.nombres || "",
+        docTipo: p.docTipo || "CC",
+        docNumero: p.docNumero || "",
+        fechaNacimiento: p.fechaNacimiento || "",
+        edad: p.edad || "",
+        genero: p.genero || "",
+        estadoCivil: p.estadoCivil || "",
+        escolaridad: p.escolaridad || "",
+        grupoSanguineo: p.grupoSanguineo || "",
+        grupoEtnico: p.grupoEtnico || "",
+        identidadGenero: p.identidadGenero || "",
+        celular: p.celular || "",
+        telefono: p.telefono || "",
+        email: p.email || "",
+        residencia: p.residencia || "",
+        zonaResidencia: p.zonaResidencia || "",
+        estrato: p.estrato || "",
+        tipoVivienda: p.tipoVivienda || "",
+        numPersonasCargo: p.numPersonasCargo || "",
+        eps: p.eps || "",
+        arl: p.arl || "",
+        afp: p.afp || "",
+        nivelRiesgoARL: p.nivelRiesgoARL || "",
+        empresa:
+          p.empresa ||
+          companies.find((c) => c.id === p.companyId)?.nombre ||
+          "",
+        cargo: p.cargo || "",
+        dependencia: p.dependencia || "",
+        tipoContrato: p.tipoContrato || "",
+        turnoTrabajo: p.turnoTrabajo || "",
+        antiguedadEmpresa: p.antiguedadEmpresa || "",
+        _busquedaQuery: p.nombres || "",
+      }));
+      setAgendaSuggs([]);
+    };
+    // ── Calcular edad automática (FIX: timezone-safe) ─────────────
+    const calcEdad = (fNac) => {
+      if (!fNac) return "";
+      // Parsear como fecha local para evitar desfase UTC
+      const parts = String(fNac).split("-");
+      if (parts.length !== 3) return "";
+      const nacY = parseInt(parts[0], 10);
+      const nacM = parseInt(parts[1], 10) - 1;
+      const nacD = parseInt(parts[2], 10);
+      if (isNaN(nacY) || isNaN(nacM) || isNaN(nacD)) return "";
+      const hoy = new Date();
+      let edad = hoy.getFullYear() - nacY;
+      const mDiff = hoy.getMonth() - nacM;
+      if (mDiff < 0 || (mDiff === 0 && hoy.getDate() < nacD)) edad--;
+      if (edad < 0) edad = 0;
+      return String(edad);
+    };
+    // ── Registrar / Agendar paciente ───────────────────────────────
+    const registrarPaciente = () => {
+      if (!agendaForm.nombre.trim()) {
+        showAlert("Ingrese el nombre del paciente.");
+        return;
+      }
+      if (!agendaForm.medicoId) {
+        showAlert("Seleccione el médico asignado.");
+        return;
+      }
+      const fechaCita = agendaForm.fechaCita || today;
+      const horaCita = agendaForm.horaCita || horaActual();
+      const duracion = DURACION[agendaForm.tipoConsulta] || 20;
+      const horaFin = addMins(horaCita, duracion);
+      const esHoy = fechaCita === today;
+      const nuevo = {
+        id: "ag_" + Date.now(),
+        // Identificación
+        nombre: agendaForm.nombre.trim(),
+        docTipo: agendaForm.docTipo,
+        docNumero: agendaForm.docNumero.trim(),
+        // Sociodemográficos
+        fechaNacimiento: agendaForm.fechaNacimiento,
+        edad: agendaForm.edad || calcEdad(agendaForm.fechaNacimiento),
+        genero: agendaForm.genero,
+        estadoCivil: agendaForm.estadoCivil,
+        escolaridad: agendaForm.escolaridad,
+        grupoSanguineo: agendaForm.grupoSanguineo,
+        grupoEtnico: agendaForm.grupoEtnico,
+        identidadGenero: agendaForm.identidadGenero,
+        // Contacto
+        celular: agendaForm.celular,
+        telefono: agendaForm.telefono,
+        email: agendaForm.email,
+        residencia: agendaForm.residencia,
+        zonaResidencia: agendaForm.zonaResidencia,
+        estrato: agendaForm.estrato,
+        tipoVivienda: agendaForm.tipoVivienda,
+        numPersonasCargo: agendaForm.numPersonasCargo,
+        // Afiliaciones
+        eps: agendaForm.eps,
+        arl: agendaForm.arl,
+        afp: agendaForm.afp,
+        nivelRiesgoARL: agendaForm.nivelRiesgoARL,
+        // Laboral
+        empresa: agendaForm.empresa,
+        cargo: agendaForm.cargo,
+        dependencia: agendaForm.dependencia,
+        tipoContrato: agendaForm.tipoContrato,
+        turnoTrabajo: agendaForm.turnoTrabajo,
+        antiguedadEmpresa: agendaForm.antiguedadEmpresa,
+        // Agenda
+        medicoId: agendaForm.medicoId,
+        medicoNombre:
+          usersList.find((u) => u.user === agendaForm.medicoId)?.name ||
+          agendaForm.medicoId,
+        tipoConsulta: agendaForm.tipoConsulta,
+        fecha: fechaCita,
+        horaCita,
+        horaFinCita: horaFin,
+        duracion,
+        hora: horaCita,
+        observacion: agendaForm.observacion,
+        estado: esHoy ? "espera" : "programado",
+        registradoPor: currentUser?.user,
+        registradoEn: nowISO(),
+        // ── IPS: auto-tag con empresaId ──
+        ...(currentUser?.empresaId
+          ? {
+              empresaId: currentUser.empresaId,
+              medicoEmpresaId: currentUser.empresaId,
+            }
+          : {}),
+      };
+      saveAgendados([...agendados, nuevo]);
+      setAgendaForm((p) => ({
+        ...p,
+        nombre: "",
+        docTipo: "CC",
+        docNumero: "",
+        fechaNacimiento: "",
+        edad: "",
+        genero: "",
+        estadoCivil: "",
+        escolaridad: "",
+        grupoSanguineo: "",
+        grupoEtnico: "",
+        identidadGenero: "",
+        celular: "",
+        telefono: "",
+        email: "",
+        residencia: "",
+        zonaResidencia: "",
+        estrato: "",
+        tipoVivienda: "",
+        numPersonasCargo: "",
+        eps: "",
+        arl: "",
+        afp: "",
+        nivelRiesgoARL: "",
+        empresa: "",
+        cargo: "",
+        dependencia: "",
+        tipoContrato: "",
+        turnoTrabajo: "",
+        antiguedadEmpresa: "",
+        fechaCita: "",
+        horaCita: "",
+        observacion: "",
+        _busquedaQuery: "",
+      }));
+      setAgendaSuggs([]);
+      setAgendaTab("hoy");
+      showAlert(
+        `✅ ${
+          esHoy
+            ? "Paciente en sala de espera"
+            : "Cita programada para " + fechaCita + " a las " + horaCita
+        }.\nMédico: ${nuevo.medicoNombre} · Duración: ${duracion} min`
+      );
+    };
+    // ── Iniciar atención ───────────────────────────────────────────
+    const iniciarAtencion = (ag) => {
+      const upd = agendados.map((a) =>
+        a.id === ag.id
+          ? { ...a, estado: "atendiendo", horaInicio: horaActual() }
+          : a
+      );
+      saveAgendados(upd);
+      // Mostrar modal de elección de tipo de HC
+      setHcChoiceAgenda(ag);
+    };
+    const abrirHCDesdeAgenda = (ag, tipo) => {
+      const newId = "pac_" + Date.now();
+      if (tipo === "ocupacional") {
+        setData({
+          ...initialOccupPatientState,
+          id: newId,
+          _medicoId: ag.medicoId,
+          nombres: ag.nombre,
+          docTipo: ag.docTipo,
+          docNumero: ag.docNumero,
+          fechaNacimiento: ag.fechaNacimiento,
+          edad: ag.edad,
+          genero: ag.genero,
+          estadoCivil: ag.estadoCivil,
+          escolaridad: ag.escolaridad,
+          celular: ag.celular,
+          telefono: ag.telefono,
+          email: ag.email,
+          residencia: ag.residencia,
+          zonaResidencia: ag.zonaResidencia,
+          estrato: ag.estrato,
+          eps: ag.eps,
+          arl: ag.arl,
+          afp: ag.afp,
+          nivelRiesgoARL: ag.nivelRiesgoARL,
+          cargo: ag.cargo,
+          dependencia: ag.dependencia,
+          tipoContrato: ag.tipoContrato,
+          turnoTrabajo: ag.turnoTrabajo,
+          antiguedadEmpresa: ag.antiguedadEmpresa,
+          grupoSanguineo: ag.grupoSanguineo,
+          motivoConsulta: ag.tipoConsulta || "",
+          _agendaId: ag.id,
+        });
+        setDataType("ocupacional");
+        setActiveTab("form");
+      } else {
+        setData({
+          ...initialGeneralPatientState,
+          id: newId,
+          _medicoId: ag.medicoId,
+          nombres: ag.nombre,
+          docTipo: ag.docTipo,
+          docNumero: ag.docNumero,
+          fechaNacimiento: ag.fechaNacimiento,
+          edad: ag.edad,
+          genero: ag.genero,
+          celular: ag.celular,
+          telefono: ag.telefono,
+          email: ag.email,
+          residencia: ag.residencia,
+          eps: ag.eps,
+          arl: ag.arl,
+          cargo: ag.cargo,
+          _agendaId: ag.id,
+        });
+        setDataType("general");
+        setActiveTab("formGeneral");
+      }
+      setHcChoiceAgenda(null);
+      setView("historia");
+    };
+    const marcarAtendido = (agId) => {
+      const upd = agendados.map((a) =>
+        a.id === agId ? { ...a, estado: "atendido", horaFin: horaActual() } : a
+      );
+      saveAgendados(upd);
+    };
+    const eliminarCita = (agId) => {
+      showConfirm("¿Eliminar esta cita programada?", () =>
+        saveAgendados(agendados.filter((a) => a.id !== agId))
+      );
+    };
+    const medicosDisp = usersList.filter(
+      (u) =>
+        ["medico", "administrador", "super_admin", "admin_empresa"].includes(
+          u.role
+        ) &&
+        u.activo !== false &&
+        // IPS: scope doctor list to empresa
+        (_agendaEmpresaId
+          ? u.empresaId === _agendaEmpresaId ||
+            (u.role === "admin_empresa" && u.empresaId === _agendaEmpresaId)
+          : true)
+    );
+    // ── Input helper: AgendaFieldF definida a nivel módulo ──
+    // ── Badge estado ──────────────────────────────────────────────
+    const EstadoBadge = ({ ag }) => {
+      const map = {
+        espera: "bg-yellow-100 text-yellow-800 border-yellow-300",
+        atendiendo: "bg-blue-100 text-blue-800 border-blue-300",
+        atendido: "bg-emerald-100 text-emerald-800 border-emerald-300",
+        programado: "bg-purple-100 text-purple-800 border-purple-300",
+      };
+      const icons = {
+        espera: "⏳",
+        atendiendo: "🔵",
+        atendido: "✅",
+        programado: "📅",
+      };
+      const labels = {
+        espera: "En espera",
+        atendiendo: "Atendiendo",
+        atendido: "Visto ✓",
+        programado: "Programado",
+      };
+      return (
+        <span
+          className={`text-[9px] font-black px-2 py-0.5 rounded-full border ${
+            map[ag.estado] || map.espera
+          }`}
+        >
+          {icons[ag.estado]} {labels[ag.estado]}
+          {ag.estado === "atendido" && ag.horaFin ? " · " + ag.horaFin : ""}
+        </span>
+      );
+    };
+    const TipoConsultaBadge = ({ tipo }) => {
+      const duracion = DURACION[tipo] || 20;
+      const colors = {
+        ingreso: "blue",
+        egreso: "orange",
+        periodico: "teal",
+        seguimiento: "purple",
+        post_incapacidad: "red",
+      };
+      const c = colors[tipo] || "gray";
+      return (
+        <span
+          className={`text-[9px] font-bold px-1.5 py-0.5 rounded bg-${c}-50 text-${c}-700 border border-${c}-200`}
+        >
+          {tipo?.replace("_", " ")} · {duracion}min
+        </span>
+      );
+    };
+    // ── Tarjeta de paciente agendado ──────────────────────────────
+    const CardPaciente = ({ ag, idx, showFecha = false }) => (
+      <div
+        className={`px-4 py-3 flex items-start gap-3 hover:bg-gray-50 transition ${
+          ag.estado === "atendido" ? "bg-emerald-50/40" : ""
+        }`}
+      >
+        {ag.estado === "espera" && (
+          <div className="w-7 h-7 bg-yellow-100 rounded-full flex items-center justify-center font-black text-yellow-700 text-sm flex-shrink-0 mt-0.5">
+            {idx + 1}
+          </div>
+        )}
+        {ag.estado === "atendiendo" && (
+          <div className="w-3 h-3 bg-blue-500 rounded-full animate-pulse flex-shrink-0 mt-2" />
+        )}
+        {ag.estado === "atendido" && (
+          <div className="w-7 h-7 bg-emerald-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 ring-2 ring-emerald-400">
+            <span className="text-sm">✅</span>
+          </div>
+        )}
+        {ag.estado === "programado" && (
+          <div className="w-7 h-7 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+            <span className="text-xs">📅</span>
+          </div>
+        )}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <p
+              className={`font-bold text-sm ${
+                ag.estado === "atendido"
+                  ? "line-through text-gray-400"
+                  : "text-gray-800"
+              }`}
+            >
+              {ag.nombre}
+            </p>
+            <TipoConsultaBadge tipo={ag.tipoConsulta} />
+          </div>
+          <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-0.5">
+            <p className="text-[10px] text-gray-400">
+              {ag.docTipo}: {ag.docNumero || "-"}
+            </p>
+            {ag.edad && (
+              <p className="text-[10px] text-gray-400">
+                {ag.edad} años · {ag.genero || "-"}
+              </p>
+            )}
+            {ag.eps && (
+              <p className="text-[10px] text-gray-400">EPS: {ag.eps}</p>
+            )}
+            {ag.cargo && (
+              <p className="text-[10px] text-gray-400">Cargo: {ag.cargo}</p>
+            )}
+            {showFecha ? (
+              <p className="text-[10px] font-bold text-purple-600">
+                📅 {ag.fecha} {ag.horaCita} - {ag.horaFinCita}
+              </p>
+            ) : (
+              <p className="text-[10px] text-gray-400">
+                🕐 {ag.horaCita || ag.hora} - {ag.horaFinCita || "-"}
+              </p>
+            )}
+            {isAdminOrSec && ag.medicoNombre && (
+              <p className="text-[10px] text-blue-500">👨‍⚕️ {ag.medicoNombre}</p>
+            )}
+            {ag.estado === "atendido" && ag.horaFin && (
+              <p className="text-[10px] font-bold text-emerald-600">
+                ✔ Visto a las {ag.horaFin}
+              </p>
+            )}
+          </div>
+          {ag.observacion && (
+            <p className="text-[10px] text-indigo-500 italic mt-0.5">
+              {ag.observacion}
+            </p>
+          )}
+        </div>
+        <div className="flex flex-col gap-1.5 flex-shrink-0">
+          {ag.estado === "espera" &&
+            (currentUser?.user === ag.medicoId ||
+              _isAdmin(currentUser?.role)) && (
+              <button
+                onClick={() => iniciarAtencion(ag)}
+                className="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-[10px] font-black hover:bg-blue-700 whitespace-nowrap"
+              >
+                ▶ Iniciar
+              </button>
+            )}
+          {ag.estado === "atendiendo" && isAdminOrSec && (
+            <button
+              onClick={() => marcarAtendido(ag.id)}
+              className="bg-emerald-600 text-white px-3 py-1.5 rounded-lg text-[10px] font-black hover:bg-emerald-700"
+            >
+              ✅ Atendido
+            </button>
+          )}
+          {ag.estado === "programado" && isAdminOrSec && (
+            <button
+              onClick={() => eliminarCita(ag.id)}
+              className="bg-red-50 text-red-600 px-2 py-1 rounded-lg text-[10px] font-bold hover:bg-red-100"
+            >
+              🗑
+            </button>
+          )}
+          <EstadoBadge ag={ag} />
+        </div>
+      </div>
+    );
+    return (
+      <div className="min-h-screen bg-gray-50 font-sans">
+        {renderNavbar()}
+        <div className="max-w-7xl mx-auto p-4">
+          {/* Header */}
+          <div className="flex justify-between items-center mb-4">
+            <div>
+              <h2 className="text-2xl font-black text-gray-800">🗓️ Agenda</h2>
+              <p className="text-sm text-gray-500">{getSpanishDate(null)}</p>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => goTo("asistencia")}
+                className="text-blue-700 border border-blue-300 bg-blue-50 hover:bg-blue-100 font-bold text-xs px-3 py-1.5 rounded-lg flex items-center gap-1"
+              >
+                📊 Reporte asistencia
+              </button>
+              <button
+                onClick={() => goTo("dashboard")}
+                className="text-gray-500 font-bold text-sm flex items-center gap-1 hover:text-gray-700"
+              >
+                <LogOut className="rotate-180 w-4 h-4" /> Volver
+              </button>
+            </div>
+          </div>
+          {/* Stats */}
+          <div className="grid grid-cols-4 gap-3 mb-4">
+            {[
+              { l: "En espera", v: enEspera.length, c: "yellow", e: "⏳" },
+              { l: "Atendiendo", v: atendiendo.length, c: "blue", e: "🔵" },
+              { l: "Atendidos", v: atendidos.length, c: "emerald", e: "✅" },
+              { l: "Programadas", v: proximas.length, c: "purple", e: "📅" },
+            ].map((s) => (
+              <div
+                key={s.l}
+                className={`bg-white rounded-xl p-3 shadow-sm border border-${s.c}-100 flex items-center gap-3`}
+              >
+                <span className="text-xl">{s.e}</span>
+                <div>
+                  <p className={`text-2xl font-black text-${s.c}-700`}>{s.v}</p>
+                  <p className="text-[10px] text-gray-500 font-bold">{s.l}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+          {/* Tabs */}
+          <div className="flex gap-1 mb-4 bg-white rounded-xl shadow-sm border border-gray-100 p-1 w-fit">
+            {[
+              { k: "hoy", l: `📋 Hoy (${miAgendaHoy.length})` },
+              { k: "proximas", l: `📅 Próximas (${proximas.length})` },
+              ...(isAdminOrSec ? [{ k: "nueva", l: "➕ Nueva Cita" }] : []),
+            ].map((t) => (
+              <button
+                key={t.k}
+                onClick={() => setAgendaTab(t.k)}
+                className={`px-4 py-2 rounded-lg text-xs font-black transition ${
+                  agendaTab === t.k
+                    ? "bg-blue-600 text-white"
+                    : "text-gray-500 hover:bg-gray-100"
+                }`}
+              >
+                {t.l}
+              </button>
+            ))}
+          </div>
+          <div
+            className={`grid gap-6 ${
+              isAdminOrSec && agendaTab === "nueva"
+                ? "grid-cols-1"
+                : "grid-cols-1"
+            }`}
+          >
+            {/* ─── TAB: HOY ─────────────────────────────────────── */}
+            {agendaTab === "hoy" && (
+              <div className="space-y-4">
+                {enEspera.length > 0 && (
+                  <div className="bg-white rounded-2xl shadow-sm border border-yellow-100 overflow-hidden">
+                    <div className="bg-yellow-50 px-5 py-2.5 border-b border-yellow-100">
+                      <p className="text-sm font-black text-yellow-800">
+                        ⏳ En Espera ({enEspera.length})
+                      </p>
+                    </div>
+                    <div className="divide-y divide-gray-50">
+                      {enEspera.map((ag, i) => (
+                        <CardPaciente key={ag.id} ag={ag} idx={i} />
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {atendiendo.length > 0 && (
+                  <div className="bg-white rounded-2xl shadow-sm border border-blue-100 overflow-hidden">
+                    <div className="bg-blue-50 px-5 py-2.5 border-b border-blue-100">
+                      <p className="text-sm font-black text-blue-800">
+                        🔵 En Atención ({atendiendo.length})
+                      </p>
+                    </div>
+                    <div className="divide-y divide-gray-50">
+                      {atendiendo.map((ag, i) => (
+                        <CardPaciente key={ag.id} ag={ag} idx={i} />
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {atendidos.length > 0 && (
+                  <div className="bg-white rounded-2xl shadow-sm border border-emerald-100 overflow-hidden">
+                    <div className="bg-emerald-50 px-5 py-2.5 border-b border-emerald-100">
+                      <p className="text-sm font-black text-emerald-800">
+                        ✅ Atendidos hoy ({atendidos.length})
+                      </p>
+                    </div>
+                    <div className="divide-y divide-gray-50">
+                      {atendidos.map((ag, i) => (
+                        <CardPaciente key={ag.id} ag={ag} idx={i} />
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {/* ── ATENCIONES RECIENTES (desde agenda) ───────────── */}
+                {(() => {
+                  const misAtenciones = atencionesCerradas
+                    .filter((ac) =>
+                      isAdminOrSec ? true : ac.medicoId === currentUser?.user
+                    )
+                    .slice(0, 20);
+                  if (misAtenciones.length === 0) return null;
+                  return (
+                    <div className="bg-white rounded-2xl shadow-sm border border-violet-100 overflow-hidden">
+                      <div className="bg-violet-50 px-5 py-2.5 border-b border-violet-100 flex justify-between items-center">
+                        <p className="text-sm font-black text-violet-800">
+                          🕐 Atenciones Recientes ({misAtenciones.length})
+                        </p>
+                        <span className="text-[9px] text-violet-500 font-bold">
+                          Guardadas en la nube ☁️
+                        </span>
+                      </div>
+                      <div className="divide-y divide-gray-50">
+                        {misAtenciones.map((ac) => (
+                          <div
+                            key={ac.id}
+                            className="px-4 py-3 flex items-start gap-3 hover:bg-violet-50/30 transition"
+                          >
+                            <div className="w-7 h-7 bg-violet-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 ring-2 ring-violet-300">
+                              <span className="text-sm">✅</span>
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <p className="font-bold text-sm text-gray-700">
+                                  {ac.nombre}
+                                </p>
+                                {ac.tipoConsulta && (
+                                  <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-violet-50 text-violet-700 border border-violet-200">
+                                    {ac.tipoConsulta.replace("_", " ")}
+                                  </span>
+                                )}
+                                <span
+                                  className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full ${
+                                    ac.tipo === "general"
+                                      ? "bg-blue-100 text-blue-700"
+                                      : "bg-emerald-100 text-emerald-700"
+                                  }`}
+                                >
+                                  {ac.tipo === "general"
+                                    ? "General"
+                                    : "Ocupacional"}
+                                </span>
+                              </div>
+                              <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-0.5">
+                                <p className="text-[10px] text-gray-400">
+                                  {ac.docNumero || "-"}
+                                </p>
+                                {ac.empresa && (
+                                  <p className="text-[10px] text-gray-400">
+                                    🏢 {ac.empresa}
+                                  </p>
+                                )}
+                                {ac.cargo && (
+                                  <p className="text-[10px] text-gray-400">
+                                    💼 {ac.cargo}
+                                  </p>
+                                )}
+                                <p className="text-[10px] text-gray-400">
+                                  📅 {ac.fechaAtencion}
+                                </p>
+                                {ac.horaInicio && ac.horaFin && (
+                                  <p className="text-[10px] text-emerald-600 font-bold">
+                                    🕐 {ac.horaInicio} → {ac.horaFin}
+                                  </p>
+                                )}
+                                {isAdminOrSec && ac.medicoNombre && (
+                                  <p className="text-[10px] text-blue-500">
+                                    👨‍⚕️ {ac.medicoNombre}
+                                  </p>
+                                )}
+                              </div>
+                              {ac.conceptoAptitud && (
+                                <p className="text-[10px] text-violet-600 font-bold mt-0.5">
+                                  📋 {ac.conceptoAptitud}
+                                </p>
+                              )}
+                            </div>
+                            <div className="flex flex-col items-end gap-1 flex-shrink-0">
+                              <span className="text-[9px] font-black px-2 py-0.5 rounded-full border bg-emerald-100 text-emerald-800 border-emerald-300">
+                                ✅ Visto ✓
+                              </span>
+                              {ac.codigoVerificacion && (
+                                <span className="text-[8px] text-gray-400 font-mono">
+                                  {ac.codigoVerificacion}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })()}
+                {miAgendaHoy.length === 0 && (
+                  <div className="bg-white rounded-2xl shadow-sm border border-gray-100 py-16 text-center">
+                    <p className="text-4xl mb-3">🗓️</p>
+                    <p className="font-black text-gray-400">
+                      Sin pacientes para hoy
+                    </p>
+                    {isAdminOrSec && (
+                      <button
+                        onClick={() => setAgendaTab("nueva")}
+                        className="mt-3 bg-blue-600 text-white px-4 py-2 rounded-xl text-xs font-black hover:bg-blue-700"
+                      >
+                        ➕ Registrar paciente
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+            {/* ─── TAB: PRÓXIMAS ────────────────────────────────── */}
+            {agendaTab === "proximas" && (
+              <div className="bg-white rounded-2xl shadow-sm border border-purple-100 overflow-hidden">
+                <div className="bg-purple-50 px-5 py-2.5 border-b border-purple-100">
+                  <p className="text-sm font-black text-purple-800">
+                    📅 Citas Programadas Futuras ({proximas.length})
+                  </p>
+                </div>
+                {proximas.length === 0 ? (
+                  <div className="py-16 text-center text-gray-400">
+                    <p className="text-3xl mb-2">📅</p>
+                    <p className="text-sm font-bold">Sin citas programadas</p>
+                  </div>
+                ) : (
+                  <div>
+                    {/* Agrupar por fecha */}
+                    {[...new Set(proximas.map((a) => a.fecha))].map((fecha) => (
+                      <div key={fecha}>
+                        <div className="bg-purple-100 px-5 py-1.5 border-b border-purple-200">
+                          <p className="text-xs font-black text-purple-700">
+                            {new Date(fecha + "T12:00:00").toLocaleDateString(
+                              "es-CO",
+                              {
+                                weekday: "long",
+                                day: "2-digit",
+                                month: "long",
+                                year: "numeric",
+                              }
+                            )}
+                          </p>
+                        </div>
+                        <div className="divide-y divide-gray-50">
+                          {proximas
+                            .filter((a) => a.fecha === fecha)
+                            .map((ag, i) => (
+                              <CardPaciente
+                                key={ag.id}
+                                ag={ag}
+                                idx={i}
+                                showFecha={false}
+                              />
+                            ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+            {/* ─── TAB: NUEVA CITA ──────────────────────────────── */}
+            {agendaTab === "nueva" && isAdminOrSec && (
+              <div className="grid grid-cols-5 gap-6">
+                {/* Formulario */}
+                <div className="col-span-3 bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
+                  <h3 className="text-sm font-black text-gray-700 mb-4 flex items-center gap-2">
+                    <UserCheck className="w-4 h-4 text-blue-500" /> Registrar /
+                    Agendar Paciente
+                  </h3>
+                  {/* Búsqueda paciente existente */}
+                  <div className="relative mb-4">
+                    <label className="block text-[9px] font-black text-gray-500 uppercase mb-1">
+                      🔍 Buscar paciente existente
+                    </label>
+                    <input
+                      value={agendaForm._busquedaQuery || agendaForm.nombre}
+                      onChange={(e) => handleBusqueda(e.target.value)}
+                      placeholder="Nombre o número de documento..."
+                      className="w-full p-2 border-2 border-blue-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-300 outline-none"
+                    />
+                    {agendaSuggs.length > 0 && (
+                      <div className="absolute z-50 top-full left-0 w-full bg-white border-2 border-blue-200 shadow-2xl rounded-xl mt-1 max-h-72 overflow-y-auto">
+                        <div className="px-3 py-1.5 bg-blue-50 border-b border-blue-100 flex items-center justify-between">
+                          <span className="text-[9px] font-black text-blue-600 uppercase">{agendaSuggs.length} paciente{agendaSuggs.length!==1?"s":""} encontrado{agendaSuggs.length!==1?"s":""}</span>
+                          <button onClick={() => setAgendaSuggs([])} className="text-gray-400 hover:text-gray-600 text-xs">✕</button>
+                        </div>
+                        {agendaSuggs.map((p) => {
+                          const medNombre = usersList.find(u => u.user === p._medicoId)?.name || p._medicoId || "";
+                          return (
+                            <div key={p.id} onClick={() => seleccionarPaciente(p)} className="p-3 hover:bg-blue-50 cursor-pointer border-b border-gray-50 last:border-0 transition-colors">
+                              <div className="flex items-center justify-between gap-2">
+                                <div className="flex-1 min-w-0">
+                                  <p className="font-black text-sm text-gray-800 truncate">{p.nombres}</p>
+                                  <div className="flex flex-wrap gap-2 mt-0.5">
+                                    <span className="text-[9px] text-gray-500">{p.docTipo||"CC"}: <strong>{p.docNumero}</strong></span>
+                                    {p.edad && <span className="text-[9px] text-gray-400">{p.edad} años</span>}
+                                    {p.celular && <span className="text-[9px] text-gray-400">📱 {p.celular}</span>}
+                                    {p.eps && <span className="text-[9px] text-gray-400">EPS: {p.eps}</span>}
+                                  </div>
+                                  <div className="flex flex-wrap gap-2 mt-0.5">
+                                    {p.cargo && <span className="text-[9px] font-bold text-indigo-600">💼 {p.cargo}</span>}
+                                    {p.empresaNombre && <span className="text-[9px] text-gray-400 truncate max-w-[140px]">🏢 {p.empresaNombre}</span>}
+                                    {medNombre && <span className="text-[9px] text-emerald-600 font-bold">👨‍⚕️ {medNombre}</span>}
+                                  </div>
+                                </div>
+                                <div className="flex-shrink-0 text-right">
+                                  {p.estadoHistoria === "Cerrada" && p.conceptoAptitud && (
+                                    <span className={`text-[8px] font-black px-2 py-0.5 rounded-full ${p.conceptoAptitud.toLowerCase().includes("no apto")?"bg-red-100 text-red-700":"bg-emerald-100 text-emerald-700"}`}>
+                                      {p.conceptoAptitud.length > 20 ? p.conceptoAptitud.substring(0,20)+"…" : p.conceptoAptitud}
+                                    </span>
+                                  )}
+                                  <p className="text-[8px] text-gray-300 mt-0.5">{p.fechaExamen || ""}</p>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                  {/* Sección: Agenda */}
+                  <div className="bg-blue-50 border border-blue-100 rounded-xl p-3 mb-4">
+                    <p className="text-[10px] font-black text-blue-700 uppercase mb-2">
+                      📅 Datos de la Cita
+                    </p>
+                    <div className="flex flex-wrap -mx-1">
+                      <AgendaFieldF
+                        label="Tipo de Consulta *"
+                        name="tc"
+                        value={agendaForm.tipoConsulta}
+                        onChange={(v) =>
+                          setAgendaForm((p) => ({ ...p, tipoConsulta: v }))
+                        }
+                        opts={TIPOS_CONSULTA.map((t) => ({
+                          v: t.v,
+                          l: `${t.l} (${t.mins}min)`,
+                        }))}
+                        width="w-1/2"
+                        req
+                      />
+                      <AgendaFieldF
+                        label="Médico Asignado *"
+                        name="med"
+                        value={agendaForm.medicoId}
+                        onChange={(v) =>
+                          setAgendaForm((p) => ({ ...p, medicoId: v }))
+                        }
+                        opts={medicosDisp.map((m) => ({
+                          v: m.user,
+                          l: m.name,
+                        }))}
+                        width="w-1/2"
+                        req
+                      />
+                      <AgendaFieldF
+                        label="Fecha Cita"
+                        type="date"
+                        name="fc"
+                        value={agendaForm.fechaCita}
+                        onChange={(v) =>
+                          setAgendaForm((p) => ({ ...p, fechaCita: v }))
+                        }
+                        width="w-1/2"
+                      />
+                      <AgendaFieldF
+                        label="Hora Cita"
+                        type="time"
+                        name="hc"
+                        value={agendaForm.horaCita}
+                        onChange={(v) =>
+                          setAgendaForm((p) => ({ ...p, horaCita: v }))
+                        }
+                        width="w-1/2"
+                      />
+                      {agendaForm.horaCita && (
+                        <div className="w-full px-1 mb-1">
+                          <span className="text-[10px] text-blue-600 font-bold">
+                            ⏱ Duración:{" "}
+                            {DURACION[agendaForm.tipoConsulta] || 20} min · Fin
+                            estimado:{" "}
+                            {addMins(
+                              agendaForm.horaCita,
+                              DURACION[agendaForm.tipoConsulta] || 20
+                            )}
+                          </span>
+                        </div>
+                      )}
+                      <AgendaFieldF
+                        label="Observación / Motivo"
+                        name="obs"
+                        value={agendaForm.observacion}
+                        onChange={(v) =>
+                          setAgendaForm((p) => ({ ...p, observacion: v }))
+                        }
+                        width="w-full"
+                      />
+                    </div>
+                  </div>
+                  {/* Sección: Identificación */}
+                  <div className="mb-3">
+                    <p className="text-[10px] font-black text-gray-600 uppercase mb-2 border-b pb-1">
+                      👤 Identificación
+                    </p>
+                    <div className="flex flex-wrap -mx-1">
+                      <AgendaFieldF
+                        label="Nombres Completos *"
+                        name="nom"
+                        value={agendaForm.nombre}
+                        onChange={(v) =>
+                          setAgendaForm((p) => ({ ...p, nombre: v }))
+                        }
+                        width="w-1/2"
+                        req
+                      />
+                      <AgendaFieldF
+                        label="Tipo Doc."
+                        name="dt"
+                        value={agendaForm.docTipo}
+                        onChange={(v) =>
+                          setAgendaForm((p) => ({ ...p, docTipo: v }))
+                        }
+                        opts={["CC", "CE", "PA", "TI", "NUIP", "RC", "MS"]}
+                        width="w-1/6"
+                      />
+                      <AgendaFieldF
+                        label="Nro. Documento"
+                        name="dn"
+                        value={agendaForm.docNumero}
+                        onChange={(v) =>
+                          setAgendaForm((p) => ({ ...p, docNumero: v }))
+                        }
+                        width="w-1/3"
+                      />
+                      <AgendaFieldF
+                        label="F. Nacimiento"
+                        type="date"
+                        name="fn"
+                        value={agendaForm.fechaNacimiento}
+                        onChange={(v) =>
+                          setAgendaForm((p) => ({
+                            ...p,
+                            fechaNacimiento: v,
+                            edad: calcEdad(v),
+                          }))
+                        }
+                        width="w-1/4"
+                      />
+                      <AgendaFieldF
+                        label="Edad"
+                        name="ed"
+                        value={agendaForm.edad}
+                        onChange={(v) =>
+                          setAgendaForm((p) => ({ ...p, edad: v }))
+                        }
+                        width="w-1/6"
+                        placeholder="Auto"
+                      />
+                      <AgendaFieldF
+                        label="Género"
+                        name="gen"
+                        value={agendaForm.genero}
+                        onChange={(v) =>
+                          setAgendaForm((p) => ({ ...p, genero: v }))
+                        }
+                        opts={[
+                          "Masculino",
+                          "Femenino",
+                          "No binario",
+                          "Prefiero no decir",
+                        ]}
+                        width="w-1/4"
+                      />
+                      <AgendaFieldF
+                        label="Estado Civil"
+                        name="ec"
+                        value={agendaForm.estadoCivil}
+                        onChange={(v) =>
+                          setAgendaForm((p) => ({ ...p, estadoCivil: v }))
+                        }
+                        opts={[
+                          "Soltero(a)",
+                          "Casado(a)",
+                          "Unión libre",
+                          "Divorciado(a)",
+                          "Viudo(a)",
+                        ]}
+                        width="w-1/4"
+                      />
+                      <AgendaFieldF
+                        label="Escolaridad"
+                        name="esc"
+                        value={agendaForm.escolaridad}
+                        onChange={(v) =>
+                          setAgendaForm((p) => ({ ...p, escolaridad: v }))
+                        }
+                        opts={[
+                          "Primaria",
+                          "Bachillerato",
+                          "Técnico",
+                          "Tecnólogo",
+                          "Universitario",
+                          "Posgrado",
+                          "Ninguno",
+                        ]}
+                        width="w-1/4"
+                      />
+                      <AgendaFieldF
+                        label="Grupo Sanguíneo"
+                        name="gs"
+                        value={agendaForm.grupoSanguineo}
+                        onChange={(v) =>
+                          setAgendaForm((p) => ({ ...p, grupoSanguineo: v }))
+                        }
+                        opts={[
+                          "A+",
+                          "A-",
+                          "B+",
+                          "B-",
+                          "AB+",
+                          "AB-",
+                          "O+",
+                          "O-",
+                        ]}
+                        width="w-1/4"
+                      />
+                      <AgendaFieldF
+                        label="Grupo Étnico"
+                        name="ge"
+                        value={agendaForm.grupoEtnico}
+                        onChange={(v) =>
+                          setAgendaForm((p) => ({ ...p, grupoEtnico: v }))
+                        }
+                        opts={[
+                          "Ninguno",
+                          "Indígena",
+                          "Afrocolombiano",
+                          "Raizal",
+                          "Palenquero",
+                          "Rom",
+                          "Otro",
+                        ]}
+                        width="w-1/4"
+                      />
+                      <AgendaFieldF
+                        label="Identidad Género"
+                        name="ig"
+                        value={agendaForm.identidadGenero}
+                        onChange={(v) =>
+                          setAgendaForm((p) => ({ ...p, identidadGenero: v }))
+                        }
+                        opts={[
+                          "Cisgénero",
+                          "Transgénero",
+                          "No binario",
+                          "Prefiero no decir",
+                        ]}
+                        width="w-1/4"
+                      />
+                    </div>
+                  </div>
+                  {/* Sección: Contacto */}
+                  <div className="mb-3">
+                    <p className="text-[10px] font-black text-gray-600 uppercase mb-2 border-b pb-1">
+                      📞 Contacto y Residencia
+                    </p>
+                    <div className="flex flex-wrap -mx-1">
+                      <AgendaFieldF
+                        label="Celular"
+                        name="cel"
+                        value={agendaForm.celular}
+                        onChange={(v) =>
+                          setAgendaForm((p) => ({ ...p, celular: v }))
+                        }
+                        width="w-1/4"
+                      />
+                      <AgendaFieldF
+                        label="Teléfono"
+                        name="tel"
+                        value={agendaForm.telefono}
+                        onChange={(v) =>
+                          setAgendaForm((p) => ({ ...p, telefono: v }))
+                        }
+                        width="w-1/4"
+                      />
+                      <AgendaFieldF
+                        label="Email"
+                        type="email"
+                        name="em"
+                        value={agendaForm.email}
+                        onChange={(v) =>
+                          setAgendaForm((p) => ({ ...p, email: v }))
+                        }
+                        width="w-1/2"
+                      />
+                      <AgendaFieldF
+                        label="Dirección Residencia"
+                        name="res"
+                        value={agendaForm.residencia}
+                        onChange={(v) =>
+                          setAgendaForm((p) => ({ ...p, residencia: v }))
+                        }
+                        width="w-1/2"
+                      />
+                      <AgendaFieldF
+                        label="Zona"
+                        name="zr"
+                        value={agendaForm.zonaResidencia}
+                        onChange={(v) =>
+                          setAgendaForm((p) => ({ ...p, zonaResidencia: v }))
+                        }
+                        opts={["Urbana", "Rural"]}
+                        width="w-1/6"
+                      />
+                      <AgendaFieldF
+                        label="Estrato"
+                        name="est"
+                        value={agendaForm.estrato}
+                        onChange={(v) =>
+                          setAgendaForm((p) => ({ ...p, estrato: v }))
+                        }
+                        opts={["1", "2", "3", "4", "5", "6"]}
+                        width="w-1/6"
+                      />
+                      <AgendaFieldF
+                        label="Tipo Vivienda"
+                        name="tv"
+                        value={agendaForm.tipoVivienda}
+                        onChange={(v) =>
+                          setAgendaForm((p) => ({ ...p, tipoVivienda: v }))
+                        }
+                        opts={["Propia", "Arrendada", "Familiar", "Otro"]}
+                        width="w-1/4"
+                      />
+                      <AgendaFieldF
+                        label="Personas a Cargo"
+                        name="pc"
+                        value={agendaForm.numPersonasCargo}
+                        onChange={(v) =>
+                          setAgendaForm((p) => ({ ...p, numPersonasCargo: v }))
+                        }
+                        width="w-1/6"
+                      />
+                    </div>
+                  </div>
+                  {/* Sección: Afiliaciones */}
+                  <div className="mb-3">
+                    <p className="text-[10px] font-black text-gray-600 uppercase mb-2 border-b pb-1">
+                      🏥 Afiliaciones SGSSS
+                    </p>
+                    <div className="flex flex-wrap -mx-1">
+                      <AgendaFieldF
+                        label="EPS"
+                        name="eps"
+                        value={agendaForm.eps}
+                        onChange={(v) =>
+                          setAgendaForm((p) => ({ ...p, eps: v }))
+                        }
+                        width="w-1/4"
+                        list="eps-list"
+                      />
+                      <AgendaFieldF
+                        label="ARL"
+                        name="arl"
+                        value={agendaForm.arl}
+                        onChange={(v) =>
+                          setAgendaForm((p) => ({ ...p, arl: v }))
+                        }
+                        width="w-1/4"
+                        list="arl-list"
+                      />
+                      <AgendaFieldF
+                        label="Nivel Riesgo ARL"
+                        name="nr"
+                        value={agendaForm.nivelRiesgoARL}
+                        onChange={(v) =>
+                          setAgendaForm((p) => ({ ...p, nivelRiesgoARL: v }))
+                        }
+                        opts={["I", "II", "III", "IV", "V"]}
+                        width="w-1/6"
+                      />
+                      <AgendaFieldF
+                        label="AFP"
+                        name="afp"
+                        value={agendaForm.afp}
+                        onChange={(v) =>
+                          setAgendaForm((p) => ({ ...p, afp: v }))
+                        }
+                        width="w-1/4"
+                        list="afp-list"
+                      />
+                    </div>
+                  </div>
+                  {/* Sección: Laboral */}
+                  <div className="mb-4">
+                    <p className="text-[10px] font-black text-gray-600 uppercase mb-2 border-b pb-1">
+                      💼 Datos Laborales
+                    </p>
+                    <div className="flex flex-wrap -mx-1">
+                      <AgendaFieldF
+                        label="Empresa"
+                        name="emp"
+                        value={agendaForm.empresa}
+                        onChange={(v) =>
+                          setAgendaForm((p) => ({ ...p, empresa: v }))
+                        }
+                        width="w-1/2"
+                      />
+                      <AgendaFieldF
+                        label="Cargo"
+                        name="car"
+                        value={agendaForm.cargo}
+                        onChange={(v) =>
+                          setAgendaForm((p) => ({ ...p, cargo: v }))
+                        }
+                        width="w-1/2"
+                      />
+                      <AgendaFieldF
+                        label="Área / Dependencia"
+                        name="dep"
+                        value={agendaForm.dependencia}
+                        onChange={(v) =>
+                          setAgendaForm((p) => ({ ...p, dependencia: v }))
+                        }
+                        width="w-1/3"
+                      />
+                      <AgendaFieldF
+                        label="Tipo Contrato"
+                        name="tc2"
+                        value={agendaForm.tipoContrato}
+                        onChange={(v) =>
+                          setAgendaForm((p) => ({ ...p, tipoContrato: v }))
+                        }
+                        opts={[
+                          "Término fijo",
+                          "Término indefinido",
+                          "Prestación de servicios",
+                          "Obra o labor",
+                          "Aprendizaje",
+                        ]}
+                        width="w-1/3"
+                      />
+                      <AgendaFieldF
+                        label="Turno"
+                        name="turno"
+                        value={agendaForm.turnoTrabajo}
+                        onChange={(v) =>
+                          setAgendaForm((p) => ({ ...p, turnoTrabajo: v }))
+                        }
+                        opts={[
+                          "Diurno",
+                          "Nocturno",
+                          "Mixto",
+                          "Rotativo",
+                          "12h Día",
+                          "12h Noche",
+                        ]}
+                        width="w-1/6"
+                      />
+                      <AgendaFieldF
+                        label="Antigüedad"
+                        name="ant"
+                        value={agendaForm.antiguedadEmpresa}
+                        onChange={(v) =>
+                          setAgendaForm((p) => ({ ...p, antiguedadEmpresa: v }))
+                        }
+                        width="w-1/6"
+                      />
+                    </div>
+                  </div>
+                  <button
+                    onClick={registrarPaciente}
+                    className="w-full bg-blue-600 text-white py-3 rounded-xl text-sm font-black hover:bg-blue-700 flex items-center justify-center gap-2 shadow"
+                  >
+                    <UserCheck className="w-5 h-5" />
+                    {agendaForm.fechaCita && agendaForm.fechaCita > today
+                      ? `📅 Programar cita para ${agendaForm.fechaCita}`
+                      : "✅ Registrar en sala de espera"}
+                  </button>
+                </div>
+                {/* Panel derecho: agenda del día resumida */}
+                <div className="col-span-2 space-y-4">
+                  <div className="bg-white rounded-2xl shadow-sm border border-yellow-100 overflow-hidden">
+                    <div className="bg-yellow-50 px-4 py-2.5 border-b border-yellow-100">
+                      <p className="text-sm font-black text-yellow-800">
+                        ⏳ En espera hoy ({enEspera.length})
+                      </p>
+                    </div>
+                    {enEspera.length === 0 ? (
+                      <p className="text-center text-xs text-gray-400 py-6">
+                        Sin pacientes en espera
+                      </p>
+                    ) : (
+                      <div className="divide-y divide-gray-50">
+                        {enEspera.map((ag, i) => (
+                          <CardPaciente key={ag.id} ag={ag} idx={i} />
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  <div className="bg-white rounded-2xl shadow-sm border border-purple-100 overflow-hidden">
+                    <div className="bg-purple-50 px-4 py-2.5 border-b border-purple-100">
+                      <p className="text-sm font-black text-purple-800">
+                        📅 Próximas ({proximas.slice(0, 5).length})
+                      </p>
+                    </div>
+                    {proximas.length === 0 ? (
+                      <p className="text-center text-xs text-gray-400 py-6">
+                        Sin citas programadas
+                      </p>
+                    ) : (
+                      <div className="divide-y divide-gray-50">
+                        {proximas.slice(0, 5).map((ag, i) => (
+                          <CardPaciente key={ag.id} ag={ag} idx={i} showFecha />
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  };
   // ─── RENDER: REPORTE ASISTENCIA AGENDA ──────────────────────────────────────
   const renderAsistenciaAgenda = () => {
     const fechaFin = asistenciaFecha;
@@ -28566,8 +39919,1883 @@ ${
   };
 
   // ─── RENDER: PERFIL IPS / MI EMPRESA (PASO 1) ────────────────────────────────
+  const renderPerfilIPS = () => {
+    if (currentUser?.role !== "admin_empresa") {
+      return (
+        <div className="p-8 text-center text-gray-500">
+          Acceso restringido a admin de empresa.
+        </div>
+      );
+    }
+    const miEmpresa =
+      companies.find((c) => c.id === currentUser.empresaId) || {};
+    const form = ipsPerfilForm;
+    const setForm = setIpsPerfilForm;
+    const handleLogoUpload = (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      if (file.size > 200 * 1024) {
+        showAlert("⚠️ El logo no debe superar 200 KB.");
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (ev) =>
+        setForm((p) => ({ ...p, logo: ev.target.result }));
+      reader.readAsDataURL(file);
+    };
+    const handleSave = () => {
+      if (!form.nombre.trim()) {
+        showAlert("⚠️ El nombre de la empresa es obligatorio.");
+        return;
+      }
+      const updated = { ...miEmpresa, ...form };
+      const newComps = companies.map((c) =>
+        c.id === currentUser.empresaId ? updated : c
+      );
+      setCompanies(newComps);
+      const compKey = _compKey(
+        currentUser?.empresaId
+          ? "empresa_" + currentUser.empresaId
+          : currentUser?.user
+      );
+      _ls.setItem(compKey, JSON.stringify(newComps));
+      _sbSet(
+        _compKeyCloud(
+          currentUser?.empresaId
+            ? "empresa_" + currentUser.empresaId
+            : currentUser?.user
+        ),
+        newComps
+      );
+      showAlert("✅ Perfil de empresa guardado correctamente.");
+    };
+    return (
+      <div className="min-h-screen bg-gray-50 p-4 md:p-8">
+        <div className="max-w-2xl mx-auto">
+          <div className="flex items-center gap-3 mb-6">
+            <button
+              onClick={() => goBack()}
+              className="text-gray-400 hover:text-gray-700 transition"
+            >
+              <ChevronLeft className="w-6 h-6" />
+            </button>
+            <div>
+              <h1 className="text-2xl font-black text-gray-900">
+                🏥 Perfil de Mi Empresa
+              </h1>
+              <p className="text-sm text-gray-500">
+                Logo · Datos institucionales · Cabeceras de documentos
+              </p>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-6">
+            {/* Logo */}
+            <div>
+              <label className="block text-sm font-bold text-gray-700 mb-2">
+                Logo de la Empresa
+              </label>
+              <div className="flex items-center gap-4">
+                {_safeLogoUrl(form.logo || "") ? (
+                  <img
+                    src={_safeLogoUrl(form.logo)}
+                    alt="Logo"
+                    className="w-24 h-24 object-contain rounded-xl border border-gray-200 bg-gray-50 p-2"
+                  />
+                ) : (
+                  <div className="w-24 h-24 rounded-xl border-2 border-dashed border-gray-300 flex items-center justify-center text-gray-400 text-xs text-center">
+                    Sin logo
+                  </div>
+                )}
+                <div className="flex flex-col gap-2">
+                  <label className="cursor-pointer bg-blue-50 text-blue-700 px-4 py-2 rounded-lg text-sm font-bold hover:bg-blue-100 transition inline-flex items-center gap-2">
+                    <Upload className="w-4 h-4" /> Subir logo
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleLogoUpload}
+                      className="hidden"
+                    />
+                  </label>
+                  {form.logo && (
+                    <button
+                      onClick={() => setForm((p) => ({ ...p, logo: "" }))}
+                      className="text-red-500 text-xs hover:text-red-700"
+                    >
+                      Quitar logo
+                    </button>
+                  )}
+                  <p className="text-xs text-gray-400">PNG/JPG · Máx 200 KB</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Datos básicos */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="md:col-span-2">
+                <label className="block text-xs font-bold text-gray-600 mb-1">
+                  Nombre de la Empresa / IPS *
+                </label>
+                <input
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-400 outline-none"
+                  value={form.nombre}
+                  onChange={(e) =>
+                    setForm((p) => ({ ...p, nombre: e.target.value }))
+                  }
+                  placeholder="Nombre completo de la IPS"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-gray-600 mb-1">
+                  NIT
+                </label>
+                <input
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-400 outline-none"
+                  value={form.nit}
+                  onChange={(e) =>
+                    setForm((p) => ({ ...p, nit: e.target.value }))
+                  }
+                  placeholder="900123456"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-gray-600 mb-1">
+                  Dígito de Verificación
+                </label>
+                <input
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-400 outline-none"
+                  value={form.dv}
+                  onChange={(e) =>
+                    setForm((p) => ({ ...p, dv: e.target.value }))
+                  }
+                  placeholder="5"
+                  maxLength={1}
+                />
+              </div>
+              <div className="md:col-span-2">
+                <label className="block text-xs font-bold text-gray-600 mb-1">
+                  Dirección
+                </label>
+                <input
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-400 outline-none"
+                  value={form.direccion}
+                  onChange={(e) =>
+                    setForm((p) => ({ ...p, direccion: e.target.value }))
+                  }
+                  placeholder="Calle 45 # 12-34"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-gray-600 mb-1">
+                  Ciudad
+                </label>
+                <input
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-400 outline-none"
+                  value={form.ciudad}
+                  onChange={(e) =>
+                    setForm((p) => ({ ...p, ciudad: e.target.value }))
+                  }
+                  placeholder="Bogotá"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-gray-600 mb-1">
+                  Teléfono / Celular
+                </label>
+                <input
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-400 outline-none"
+                  value={form.telefono}
+                  onChange={(e) =>
+                    setForm((p) => ({ ...p, telefono: e.target.value }))
+                  }
+                  placeholder="601 2345678"
+                />
+              </div>
+              <div className="md:col-span-2">
+                <label className="block text-xs font-bold text-gray-600 mb-1">
+                  Correo Electrónico
+                </label>
+                <input
+                  type="email"
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-400 outline-none"
+                  value={form.correo}
+                  onChange={(e) =>
+                    setForm((p) => ({ ...p, correo: e.target.value }))
+                  }
+                  placeholder="info@ips.com"
+                />
+              </div>
+              <div className="md:col-span-2">
+                <label className="block text-xs font-bold text-gray-600 mb-1">
+                  Actividad Económica / Razón Social
+                </label>
+                <input
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-400 outline-none"
+                  value={form.actividad}
+                  onChange={(e) =>
+                    setForm((p) => ({ ...p, actividad: e.target.value }))
+                  }
+                  placeholder="IPS - Medicina del Trabajo · CIIU 8621"
+                />
+              </div>
+              <div className="md:col-span-2">
+                <label className="block text-xs font-bold text-gray-600 mb-1">
+                  Lema / Eslogan (opcional)
+                </label>
+                <input
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-400 outline-none"
+                  value={form.lema}
+                  onChange={(e) =>
+                    setForm((p) => ({ ...p, lema: e.target.value }))
+                  }
+                  placeholder="Salud · Prevención · Bienestar"
+                />
+              </div>
+            </div>
+
+            {/* Preview cabecera */}
+            {(form.nombre || form.logo) && (
+              <div className="border border-blue-100 rounded-xl p-4 bg-blue-50">
+                <p className="text-xs font-bold text-blue-700 mb-3">
+                  Vista previa — Cabecera de documentos
+                </p>
+                <div className="bg-white rounded-lg p-3 flex items-start gap-3 border border-gray-200">
+                  {_safeLogoUrl(form.logo || "") && (
+                    <img
+                      src={_safeLogoUrl(form.logo)}
+                      alt="Logo"
+                      className="w-16 h-16 object-contain"
+                    />
+                  )}
+                  <div className="text-xs space-y-0.5">
+                    <p className="font-black text-gray-900 text-sm">
+                      {form.nombre || "Nombre IPS"}
+                    </p>
+                    {form.nit && (
+                      <p className="text-gray-600">
+                        NIT: {form.nit}
+                        {form.dv ? "-" + form.dv : ""}
+                      </p>
+                    )}
+                    {form.direccion && (
+                      <p className="text-gray-600">
+                        {form.direccion}
+                        {form.ciudad ? " · " + form.ciudad : ""}
+                      </p>
+                    )}
+                    {form.telefono && (
+                      <p className="text-gray-600">Tel: {form.telefono}</p>
+                    )}
+                    {form.correo && (
+                      <p className="text-gray-600">{form.correo}</p>
+                    )}
+                    {form.lema && (
+                      <p className="text-gray-500 italic">{form.lema}</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <button
+              onClick={handleSave}
+              className="w-full bg-blue-600 text-white py-3 rounded-xl font-black hover:bg-blue-700 transition flex items-center justify-center gap-2"
+            >
+              <Save className="w-5 h-5" /> Guardar perfil de empresa
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   // ─── RENDER: CAJA DIARIA + COMPROBANTES + CUENTAS COBRAR (B-F2-01/02/03) ────
+  const renderCaja = () => {
+    // Secretaria necesita permiso 'caja' para acceder al módulo financiero
+    if (
+      currentUser?.role === "secretaria" &&
+      !_secretariaPuede("caja", currentUser, usersList)
+    )
+      return (
+        <div className="min-h-screen bg-gray-50 font-sans flex items-center justify-center">
+          {renderNavbar()}
+          <div className="bg-white rounded-2xl p-8 shadow text-center max-w-sm">
+            <p className="text-4xl mb-3">🔒</p>
+            <p className="font-black text-gray-800 mb-1">Acceso restringido</p>
+            <p className="text-xs text-gray-500">
+              El módulo financiero no está habilitado para su perfil. Solicite
+              acceso al administrador.
+            </p>
+            <button
+              onClick={() => goTo("dashboard")}
+              className="mt-4 px-4 py-2 bg-blue-700 text-white rounded-lg text-sm font-bold"
+            >
+              ← Volver
+            </button>
+          </div>
+        </div>
+      );
+    const hoy = new Date().toISOString().split("T")[0];
+    // ── IPS: scope caja movements to empresa ──
+    const _scopedCaja = currentUser?.empresaId
+      ? cajaMovimientos.filter(
+          (m) =>
+            m.empresaId === currentUser.empresaId ||
+            m.medicoId === currentUser?.user
+        )
+      : cajaMovimientos;
+    const movHoy = _scopedCaja.filter((m) => m.fecha === hoy);
+    const movHistorial = [..._scopedCaja].reverse();
+    // PASO 4: filtros de periodo
+    const _getPeriodoRange = () => {
+      const d = new Date();
+      if (cajaFiltroPeriodo === "hoy") return { desde: hoy, hasta: hoy };
+      if (cajaFiltroPeriodo === "semana") {
+        const dow = d.getDay();
+        const diff = d.getDate() - (dow === 0 ? 6 : dow - 1);
+        const lun = new Date(d.setDate(diff));
+        const dom = new Date(new Date(lun).setDate(lun.getDate() + 6));
+        return {
+          desde: lun.toISOString().split("T")[0],
+          hasta: dom.toISOString().split("T")[0],
+        };
+      }
+      if (cajaFiltroPeriodo === "mes")
+        return { desde: hoy.slice(0, 7) + "-01", hasta: hoy };
+      if (cajaFiltroPeriodo === "anio")
+        return { desde: hoy.slice(0, 4) + "-01-01", hasta: hoy };
+      if (cajaFiltroPeriodo === "rango")
+        return { desde: cajaFiltroDesde || hoy, hasta: cajaFiltroHasta || hoy };
+      return { desde: hoy, hasta: hoy };
+    };
+    const { desde: _pDesde, hasta: _pHasta } = _getPeriodoRange();
+    const movPeriodo = _scopedCaja.filter(
+      (m) => m.fecha >= _pDesde && m.fecha <= _pHasta
+    );
+    const ingresosTot = movPeriodo
+      .filter((m) => m.tipo === "ingreso")
+      .reduce((s, m) => s + Number(m.monto || 0), 0);
+    const egresosTot = movPeriodo
+      .filter((m) => m.tipo === "egreso")
+      .reduce((s, m) => s + Number(m.monto || 0), 0);
+    const saldoHoy = ingresosTot - egresosTot;
+    const porCobrarTot = movPeriodo
+      .filter((m) => m._autoGenerated && m.estado === "pendiente")
+      .reduce((s, m) => s + Number(m.monto || 0), 0);
+    const pacientesVistosCount = movPeriodo.filter(
+      (m) => m._autoGenerated
+    ).length;
+    // Marcar autoMov como cobrado
+    const cobrarAutoMov = (movId, monto, forma) => {
+      const updCaja = cajaMovimientos.map((m) =>
+        m.id === movId
+          ? {
+              ...m,
+              estado: "cobrado",
+              montoCobrado: monto,
+              formaPagoCobro: forma,
+              cobradoEn: new Date().toISOString(),
+            }
+          : m
+      );
+      saveCaja(updCaja);
+    };
+    const handleAddMov = () => {
+      if (!cajaForm.concepto.trim()) {
+        showAlert("Ingrese el concepto del movimiento.");
+        return;
+      }
+      if (
+        !cajaForm.monto ||
+        isNaN(Number(cajaForm.monto)) ||
+        Number(cajaForm.monto) <= 0
+      ) {
+        showAlert("Ingrese un monto válido mayor a 0.");
+        return;
+      }
+      const nuevo = {
+        ...cajaForm,
+        id: "mov_" + Date.now(),
+        timestamp: new Date().toISOString(),
+        usuario: currentUser?.user || "-",
+        medicoId: currentUser?.user || "-",
+        medicoNombre: currentUser?.name || currentUser?.user || "-",
+        // ── IPS: auto-tag con empresaId ──
+        ...(currentUser?.empresaId ? { empresaId: currentUser.empresaId } : {}),
+      };
+      const updated = [...cajaMovimientos, nuevo];
+      saveCaja(updated);
+      setCajaForm({
+        tipo: "ingreso",
+        concepto: "",
+        monto: "",
+        formaPago: "Efectivo",
+        fecha: new Date().toISOString().split("T")[0],
+      });
+    };
+    const deleteMovimiento = (id) => {
+      if (currentUser?.role === "secretaria") {
+        showAlert(
+          "⛔ Solo el administrador puede eliminar movimientos de caja."
+        );
+        return;
+      }
+      showConfirm("¿Eliminar este movimiento?", () =>
+        saveCaja(cajaMovimientos.filter((m) => m.id !== id))
+      );
+    };
+    // Cuentas por cobrar - de savedBillsList (si existen)
+    // ── IPS: scope billing to empresa ──
+    const _scopedBills = currentUser?.empresaId
+      ? savedBillsList.filter(
+          (b) =>
+            b.empresaId === currentUser.empresaId ||
+            b.companyId === currentUser.empresaId
+        )
+      : savedBillsList;
+    const cuentasPendientes = _scopedBills.filter((b) => !b.pagada);
+    const cuentasPagadas = _scopedBills.filter((b) => b.pagada);
+    const totalPendiente = cuentasPendientes.reduce(
+      (s, b) => s + Number(b.amount || 0),
+      0
+    );
+    const totalCobrado = cuentasPagadas.reduce(
+      (s, b) => s + Number(b.amount || 0),
+      0
+    );
+    const marcarPagada = (id) => {
+      const updated = savedBillsList.map((b) =>
+        b.id === id
+          ? {
+              ...b,
+              pagada: true,
+              fechaPago: new Date().toISOString().split("T")[0],
+            }
+          : b
+      );
+      setSavedBillsList(updated);
+      {
+        const _bSuf = currentUser?.empresaId
+          ? "empresa_" + currentUser.empresaId
+          : currentUser?.user || "shared";
+        _sync(`siso_saved_bills_${_bSuf}`, JSON.stringify(updated));
+      }
+    };
+    const editarCuenta = (bill) => {
+      showPrompt("Código de seguridad para editar:", (secCode) => {
+        if (secCode !== "9207") {
+          showAlert("⛔ Código incorrecto.");
+          return;
+        }
+        showPrompt(
+          "Nuevo monto (actual: $" +
+            Number(bill.amount || 0).toLocaleString("es-CO") +
+            ")\nDeje en blanco para no cambiar el monto:",
+          (nuevoMonto) => {
+            const montoFinal =
+              nuevoMonto &&
+              nuevoMonto.trim() &&
+              !isNaN(Number(nuevoMonto.trim()))
+                ? nuevoMonto.trim()
+                : bill.amount;
+            showPrompt(
+              "¿Marcar como pagada? Escriba SI para confirmar (o deje en blanco):",
+              (confirm) => {
+                const marcarPag = (confirm || "").trim().toUpperCase() === "SI";
+                const updated = savedBillsList.map((b) =>
+                  b.id === bill.id
+                    ? {
+                        ...b,
+                        amount: montoFinal,
+                        pagada: marcarPag || b.pagada,
+                        fechaPago:
+                          marcarPag && !b.fechaPago
+                            ? new Date().toISOString().split("T")[0]
+                            : b.fechaPago,
+                        editadoEn: new Date().toISOString(),
+                      }
+                    : b
+                );
+                setSavedBillsList(updated);
+                {
+                  const _bSuf = currentUser?.empresaId
+                    ? "empresa_" + currentUser.empresaId
+                    : currentUser?.user || "shared";
+                  _sync(`siso_saved_bills_${_bSuf}`, JSON.stringify(updated));
+                }
+                showAlert(
+                  "✅ Cuenta actualizada." +
+                    (marcarPag ? "\nMarcada como pagada." : "")
+                );
+              }
+            );
+          }
+        );
+      });
+    };
+    const eliminarCuenta = (id) => {
+      showPrompt("Código de seguridad para eliminar:", (code) => {
+        if (code !== "9207") {
+          showAlert("⛔ Código incorrecto.");
+          return;
+        }
+        showConfirm("¿Eliminar esta cuenta permanentemente?", () => {
+          const updated = savedBillsList.filter((b) => b.id !== id);
+          setSavedBillsList(updated);
+          {
+            const _bSuf = currentUser?.empresaId
+              ? "empresa_" + currentUser.empresaId
+              : currentUser?.user || "shared";
+            _sync(`siso_saved_bills_${_bSuf}`, JSON.stringify(updated));
+          }
+        });
+      });
+    };
+    // Agrupación de cuentas por empresa/convenio
+    const cuentasFiltro = savedBillsList;
+    const groupByEmpresa = {};
+    cuentasFiltro.forEach((b) => {
+      const key = b.companyName || b.empresa || b.clientName || "Sin empresa";
+      if (!groupByEmpresa[key]) groupByEmpresa[key] = [];
+      groupByEmpresa[key].push(b);
+    });
+    // Pacientes de hoy para caja
+    const pacientesHoy = patientsList.filter(
+      (p) => p.fechaExamen === hoy || p.fechaRegistro?.startsWith(hoy)
+    );
+    return (
+      <div className="min-h-screen bg-gray-50 font-sans">
+        {renderNavbar()}
+        <div className="max-w-5xl mx-auto px-4 py-6">
+          {/* Header */}
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-lg font-black text-gray-800 flex items-center gap-2">
+              💰 Módulo Financiero
+            </h2>
+            <button
+              onClick={() => goTo("dashboard")}
+              className="text-gray-500 font-bold text-sm hover:text-gray-700"
+            >
+              ← Volver
+            </button>
+          </div>
+          {/* PASO 4: Selector de periodo */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-3 mb-4 flex flex-wrap gap-2 items-center">
+            {[
+              { k: "hoy", l: "Hoy" },
+              { k: "semana", l: "Semana" },
+              { k: "mes", l: "Mes" },
+              { k: "anio", l: "Año" },
+              { k: "rango", l: "📅 Rango" },
+            ].map((p) => (
+              <button
+                key={p.k}
+                onClick={() => setCajaFiltroPeriodo(p.k)}
+                className={`px-3 py-1.5 rounded-full text-xs font-black transition ${
+                  cajaFiltroPeriodo === p.k
+                    ? "bg-blue-700 text-white"
+                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                }`}
+              >
+                {p.l}
+              </button>
+            ))}
+            {cajaFiltroPeriodo === "rango" && (
+              <div className="flex gap-2 items-center ml-2">
+                <input
+                  type="date"
+                  value={cajaFiltroDesde}
+                  onChange={(e) => setCajaFiltroDesde(e.target.value)}
+                  className="border border-gray-200 rounded-lg px-2 py-1 text-xs"
+                />
+                <span className="text-gray-400 text-xs">–</span>
+                <input
+                  type="date"
+                  value={cajaFiltroHasta}
+                  onChange={(e) => setCajaFiltroHasta(e.target.value)}
+                  className="border border-gray-200 rounded-lg px-2 py-1 text-xs"
+                />
+              </div>
+            )}
+          </div>
+          {/* Resumen del periodo */}
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-4">
+            <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-center">
+              <div className="text-xs font-black text-emerald-700 uppercase mb-1">
+                Ingresos
+              </div>
+              <div className="text-lg font-black text-emerald-800">
+                $ {ingresosTot.toLocaleString("es-CO")}
+              </div>
+            </div>
+            <div className="bg-red-50 border border-red-200 rounded-xl p-3 text-center">
+              <div className="text-xs font-black text-red-700 uppercase mb-1">
+                Egresos
+              </div>
+              <div className="text-lg font-black text-red-800">
+                $ {egresosTot.toLocaleString("es-CO")}
+              </div>
+            </div>
+            <div
+              className={`${
+                saldoHoy >= 0
+                  ? "bg-blue-50 border-blue-200"
+                  : "bg-orange-50 border-orange-200"
+              } border rounded-xl p-3 text-center`}
+            >
+              <div className="text-xs font-black text-gray-700 uppercase mb-1">
+                Balance
+              </div>
+              <div
+                className={`text-lg font-black ${
+                  saldoHoy >= 0 ? "text-blue-800" : "text-orange-800"
+                }`}
+              >
+                $ {saldoHoy.toLocaleString("es-CO")}
+              </div>
+            </div>
+            <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-3 text-center">
+              <div className="text-xs font-black text-yellow-700 uppercase mb-1">
+                Por cobrar
+              </div>
+              <div className="text-lg font-black text-yellow-800">
+                $ {porCobrarTot.toLocaleString("es-CO")}
+              </div>
+            </div>
+            <div className="bg-purple-50 border border-purple-200 rounded-xl p-3 text-center">
+              <div className="text-xs font-black text-purple-700 uppercase mb-1">
+                Pacientes
+              </div>
+              <div className="text-lg font-black text-purple-800">
+                {pacientesVistosCount}
+              </div>
+            </div>
+          </div>
+          {/* Tabs */}
+          <div className="flex flex-wrap gap-1 mb-4 bg-white rounded-xl p-1 shadow-sm border border-gray-100">
+            {[
+              { k: "hoy", l: "💵 Caja del Día" },
+              { k: "historial", l: "📜 Historial" },
+              { k: "comprobantes", l: "📋 Comprobantes" },
+              {
+                k: "cuentas",
+                l: `💳 Cuentas (${cuentasPendientes.length} pend.)`,
+              },
+              {
+                k: "pacientes_vistos",
+                l: `👁️ Pacientes Vistos (${pacientesVistosCount})`,
+              },
+              ...(_isAdmin(currentUser?.role)
+                ? [{ k: "por_medico", l: "👨‍⚕️ Por Médico" }]
+                : []),
+            ].map((t) => (
+              <button
+                key={t.k}
+                onClick={() => setCajaTab(t.k)}
+                className={`flex-1 py-2 text-xs font-black rounded-lg transition ${
+                  cajaTab === t.k
+                    ? "bg-blue-700 text-white"
+                    : "text-gray-600 hover:bg-gray-100"
+                }`}
+              >
+                {t.l}
+              </button>
+            ))}
+          </div>
+          {/* TAB: CAJA DEL DÍA */}
+          {cajaTab === "hoy" && (
+            <div className="space-y-4">
+              {/* Formulario nuevo movimiento */}
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
+                <p className="text-xs font-black text-gray-700 uppercase mb-3">
+                  ➕ Registrar movimiento
+                </p>
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                  <div>
+                    <label className="text-[10px] font-black text-gray-600 uppercase block mb-1">
+                      Tipo
+                    </label>
+                    <select
+                      value={cajaForm.tipo}
+                      onChange={(e) =>
+                        setCajaForm((p) => ({ ...p, tipo: e.target.value }))
+                      }
+                      className="w-full p-2 border rounded-lg text-xs font-bold"
+                    >
+                      <option value="ingreso">💚 Ingreso</option>
+                      <option value="egreso">❤️ Egreso</option>
+                    </select>
+                  </div>
+                  <div className="col-span-2">
+                    <label className="text-[10px] font-black text-gray-600 uppercase block mb-1">
+                      Concepto *
+                    </label>
+                    <input
+                      value={cajaForm.concepto}
+                      onChange={(e) =>
+                        setCajaForm((p) => ({ ...p, concepto: e.target.value }))
+                      }
+                      className="w-full p-2 border rounded-lg text-xs"
+                      placeholder="Consulta Pto. Fuentes S.A.S · Materiales..."
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-black text-gray-600 uppercase block mb-1">
+                      Monto COP *
+                    </label>
+                    <input
+                      type="number"
+                      value={cajaForm.monto}
+                      onChange={(e) =>
+                        setCajaForm((p) => ({ ...p, monto: e.target.value }))
+                      }
+                      className="w-full p-2 border rounded-lg text-xs"
+                      placeholder="150000"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-black text-gray-600 uppercase block mb-1">
+                      Forma de pago
+                    </label>
+                    <select
+                      value={cajaForm.formaPago}
+                      onChange={(e) =>
+                        setCajaForm((p) => ({
+                          ...p,
+                          formaPago: e.target.value,
+                        }))
+                      }
+                      className="w-full p-2 border rounded-lg text-xs"
+                    >
+                      {[
+                        "Efectivo",
+                        "Transferencia",
+                        "Nequi",
+                        "Daviplata",
+                        "Cheque",
+                        "Datafono",
+                        "Otro",
+                      ].map((f) => (
+                        <option key={f}>{f}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-black text-gray-600 uppercase block mb-1">
+                      Fecha
+                    </label>
+                    <input
+                      type="date"
+                      value={cajaForm.fecha}
+                      onChange={(e) =>
+                        setCajaForm((p) => ({ ...p, fecha: e.target.value }))
+                      }
+                      className="w-full p-2 border rounded-lg text-xs"
+                    />
+                  </div>
+                  <div className="flex items-end">
+                    <button
+                      onClick={handleAddMov}
+                      className="w-full py-2 bg-blue-700 hover:bg-blue-800 text-white text-xs font-black rounded-lg"
+                    >
+                      💾 Registrar
+                    </button>
+                  </div>
+                </div>
+              </div>
+              {/* Movimientos del día */}
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
+                <p className="text-xs font-black text-gray-700 uppercase mb-3">
+                  Movimientos del{" "}
+                  {new Date(hoy + "T12:00").toLocaleDateString("es-CO")} (
+                  {movHoy.length})
+                </p>
+                {movHoy.length === 0 ? (
+                  <p className="text-center text-gray-400 text-xs py-6">
+                    Sin movimientos hoy. Registre el primero.
+                  </p>
+                ) : (
+                  <div className="space-y-2">
+                    {movHoy.map((m) => (
+                      <div
+                        key={m.id}
+                        className={`flex items-center justify-between p-3 rounded-xl border ${
+                          m.tipo === "ingreso"
+                            ? "bg-emerald-50 border-emerald-200"
+                            : "bg-red-50 border-red-200"
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <span className="text-lg">
+                            {m.tipo === "ingreso" ? "💚" : "❤️"}
+                          </span>
+                          <div>
+                            <p className="font-black text-xs text-gray-800">
+                              {m.concepto}
+                            </p>
+                            <p className="text-[10px] text-gray-500">
+                              {m.formaPago} · {m.usuario}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <span
+                            className={`font-black text-sm ${
+                              m.tipo === "ingreso"
+                                ? "text-emerald-700"
+                                : "text-red-700"
+                            }`}
+                          >
+                            {m.tipo === "ingreso" ? "+" : "-"}${" "}
+                            {Number(m.monto || 0).toLocaleString("es-CO")}
+                          </span>
+                          <button
+                            onClick={() => deleteMovimiento(m.id)}
+                            className="text-gray-400 hover:text-red-500 font-black"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+              {/* ── PACIENTES DE HOY - checklist cobro ── */}
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
+                <p className="text-xs font-black text-gray-700 uppercase mb-3">
+                  👥 Pacientes de hoy ({pacientesHoy.length}) - Checklist de
+                  cobro
+                </p>
+                {pacientesHoy.length === 0 ? (
+                  <p className="text-center text-gray-400 text-xs py-4">
+                    Sin pacientes registrados hoy.
+                  </p>
+                ) : (
+                  <div className="space-y-2">
+                    {pacientesHoy.map((pac) => {
+                      const movPac = movHoy.find(
+                        (m) => m.tipo === "ingreso" && m.pacienteId === pac.id
+                      );
+                      return (
+                        <div
+                          key={pac.id}
+                          className={`flex items-center justify-between p-3 rounded-xl border ${
+                            movPac
+                              ? "bg-emerald-50 border-emerald-200"
+                              : "bg-gray-50 border-gray-200"
+                          }`}
+                        >
+                          <div className="flex items-center gap-3">
+                            <span>{movPac ? "✅" : "⏳"}</span>
+                            <div>
+                              <p className="font-black text-xs text-gray-800">
+                                {pac.nombres}
+                              </p>
+                              <p className="text-[10px] text-gray-500">
+                                {pac.empresaNombre ||
+                                  pac.empresa ||
+                                  "Particular"}{" "}
+                                · {pac.tipoExamen || "Consulta"}
+                              </p>
+                            </div>
+                          </div>
+                          {!movPac ? (
+                            <div className="flex items-center gap-2">
+                              <input
+                                type="number"
+                                placeholder="Monto"
+                                id={`mp-${pac.id}`}
+                                className="w-24 p-1.5 border rounded-lg text-xs"
+                              />
+                              <select
+                                id={`fp-${pac.id}`}
+                                className="p-1.5 border rounded-lg text-xs"
+                              >
+                                {[
+                                  "Efectivo",
+                                  "Transferencia",
+                                  "Nequi",
+                                  "Daviplata",
+                                  "Datafono",
+                                ].map((f) => (
+                                  <option key={f}>{f}</option>
+                                ))}
+                              </select>
+                              <button
+                                onClick={() => {
+                                  const monto = document.getElementById(
+                                    "mp-" + pac.id
+                                  )?.value;
+                                  const forma =
+                                    document.getElementById("fp-" + pac.id)
+                                      ?.value || "Efectivo";
+                                  if (!monto || isNaN(+monto) || +monto <= 0) {
+                                    showAlert("Ingrese un monto.");
+                                    return;
+                                  }
+                                  saveCaja([
+                                    ...cajaMovimientos,
+                                    {
+                                      tipo: "ingreso",
+                                      concepto: `Consulta - ${pac.nombres}`,
+                                      monto,
+                                      formaPago: forma,
+                                      fecha: hoy,
+                                      id: "mov_" + Date.now(),
+                                      timestamp: new Date().toISOString(),
+                                      usuario: currentUser?.user || "-",
+                                      pacienteId: pac.id,
+                                      empresa:
+                                        pac.empresaNombre ||
+                                        pac.empresa ||
+                                        "Particular",
+                                    },
+                                  ]);
+                                }}
+                                className="px-3 py-1.5 bg-emerald-700 text-white text-[10px] font-black rounded-lg"
+                              >
+                                ✅ Cobrar
+                              </button>
+                            </div>
+                          ) : (
+                            <span className="text-xs font-black text-emerald-700">
+                              ${" "}
+                              {Number(movPac.monto || 0).toLocaleString(
+                                "es-CO"
+                              )}{" "}
+                              · {movPac.formaPago}
+                            </span>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+          {/* TAB: HISTORIAL */}
+          {cajaTab === "historial" && (
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
+              <div className="flex justify-between items-center mb-3">
+                <p className="text-xs font-black text-gray-700 uppercase">
+                  Historial completo ({cajaMovimientos.length} movimientos)
+                </p>
+                <button
+                  onClick={() => {
+                    const rows = [
+                      [
+                        "ID",
+                        "Fecha",
+                        "Tipo",
+                        "Concepto",
+                        "Monto",
+                        "FormaPago",
+                        "Usuario",
+                      ],
+                    ];
+                    cajaMovimientos.forEach((m) =>
+                      rows.push([
+                        m.id,
+                        m.fecha,
+                        m.tipo,
+                        m.concepto,
+                        m.monto,
+                        m.formaPago,
+                        m.usuario,
+                      ])
+                    );
+                    const csv = rows
+                      .map((r) =>
+                        r
+                          .map(
+                            (v) => `"${String(v || "").replace(/"/g, '""')}"`
+                          )
+                          .join(",")
+                      )
+                      .join("\n");
+                    const b = new Blob([csv], { type: "text/csv" });
+                    const u = URL.createObjectURL(b);
+                    const a = document.createElement("a");
+                    a.href = u;
+                    a.download = "caja_historial.csv";
+                    a.click();
+                    URL.revokeObjectURL(u);
+                  }}
+                  className="px-3 py-1 bg-emerald-700 text-white text-[10px] font-black rounded-lg"
+                >
+                  📥 CSV
+                </button>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-xs">
+                  <thead className="bg-gray-800 text-white">
+                    <tr>
+                      {[
+                        "Fecha",
+                        "Tipo",
+                        "Concepto",
+                        "Monto",
+                        "Forma Pago",
+                        "Usuario",
+                        "Acc.",
+                      ].map((h) => (
+                        <th key={h} className="p-2 text-left font-black">
+                          {h}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {movHistorial.length === 0 ? (
+                      <tr>
+                        <td
+                          colSpan={7}
+                          className="text-center py-8 text-gray-400"
+                        >
+                          Sin movimientos registrados
+                        </td>
+                      </tr>
+                    ) : (
+                      movHistorial.map((m, i) => (
+                        <tr
+                          key={m.id}
+                          className={i % 2 === 0 ? "bg-white" : "bg-gray-50"}
+                        >
+                          <td className="p-2">{m.fecha}</td>
+                          <td className="p-2">
+                            <span
+                              className={`px-2 py-0.5 rounded-full font-black text-[10px] ${
+                                m.tipo === "ingreso"
+                                  ? "bg-emerald-100 text-emerald-800"
+                                  : "bg-red-100 text-red-800"
+                              }`}
+                            >
+                              {m.tipo}
+                            </span>
+                          </td>
+                          <td className="p-2 font-bold">{m.concepto}</td>
+                          <td
+                            className={`p-2 font-black ${
+                              m.tipo === "ingreso"
+                                ? "text-emerald-700"
+                                : "text-red-700"
+                            }`}
+                          >
+                            $ {Number(m.monto || 0).toLocaleString("es-CO")}
+                          </td>
+                          <td className="p-2 text-gray-500">{m.formaPago}</td>
+                          <td className="p-2 text-gray-400">{m.usuario}</td>
+                          <td className="p-2 flex gap-1">
+                            <button
+                              onClick={() => openComprobanteWindow(m.tipo, m)}
+                              className="px-2 py-1 bg-blue-100 text-blue-700 rounded font-bold hover:bg-blue-200 text-[10px]"
+                            >
+                              🖨️
+                            </button>
+                            <button
+                              onClick={() => deleteMovimiento(m.id)}
+                              className="px-2 py-1 bg-red-100 text-red-700 rounded font-bold hover:bg-red-200 text-[10px]"
+                            >
+                              🗑️
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+          {/* TAB: COMPROBANTES */}
+          {cajaTab === "comprobantes" && (
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
+              <p className="text-xs font-black text-gray-700 uppercase mb-3">
+                📋 Comprobantes de Contabilidad
+              </p>
+              <p className="text-xs text-gray-500 mb-4">
+                Seleccione cualquier movimiento del historial y pulse 🖨️ para
+                generar su comprobante imprimible.
+              </p>
+              <div className="grid grid-cols-2 gap-4">
+                {[
+                  {
+                    titulo: "Comprobante de Ingreso",
+                    desc: "Para pagos recibidos de pacientes o empresas",
+                    tipo: "ingreso",
+                    color: "emerald",
+                  },
+                  {
+                    titulo: "Comprobante de Egreso",
+                    desc: "Para pagos realizados a proveedores",
+                    tipo: "egreso",
+                    color: "red",
+                  },
+                  {
+                    titulo: "Recibo de Caja",
+                    desc: "Recibo simple de transacción",
+                    tipo: "recibo",
+                    color: "blue",
+                  },
+                  {
+                    titulo: "Documento Equivalente",
+                    desc: "Para transacciones sin factura formal",
+                    tipo: "equivalente",
+                    color: "purple",
+                  },
+                ].map((c) => (
+                  <div
+                    key={c.tipo}
+                    className={`bg-${c.color}-50 border border-${c.color}-200 rounded-xl p-4`}
+                  >
+                    <h3
+                      className={`font-black text-${c.color}-800 text-sm mb-1`}
+                    >
+                      {c.titulo}
+                    </h3>
+                    <p className={`text-${c.color}-600 text-[10px] mb-3`}>
+                      {c.desc}
+                    </p>
+                    <button
+                      onClick={() => {
+                        const mov = {
+                          tipo: c.tipo,
+                          concepto: "[Complete en el comprobante]",
+                          monto: 0,
+                          formaPago: "",
+                          fecha: new Date().toLocaleDateString("es-CO"),
+                          id: "MANUAL-" + Date.now(),
+                        };
+                        openComprobanteWindow(c.tipo, mov);
+                      }}
+                      className={`px-3 py-1.5 bg-${c.color}-700 hover:bg-${c.color}-800 text-white text-[10px] font-black rounded-lg`}
+                    >
+                      🖨️ Generar en blanco
+                    </button>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-4 bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs text-amber-800">
+                💡 Para generar comprobantes de movimientos ya registrados, vaya
+                a <strong>📜 Historial</strong> y pulse el ícono 🖨️
+              </div>
+            </div>
+          )}
+          {/* TAB: CUENTAS POR COBRAR */}
+          {cajaTab === "cuentas" && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-center">
+                  <div className="text-xs font-black text-red-700 uppercase mb-1">
+                    ⏳ Pendiente por cobrar
+                  </div>
+                  <div className="text-2xl font-black text-red-800">
+                    $ {totalPendiente.toLocaleString("es-CO")}
+                  </div>
+                  <div className="text-[10px] text-red-600">
+                    {cuentasPendientes.length} cuenta(s)
+                  </div>
+                </div>
+                <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 text-center">
+                  <div className="text-xs font-black text-emerald-700 uppercase mb-1">
+                    ✅ Total cobrado
+                  </div>
+                  <div className="text-2xl font-black text-emerald-800">
+                    $ {totalCobrado.toLocaleString("es-CO")}
+                  </div>
+                  <div className="text-[10px] text-emerald-600">
+                    {cuentasPagadas.length} cuenta(s)
+                  </div>
+                </div>
+              </div>
+              {/* ── RESUMEN POR EMPRESA ── */}
+              <div className="space-y-3">
+                {Object.entries(groupByEmpresa).map(([empresa, bills]) => {
+                  const pendEmp = bills
+                    .filter((b) => !b.pagada)
+                    .reduce((s, b) => s + Number(b.amount || 0), 0);
+                  const pagEmp = bills
+                    .filter((b) => b.pagada)
+                    .reduce((s, b) => s + Number(b.amount || 0), 0);
+                  return (
+                    <div
+                      key={empresa}
+                      className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4"
+                    >
+                      <div className="flex justify-between items-center mb-3">
+                        <div>
+                          <p className="font-black text-sm text-gray-800">
+                            {empresa}
+                          </p>
+                          <p className="text-[10px] text-gray-500">
+                            {bills.length} cuenta(s) · Pend:{" "}
+                            <span className="text-red-700 font-black">
+                              $ {pendEmp.toLocaleString("es-CO")}
+                            </span>{" "}
+                            · Pag:{" "}
+                            <span className="text-emerald-700 font-black">
+                              $ {pagEmp.toLocaleString("es-CO")}
+                            </span>
+                          </p>
+                        </div>
+                        <button
+                          onClick={() => goTo("bill")}
+                          className="px-2 py-1 bg-orange-600 text-white text-[10px] font-black rounded-lg"
+                        >
+                          + Nueva
+                        </button>
+                      </div>
+                      <div className="space-y-1.5">
+                        {[...bills].reverse().map((b, i) => (
+                          <div
+                            key={b.id || i}
+                            className={`flex items-center justify-between p-2.5 rounded-xl border text-xs ${
+                              b.pagada
+                                ? "bg-emerald-50 border-emerald-200"
+                                : "bg-red-50 border-red-200"
+                            }`}
+                          >
+                            <div className="flex items-center gap-2">
+                              <span>{b.pagada ? "✅" : "⏳"}</span>
+                              <div>
+                                <p className="font-bold text-gray-800">
+                                  {b.clientName || b.clienteNombre || "-"} ·{" "}
+                                  {b.date || b.savedAt?.split("T")[0] || "-"}
+                                </p>
+                                <p className="text-[10px] text-gray-500">
+                                  {b.description ||
+                                    b.concepto ||
+                                    "Servicio médico ocupacional"}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="font-black text-gray-800">
+                                ${" "}
+                                {Number(b.amount || 0).toLocaleString("es-CO")}
+                              </span>
+                              {!b.pagada && (
+                                <button
+                                  onClick={() => marcarPagada(b.id)}
+                                  className="px-2 py-1 bg-emerald-100 text-emerald-700 rounded font-bold hover:bg-emerald-200 text-[10px]"
+                                >
+                                  ✅
+                                </button>
+                              )}
+                              <button
+                                onClick={() => editarCuenta(b)}
+                                className="px-2 py-1 bg-blue-100 text-blue-700 rounded font-bold hover:bg-blue-200 text-[10px]"
+                              >
+                                ✏️
+                              </button>
+                              <button
+                                onClick={() => eliminarCuenta(b.id)}
+                                className="px-2 py-1 bg-red-100 text-red-700 rounded font-bold hover:bg-red-200 text-[10px]"
+                              >
+                                🗑️
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
+                {savedBillsList.length === 0 && (
+                  <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 text-center">
+                    <p className="text-gray-400 text-sm mb-3">
+                      Sin cuentas de cobro registradas.
+                    </p>
+                    <button
+                      onClick={() => goTo("bill")}
+                      className="px-4 py-2 bg-orange-600 text-white text-xs font-black rounded-xl"
+                    >
+                      + Crear primera cuenta
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* TAB: PACIENTES VISTOS - PASO 4 */}
+          {cajaTab === "pacientes_vistos" &&
+            (() => {
+              const movsPV = movPeriodo.filter((m) => m._autoGenerated);
+              const csvPV = () => {
+                const rows = [
+                  [
+                    "Fecha",
+                    "Paciente",
+                    "Doc",
+                    "Empresa Cliente",
+                    "Tipo",
+                    "Médico",
+                    "Tarifa",
+                    "Estado",
+                  ],
+                ];
+                movsPV.forEach((m) =>
+                  rows.push([
+                    m.fecha,
+                    m.pacienteNombre || "",
+                    m.pacienteDoc || "",
+                    m.empresaClienteNombre || "",
+                    m.tipoConsulta || "",
+                    m.medicoNombre || "",
+                    m.monto || "0",
+                    m.estado || "pendiente",
+                  ])
+                );
+                const csv = rows
+                  .map((r) =>
+                    r
+                      .map((v) => `"${String(v || "").replace(/"/g, '""')}"`)
+                      .join(",")
+                  )
+                  .join("\n");
+                const b = new Blob([csv], { type: "text/csv" });
+                const u = URL.createObjectURL(b);
+                const a = document.createElement("a");
+                a.href = u;
+                a.download = `pacientes_vistos_${_pDesde}_${_pHasta}.csv`;
+                a.click();
+                URL.revokeObjectURL(u);
+              };
+              return (
+                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                  <div className="flex items-center justify-between p-4 border-b border-gray-100">
+                    <h3 className="font-black text-gray-800 text-sm">
+                      👁️ Pacientes Vistos ·{" "}
+                      {_pDesde !== _pHasta
+                        ? `${_pDesde} – ${_pHasta}`
+                        : _pDesde}
+                    </h3>
+                    <button
+                      onClick={csvPV}
+                      className="text-xs bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-lg font-black hover:bg-emerald-100 flex items-center gap-1"
+                    >
+                      <Download className="w-3 h-3" /> CSV
+                    </button>
+                  </div>
+                  {movsPV.length === 0 ? (
+                    <div className="p-8 text-center text-gray-400 text-sm">
+                      No hay pacientes vistos en este periodo.
+                    </div>
+                  ) : (
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-xs">
+                        <thead className="bg-gray-50 border-b border-gray-100">
+                          <tr>
+                            {[
+                              "Fecha",
+                              "Paciente",
+                              "Empresa",
+                              "Tipo",
+                              "Médico",
+                              "Tarifa",
+                              "Estado",
+                              "",
+                            ].map((h) => (
+                              <th
+                                key={h}
+                                className="px-3 py-2 text-left font-black text-gray-600 uppercase tracking-wide text-[10px]"
+                              >
+                                {h}
+                              </th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-50">
+                          {movsPV.map((m) => {
+                            const estadoColor =
+                              m.estado === "cobrado"
+                                ? "bg-green-100 text-green-700"
+                                : m.estado === "pagado"
+                                ? "bg-blue-100 text-blue-700"
+                                : "bg-yellow-100 text-yellow-700";
+                            return (
+                              <tr key={m.id} className="hover:bg-gray-50">
+                                <td className="px-3 py-2 text-gray-500">
+                                  {m.fecha}
+                                </td>
+                                <td className="px-3 py-2 font-bold text-gray-800">
+                                  {m.pacienteNombre || "—"}
+                                </td>
+                                <td className="px-3 py-2 text-gray-600">
+                                  {m.empresaClienteNombre || "Particular"}
+                                </td>
+                                <td className="px-3 py-2 text-gray-500 capitalize">
+                                  {m.tipoConsulta || "—"}
+                                </td>
+                                <td className="px-3 py-2 text-gray-500">
+                                  {m.medicoNombre || "—"}
+                                </td>
+                                <td className="px-3 py-2 font-bold text-gray-800">
+                                  ${" "}
+                                  {Number(m.monto || 0).toLocaleString("es-CO")}
+                                </td>
+                                <td className="px-3 py-2">
+                                  <span
+                                    className={`px-2 py-0.5 rounded-full text-[10px] font-black ${estadoColor}`}
+                                  >
+                                    {m.estado === "cobrado"
+                                      ? "Cobrado"
+                                      : m.estado === "pagado"
+                                      ? "Pagado"
+                                      : "Por cobrar"}
+                                  </span>
+                                </td>
+                                <td className="px-3 py-2">
+                                  {m.estado === "pendiente" && (
+                                    <button
+                                      onClick={() => {
+                                        showPrompt(
+                                          `Monto a cobrar (sugerido $${Number(
+                                            m.monto || 0
+                                          ).toLocaleString("es-CO")}):`,
+                                          (mto) => {
+                                            showPrompt(
+                                              "Forma de pago (Efectivo/Transferencia/Cheque):",
+                                              (forma) => {
+                                                cobrarAutoMov(
+                                                  m.id,
+                                                  mto || m.monto,
+                                                  forma || "Efectivo"
+                                                );
+                                                showAlert(
+                                                  "✅ Movimiento marcado como cobrado."
+                                                );
+                                              }
+                                            );
+                                          }
+                                        );
+                                      }}
+                                      className="text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded-lg font-black hover:bg-blue-100"
+                                    >
+                                      Cobrar
+                                    </button>
+                                  )}
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
+
+          {/* TAB: INGRESOS POR MÉDICO - solo admin */}
+          {cajaTab === "por_medico" &&
+            _isAdmin(currentUser?.role) &&
+            (() => {
+              const medicos = usersList.filter(
+                (u) =>
+                  ["medico", "administrador", "super_admin"].includes(u.role) &&
+                  u.activo !== false
+              );
+              const periodoFiltro = cajaMedicoPeriodo;
+              const setPeriodoFiltro = setCajaMedicoPeriodo;
+              const ahora = new Date();
+              const hoyStr = ahora.toISOString().split("T")[0];
+              const inicioMes = new Date(
+                ahora.getFullYear(),
+                ahora.getMonth(),
+                1
+              )
+                .toISOString()
+                .split("T")[0];
+              const inicioSem = (() => {
+                const d = new Date(ahora);
+                d.setDate(d.getDate() - d.getDay());
+                return d.toISOString().split("T")[0];
+              })();
+              const inicioAnio = new Date(ahora.getFullYear(), 0, 1)
+                .toISOString()
+                .split("T")[0];
+              const desde =
+                periodoFiltro === "hoy"
+                  ? hoyStr
+                  : periodoFiltro === "semana"
+                  ? inicioSem
+                  : periodoFiltro === "mes"
+                  ? inicioMes
+                  : inicioAnio;
+              const movsFiltro = cajaMovimientos.filter(
+                (m) => m.tipo === "ingreso" && m.fecha >= desde
+              );
+              const billsFiltro = savedBillsList.filter(
+                (b) => b.savedAt && b.savedAt >= desde
+              );
+              const totalGlobal = movsFiltro.reduce(
+                (s, m) => s + Number(m.monto || 0),
+                0
+              );
+              const pendienteGlobal = billsFiltro
+                .filter((b) => !b.pagada)
+                .reduce((s, b) => s + Number(b.amount || 0), 0);
+              return (
+                <div className="space-y-4">
+                  <div className="flex gap-2 mb-2">
+                    {["hoy", "semana", "mes", "año"].map((p) => (
+                      <button
+                        key={p}
+                        onClick={() => setPeriodoFiltro(p)}
+                        className={`px-3 py-1 rounded-lg text-xs font-black ${
+                          periodoFiltro === p
+                            ? "bg-blue-700 text-white"
+                            : "bg-white border text-gray-600 hover:bg-gray-50"
+                        }`}
+                      >
+                        {p.charAt(0).toUpperCase() + p.slice(1)}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-center">
+                      <p className="text-xs font-black text-emerald-700">
+                        Total cobrado
+                      </p>
+                      <p className="text-2xl font-black text-emerald-800">
+                        $ {totalGlobal.toLocaleString("es-CO")}
+                      </p>
+                    </div>
+                    <div className="bg-red-50 border border-red-200 rounded-xl p-3 text-center">
+                      <p className="text-xs font-black text-red-700">
+                        Pendiente por cobrar
+                      </p>
+                      <p className="text-2xl font-black text-red-800">
+                        $ {pendienteGlobal.toLocaleString("es-CO")}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                    <table className="w-full text-xs">
+                      <thead className="bg-gray-800 text-white">
+                        <tr>
+                          {[
+                            "Médico",
+                            "Atenciones",
+                            "Cobrado",
+                            "Cuentas pend.",
+                            "% del total",
+                          ].map((h) => (
+                            <th key={h} className="p-2 text-left font-black">
+                              {h}
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {medicos.map((med, i) => {
+                          const movsMed = movsFiltro.filter(
+                            (m) =>
+                              m.medicoId === med.user ||
+                              (!m.medicoId && _isAdmin(med.role))
+                          );
+                          const cobradoMed = movsMed.reduce(
+                            (s, m) => s + Number(m.monto || 0),
+                            0
+                          );
+                          const atenMed = movsMed.filter(
+                            (m) => m.pacienteId
+                          ).length;
+                          const pendMed = billsFiltro
+                            .filter(
+                              (b) =>
+                                !b.pagada &&
+                                (b.medicoId === med.user ||
+                                  (!b.medicoId && _isAdmin(med.role)))
+                            )
+                            .reduce((s, b) => s + Number(b.amount || 0), 0);
+                          const pct =
+                            totalGlobal > 0
+                              ? ((cobradoMed / totalGlobal) * 100).toFixed(1)
+                              : "0";
+                          return (
+                            <tr
+                              key={med.user}
+                              className={
+                                i % 2 === 0 ? "bg-white" : "bg-gray-50"
+                              }
+                            >
+                              <td className="p-2 font-bold">
+                                {med.name || med.user}
+                              </td>
+                              <td className="p-2">{atenMed}</td>
+                              <td className="p-2 font-black text-emerald-700">
+                                $ {cobradoMed.toLocaleString("es-CO")}
+                              </td>
+                              <td className="p-2 text-red-600">
+                                $ {pendMed.toLocaleString("es-CO")}
+                              </td>
+                              <td className="p-2">
+                                <div className="flex items-center gap-1.5">
+                                  <div className="flex-1 bg-gray-200 rounded-full h-1.5">
+                                    <div
+                                      className="bg-blue-600 h-1.5 rounded-full"
+                                      style={{
+                                        width: `${Math.min(100, pct)}%`,
+                                      }}
+                                    />
+                                  </div>
+                                  <span className="text-[10px] font-black">
+                                    {pct}%
+                                  </span>
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                  <button
+                    onClick={() => {
+                      const rows = [
+                        ["Médico", "Atenciones", "Cobrado", "Pendiente"],
+                      ];
+                      medicos.forEach((med) => {
+                        const movsMed = movsFiltro.filter(
+                          (m) =>
+                            m.medicoId === med.user ||
+                            (!m.medicoId && _isAdmin(med.role))
+                        );
+                        const cob = movsMed.reduce(
+                          (s, m) => s + Number(m.monto || 0),
+                          0
+                        );
+                        const pend = billsFiltro
+                          .filter((b) => !b.pagada && b.medicoId === med.user)
+                          .reduce((s, b) => s + Number(b.amount || 0), 0);
+                        rows.push([
+                          med.name || med.user,
+                          movsMed.filter((m) => m.pacienteId).length,
+                          cob,
+                          pend,
+                        ]);
+                      });
+                      const csv = rows
+                        .map((r) =>
+                          r
+                            .map(
+                              (v) => `"${String(v || "").replace(/"/g, '""')}"`
+                            )
+                            .join(",")
+                        )
+                        .join("\n");
+                      const b = new Blob([csv], { type: "text/csv" });
+                      const u = URL.createObjectURL(b);
+                      const a = document.createElement("a");
+                      a.href = u;
+                      a.download = "ingresos_por_medico.csv";
+                      a.click();
+                      URL.revokeObjectURL(u);
+                    }}
+                    className="px-4 py-2 bg-emerald-700 text-white text-xs font-black rounded-xl hover:bg-emerald-800"
+                  >
+                    📥 Exportar CSV
+                  </button>
+                  {/* ── LIQUIDACIÓN MÉDICO-CLÍNICA (FASE 4) ── */}
+                  <div className="mt-6 bg-white rounded-2xl shadow-sm border border-indigo-100 overflow-hidden">
+                    <div className="bg-indigo-700 px-4 py-3 flex items-center justify-between">
+                      <h4 className="text-white font-black text-sm">
+                        💰 Liquidación Médico-Clínica
+                      </h4>
+                      <span className="text-indigo-200 text-xs">
+                        Periodo: {cajaMedicoPeriodo}
+                      </span>
+                    </div>
+                    <div className="p-4 space-y-4">
+                      {/* Configuración del porcentaje */}
+                      <div className="flex items-center gap-4 bg-indigo-50 rounded-xl p-3">
+                        <div className="flex-1">
+                          <p className="text-xs font-black text-indigo-800 mb-1">
+                            % Honorarios médico:{" "}
+                            <span className="text-indigo-600">
+                              {porcentajeMedico}%
+                            </span>
+                          </p>
+                          <input
+                            type="range"
+                            min={0}
+                            max={100}
+                            value={porcentajeMedico}
+                            onChange={(e) =>
+                              setPorcentajeMedico(Number(e.target.value))
+                            }
+                            className="w-full accent-indigo-600"
+                          />
+                          <div className="flex justify-between text-[10px] text-gray-400 mt-0.5">
+                            <span>0% médico</span>
+                            <span>100% médico</span>
+                          </div>
+                        </div>
+                        <div className="text-center min-w-[90px]">
+                          <p className="text-[10px] text-gray-500">Clínica</p>
+                          <p className="text-lg font-black text-purple-700">
+                            {100 - porcentajeMedico}%
+                          </p>
+                        </div>
+                      </div>
+                      {/* Tabla por médico con liquidación */}
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-xs">
+                          <thead className="bg-indigo-700 text-white">
+                            <tr>
+                              {[
+                                "Médico",
+                                "Cobrado",
+                                `Médico (${porcentajeMedico}%)`,
+                                `Clínica (${100 - porcentajeMedico}%)`,
+                              ].map((h) => (
+                                <th
+                                  key={h}
+                                  className="p-2 text-left font-black"
+                                >
+                                  {h}
+                                </th>
+                              ))}
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {medicos.map((med, i) => {
+                              const movsMed = movsFiltro.filter(
+                                (m) =>
+                                  m.medicoId === med.user ||
+                                  (!m.medicoId && _isAdmin(med.role))
+                              );
+                              const cobradoMed = movsMed.reduce(
+                                (s, m) => s + Number(m.monto || 0),
+                                0
+                              );
+                              const valorMedico = Math.round(
+                                cobradoMed * (porcentajeMedico / 100)
+                              );
+                              const valorClinica = cobradoMed - valorMedico;
+                              return (
+                                <tr
+                                  key={med.user}
+                                  className={
+                                    i % 2 === 0 ? "bg-white" : "bg-indigo-50"
+                                  }
+                                >
+                                  <td className="p-2 font-bold">
+                                    {med.name || med.user}
+                                  </td>
+                                  <td className="p-2 font-black text-gray-700">
+                                    $ {cobradoMed.toLocaleString("es-CO")}
+                                  </td>
+                                  <td className="p-2 font-black text-indigo-700">
+                                    $ {valorMedico.toLocaleString("es-CO")}
+                                  </td>
+                                  <td className="p-2 font-black text-purple-700">
+                                    $ {valorClinica.toLocaleString("es-CO")}
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                            {/* Fila de totales */}
+                            <tr className="bg-indigo-700 text-white font-black">
+                              <td className="p-2">TOTAL</td>
+                              <td className="p-2">
+                                $ {totalGlobal.toLocaleString("es-CO")}
+                              </td>
+                              <td className="p-2">
+                                ${" "}
+                                {Math.round(
+                                  totalGlobal * (porcentajeMedico / 100)
+                                ).toLocaleString("es-CO")}
+                              </td>
+                              <td className="p-2">
+                                ${" "}
+                                {Math.round(
+                                  totalGlobal * ((100 - porcentajeMedico) / 100)
+                                ).toLocaleString("es-CO")}
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      {/* Botón comprobante imprimible */}
+                      <button
+                        onClick={() => {
+                          const filas = medicos
+                            .map((med) => {
+                              const movsMed = movsFiltro.filter(
+                                (m) =>
+                                  m.medicoId === med.user ||
+                                  (!m.medicoId && _isAdmin(med.role))
+                              );
+                              const cob = movsMed.reduce(
+                                (s, m) => s + Number(m.monto || 0),
+                                0
+                              );
+                              const vm = Math.round(
+                                cob * (porcentajeMedico / 100)
+                              );
+                              const vc = cob - vm;
+                              return `<tr><td style="padding:6px 10px;border-bottom:1px solid #e5e7eb">${
+                                med.name || med.user
+                              }</td><td style="padding:6px 10px;border-bottom:1px solid #e5e7eb;text-align:right">$${cob.toLocaleString(
+                                "es-CO"
+                              )}</td><td style="padding:6px 10px;border-bottom:1px solid #e5e7eb;color:#4338ca;text-align:right">$${vm.toLocaleString(
+                                "es-CO"
+                              )}</td><td style="padding:6px 10px;border-bottom:1px solid #e5e7eb;color:#7e22ce;text-align:right">$${vc.toLocaleString(
+                                "es-CO"
+                              )}</td></tr>`;
+                            })
+                            .join("");
+                          const _miIPSLiq = currentUser?.empresaId
+                            ? companies.find(
+                                (c) => c.id === currentUser.empresaId
+                              ) || null
+                            : null;
+                          const _liqLeftHtml = _ipsDocLeftHtml(
+                            _miIPSLiq,
+                            activeDoctorData,
+                            "#3730a3"
+                          );
+                          const html = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Liquidación SISO</title><style>body{font-family:Arial,sans-serif;padding:32px;color:#1f2937}.doc-header{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #3730a3;padding-bottom:12px;margin-bottom:16px;}h1{font-size:18px;color:#3730a3;margin:0 0 2px 0;}h2{font-size:13px;color:#6b7280;font-weight:normal;margin-top:2px}table{width:100%;border-collapse:collapse;margin-top:20px}th{background:#3730a3;color:white;padding:8px 10px;text-align:left;font-size:12px}td{font-size:12px}.total-row td{background:#3730a3;color:white;font-weight:bold;padding:8px 10px;text-align:right}.total-label{text-align:left!important}footer{margin-top:32px;font-size:10px;color:#9ca3af}</style></head><body><div class="doc-header">${_liqLeftHtml}<div><h1>Comprobante de Liquidación Médico-Clínica</h1><h2>Periodo: ${cajaMedicoPeriodo} &nbsp;|&nbsp; Distribución: Médico ${porcentajeMedico}% / Clínica ${
+                            100 - porcentajeMedico
+                          }%</h2></div></div><table><thead><tr><th>Médico</th><th style="text-align:right">Cobrado</th><th style="text-align:right">Honorarios médico</th><th style="text-align:right">Ingreso clínica</th></tr></thead><tbody>${filas}<tr class="total-row"><td class="total-label">TOTAL</td><td style="text-align:right">$${totalGlobal.toLocaleString(
+                            "es-CO"
+                          )}</td><td style="text-align:right">$${Math.round(
+                            totalGlobal * (porcentajeMedico / 100)
+                          ).toLocaleString(
+                            "es-CO"
+                          )}</td><td style="text-align:right">$${Math.round(
+                            totalGlobal * ((100 - porcentajeMedico) / 100)
+                          ).toLocaleString(
+                            "es-CO"
+                          )}</td></tr></tbody></table><footer>Generado por SISO OcupaSalud &mdash; ${new Date().toLocaleString(
+                            "es-CO"
+                          )}</footer></body></html>`;
+                          const w = window.open("", "_blank");
+                          if (w) {
+                            w.document.write(html);
+                            w.document.close();
+                            w.print();
+                          }
+                        }}
+                        className="w-full px-4 py-2 bg-indigo-700 text-white text-xs font-black rounded-xl hover:bg-indigo-800 flex items-center justify-center gap-2"
+                      >
+                        🖨️ Imprimir Comprobante de Liquidación
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
+        </div>
+      </div>
+    );
+  };
 
   // ══════════════════════════════════════════════════════════════════════════
   // FASE 2 — PANEL GLOBAL SUPER ADMIN
@@ -31895,18 +45123,18 @@ body{font-family:Arial,sans-serif;margin:0;background:#f5f5f5}
             </div>
           </div>
         );
-      return <LoginPage />;
+      return renderLogin();
     }
-    if (view === "dashboard") return <DashboardPage />;
+    if (view === "dashboard") return renderDashboard();
     if (view === "superadmin") return renderSuperAdmin();
-    if (view === "planes") return <PlanesPage />;
-    if (view === "portaltrabajador") return <PortalTrabajadorPage />;
+    if (view === "planes") return renderPlanes();
+    if (view === "portaltrabajador") return renderPortalTrabajador();
     if (view === "portalempresa") return renderPortalEmpresa();
-    if (view === "habeasdata") return <HabeasDataPage />;
+    if (view === "habeasdata") return renderHabeasData();
     if (view === "arl") return renderARL();
     if (view === "sve") return renderSVE();
     if (view === "telemedicina") return renderTelemedicina();
-    if (view === "agenda") return <AgendaPage />;
+    if (view === "agenda") return renderAgenda();
     if (view === "asistencia") return renderAsistenciaAgenda();
     if (view === "patients") return renderPatients();
     // ══ B-07: Pantalla cambio de contraseña obligatorio (primer login o forzado) ══
@@ -31923,14 +45151,14 @@ body{font-family:Arial,sans-serif;margin:0;background:#f5f5f5}
           showAlert={showAlert}
         />
       );
-    if (view === "companies") return <CompaniesPage />;
-    if (view === "reporte") return <ReportePage />;
-    if (view === "bill") return <BillPage />;
-    if (view === "verification") return <VerificationPage />;
-    if (view === "users") return <UsersPage />;
+    if (view === "companies") return renderCompanies();
+    if (view === "reporte") return renderReporte();
+    if (view === "bill") return renderBill();
+    if (view === "verification") return renderVerification();
+    if (view === "users") return renderUsers();
     if (view === "portafolio") return renderPortafolio();
-    if (view === "caja") return <CajaPage />;
-    if (view === "perfilips") return <PerfilIPSPage />;
+    if (view === "caja") return renderCaja();
+    if (view === "perfilips") return renderPerfilIPS();
     if (view === "contabilidad") return renderContabilidad();
     if (view === "cotizaciones") {
       if (propModulo !== "cotizacion") setPropModulo("cotizacion");
@@ -33331,11 +46559,10 @@ body{padding-top:52px;}
         </div>
       );
     }
-    return <LoginPage />;
+    return renderLogin();
   };
   // ─── RETURN PRINCIPAL ─────────────────────────────────────────────────────
   return (
-    <AppProvider value={appContext}>
     <>
       <PrintStyles />
       <SecurityHeaders />
@@ -33964,7 +47191,6 @@ body{padding-top:52px;}
         />
       )}
     </>
-    </AppProvider>
   );
 }
 
