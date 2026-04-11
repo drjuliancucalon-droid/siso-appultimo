@@ -1,7 +1,3 @@
-// ==========================================
-// CATÁLOGO DE DERIVACIONES// ==========================================
-// CATÁLOGO DE DERIVACIONES / INTERCONSULTAS
-// ==========================================
 export const DERIVACIONES_CATALOG = [
   {
     id: "d_med_trab",

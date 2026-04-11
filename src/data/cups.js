@@ -1,8 +1,3 @@
-// MÓDULO CUPS: Código Único de Procedimientos en Salud - Colombia
-// Fuente: Res. 2175/2015 MSPS (consolida CUPS, deroga Res. 2175/2015), actualizada 2024
-// Procedimientos frecuentes en Salud Ocupacional y Medicina General
-// Ref. legal: Res. 2275/2023 (RIPS), Res. 1843/2025
-// ==========================================
 export const CUPS_OCUPACIONAL = [
   {
     code: "890301",
@@ -411,19 +406,12 @@ export const CUPS_OCUPACIONAL = [
     group: "Rehabilitación",
   },
 ];
-export const _buscarCUPS = (query, maxResults) => {
-  const max = maxResults || 10;
-  if (!query || query.trim().length < 2) return [];
-  const normalize = (s) =>
-    s
-      .toLowerCase()
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "");
-  const q = normalize(query.trim());
-  return CUPS_OCUPACIONAL.filter(
-    (item) =>
-      normalize(item.code).includes(q) ||
-      normalize(item.desc).includes(q) ||
-      normalize(item.group).includes(q)
-  ).slice(0, max);
+const _buscarCUPS = (query, maxResults) => {
+
+  const q = query.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  return CUPS_OCUPACIONAL.filter(({ code, desc }) => {
+    const d = desc.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    return code.toLowerCase().includes(q) || d.includes(q);
+  }).slice(0, maxResults || 20);
 };
+export { _buscarCUPS };

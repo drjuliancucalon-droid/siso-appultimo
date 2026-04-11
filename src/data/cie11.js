@@ -1,7 +1,3 @@
-// MÓDULO CIE-11: Clasificación Internacional de Enfermedades 11a Revisión
-// OMS CIE-11 (2022) - Res. 1442/2024 Colombia (transición gradual)
-// Implementado en paralelo con CIE-10 para migración progresiva.
-// ==========================================
 export const CIE11_EQUIVALENCIAS = [
   {
     cie10: "Z10.0",
@@ -143,11 +139,9 @@ export const CIE11_EQUIVALENCIAS = [
   },
   { cie10: "N39.0", cie11: "GC08", desc: "Infección de vías urinarias" },
 ];
-export const _equivalenciaCIE11 = (cie10code) => {
-  if (!cie10code) return null;
-  const c = cie10code.toUpperCase().split(" ")[0].split("-")[0];
-  return (
-    CIE11_EQUIVALENCIAS.find((e) => e.cie10 === c || c.startsWith(e.cie10)) ||
-    null
-  );
+const _equivalenciaCIE11 = (cie10code) => {
+
+  const found = CIE11_EQUIVALENCIAS.find(e => e.cie10 === cie10code);
+  return found ? found.cie11 : null;
 };
+export { _equivalenciaCIE11 };

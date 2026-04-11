@@ -1,4 +1,3 @@
-// ==========================================
 export const RESTRICCIONES_CATALOG = {
   miembroSuperior: {
     label: "Miembro Superior",
@@ -468,3 +467,4 @@ export const RESTRICCIONES_CATALOG = {
     ],
   },
 };
+// ==========================================

@@ -1,6 +1,3 @@
-// MÓDULO CIE-10: Base de diagnósticos para Salud Ocupacional Colombia
-// Fuentes: OMS CIE-10, Decreto 1477/2014, Res. 1843/2025, GATISO-DME
-// ==========================================
 export const CIE10_OCUPACIONAL = [
   // Z: FACTORES DE RIESGO OCUPACIONAL
   {
@@ -404,16 +401,11 @@ export const CIE10_OCUPACIONAL = [
   { code: "R55", desc: "Síncope y colapso - vagal laboral" },
 ];
 // Buscador CIE-10 con filtrado en tiempo real (insensible a tildes y mayúsculas)
-export const _buscarCIE10 = (query, maxResults) => {
-  const max = maxResults || 12;
-  if (!query || query.trim().length < 2) return [];
-  const normalize = (s) =>
-    s
-      .toLowerCase()
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "");
-  const q = normalize(query.trim());
-  return CIE10_OCUPACIONAL.filter((item) => {
-    return normalize(item.code).includes(q) || normalize(item.desc).includes(q);
-  }).slice(0, max);
+const _buscarCIE10 = (query, maxResults) => {
+  const q = query.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  return CIE10_OCUPACIONAL.filter(({ code, desc }) => {
+    const d = desc.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    return code.toLowerCase().includes(q) || d.includes(q);
+  }).slice(0, maxResults || 20);
 };
+export { _buscarCIE10 };

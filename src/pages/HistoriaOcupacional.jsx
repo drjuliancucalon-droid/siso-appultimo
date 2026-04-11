@@ -1,34 +1,414 @@
-﻿import React from 'react';
+import React from 'react';
 import {
-  User, FileText, Stethoscope, ClipboardList, Printer, Activity, Building2,
-  FileCheck, AlertCircle, Sparkles, BrainCircuit, Loader2, Save, History,
-  CheckCircle2, Trash2, Eye, LogOut, Users, BarChart3, PlusCircle, Search,
-  Cloud, ShieldCheck, UserPlus, AlertTriangle, Pill, GraduationCap, Clock,
-  ShieldAlert, UploadCloud, FileSignature, Share2, Plus, HardDrive, UserCheck,
-  ChevronDown, Lock, Unlock, FileSearch, Banknote, Receipt, Pencil, X, Heart,
-  CheckSquare, Square, ChevronRight, ChevronLeft, RefreshCw, WifiOff, Wifi,
-  Shield, MessageSquare, Download, Upload
-} from 'lucide-react';
+  ClipboardList, History, ShieldAlert, Sparkles
+} from "lucide-react";
 
-const HistoriaOcupacional = (props) => {
+// ─── HistoriaOcupacional Page Component ─────────────────────────────────────────────
+// Auto-extracted from App.jsx monolith
+export const HistoriaOcupacional = (props) => {
   const {
-    data, setData, currentUser, companies,
-    activeDoctorData, activeSignature,
-    handleChange, handleNameChange, handleSavePatient,
-    selectPatientSuggestion, patientSuggestions,
-    historyNotification, setHistoryNotification,
-    showConsentModal, setShowConsentModal,
-    isGenerating, isGeneratingRestr, isGeneratingReco,
-    setShowRestriccionesPanel, setShowRecomendacionesPanel,
-    generateAIAnalysis, generateAIRestricciones, generateAIRecomendaciones,
-    BrandLogo, DoctorSignature, InputGroup,
-    SectionTitle, SelectGroup, TextAreaGroup, CIE10Input, CIE11Badge,
+    view,
+    setView,
+    navStack,
+    setNavStack,
+    currentUser,
+    setCurrentUser,
+    loginAttempts,
+    setLoginAttempts,
+    loginBlockedUntil,
+    setLoginBlockedUntil,
+    privacidadAceptada,
+    setPrivacidadAceptada,
+    syncStatus,
+    setSyncStatus,
+    showSyncReport,
+    setShowSyncReport,
+    syncReport,
+    setSyncReport,
+    alertMsg,
+    setAlertMsg,
+    confirmConfig,
+    setConfirmConfig,
+    promptConfig,
+    setPromptConfig,
+    promptValue,
+    setPromptValue,
+    aiConfig,
+    setAiConfig,
+    showAIConfig,
+    setShowAIConfig,
+    aiStatus,
+    setAiStatus,
+    companies,
+    setCompanies,
+    usersList,
+    setUsersList,
+    patientsList,
+    setPatientsList,
+    savedReports,
+    setSavedReports,
+    savedBills,
+    setSavedBills,
+    atencionesCerradas,
+    setAtencionesCerradas,
+    doctorSignature,
+    setDoctorSignature,
+    auditLog,
+    setAuditLog,
+    activeTab,
+    setActiveTab,
+    data,
+    setData,
+    dataType,
+    setDataType,
+    isGenerating,
+    setIsGenerating,
+    isGeneratingRestr,
+    setIsGeneratingRestr,
+    isGeneratingReco,
+    setIsGeneratingReco,
+    saveStatus,
+    setSaveStatus,
+    _hcDirty,
+    _setHcDirty,
+    _exitHcConfirm,
+    _setExitHcConfirm,
+    patientSuggestions,
+    setPatientSuggestions,
+    historyNotification,
+    setHistoryNotification,
+    showRestriccionesPanel,
+    setShowRestriccionesPanel,
+    showHistoryModal,
+    setShowHistoryModal,
+    ripsModalData,
+    setRipsModalData,
+    backupModalData,
+    setBackupModalData,
+    hcChoiceAgenda,
+    setHcChoiceAgenda,
+    historyRecords,
+    setHistoryRecords,
+    patientSearchTerm,
+    setPatientSearchTerm,
+    genPatSearch,
+    setGenPatSearch,
+    examSearch,
+    setExamSearch,
+    examList,
+    setExamList,
+    showExamSuggs,
+    setShowExamSuggs,
+    diagExamen,
+    setDiagExamen,
+    justExamen,
+    setJustExamen,
+    printPreview,
+    setPrintPreview,
+    selectedCompanyReport,
+    setSelectedCompanyReport,
+    reporteActiveTab,
+    setReporteActiveTab,
+    certSelected,
+    setCertSelected,
+    reportStartDate,
+    setReportStartDate,
+    reportEndDate,
+    setReportEndDate,
+    reportAIResult,
+    setReportAIResult,
+    isGeneratingReport,
+    setIsGeneratingReport,
+    showExportTable,
+    setShowExportTable,
+    precioPorPaciente,
+    setPrecioPorPaciente,
+    showDianPanel,
+    setShowDianPanel,
+    dianProvider,
+    setDianProvider,
+    dianApiKey,
+    setDianApiKey,
+    billData,
+    setBillData,
+    savedBillsList,
+    setSavedBillsList,
+    portafolioItems,
+    setPortafolioItems,
+    portafolioForm,
+    setPortafolioForm,
+    portafolioEditId,
+    setPortafolioEditId,
+    cotizaciones,
+    setCotizaciones,
+    cotizacionForm,
+    setCotizacionForm,
+    cotizacionView,
+    setCotizacionView,
+    cotizacionSelId,
+    setCotizacionSelId,
+    cajaMovimientos,
+    setCajaMovimientos,
+    cajaForm,
+    setCajaForm,
+    cajaTab,
+    setCajaTab,
+    cajaFiltroPeriodo,
+    setCajaFiltroPeriodo,
+    cajaFiltroDesde,
+    setCajaFiltroDesde,
+    cajaFiltroHasta,
+    setCajaFiltroHasta,
+    contabTab,
+    setContabTab,
+    contabPeriodo,
+    setContabPeriodo,
+    asistenciaFecha,
+    setAsistenciaFecha,
+    evolucionForm,
+    setEvolucionForm,
+    showEvolucionModal,
+    setShowEvolucionModal,
+    selectedPackage,
+    setSelectedPackage,
+    packageChecklist,
+    setPackageChecklist,
+    showPackages,
+    setShowPackages,
+    newComp,
+    setNewComp,
+    ipsPerfilForm,
+    setIpsPerfilForm,
+    verificationCode,
+    setVerificationCode,
+    verificationFound,
+    setVerificationFound,
+    activeUserMgmtTab,
+    setActiveUserMgmtTab,
+    pendingActivationPlan,
+    setPendingActivationPlan,
+    sbCloudData,
+    setSbCloudData,
+    sbLoading,
+    setSbLoading,
+    newUserForm,
+    setNewUserForm,
+    userEditId,
+    setUserEditId,
+    editForm,
+    setEditForm,
+    propForm,
+    setPropForm,
+    selSvc,
+    setSelSvc,
+    propModulo,
+    setPropModulo,
+    mensajes,
+    setMensajes,
+    showMensajePanel,
+    setShowMensajePanel,
+    showConsentModal,
+    setShowConsentModal,
+    twoFAStep,
+    setTwoFAStep,
+    twoFAToken,
+    setTwoFAToken,
+    twoFAError,
+    setTwoFAError,
+    habeasRequests,
+    setHabeasRequests,
+    showHabeasModal,
+    setShowHabeasModal,
+    habeasForm,
+    setHabeasForm,
+    showPortalPublico,
+    setShowPortalPublico,
+    arlTab,
+    setArlTab,
+    svePrograma,
+    setSvePrograma,
+    sveFiltroEmpresa,
+    setSveFiltroEmpresa,
+    sveAIAnalisis,
+    setSveAIAnalisis,
+    sveAICargando,
+    setSveAIAnalisisCargando,
+    sveAIFiltroEmpresa,
+    setSveAIFiltroEmpresa,
+    arlForm,
+    setArlForm,
+    arlGuardados,
+    setArlGuardados,
+    showNotifModal,
+    setShowNotifModal,
+    notifData,
+    setNotifData,
+    portalCodigo,
+    setPortalCodigo,
+    portalPaciente,
+    setPortalPaciente,
+    portalMultiple,
+    setPortalMultiple,
+    epiEmpresa,
+    setEpiEmpresa,
+    epiPeriodo,
+    setEpiPeriodo,
+    epiTab,
+    setEpiTab,
+    teleconsultas,
+    setTeleconsultas,
+    teleForm,
+    setTeleForm,
+    teleSalaActiva,
+    setTeleSalaActiva,
+    teleTab,
+    setTeleTab,
+    mensajeRespuesta,
+    setMensajeRespuesta,
+    agendados,
+    setAgendados,
+    showAgenda,
+    setShowAgenda,
+    agendaForm,
+    setAgendaForm,
+    agendaSuggs,
+    setAgendaSuggs,
+    agendaTab,
+    setAgendaTab,
+    showComposeMensaje,
+    setShowComposeMensaje,
+    composeMensaje,
+    setComposeMensaje,
+    inactivityWarning,
+    setInactivityWarning,
+    inactivityCountdown,
+    setInactivityCountdown,
+    companiesTab,
+    setCompaniesTab,
+    editingCompany,
+    setEditingCompany,
+    cajaMedicoPeriodo,
+    setCajaMedicoPeriodo,
+    porcentajeMedico,
+    setPorcentajeMedico,
+    medicoTurnoActivo,
+    setMedicoTurnoActivo,
+    orgsList,
+    setOrgsList,
+    activeOrgId,
+    setActiveOrgId,
+    superAdminTab,
+    setSuperAdminTab,
+    newOrgForm,
+    setNewOrgForm,
+    portalEmpresaCodigo,
+    setPortalEmpresaCodigo,
+    portalEmpresaEncontrada,
+    setPortalEmpresaEncontrada,
+    portalEmpresaPacientes,
+    setPortalEmpresaPacientes,
+    portalEmpresaTab,
+    setPortalEmpresaTab,
+    portalEmpresaBuscando,
+    setPortalEmpresaBuscando,
+    portalEmpresaFiltroDoc,
+    setPortalEmpresaFiltroDoc,
+    portalActivadoInfo,
+    setPortalActivadoInfo,
+    portalEmpresaAdmin,
+    setPortalEmpresaAdmin,
+    portalAdminTab,
+    setPortalAdminTab,
+    portalAdminLoginUser,
+    setPortalAdminLoginUser,
+    portalAdminLoginPass,
+    setPortalAdminLoginPass,
+    nuevoMedicoEmpForm,
+    setNuevoMedicoEmpForm,
+    sedeForm,
+    setSedeForm,
+    ipsCredForm,
+    setIpsCredForm,
+    ipsEditingEmpId,
+    setIpsEditingEmpId,
+    handleAceptarPrivacidad,
+    logAccess,
+    exportPatientTable,
+    fileInputRef,
+    fileInputSigRef,
+    csvInputRef,
+    _inactivityRef,
+    _warnRef,
+    _cajaSaveTimer,
+    showAlert,
+    showConfirm,
+    showPrompt,
+    sessionUser,
+    _initSess,
+    applyCloud,
+    handler,
+    doAutoBackup,
+    callAI,
+    generateAIAnalysis,
+    _tipoExamen,
+    _contextoTipo,
+    generateAIRestricciones,
+    lista,
+    generateAIRecomendaciones,
+    generateAIGeneral,
+    generateAIReport,
+    fmtDist,
+    handleChange,
+    handleManualCloudSave,
+    handleSaveAIConfig,
+    _loadScoped,
+    handleVerify2FA,
+    canViewPatient,
+    isHcOwner,
+    openPatient,
+    handleNewOccupHistory,
+    handleNewGeneralHistory,
+    _syncPatients,
+    _syncCompanies,
+    checkAlertasObligatorias,
+    handleSavePatient,
+    handleCloseHistory,
+    _tipoConsulta,
+    handleAiResumen,
+    handleEditHistory,
+    op,
+    handleCompanySelect,
+    handleDeletePatient,
+    handleSignatureUpload,
+    handleExportData,
+    handleImportData,
+    sigsRestored,
+    billsR,
+    repsR,
+    closedPats,
+    handleNameChange,
+    selectPatientSuggestion,
+    handleOpenHistoryModal,
+    applyRestriccionesChecklist,
+    applyRecomendacionesChecklist,
+    handlePrint,
+    _maybeExitHC,
+    _goToDirect,
+    goTo,
+    _goBackDirect,
+    goBack,
+    renderNavbar,
+    renderTabAdjuntos,
+    renderTabSolicitudExamenes,
+    renderTabIncapacidadGeneral,
+    renderEvolucionModal,
+    TabFormulaDerivacion,
     ConsentimientoModal,
-    handleCompanySelect, handleOpenHistoryModal,
-    analyzeBP, analyzeHR, analyzeBMI, NORMAL_DESCRIPTIONS_SYSTEMS,
-    EPS_LIST, ARL_LIST, AFP_LIST, TURNO_LIST, CONTRATO_LIST,
-    DEFAULT_RECOMENDACIONES_SELECTED,
-    _isAdmin,
+    NotificacionModal,
+    LoginForm,
+    PortalPublicoTrabajador,
+    AgendaFieldF,
+    ...rest
   } = props;
 
   return (
@@ -2050,89 +2430,6 @@ const HistoriaOcupacional = (props) => {
               rows={4}
             />
           </div>
-          {/* ── ANÁLISIS CLÍNICO IA (campo independiente - Punto 10) ── */}
-          {data.analisisIA && (
-            <div className="mt-3">
-              <label className="block text-[10px] font-black text-indigo-700 uppercase mb-1">
-                🧠 Análisis Clínico <span className="ai-label-print-hide">(generado por IA — campo independiente)</span>
-              </label>
-              <textarea
-                value={data.analisisIA || ""}
-                onChange={(e) => setData(p => ({ ...p, analisisIA: e.target.value }))}
-                rows={6}
-                className="w-full p-3 border-2 border-indigo-200 rounded-xl text-xs bg-indigo-50/50 focus:border-indigo-400 focus:outline-none"
-                placeholder="El análisis clínico se genera automáticamente al usar la IA. Puede editarlo manualmente."
-                style={{ resize: "vertical" }}
-              />
-              <p className="text-[9px] text-indigo-400 mt-1">
-                Este campo es independiente de Recomendaciones y Restricciones. Redactado con lenguaje técnico-formal de medicina laboral.
-              </p>
-            </div>
-          )}
-          {!data.analisisIA && (
-            <div className="mt-3">
-              <label className="block text-[10px] font-black text-gray-500 uppercase mb-1">
-                🧠 Análisis Clínico
-              </label>
-              <textarea
-                value={data.analisisIA || ""}
-                onChange={(e) => setData(p => ({ ...p, analisisIA: e.target.value }))}
-                rows={3}
-                className="w-full p-2 border border-gray-200 rounded-xl text-xs focus:border-indigo-400 focus:outline-none"
-                placeholder="Se generará automáticamente con el análisis de IA, o puede escribirlo manualmente."
-                style={{ resize: "vertical" }}
-              />
-            </div>
-          )}
-          {/* ── SVE - Sistema de Vigilancia Epidemiológica (Punto 9) ── */}
-          <div className="mt-3 bg-amber-50 border border-amber-200 rounded-xl p-3">
-            <label className="block text-[10px] font-black text-amber-800 uppercase mb-2">
-              🛡️ Sistema de Vigilancia Epidemiológica (SVE) <span className="ai-label-print-hide">— Sugerido por IA</span>
-            </label>
-            {(data.sveRecomendado || []).length > 0 ? (
-              <div className="space-y-1.5">
-                {(data.sveRecomendado || []).map((sve, idx) => (
-                  <div key={idx} className="flex items-center gap-2 bg-white border border-amber-100 rounded-lg px-3 py-2">
-                    <ShieldAlert className="w-3.5 h-3.5 text-amber-600 flex-shrink-0" />
-                    <span className="flex-1 text-xs font-semibold text-gray-800">{sve}</span>
-                    <button onClick={() => setData(p => ({ ...p, sveRecomendado: (p.sveRecomendado || []).filter((_, i) => i !== idx) }))} className="text-red-400 hover:text-red-600"><X className="w-3 h-3" /></button>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-xs text-amber-600 italic">Sin SVE sugerido. Se generará al ejecutar el análisis con IA.</p>
-            )}
-            <div className="flex gap-2 mt-2">
-              <select
-                id="sve-manual-select"
-                className="flex-1 p-1.5 border border-amber-300 rounded-lg text-xs bg-white"
-                defaultValue=""
-              >
-                <option value="" disabled>Agregar SVE manualmente...</option>
-                <option>SVE Osteomuscular (Res. 2844/2007 — GATISO DME)</option>
-                <option>SVE Dermatológico</option>
-                <option>SVE Neurológico (riesgo por ruido — hipoacusia)</option>
-                <option>SVE Psicosocial (Res. 2764/2022 — Batería riesgo psicosocial)</option>
-                <option>SVE Visual</option>
-                <option>SVE Respiratorio</option>
-                <option>SVE Cardiovascular</option>
-                <option>SVE Biológico</option>
-                <option>SVE Químico</option>
-              </select>
-              <button
-                onClick={() => {
-                  const sel = document.getElementById("sve-manual-select");
-                  if (sel && sel.value) {
-                    setData(p => ({ ...p, sveRecomendado: [...(p.sveRecomendado || []), sel.value] }));
-                    sel.value = "";
-                  }
-                }}
-                className="bg-amber-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-amber-700"
-              >
-                + Agregar
-              </button>
-            </div>
-          </div>
           <InputGroup
             label="Vigencia del Concepto ★"
             name="vigencia"
@@ -2187,6 +2484,7 @@ const HistoriaOcupacional = (props) => {
       </datalist>
     </div>
   );
+
 };
 
 export default HistoriaOcupacional;

@@ -1,22 +1,6 @@
-import { _ls } from '../utils/storage.js';
+// Catálogo de medicamentos genéricos Colombia
+export const MEDICAMENTOS_CO_CUSTOM_KEY = 'siso_custom_meds';
 
-// ==========================================
-// CATÁLOGO DE MEDICAMENTOS GENÉRICOS COLOMBIA
-// Basado en INVIMA y MSPS -- Lista de medicamentos esenciales
-// ==========================================
-export const MEDICAMENTOS_CO_CUSTOM_KEY = "siso_custom_meds";
-export const getCustomMeds = () => {
-  try {
-    return JSON.parse(_ls.getItem(MEDICAMENTOS_CO_CUSTOM_KEY) || "[]");
-  } catch {
-    return [];
-  }
-};
-export const addCustomMed = (entry) => {
-  const arr = getCustomMeds();
-  arr.push(entry);
-  _ls.setItem(MEDICAMENTOS_CO_CUSTOM_KEY, JSON.stringify(arr));
-};
 export const MEDICAMENTOS_CO_BASE = [
   // ── ANALGÉSICOS / ANTIINFLAMATORIOS ──────────────────────────────────────
   {
@@ -2885,4 +2869,12 @@ export const MEDICAMENTOS_CO_BASE = [
   },
 ];
 export const getAllMeds = () => [...MEDICAMENTOS_CO_BASE, ...getCustomMeds()];
-export const MEDICAMENTOS_CO = MEDICAMENTOS_CO_BASE; // Backward compat
+const MEDICAMENTOS_CO = MEDICAMENTOS_CO_BASE; // Backward compat
+
+export const getCustomMeds = () => {
+  try { return JSON.parse(localStorage.getItem(MEDICAMENTOS_CO_CUSTOM_KEY) || '[]'); } catch { return []; }
+};
+export const addCustomMed = (entry) => {
+  const arr = getCustomMeds(); arr.push(entry);
+  localStorage.setItem(MEDICAMENTOS_CO_CUSTOM_KEY, JSON.stringify(arr));
+};

@@ -1,12 +1,5 @@
-// ══════════════════════════════════════════════════════════════════════════
-// B-14: RETENCIÓN CERTIFICADA 20 AÑOS - Res. 1995/1999 Art. 15
-// ══════════════════════════════════════════════════════════════════════════
+// TOTP / 2FA utilities
 
-// ══════════════════════════════════════════════════════════════════════════
-// B-18: 2FA TOTP - RFC 6238 con Web Crypto API (HMAC-SHA1)
-// Res. 3100/2019 (habilitación IPS) - Seguridad en sistemas de información
-// Compatible con Google Authenticator, Authy, Microsoft Authenticator
-// ══════════════════════════════════════════════════════════════════════════
 export const _totpBase32Chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
 
 export const _totpBase32ToBytes = (base32) => {
