@@ -1,5 +1,6 @@
 // src/shared/ui/DoctorSignature.jsx
 import React from 'react';
+import { DEFAULT_DOCTOR_DATA } from '../data/catalogs.js';
 
 const DoctorSignature = ({ signature, data, showData = true }) => {
   const doc = data || DEFAULT_DOCTOR_DATA;
@@ -47,7 +48,8 @@ const DoctorSignature = ({ signature, data, showData = true }) => {
     </div>
   );
 };
-// PERF-02: memo evita re-render cuando signature/data no cambian (se usa en ~15 lugares)
+// PERF-02: memo evita re-render cuando signature/data no cambian (se usa en ~15 lugares)
+
 
 const DoctorSignatureMemo = React.memo(DoctorSignature);
 
