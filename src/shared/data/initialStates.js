@@ -1,5 +1,8 @@
 // src/shared/data/initialStates.js
 
+import { ORG_DEFAULT_ID, SECRETARIA_PERMISOS_DEFAULT } from './planConfig.js';
+import { DEFAULT_DOCTOR_DATA } from './catalogs.js';
+
 export const initialOccupPatientState = {
   id: null,
   type: "ocupacional",
