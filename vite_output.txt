@@ -263,3 +263,5 @@
 [2m6:51:51 p. m.[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc/App.jsx[22m
 [2m6:51:51 p. m.[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc/App.jsx[22m
 [2m6:52:09 p. m.[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc/App.jsx[22m
+[2m6:53:46 p. m.[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc/App.jsx[22m
+[2m6:53:46 p. m.[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc/App.jsx[22m

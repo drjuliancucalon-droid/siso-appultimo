@@ -68,3 +68,10 @@ describe('Clinical module', () => {
     expect(mod.default).toBeDefined();
   });
 });
+
+describe('Patients module', () => {
+  it('PortalPublicoTrabajador should be importable', async () => {
+    const mod = await import('../modules/patients/ui/PortalPublicoTrabajador.jsx');
+    expect(mod.default).toBeDefined();
+  });
+});
