@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+﻿import { describe, it, expect } from 'vitest';
 
 describe('Shared UI components', () => {
   it('SecurityHeaders should be importable', async () => {
@@ -43,6 +43,14 @@ describe('Auth module', () => {
 });
 
 describe('Clinical module', () => {
+  it('AIConfigPanel should be importable', async () => {
+    const mod = await import('../modules/clinical/ui/AIConfigPanel.jsx');
+    expect(mod.default).toBeDefined();
+  });
+  it('LicenciasTab should be importable', async () => {
+    const mod = await import('../modules/clinical/ui/LicenciasTab.jsx');
+    expect(mod.default).toBeDefined();
+  });
   it('RestriccionesChecklistPanel should be importable', async () => {
     const mod = await import('../modules/clinical/ui/RestriccionesChecklistPanel.jsx');
     expect(mod.default).toBeDefined();
