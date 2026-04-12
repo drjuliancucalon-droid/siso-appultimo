@@ -121,3 +121,5 @@
 [2m7:29:44 p. m.[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mindex.html[22m
 [2m7:29:44 p. m.[22m [36m[1m[vite][22m[39m server restarted.
 [2m7:29:44 p. m.[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mindex.html[22m
+[2m8:53:36 a. m.[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32m✨ new dependencies optimized: [33mreact, react-dom/client, lucide-react, zustand, zustand/middleware[32m[39m
+[2m8:53:36 a. m.[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32m✨ optimized dependencies changed. reloading[39m
