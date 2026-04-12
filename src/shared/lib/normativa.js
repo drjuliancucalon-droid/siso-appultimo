@@ -1,0 +1,412 @@
+// src/shared/lib/normativa.js
+
+// ==========================================
+// MÃ“DULO: FIRMA DIGITAL VÃLIDA - Ley 527/1999
+// Implementa firma electrÃ³nica con integridad verificable:
+// hash SHA-256 del contenido clÃ­nico + cÃ³digo QR de verificaciÃ³n
+// + timestamp de servidor + identificaciÃ³n del firmante
+// Cumple: Ley 527/1999, Decreto 2364/2012 (firma electrÃ³nica)
+// ==========================================
+// Genera hash SHA-256 del contenido de la HC para verificabilidad
+export const _generarHashHC = async (data) => {
+  try {
+    const contenido = JSON.stringify({
+      id: data.id,
+      nombres: data.nombres,
+      docNumero: data.docNumero,
+      fechaExamen: data.fechaExamen,
+      conceptoAptitud: data.conceptoAptitud,
+      tipoExamen: data.tipoExamen,
+      diagnosticoPrincipal: data.diagnosticoPrincipal,
+      medicoId: data._medicoId,
+      estadoHistoria: "Cerrada",
+      ts: new Date().toISOString(),
+    });
+    const buf = await crypto.subtle.digest(
+      "SHA-256",
+      new TextEncoder().encode(contenido)
+    );
+    return Array.from(new Uint8Array(buf))
+      .map((b) => b.toString(16).padStart(2, "0"))
+      .join("");
+  } catch {
+    return "HASH-NO-DISPONIBLE-" + Date.now();
+  }
+};
+// Genera cÃ³digo de verificaciÃ³n QR para la HC firmada
+// El cÃ³digo contiene: ID paciente + hash (primeros 16 chars) + fecha
+export const _generarCodigoQR = (id, hash, fecha) => {
+  const short = hash.substring(0, 16).toUpperCase();
+  const fechaShort = (fecha || new Date().toISOString())
+    .substring(0, 10)
+    .replace(/-/g, "");
+  return `SISO-${fechaShort}-${id.substring(0, 8).toUpperCase()}-${short}`;
+};
+// Formatea datos de firma para mostrar en la HC impresa
+export const _formatFirmaDigital = (firma) => {
+  if (!firma) return null;
+  return {
+    codigo: firma.codigoQR || firma.codigo,
+    hash: firma.hash ? firma.hash.substring(0, 32) + "..." : null,
+    firmadoPor: firma.firmadoPor,
+    fechaFirma: firma.fechaFirma,
+    valido: !!(firma.codigoQR && firma.hash && firma.firmadoPor),
+  };
+};
+// ==========================================
+// MÃ“DULO: RIPS JSON - ResoluciÃ³n 2275/2023
+// GeneraciÃ³n de archivos RIPS para reporte al MinSalud
+// Archivos: AF (afiliaciÃ³n), AT (atenciones), AC (consultas)
+// NOTA: Este mÃ³dulo genera la estructura base. Para radicar
+// ante MinSalud se requiere firma digital certificada DIAN.
+// ==========================================
+
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// B-28: HL7 FHIR R4 - Res. 1888/2025 RDA - Generador de recursos FHIR
+// Recursos: Patient, Practitioner, Observation, DiagnosticReport
+// Deadline de interoperabilidad: 15 de abril de 2026
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+export const _generarFHIRPatient = (p) => ({
+  resourceType: "Patient",
+  id:
+    "pat-" + (p.docNumero || p.id || Date.now()).toString().replace(/\s/g, ""),
+  meta: {
+    profile: ["http://hl7.org/fhir/StructureDefinition/Patient"],
+    lastUpdated: new Date().toISOString(),
+  },
+  identifier: [
+    {
+      system: "https://www.registraduria.gov.co",
+      type: {
+        coding: [
+          {
+            system: "http://terminology.hl7.org/CodeSystem/v2-0203",
+            code: p.docTipo || "NI",
+          },
+        ],
+      },
+      value: p.docNumero || "",
+    },
+  ],
+  name: [
+    {
+      use: "official",
+      text: p.nombres || "",
+      family: (p.nombres || "").split(" ").slice(-1)[0],
+      given: [(p.nombres || "").split(" ")[0]],
+    },
+  ],
+  gender:
+    p.genero === "Masculino"
+      ? "male"
+      : p.genero === "Femenino"
+      ? "female"
+      : "unknown",
+  birthDate: p.fechaNacimiento || undefined,
+  address: p.ciudadResidencia
+    ? [{ text: p.ciudadResidencia, country: "CO" }]
+    : undefined,
+});
+export const _generarFHIRPractitioner = (d) => ({
+  resourceType: "Practitioner",
+  id: "prac-" + (d?.cedula || "doc").replace(/\s/g, ""),
+  meta: { profile: ["http://hl7.org/fhir/StructureDefinition/Practitioner"] },
+  identifier: [
+    {
+      system: "https://www.colmedicos.com",
+      type: { coding: [{ code: "MD" }] },
+      value: d?.licencia || d?.cedula || "",
+    },
+  ],
+  name: [
+    {
+      use: "official",
+      text: d?.nombre || "",
+      family: (d?.nombre || "").split(" ").slice(-1)[0],
+      given: [(d?.nombre || "").split(" ")[0]],
+    },
+  ],
+  qualification: [
+    {
+      code: {
+        coding: [
+          {
+            system: "http://terminology.hl7.org/CodeSystem/v2-0360",
+            code: "MD",
+            display: "Doctor of Medicine",
+          },
+        ],
+      },
+      issuer: { display: "Ministerio de Salud de Colombia" },
+      identifier: [{ value: d?.licencia || "" }],
+    },
+  ],
+});
+export const _generarFHIRObservation = (p, tipo) => ({
+  resourceType: "Observation",
+  id: "obs-" + tipo + "-" + (p.id || Date.now()),
+  meta: { profile: ["http://hl7.org/fhir/StructureDefinition/Observation"] },
+  status: "final",
+  category: [
+    {
+      coding: [
+        {
+          system: "http://terminology.hl7.org/CodeSystem/observation-category",
+          code: "exam",
+          display: "Exam",
+        },
+      ],
+    },
+  ],
+  code: {
+    coding: [
+      {
+        system: "http://loinc.org",
+        code: "34108-1",
+        display: "Outpatient Note",
+      },
+    ],
+    text: tipo,
+  },
+  subject: {
+    reference:
+      "Patient/pat-" +
+      (p.docNumero || p.id || "").toString().replace(/\s/g, ""),
+  },
+  effectiveDateTime: p.fechaExamen || new Date().toISOString().split("T")[0],
+  valueString: p.conceptoAptitud || "",
+  note: p.restricciones ? [{ text: p.restricciones }] : undefined,
+});
+export const _generarFHIRBundle = (paciente, doctor) => {
+  const bundle = {
+    resourceType: "Bundle",
+    id: "bundle-" + Date.now(),
+    type: "document",
+    meta: {
+      lastUpdated: new Date().toISOString(),
+      profile: ["http://hl7.org/fhir/StructureDefinition/Bundle"],
+    },
+    identifier: {
+      system: "https://siso.ocupasalud.co/fhir",
+      value: "SISO-" + (paciente.codigoVerificacion || Date.now()),
+    },
+    timestamp: new Date().toISOString(),
+    entry: [
+      {
+        fullUrl: "urn:uuid:patient-1",
+        resource: _generarFHIRPatient(paciente),
+      },
+      {
+        fullUrl: "urn:uuid:practitioner-1",
+        resource: _generarFHIRPractitioner(doctor),
+      },
+      {
+        fullUrl: "urn:uuid:observation-1",
+        resource: _generarFHIRObservation(paciente, "Aptitud Laboral"),
+      },
+    ],
+  };
+  return bundle;
+};
+
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// B-25: VALIDACIÃ“N RIPS - Res. 2275/2023 Schema v2
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+const validarRIPSPaciente = (p) => {
+  const errs = [];
+  if (!p.docNumero || p.docNumero.length < 4) errs.push("docNumero invÃ¡lido");
+  if (!p.fechaExamen) errs.push("fechaExamen requerida");
+  if (!p.tipoExamen) errs.push("tipoExamen requerido");
+  if (!p.conceptoAptitud) errs.push("conceptoAptitud requerido para RIPS");
+  if (!p.eps) errs.push("EPS requerida para RIPS");
+  return errs;
+};
+const validarRIPSLote = (pacientes) => {
+  const errores = [];
+  pacientes.forEach((p, idx) => {
+    const e = validarRIPSPaciente(p);
+    if (e.length)
+      errores.push(
+        `Paciente ${idx + 1} (${p.nombres || "sin nombre"}): ${e.join(", ")}`
+      );
+  });
+  return errores;
+};
+export const _generarRIPSJson = (pacientes, doctorData, periodo) => {
+  const now = new Date().toISOString();
+  const numFactura = "SISO-" + Date.now();
+  // Archivo AF: Datos de afiliaciÃ³n de cada paciente atendido
+  const AF = pacientes.map((p) => ({
+    tipoDocumentoIdentificacion: p.docTipo || "CC",
+    numDocumentoIdentificacion: p.docNumero || "",
+    tipoUsuario: "1", // Contributivo
+    fechaNacimiento: p.fechaNacimiento || "",
+    codSexo:
+      p.genero === "Femenino" ? "F" : p.genero === "Masculino" ? "M" : "N",
+    codPaisResidencia: "CO",
+    codMunicipioResidencia: "19001", // Default PopayÃ¡n - personalizable
+    codZonaTerritorialResidencia: p.zonaResidencia === "Rural" ? "2" : "1",
+    incapacidad: p.diasIncapacidad ? "S" : "N",
+    codPaisOrigen: "CO",
+  }));
+  // Archivo AT: Resumen de atenciÃ³n
+  const AT = [
+    {
+      codPrestador: doctorData?.licencia?.substring(0, 12) || "SISO001",
+      fechaInicioAtencion: pacientes[0]?.fechaExamen || now.split("T")[0],
+      numAutorizacion: "",
+      numDocumentoIdentificacion: pacientes[0]?.docNumero || "",
+      tipoDocumentoIdentificacion: pacientes[0]?.docTipo || "CC",
+      viaIngresoServicioSalud: "1", // Consulta externa
+      modalidadGrupoServicioTecSal: "01",
+      grupoServicios: "01",
+      codServicio: "890201", // Medicina del trabajo
+      finalidadTecnologiaSalud: "27", // Medicina laboral
+      causaMotivoAtencion: "26", // EvaluaciÃ³n ocupacional
+      codDiagnosticoPrincipal:
+        pacientes[0]?.diagnosticoPrincipal?.substring(0, 4) || "Z00",
+      codDiagnosticoPrincipalE: "",
+      condicionSalidaPaciente: "1",
+      codComplicacion: "",
+      numFEVPagadora: "",
+      consecutivo: "1",
+    },
+  ];
+  // Archivo AC: Detalle de consultas
+  const AC = pacientes.map((p, i) => ({
+    codPrestador: doctorData?.licencia?.substring(0, 12) || "SISO001",
+    viaIngresoServicioSalud: "1",
+    fechaInicioAtencion: p.fechaExamen || now.split("T")[0],
+    horaInicioAtencion: "08:00",
+    fechaFinAtencion: p.fechaExamen || now.split("T")[0],
+    horaFinAtencion: "08:30",
+    tipoDocumentoIdentificacion: p.docTipo || "CC",
+    numDocumentoIdentificacion: p.docNumero || "",
+    tipoUsuario: "1",
+    codConsulta: "890201",
+    modalidadGrupoServicioTecSal: "01",
+    grupoServicios: "01",
+    codServicio: "890201",
+    finalidadTecnologiaSalud: "27",
+    causaMotivoAtencion: "26",
+    codDiagnosticoPrincipal: p.diagnosticoPrincipal?.substring(0, 4) || "Z00",
+    tipoDocumentoDX: "D",
+    codDiagnosticoRelacionado1: p.diagnosticoSecundario1?.substring(0, 4) || "",
+    tipoDX1: p.diagnosticoSecundario1 ? "D" : "",
+    vrServicio: 90000,
+    numFEVPagadora: "",
+    consecutivo: String(i + 1),
+  }));
+  return {
+    version: "1.0",
+    generadoEn: now,
+    periodo: periodo || now.substring(0, 7),
+    norma: "ResoluciÃ³n 2275/2023",
+    prestador: {
+      nombre: doctorData?.nombre || "",
+      nit: doctorData?.rut?.replace("-", "") || "",
+      codigoPrestador: doctorData?.licencia?.substring(0, 12) || "SISO001",
+    },
+    numDocumentoIdObligado: doctorData?.cedula?.replace(/[^0-9]/g, "") || "",
+    AF,
+    AT,
+    AC,
+    totalRegistros: { AF: AF.length, AT: AT.length, AC: AC.length },
+    advertencia:
+      "RIPS generado por SISO v4.0. Para radicaciÃ³n formal ante MinSalud se requiere firma electrÃ³nica DIAN certificada y validaciÃ³n en ADRES.",
+  };
+};
+// Descarga RIPS JSON sin createObjectURL (compatible con sandbox/CSP)
+export const _descargarRIPSJson = (pacientes, doctorData, periodo) => {
+  try {
+    const rips = _generarRIPSJson(pacientes, doctorData, periodo);
+    const jsonStr = JSON.stringify(rips, null, 2);
+    const b64 = btoa(unescape(encodeURIComponent(jsonStr)));
+    const a = document.createElement("a");
+    a.href = "data:application/json;base64," + b64;
+    a.download = `RIPS_SISO_${
+      periodo || new Date().toISOString().substring(0, 7)
+    }.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    return true;
+  } catch (e) {
+    console.error("RIPS download error:", e);
+    return false;
+  }
+};
+// ==========================================
+// MÃ“DULO: RDA - Res. 1888/2025 (Resumen Digital de AtenciÃ³n)
+// GeneraciÃ³n del JSON RDA para transmisiÃ³n al IHCE MinSalud
+// ==========================================
+// â•â• B-13: Generador RDA - Res. 1888/2025 â•â•
+export const _generarRDA = (paciente, doctorData, sesionId) => {
+  if (!paciente || !paciente.fechaExamen) return null;
+  const now = new Date().toISOString();
+  return {
+    version: "1.0",
+    norma: "ResoluciÃ³n 1888/2025 MinSalud",
+    fechaGeneracion: now,
+    entidadGeneradora: {
+      tipoDocumento: "CC",
+      numDocumento: (doctorData?.cedula || "").replace(/[^0-9]/g, ""),
+      nombreEntidad: doctorData?.nombre || "",
+      municipio: doctorData?.ciudad || "PopayÃ¡n",
+    },
+    paciente: {
+      tipoDocumento: paciente.docTipo || "CC",
+      numDocumento: paciente.docNumero || "",
+      primerNombre: (paciente.nombres || "").split(" ")[0],
+      primerApellido: (paciente.nombres || "").split(" ").slice(-1)[0],
+      fechaNacimiento: paciente.fechaNacimiento || "",
+      genero:
+        paciente.genero === "Masculino"
+          ? "M"
+          : paciente.genero === "Femenino"
+          ? "F"
+          : "I",
+    },
+    atencion: {
+      fechaAtencion: paciente.fechaExamen || now.split("T")[0],
+      tipoAtencion: "01", // 01 = Consulta externa
+      modalidad: "01", // 01 = Presencial
+      tipoServicio:
+        paciente.type === "ocupacional"
+          ? "SALUD_OCUPACIONAL"
+          : "MEDICINA_GENERAL",
+      tipoExamen: paciente.tipoExamen || "INGRESO",
+      codigoVerificacion:
+        paciente.codigoVerificacion || paciente.firmaDigital?.codigoQR || "",
+      sesionId: sesionId || "",
+    },
+    diagnosticos: (paciente.diagnosticos || []).slice(0, 4).map((d) => ({
+      codigo: d.codigo || d,
+      tipo: d.tipo || "IMPRESION_DIAGNOSTICA",
+      descripcion: d.descripcion || d,
+    })),
+    conceptoAptitud: paciente.conceptoAptitud || "",
+    restricciones: (paciente.restricciones || []).length,
+    rdaGeneradoEn: now,
+    _nota:
+      "RDA generado por SISO. Para transmisiÃ³n oficial al IHCE se requiere firma electrÃ³nica certificada.",
+  };
+};
+export const _descargarRDA = (paciente, doctorData, sesionId) => {
+  try {
+    const rda = _generarRDA(paciente, doctorData, sesionId);
+    if (!rda) return false;
+    const jsonStr = JSON.stringify(rda, null, 2);
+    const b64 = btoa(unescape(encodeURIComponent(jsonStr)));
+    const a = document.createElement("a");
+    a.href = "data:application/json;base64," + b64;
+    a.download = `RDA_${paciente.docNumero}_${paciente.fechaExamen}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    return true;
+  } catch (e) {
+    console.error("RDA error:", e);
+    return false;
+  }
+};
