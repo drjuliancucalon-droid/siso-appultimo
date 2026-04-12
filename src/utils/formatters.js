@@ -1,4 +1,4 @@
-﻿// src/utils/formatters.js - Utilidades de formateo
+// src/utils/formatters.js - Utilidades de formateo
 
 const numeroALetras = (num) => {
   if (!num) return "";
@@ -56,7 +56,7 @@ const numeroALetras = (num) => {
   if (n >= 1000000) {
     out +=
       numeroALetras(Math.floor(n / 1000000)) +
-      (Math.floor(n / 1000000) === 1 ? " MILLÓN " : " MILLONES ");
+      (Math.floor(n / 1000000) === 1 ? " MILL�N " : " MILLONES ");
     n %= 1000000;
   }
   if (n >= 1000) {
@@ -85,7 +85,7 @@ const analyzeBP = (v) => {
   const [s, d] = v.split("/").map(Number);
   if (isNaN(s) || isNaN(d)) return null;
   if (s < 90 || d < 60)
-    return { text: "Hipotensión", color: "text-blue-600 bg-blue-100" };
+    return { text: "Hipotensi�n", color: "text-blue-600 bg-blue-100" };
   if (s < 120 && d < 80)
     return { text: "Normotenso", color: "text-green-600 bg-green-100" };
   if (s >= 120 && s <= 129 && d < 80)
@@ -141,32 +141,32 @@ const getSpanishDate = (d) => {
 };
 const NORMAL_DESCRIPTIONS_SYSTEMS = {
   cabeza:
-    "Normocéfalo, sin deformidades, sin masas palpables ni dolor a la palpación.",
-  ojos: "Pupilas isocóricas normorreactivas, conjuntivas rosadas, escleróticas blancas, movimientos oculares conservados.",
+    "Normoc�falo, sin deformidades, sin masas palpables ni dolor a la palpaci�n.",
+  ojos: "Pupilas isoc�ricas normorreactivas, conjuntivas rosadas, escler�ticas blancas, movimientos oculares conservados.",
   oidos:
-    "Pabellones auriculares sin lesiones, conductos auditivos permeables, membranas timpánicas íntegras.",
+    "Pabellones auriculares sin lesiones, conductos auditivos permeables, membranas timp�nicas �ntegras.",
   nariz:
-    "Tabique centrado, mucosa húmeda rosada, sin pólipos ni secreciones patológicas, permeabilidad nasal conservada.",
-  boca: "Mucosa oral húmeda rosada, orofaringe sin eritema, amígdalas no hipertróficas, dentición conservada.",
+    "Tabique centrado, mucosa h�meda rosada, sin p�lipos ni secreciones patol�gicas, permeabilidad nasal conservada.",
+  boca: "Mucosa oral h�meda rosada, orofaringe sin eritema, am�gdalas no hipertr�ficas, dentici�n conservada.",
   cuello:
-    "Cuello simétrico, sin adenopatías palpables, tráquea centrada, tiroides no palpable, pulsos carotídeos simétricos.",
+    "Cuello sim�trico, sin adenopat�as palpables, tr�quea centrada, tiroides no palpable, pulsos carot�deos sim�tricos.",
   torax:
-    "Simétrico, normoexpansible, sin deformidades costales, mamas sin masas palpables.",
+    "Sim�trico, normoexpansible, sin deformidades costales, mamas sin masas palpables.",
   corazon:
-    "Ruidos cardíacos rítmicos, de buena intensidad, sin soplos, no se palpan thrill.",
+    "Ruidos card�acos r�tmicos, de buena intensidad, sin soplos, no se palpan thrill.",
   pulmones:
-    "Murmullo vesicular presente y simétrico bilateralmente, sin agregados pulmonares (no sibilancias, no estertores).",
+    "Murmullo vesicular presente y sim�trico bilateralmente, sin agregados pulmonares (no sibilancias, no estertores).",
   abdomen:
-    "Blando, depresible, no doloroso a la palpación, sin masas, sin organomegalias, ruidos intestinales presentes.",
+    "Blando, depresible, no doloroso a la palpaci�n, sin masas, sin organomegalias, ruidos intestinales presentes.",
   genitourinario:
-    "Sin puño-percusión renal positiva, región inguinal sin masas ni hernias palpables.",
+    "Sin pu�o-percusi�n renal positiva, regi�n inguinal sin masas ni hernias palpables.",
   columna:
-    "Sin escoliosis, sin cifosis patológica, movilidad conservada en todos los planos, no dolor a la palpación de apófisis espinosas.",
+    "Sin escoliosis, sin cifosis patol�gica, movilidad conservada en todos los planos, no dolor a la palpaci�n de ap�fisis espinosas.",
   extremidades:
-    "Simétricas, bien conformadas, sin edemas, pulsos periféricos presentes y simétricos, llenado capilar <2 seg.",
-  piel: "Tegumentos de coloración normal, hidratados, sin lesiones activas, sin cicatrices patológicas.",
+    "Sim�tricas, bien conformadas, sin edemas, pulsos perif�ricos presentes y sim�tricos, llenado capilar <2 seg.",
+  piel: "Tegumentos de coloraci�n normal, hidratados, sin lesiones activas, sin cicatrices patol�gicas.",
   neurologico:
-    "Orientado en tiempo, lugar y persona. Pares craneales sin alteraciones. Fuerza y sensibilidad conservadas, marcha normal, coordinación adecuada.",
+    "Orientado en tiempo, lugar y persona. Pares craneales sin alteraciones. Fuerza y sensibilidad conservadas, marcha normal, coordinaci�n adecuada.",
 };
 
 export { numeroALetras, analyzeBP, analyzeHR, analyzeBMI, getSpanishDate, NORMAL_DESCRIPTIONS_SYSTEMS };

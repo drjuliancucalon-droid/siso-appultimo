@@ -3,7 +3,7 @@
 import { _ls } from '../lib/storage.js';
 
 // ==========================================
-// CATÃLOGO DE MEDICAMENTOS GENÃ‰RICOS COLOMBIA
+// CATÁLOGO DE MEDICAMENTOS GENÉRICOS COLOMBIA
 // Basado en INVIMA y MSPS -- Lista de medicamentos esenciales
 // ==========================================
 const MEDICAMENTOS_CO_CUSTOM_KEY = "siso_custom_meds";
@@ -20,9 +20,9 @@ const addCustomMed = (entry) => {
   _ls.setItem(MEDICAMENTOS_CO_CUSTOM_KEY, JSON.stringify(arr));
 };
 const MEDICAMENTOS_CO_BASE = [
-  // â”€â”€ ANALGÃ‰SICOS / ANTIINFLAMATORIOS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── ANALGÉSICOS / ANTIINFLAMATORIOS ──────────────────────────────────────
   {
-    g: "AcetaminofÃ©n (Paracetamol)",
+    g: "Acetaminofén (Paracetamol)",
     p: [
       "Tylenol 500mg tab",
       "Tylenol 1g tab",
@@ -31,15 +31,15 @@ const MEDICAMENTOS_CO_BASE = [
       "Tempra 500mg tab",
       "Winasorb 500mg tab",
       "Paralen 500mg tab",
-      "AcetaminofÃ©n MK 500mg tab",
-      "AcetaminofÃ©n Genfar 500mg tab",
+      "Acetaminofén MK 500mg tab",
+      "Acetaminofén Genfar 500mg tab",
       "Paracetamol 150mg/5mL jbe",
       "Paracetamol 250mg/5mL jbe",
-      "AcetaminofÃ©n susp 100mg/mL",
-      "Dolex PediÃ¡trico gotas",
+      "Acetaminofén susp 100mg/mL",
+      "Dolex Pediátrico gotas",
       "Tempra gotas 100mg/mL",
     ],
-    cat: "AnalgÃ©sico",
+    cat: "Analgésico",
     dosis: "500-1000mg c/6-8h",
   },
   {
@@ -72,7 +72,7 @@ const MEDICAMENTOS_CO_BASE = [
       "Naproxeno Genfar 500mg tab",
       "Flanax 275mg tab",
       "Anaprox 250mg tab",
-      "Naproxeno sÃ³dico 550mg tab",
+      "Naproxeno sódico 550mg tab",
       "Naprox Forte 500mg tab",
     ],
     cat: "AINE",
@@ -139,7 +139,7 @@ const MEDICAMENTOS_CO_BASE = [
       "Crispin 50mg cap",
       "Travex 50mg cap",
     ],
-    cat: "Opioide dÃ©bil",
+    cat: "Opioide débil",
     dosis: "50-100mg c/6-8h",
   },
   {
@@ -152,7 +152,7 @@ const MEDICAMENTOS_CO_BASE = [
       "Ketorolaco Genfar 30mg amp",
     ],
     cat: "AINE parenteral",
-    dosis: "30mg IM o 10mg VO c/8h mÃ¡x 5 dÃ­as",
+    dosis: "30mg IM o 10mg VO c/8h máx 5 días",
   },
   {
     g: "Metamizol (Dipirona)",
@@ -164,7 +164,7 @@ const MEDICAMENTOS_CO_BASE = [
       "Metamizol 500mg/mL amp",
       "Novalgin gotas 500mg/mL",
     ],
-    cat: "AnalgÃ©sico/AntipirÃ©tico",
+    cat: "Analgésico/Antipirético",
     dosis: "500-1000mg c/6-8h",
   },
   {
@@ -177,7 +177,7 @@ const MEDICAMENTOS_CO_BASE = [
       "Transtec 35mcg/h parche",
     ],
     cat: "Opioide parcial",
-    dosis: "SegÃºn especialista",
+    dosis: "Según especialista",
   },
   {
     g: "Dexketoprofeno",
@@ -199,37 +199,37 @@ const MEDICAMENTOS_CO_BASE = [
       "Oramorph 10mg/5mL sol",
     ],
     cat: "Opioide fuerte",
-    dosis: "SegÃºn protocolo",
+    dosis: "Según protocolo",
   },
   {
     g: "Oxicodona",
     p: ["OxyContin 10mg tab CR", "OxyContin 20mg tab CR", "Oxicodona 5mg cap"],
     cat: "Opioide fuerte",
-    dosis: "SegÃºn protocolo especialista",
+    dosis: "Según protocolo especialista",
   },
   {
-    g: "Ibuprofeno tÃ³pico",
+    g: "Ibuprofeno tópico",
     p: [
       "Dolorac gel 5%",
       "Ibuprofeno gel 5% MK",
       "Ibudol gel 5%",
       "Dolgit crema 5%",
     ],
-    cat: "AINE tÃ³pico",
-    dosis: "Aplicar 3-4 veces/dÃ­a",
+    cat: "AINE tópico",
+    dosis: "Aplicar 3-4 veces/día",
   },
   {
-    g: "Diclofenaco tÃ³pico",
+    g: "Diclofenaco tópico",
     p: [
       "Voltaren Emulgel 1%",
       "Diclofenaco gel 1% MK",
       "Lertus gel 1%",
       "Diclo gel Genfar 1%",
     ],
-    cat: "AINE tÃ³pico",
+    cat: "AINE tópico",
     dosis: "Aplicar c/8-12h",
   },
-  // â”€â”€ ANTIBIÃ“TICOS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── ANTIBIÓTICOS ──────────────────────────────────────────────────────────
   {
     g: "Amoxicilina",
     p: [
@@ -242,8 +242,8 @@ const MEDICAMENTOS_CO_BASE = [
       "Amoxal 1g tab",
       "Ospamox 500mg cap",
     ],
-    cat: "BetalactÃ¡mico",
-    dosis: "500mg c/8h o 875mg c/12h x7 dÃ­as",
+    cat: "Betalactámico",
+    dosis: "500mg c/8h o 875mg c/12h x7 días",
   },
   {
     g: "Amoxicilina + Clavulanato",
@@ -257,8 +257,8 @@ const MEDICAMENTOS_CO_BASE = [
       "Trifamox IBL 875mg tab",
       "Amoxiclav MK 875mg tab",
     ],
-    cat: "BetalactÃ¡mico + IBL",
-    dosis: "875/125mg c/12h x7-10 dÃ­as",
+    cat: "Betalactámico + IBL",
+    dosis: "875/125mg c/12h x7-10 días",
   },
   {
     g: "Azitromicina",
@@ -272,8 +272,8 @@ const MEDICAMENTOS_CO_BASE = [
       "Azitrox susp 200mg/5mL",
       "Sumamed 500mg tab",
     ],
-    cat: "MacrÃ³lido",
-    dosis: "500mg c/24h x3 dÃ­as",
+    cat: "Macrólido",
+    dosis: "500mg c/24h x3 días",
   },
   {
     g: "Claritromicina",
@@ -285,8 +285,8 @@ const MEDICAMENTOS_CO_BASE = [
       "Claricel 500mg tab",
       "Biaxin 250mg susp",
     ],
-    cat: "MacrÃ³lido",
-    dosis: "500mg c/12h x7-14 dÃ­as",
+    cat: "Macrólido",
+    dosis: "500mg c/12h x7-14 días",
   },
   {
     g: "Ciprofloxacino",
@@ -301,7 +301,7 @@ const MEDICAMENTOS_CO_BASE = [
       "Ciproflox 750mg tab",
     ],
     cat: "Fluoroquinolona",
-    dosis: "500mg c/12h x7-10 dÃ­as",
+    dosis: "500mg c/12h x7-10 días",
   },
   {
     g: "Levofloxacino",
@@ -313,7 +313,7 @@ const MEDICAMENTOS_CO_BASE = [
       "Florit 500mg tab",
     ],
     cat: "Fluoroquinolona",
-    dosis: "500mg c/24h x7-10 dÃ­as",
+    dosis: "500mg c/24h x7-10 días",
   },
   {
     g: "Metronidazol",
@@ -324,10 +324,10 @@ const MEDICAMENTOS_CO_BASE = [
       "Fosmet 500mg tab",
       "Flagyl 500mg/100mL IV",
       "Metronidazol susp 250mg/5mL",
-      "Metronidazol Ã³vulos 500mg",
+      "Metronidazol óvulos 500mg",
     ],
     cat: "Nitroimidazol",
-    dosis: "500mg c/8h x7 dÃ­as",
+    dosis: "500mg c/8h x7 días",
   },
   {
     g: "Doxiciclina",
@@ -338,7 +338,7 @@ const MEDICAMENTOS_CO_BASE = [
       "Doxiciclina Genfar 100mg cap",
     ],
     cat: "Tetraciclina",
-    dosis: "100mg c/12h x7-14 dÃ­as",
+    dosis: "100mg c/12h x7-14 días",
   },
   {
     g: "Cefalexina",
@@ -349,7 +349,7 @@ const MEDICAMENTOS_CO_BASE = [
       "Cefalexina susp 250mg/5mL",
     ],
     cat: "Cefalosporina 1G",
-    dosis: "500mg c/6h x7 dÃ­as",
+    dosis: "500mg c/6h x7 días",
   },
   {
     g: "Cefadroxilo",
@@ -360,7 +360,7 @@ const MEDICAMENTOS_CO_BASE = [
       "Cefadroxilo susp 250mg/5mL",
     ],
     cat: "Cefalosporina 1G",
-    dosis: "500mg-1g c/12h x7 dÃ­as",
+    dosis: "500mg-1g c/12h x7 días",
   },
   {
     g: "Cefuroxima",
@@ -371,7 +371,7 @@ const MEDICAMENTOS_CO_BASE = [
       "Cefuroxima susp 125mg/5mL",
     ],
     cat: "Cefalosporina 2G",
-    dosis: "500mg c/12h x7-10 dÃ­as",
+    dosis: "500mg c/12h x7-10 días",
   },
   {
     g: "Ceftriaxona",
@@ -391,31 +391,31 @@ const MEDICAMENTOS_CO_BASE = [
       "Bactrim F 400/80mg tab",
       "TMP-SMX MK DS tab",
       "Gantrisin DS tab",
-      "Bactrim suspensiÃ³n",
+      "Bactrim suspensión",
       "Septra DS tab",
     ],
     cat: "Sulfonamida+diaminopiridina",
-    dosis: "DS c/12h x7-10 dÃ­as",
+    dosis: "DS c/12h x7-10 días",
   },
   {
-    g: "NitrofurantoÃ­na",
+    g: "Nitrofurantoína",
     p: [
       "Macrobid 100mg cap",
-      "NitrofurantoÃ­na MK 100mg cap",
+      "Nitrofurantoína MK 100mg cap",
       "Macrodan 100mg cap",
       "Macrodantina 100mg cap",
     ],
-    cat: "AntibiÃ³tico urinario",
-    dosis: "100mg c/12h x5-7 dÃ­as",
+    cat: "Antibiótico urinario",
+    dosis: "100mg c/12h x5-7 días",
   },
   {
     g: "Clindamicina",
     p: [
       "Dalacin C 300mg cap",
       "Clindamicina MK 300mg cap",
-      "Dalacin T gel tÃ³pico",
+      "Dalacin T gel tópico",
       "Clindamicina 600mg amp",
-      "Dalacin Ã³vulos 100mg",
+      "Dalacin óvulos 100mg",
     ],
     cat: "Lincosamida",
     dosis: "150-450mg c/6h",
@@ -428,7 +428,7 @@ const MEDICAMENTOS_CO_BASE = [
       "Erythrocin 500mg tab",
       "Eritromicina susp 250mg/5mL",
     ],
-    cat: "MacrÃ³lido",
+    cat: "Macrólido",
     dosis: "250-500mg c/6-8h",
   },
   {
@@ -439,7 +439,7 @@ const MEDICAMENTOS_CO_BASE = [
       "Garamycin 80mg amp",
       "Gentamicina colirio 0.3%",
     ],
-    cat: "AminoglucÃ³sido",
+    cat: "Aminoglucósido",
     dosis: "5-7mg/kg/24h IV/IM",
   },
   {
@@ -451,7 +451,7 @@ const MEDICAMENTOS_CO_BASE = [
   {
     g: "Piperacilina + Tazobactam",
     p: ["Tazocin 4.5g amp IV", "Piperazin-Taz MK 4.5g amp", "Zosyn 3.375g amp"],
-    cat: "BetalactÃ¡mico + IBL amplio espectro",
+    cat: "Betalactámico + IBL amplio espectro",
     dosis: "4.5g c/6-8h IV",
   },
   {
@@ -463,10 +463,10 @@ const MEDICAMENTOS_CO_BASE = [
   {
     g: "Fosfomicina",
     p: ["Monuril 3g sob", "Fosfomicina MK 3g sob", "Fosfocina 3g sob"],
-    cat: "AntibiÃ³tico urinario",
-    dosis: "3g dosis Ãºnica (cistitis no complicada)",
+    cat: "Antibiótico urinario",
+    dosis: "3g dosis única (cistitis no complicada)",
   },
-  // â”€â”€ ANTIFÃšNGICOS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── ANTIFÚNGICOS ──────────────────────────────────────────────────────────
   {
     g: "Fluconazol",
     p: [
@@ -477,7 +477,7 @@ const MEDICAMENTOS_CO_BASE = [
       "Diflucan 200mg/100mL IV",
       "Fluconazol susp 50mg/5mL",
     ],
-    cat: "Azol antifÃºngico",
+    cat: "Azol antifúngico",
     dosis: "150-400mg c/24h",
   },
   {
@@ -486,9 +486,9 @@ const MEDICAMENTOS_CO_BASE = [
       "Sporanox 100mg cap",
       "Itraconazol MK 100mg cap",
       "Icaden 100mg cap",
-      "Sporanox soluciÃ³n 10mg/mL",
+      "Sporanox solución 10mg/mL",
     ],
-    cat: "Azol antifÃºngico",
+    cat: "Azol antifúngico",
     dosis: "100-200mg c/12-24h con comida",
   },
   {
@@ -498,9 +498,9 @@ const MEDICAMENTOS_CO_BASE = [
       "Clotrimazol MK crema 1%",
       "Lotrimin crema 1%",
       "Canesten vaginal 200mg",
-      "Canesten Ã³vulos 500mg",
+      "Canesten óvulos 500mg",
     ],
-    cat: "Imidazol tÃ³pico",
+    cat: "Imidazol tópico",
     dosis: "Aplicar c/12h x2-4 semanas",
   },
   {
@@ -511,7 +511,7 @@ const MEDICAMENTOS_CO_BASE = [
       "Lamisil crema 1%",
       "Terbinafina crema 1%",
     ],
-    cat: "Alilamina antifÃºngica",
+    cat: "Alilamina antifúngica",
     dosis: "250mg c/24h x6-12 semanas (onicomicosis)",
   },
   {
@@ -519,18 +519,18 @@ const MEDICAMENTOS_CO_BASE = [
     p: [
       "Mycostatin 100000UI/mL susp oral",
       "Nistatina MK 100000UI/g crema",
-      "Mycostatin Ã³vulos 100000UI",
+      "Mycostatin óvulos 100000UI",
     ],
-    cat: "Polieno antifÃºngico",
-    dosis: "500000UI c/6h oral o aplicaciÃ³n local",
+    cat: "Polieno antifúngico",
+    dosis: "500000UI c/6h oral o aplicación local",
   },
   {
     g: "Voriconazol",
     p: ["Vfend 200mg tab", "Voriconazol MK 200mg tab", "Vfend 200mg amp IV"],
     cat: "Azol 2G (aspergilosis)",
-    dosis: "SegÃºn protocolo hospitalario",
+    dosis: "Según protocolo hospitalario",
   },
-  // â”€â”€ ANTIVIRALES â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── ANTIVIRALES ───────────────────────────────────────────────────────────
   {
     g: "Aciclovir",
     p: [
@@ -542,13 +542,13 @@ const MEDICAMENTOS_CO_BASE = [
       "Aciclovir 250mg amp IV",
     ],
     cat: "Antiviral (herpes)",
-    dosis: "400-800mg c/8h x5-10 dÃ­as",
+    dosis: "400-800mg c/8h x5-10 días",
   },
   {
     g: "Valaciclovir",
     p: ["Valtrex 500mg tab", "Valtrex 1g tab", "Valaciclovir MK 500mg tab"],
-    cat: "Antiviral (herpes - profÃ¡rmaco)",
-    dosis: "500mg-1g c/12h x5-10 dÃ­as",
+    cat: "Antiviral (herpes - profármaco)",
+    dosis: "500mg-1g c/12h x5-10 días",
   },
   {
     g: "Oseltamivir",
@@ -559,15 +559,15 @@ const MEDICAMENTOS_CO_BASE = [
       "Tamiflu susp 6mg/mL",
     ],
     cat: "Antiviral influenza",
-    dosis: "75mg c/12h x5 dÃ­as",
+    dosis: "75mg c/12h x5 días",
   },
   {
     g: "Ganciclovir",
     p: ["Cytovene 500mg amp IV", "Ganciclovir MK 250mg cap"],
     cat: "Antiviral CMV",
-    dosis: "5mg/kg c/12h IV (inducciÃ³n)",
+    dosis: "5mg/kg c/12h IV (inducción)",
   },
-  // â”€â”€ ANTIPARASITARIOS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── ANTIPARASITARIOS ──────────────────────────────────────────────────────
   {
     g: "Albendazol",
     p: [
@@ -577,19 +577,19 @@ const MEDICAMENTOS_CO_BASE = [
       "Zentel susp 100mg/5mL",
       "Eskasol 400mg tab",
     ],
-    cat: "AntihelmÃ­ntico",
-    dosis: "400mg dosis Ãºnica adultos",
+    cat: "Antihelmíntico",
+    dosis: "400mg dosis única adultos",
   },
   {
     g: "Mebendazol",
     p: [
       "Vermox 100mg tab",
       "Mebendazol MK 100mg tab",
-      "Vermox 500mg tab (dosis Ãºnica)",
+      "Vermox 500mg tab (dosis única)",
       "Mebendazol susp 100mg/5mL",
     ],
-    cat: "AntihelmÃ­ntico",
-    dosis: "100mg c/12h x3 dÃ­as o 500mg dosis Ãºnica",
+    cat: "Antihelmíntico",
+    dosis: "100mg c/12h x3 días o 500mg dosis única",
   },
   {
     g: "Ivermectina",
@@ -600,21 +600,21 @@ const MEDICAMENTOS_CO_BASE = [
       "Ivomec 6mg tab",
     ],
     cat: "Antiparasitario",
-    dosis: "200mcg/kg dosis Ãºnica",
+    dosis: "200mcg/kg dosis única",
   },
   {
     g: "Tinidazol",
     p: ["Fasigyn 500mg tab", "Tinidazol MK 500mg tab", "Tinidazol 2g tab"],
     cat: "Nitroimidazol",
-    dosis: "2g dosis Ãºnica (giardia/tricomoniasis)",
+    dosis: "2g dosis única (giardia/tricomoniasis)",
   },
   {
     g: "Cloroquina",
     p: ["Aralen 250mg tab", "Cloroquina MK 250mg tab", "Resochin 250mg tab"],
-    cat: "AntimalÃ¡rico/Antiinflamatorio",
-    dosis: "SegÃºn esquema malaria o 250mg c/24h (reumatologÃ­a)",
+    cat: "Antimalárico/Antiinflamatorio",
+    dosis: "Según esquema malaria o 250mg c/24h (reumatología)",
   },
-  // â”€â”€ CARDIOVASCULARES â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── CARDIOVASCULARES ──────────────────────────────────────────────────────
   {
     g: "Enalapril",
     p: [
@@ -660,24 +660,24 @@ const MEDICAMENTOS_CO_BASE = [
     dosis: "4-10mg c/24h",
   },
   {
-    g: "LosartÃ¡n",
+    g: "Losartán",
     p: [
       "Cozaar 50mg tab",
       "Cozaar 100mg tab",
-      "LosartÃ¡n MK 50mg tab",
+      "Losartán MK 50mg tab",
       "Repace 50mg tab",
       "Hyzaar 50/12.5mg tab",
-      "LosartÃ¡n 25mg tab",
+      "Losartán 25mg tab",
     ],
     cat: "ARA-II",
     dosis: "50-100mg c/24h",
   },
   {
-    g: "ValsartÃ¡n",
+    g: "Valsartán",
     p: [
       "Diovan 80mg tab",
       "Diovan 160mg tab",
-      "ValsartÃ¡n MK 80mg tab",
+      "Valsartán MK 80mg tab",
       "Exforge 5/80mg tab",
       "Co-Diovan 80/12.5mg tab",
     ],
@@ -685,21 +685,21 @@ const MEDICAMENTOS_CO_BASE = [
     dosis: "80-320mg c/24h",
   },
   {
-    g: "TelmisartÃ¡n",
+    g: "Telmisartán",
     p: [
       "Micardis 40mg tab",
       "Micardis 80mg tab",
-      "TelmisartÃ¡n MK 40mg tab",
+      "Telmisartán MK 40mg tab",
       "Micardis Plus 40/12.5mg tab",
     ],
     cat: "ARA-II",
     dosis: "40-80mg c/24h",
   },
   {
-    g: "IrbesartÃ¡n",
+    g: "Irbesartán",
     p: [
       "Avapro 150mg tab",
-      "IrbesartÃ¡n MK 150mg tab",
+      "Irbesartán MK 150mg tab",
       "Aprovel 150mg tab",
       "Avapro 300mg tab",
     ],
@@ -707,8 +707,8 @@ const MEDICAMENTOS_CO_BASE = [
     dosis: "150-300mg c/24h",
   },
   {
-    g: "CandesartÃ¡n",
-    p: ["Atacand 8mg tab", "CandesartÃ¡n MK 8mg tab", "Atacand 16mg tab"],
+    g: "Candesartán",
+    p: ["Atacand 8mg tab", "Candesartán MK 8mg tab", "Atacand 16mg tab"],
     cat: "ARA-II",
     dosis: "4-32mg c/24h",
   },
@@ -770,7 +770,7 @@ const MEDICAMENTOS_CO_BASE = [
       "Toprol XL 50mg tab CR",
       "Betaloc 50mg tab",
     ],
-    cat: "Betabloqueador Î²1 selectivo",
+    cat: "Betabloqueador β1 selectivo",
     dosis: "25-200mg c/12-24h",
   },
   {
@@ -782,7 +782,7 @@ const MEDICAMENTOS_CO_BASE = [
       "Dilatrend 12.5mg tab",
       "Carvedilol 3.125mg tab",
     ],
-    cat: "Betabloqueador no selectivo + Î±1",
+    cat: "Betabloqueador no selectivo + α1",
     dosis: "3.125-25mg c/12h",
   },
   {
@@ -794,7 +794,7 @@ const MEDICAMENTOS_CO_BASE = [
       "Emcor 5mg tab",
       "Bisoprolol 2.5mg tab",
     ],
-    cat: "Betabloqueador Î²1 selectivo",
+    cat: "Betabloqueador β1 selectivo",
     dosis: "2.5-10mg c/24h",
   },
   {
@@ -805,13 +805,13 @@ const MEDICAMENTOS_CO_BASE = [
       "Tenormin 100mg tab",
       "Atenolol 25mg tab",
     ],
-    cat: "Betabloqueador Î²1",
+    cat: "Betabloqueador β1",
     dosis: "25-100mg c/24h",
   },
   {
     g: "Nebivolol",
     p: ["Bystolic 5mg tab", "Nebivolol MK 5mg tab", "Nebilox 5mg tab"],
-    cat: "Betabloqueador Î²1 + vasodilatador",
+    cat: "Betabloqueador β1 + vasodilatador",
     dosis: "5-10mg c/24h",
   },
   {
@@ -823,7 +823,7 @@ const MEDICAMENTOS_CO_BASE = [
       "HCTZ 12.5mg tab",
       "Hidroclorotiazida 50mg tab",
     ],
-    cat: "DiurÃ©tico tiazÃ­dico",
+    cat: "Diurético tiazídico",
     dosis: "12.5-50mg c/24h",
   },
   {
@@ -833,7 +833,7 @@ const MEDICAMENTOS_CO_BASE = [
       "Clortalidona MK 25mg tab",
       "Clortalidona 50mg tab",
     ],
-    cat: "DiurÃ©tico tiazÃ­dico-like",
+    cat: "Diurético tiazídico-like",
     dosis: "12.5-50mg c/24h",
   },
   {
@@ -843,7 +843,7 @@ const MEDICAMENTOS_CO_BASE = [
       "Indapamida MK 1.5mg tab CR",
       "Natrilix 1.5mg tab CR",
     ],
-    cat: "DiurÃ©tico tiazÃ­dico-like",
+    cat: "Diurético tiazídico-like",
     dosis: "1.25-2.5mg c/24h",
   },
   {
@@ -855,7 +855,7 @@ const MEDICAMENTOS_CO_BASE = [
       "Furosemida 20mg tab",
       "Lasix 80mg tab",
     ],
-    cat: "DiurÃ©tico de asa",
+    cat: "Diurético de asa",
     dosis: "20-80mg c/24h",
   },
   {
@@ -866,7 +866,7 @@ const MEDICAMENTOS_CO_BASE = [
       "Aldactone 100mg tab",
       "Verospiron 25mg tab",
     ],
-    cat: "DiurÃ©tico ahorrador K",
+    cat: "Diurético ahorrador K",
     dosis: "25-200mg c/24h",
   },
   {
@@ -876,7 +876,7 @@ const MEDICAMENTOS_CO_BASE = [
     dosis: "25-50mg c/24h",
   },
   {
-    g: "Ãcido AcetilsalicÃ­lico",
+    g: "Ácido Acetilsalicílico",
     p: [
       "Aspirina 100mg tab",
       "Aspirina Bayer 100mg",
@@ -915,10 +915,10 @@ const MEDICAMENTOS_CO_BASE = [
       "Aldocumar 10mg tab",
     ],
     cat: "Anticoagulante oral AVK",
-    dosis: "SegÃºn INR (2.0-3.0)",
+    dosis: "Según INR (2.0-3.0)",
   },
   {
-    g: "RivaroxabÃ¡n",
+    g: "Rivaroxabán",
     p: [
       "Xarelto 20mg tab",
       "Xarelto 15mg tab",
@@ -929,14 +929,14 @@ const MEDICAMENTOS_CO_BASE = [
     dosis: "10-20mg c/24h (con comida)",
   },
   {
-    g: "ApixabÃ¡n",
-    p: ["Eliquis 5mg tab", "Eliquis 2.5mg tab", "ApixabÃ¡n MK 5mg tab"],
+    g: "Apixabán",
+    p: ["Eliquis 5mg tab", "Eliquis 2.5mg tab", "Apixabán MK 5mg tab"],
     cat: "NACO anti-Xa",
     dosis: "5mg c/12h",
   },
   {
-    g: "DabigatrÃ¡n",
-    p: ["Pradaxa 150mg cap", "Pradaxa 110mg cap", "DabigatrÃ¡n MK 150mg cap"],
+    g: "Dabigatrán",
+    p: ["Pradaxa 150mg cap", "Pradaxa 110mg cap", "Dabigatrán MK 150mg cap"],
     cat: "NACO anti-IIa",
     dosis: "110-150mg c/12h",
   },
@@ -1035,7 +1035,7 @@ const MEDICAMENTOS_CO_BASE = [
       "Amiodarona 150mg/3mL amp IV",
       "Atlansil 200mg tab",
     ],
-    cat: "AntiarrÃ­tmico clase III",
+    cat: "Antiarrítmico clase III",
     dosis: "200-400mg c/24h mantenimiento",
   },
   {
@@ -1045,7 +1045,7 @@ const MEDICAMENTOS_CO_BASE = [
       "Digoxina MK 0.25mg tab",
       "Digoxina 0.5mg/2mL amp",
     ],
-    cat: "GlucÃ³sido cardÃ­aco",
+    cat: "Glucósido cardíaco",
     dosis: "0.125-0.25mg c/24h",
   },
   {
@@ -1055,12 +1055,12 @@ const MEDICAMENTOS_CO_BASE = [
     dosis: "5-7.5mg c/12h",
   },
   {
-    g: "Sacubitrilo + ValsartÃ¡n",
+    g: "Sacubitrilo + Valsartán",
     p: ["Entresto 49/51mg tab", "Entresto 24/26mg tab"],
     cat: "ARNI (IC-FEr)",
     dosis: "24/26-97/103mg c/12h",
   },
-  // â”€â”€ METABÃ“LICOS / DIABETES â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── METABÓLICOS / DIABETES ────────────────────────────────────────────────
   {
     g: "Metformina",
     p: [
@@ -1072,7 +1072,7 @@ const MEDICAMENTOS_CO_BASE = [
       "Glafornil 850mg tab",
       "Glucophage XR 750mg tab",
     ],
-    cat: "Biguanida antidiabÃ©tico",
+    cat: "Biguanida antidiabético",
     dosis: "500-2550mg c/8-12h con comidas",
   },
   {
@@ -1197,7 +1197,7 @@ const MEDICAMENTOS_CO_BASE = [
       "Insulina MK NPH vial",
     ],
     cat: "Insulina basal intermedia",
-    dosis: "SegÃºn pauta mÃ©dica",
+    dosis: "Según pauta médica",
   },
   {
     g: "Insulina Glargina",
@@ -1207,32 +1207,32 @@ const MEDICAMENTOS_CO_BASE = [
       "Abasaglar pluma",
       "Basaglar pluma",
     ],
-    cat: "Insulina anÃ¡logo basal",
-    dosis: "SegÃºn pauta mÃ©dica",
+    cat: "Insulina análogo basal",
+    dosis: "Según pauta médica",
   },
   {
     g: "Insulina Detemir",
     p: ["Levemir FlexPen pluma", "Detemir MK pluma"],
-    cat: "Insulina anÃ¡logo basal",
-    dosis: "SegÃºn pauta mÃ©dica",
+    cat: "Insulina análogo basal",
+    dosis: "Según pauta médica",
   },
   {
     g: "Insulina Regular",
     p: ["Humulin R vial", "Actrapid vial", "Insulina Regular MK vial"],
     cat: "Insulina prandial",
-    dosis: "SegÃºn pauta mÃ©dica",
+    dosis: "Según pauta médica",
   },
   {
     g: "Insulina Lispro",
     p: ["Humalog pluma", "Humalog KwikPen", "Insulina lispro MK pluma"],
-    cat: "Insulina anÃ¡logo rÃ¡pida",
-    dosis: "SegÃºn pauta mÃ©dica",
+    cat: "Insulina análogo rápida",
+    dosis: "Según pauta médica",
   },
   {
     g: "Insulina Aspart",
     p: ["NovoRapid FlexPen", "Novorapid vial", "Fiasp FlexPen"],
-    cat: "Insulina anÃ¡logo ultrarrÃ¡pida",
-    dosis: "SegÃºn pauta mÃ©dica",
+    cat: "Insulina análogo ultrarrápida",
+    dosis: "Según pauta médica",
   },
   {
     g: "Levotiroxina",
@@ -1292,7 +1292,7 @@ const MEDICAMENTOS_CO_BASE = [
     cat: "Antigotoso inhibidor xantina oxidasa",
     dosis: "40-80mg c/24h",
   },
-  // â”€â”€ RESPIRATORIOS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── RESPIRATORIOS ─────────────────────────────────────────────────────────
   {
     g: "Salbutamol",
     p: [
@@ -1304,23 +1304,23 @@ const MEDICAMENTOS_CO_BASE = [
       "Salbutamol susp 2.5mg neb",
       "Proventil HFA MDI",
     ],
-    cat: "Î²2-agonista SABA",
+    cat: "β2-agonista SABA",
     dosis: "1-2 puff c/4-6h SOS o 2.5mg neb",
   },
   {
     g: "Formoterol",
     p: [
-      "Foradil 12mcg cap inhalaciÃ³n",
+      "Foradil 12mcg cap inhalación",
       "Formoterol MK 12mcg",
       "Oxis Turbuhaler 4.5mcg",
     ],
-    cat: "Î²2-agonista LABA",
+    cat: "β2-agonista LABA",
     dosis: "12mcg c/12h",
   },
   {
     g: "Salmeterol",
     p: ["Serevent 25mcg MDI", "Serevent Diskus 50mcg"],
-    cat: "Î²2-agonista LABA",
+    cat: "β2-agonista LABA",
     dosis: "50mcg c/12h",
   },
   {
@@ -1397,7 +1397,7 @@ const MEDICAMENTOS_CO_BASE = [
       "Ipratropio MK 20mcg MDI",
       "Ipravent 20mcg MDI",
     ],
-    cat: "AnticolinÃ©rgico SAMA",
+    cat: "Anticolinérgico SAMA",
     dosis: "2-4 puff c/6-8h",
   },
   {
@@ -1407,17 +1407,17 @@ const MEDICAMENTOS_CO_BASE = [
       "Spiriva Respimat 2.5mcg",
       "Tiotropio MK 18mcg cap",
     ],
-    cat: "AnticolinÃ©rgico LAMA EPOC",
+    cat: "Anticolinérgico LAMA EPOC",
     dosis: "18mcg c/24h",
   },
   {
     g: "Umeclidinio + Vilanterol",
     p: ["Anoro Ellipta 62.5/25mcg", "Umeclidinio MK Ellipta"],
     cat: "LAMA + LABA (EPOC)",
-    dosis: "1 inhalaciÃ³n c/24h",
+    dosis: "1 inhalación c/24h",
   },
   {
-    g: "AcetilcisteÃ­na",
+    g: "Acetilcisteína",
     p: [
       "Mucolyte 200mg sob",
       "Fluimucil 200mg sob",
@@ -1426,7 +1426,7 @@ const MEDICAMENTOS_CO_BASE = [
       "Fluimucil 600mg tab efervescente",
       "Rhinathiol 5% jarabe",
     ],
-    cat: "MucolÃ­tico",
+    cat: "Mucolítico",
     dosis: "200mg c/8h o 600mg c/24h",
   },
   {
@@ -1453,27 +1453,27 @@ const MEDICAMENTOS_CO_BASE = [
     dosis: "15-30mg c/6-8h",
   },
   {
-    g: "CodeÃ­na",
+    g: "Codeína",
     p: [
-      "CodeÃ­na 30mg tab",
-      "Perdolan Compositum (codeÃ­na)",
-      "CodeÃ­na fosfato 30mg",
+      "Codeína 30mg tab",
+      "Perdolan Compositum (codeína)",
+      "Codeína fosfato 30mg",
     ],
     cat: "Antitusivo opioide",
     dosis: "10-30mg c/6h SOS",
   },
   {
-    g: "Prednisolona (sistÃ©mica)",
+    g: "Prednisolona (sistémica)",
     p: [
       "Prelone 20mg/5mL susp",
       "Prednisolona MK 5mg tab",
       "Omnacortil 5mg tab",
       "Prelone 5mg tab",
     ],
-    cat: "Corticoide sistÃ©mico oral",
-    dosis: "0.5-2mg/kg/dÃ­a",
+    cat: "Corticoide sistémico oral",
+    dosis: "0.5-2mg/kg/día",
   },
-  // â”€â”€ GASTROINTESTINALES â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── GASTROINTESTINALES ────────────────────────────────────────────────────
   {
     g: "Omeprazol",
     p: [
@@ -1539,31 +1539,31 @@ const MEDICAMENTOS_CO_BASE = [
       "Metoclopramida MK 10mg tab",
       "Metoclopramida 10mg/2mL amp",
     ],
-    cat: "ProcinÃ©tico antiemÃ©tico",
+    cat: "Procinético antiemético",
     dosis: "10mg c/8h AC",
   },
   {
     g: "Domperidona",
     p: ["Motilium 10mg tab", "Domperidona MK 10mg tab", "Motilium susp 1mg/mL"],
-    cat: "ProcinÃ©tico perifÃ©rico",
+    cat: "Procinético periférico",
     dosis: "10mg c/8h AC",
   },
   {
-    g: "OndansetrÃ³n",
+    g: "Ondansetrón",
     p: [
       "Zofran 8mg tab",
       "Zofran 4mg tab",
-      "OndansetrÃ³n MK 8mg tab",
+      "Ondansetrón MK 8mg tab",
       "Zofran ODT 8mg",
       "Zofran 2mg/mL amp",
     ],
-    cat: "AntiemÃ©tico 5HT3",
+    cat: "Antiemético 5HT3",
     dosis: "4-8mg c/8h",
   },
   {
-    g: "GranisetrÃ³n",
-    p: ["Kytril 1mg tab", "GranisetrÃ³n MK 1mg amp", "Kytril 3mg amp"],
-    cat: "AntiemÃ©tico 5HT3 (QT)",
+    g: "Granisetrón",
+    p: ["Kytril 1mg tab", "Granisetrón MK 1mg amp", "Kytril 3mg amp"],
+    cat: "Antiemético 5HT3 (QT)",
     dosis: "1mg c/12h",
   },
   {
@@ -1575,30 +1575,30 @@ const MEDICAMENTOS_CO_BASE = [
       "Imodium susp 1mg/5mL",
     ],
     cat: "Antidiarreico",
-    dosis: "4mg inicial luego 2mg/dep (mÃ¡x 16mg/dÃ­a)",
+    dosis: "4mg inicial luego 2mg/dep (máx 16mg/día)",
   },
   {
     g: "Bismuto",
     p: ["Pepto-Bismol 262mg tab", "Pepto-Bismol susp 262mg/15mL"],
-    cat: "Protector gÃ¡strico/antidiarreico",
+    cat: "Protector gástrico/antidiarreico",
     dosis: "525mg c/30min SOS",
   },
   {
     g: "Sucralfato",
     p: ["Carafate 1g tab", "Sucralfato MK 1g tab", "Sucralfato susp 1g/10mL"],
-    cat: "Citoprotector gÃ¡strico",
+    cat: "Citoprotector gástrico",
     dosis: "1g c/6h AC",
   },
   {
     g: "Polietilenglicol",
     p: ["Miralax 17g polvo", "PEG MK polvo", "Forlax 10g sob", "Movicol sob"],
-    cat: "Laxante osmÃ³tico",
+    cat: "Laxante osmótico",
     dosis: "17g en 240mL agua c/24h",
   },
   {
     g: "Lactulosa",
-    p: ["Duphalac soluciÃ³n 3.3g/5mL", "Lactulosa MK sol", "Constulose sol"],
-    cat: "Laxante osmÃ³tico prebiÃ³tico",
+    p: ["Duphalac solución 3.3g/5mL", "Lactulosa MK sol", "Constulose sol"],
+    cat: "Laxante osmótico prebiótico",
     dosis: "15-30mL c/12-24h",
   },
   {
@@ -1631,12 +1631,12 @@ const MEDICAMENTOS_CO_BASE = [
       "Mylecon gotas 40mg/0.6mL",
     ],
     cat: "Antiflatulento",
-    dosis: "40-125mg despuÃ©s de comidas",
+    dosis: "40-125mg después de comidas",
   },
   {
-    g: "HidrÃ³xido Al + Mg",
+    g: "Hidróxido Al + Mg",
     p: ["Mylanta susp", "Maalox susp", "Gelusil susp", "Rolaids tab"],
-    cat: "AntiÃ¡cido",
+    cat: "Antiácido",
     dosis: "15-30mL AC y noche",
   },
   {
@@ -1652,10 +1652,10 @@ const MEDICAMENTOS_CO_BASE = [
   {
     g: "Budesonida oral",
     p: ["Entocort 3mg cap", "Budesonida MK 3mg cap"],
-    cat: "Corticoide oral tÃ³pico intestinal",
+    cat: "Corticoide oral tópico intestinal",
     dosis: "9mg c/24h AC x8 semanas",
   },
-  // â”€â”€ NEUROLÃ“GICOS / PSIQUIÃTRICOS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── NEUROLÓGICOS / PSIQUIÁTRICOS ──────────────────────────────────────────
   {
     g: "Carbamazepina",
     p: [
@@ -1669,7 +1669,7 @@ const MEDICAMENTOS_CO_BASE = [
     dosis: "200-1600mg c/8-12h",
   },
   {
-    g: "Ãcido Valproico",
+    g: "Ácido Valproico",
     p: [
       "Depakene 250mg cap",
       "Depakene sol 250mg/5mL",
@@ -1678,7 +1678,7 @@ const MEDICAMENTOS_CO_BASE = [
       "Depakote 250mg EC",
     ],
     cat: "Anticonvulsivante / Estabilizador humor",
-    dosis: "15-60mg/kg/dÃ­a c/8-12h",
+    dosis: "15-60mg/kg/día c/8-12h",
   },
   {
     g: "Lamotrigina",
@@ -1717,7 +1717,7 @@ const MEDICAMENTOS_CO_BASE = [
       "Gralise 300mg tab",
       "Neurotin 400mg cap",
     ],
-    cat: "Anticonvulsivante / Dolor neuropÃ¡tico",
+    cat: "Anticonvulsivante / Dolor neuropático",
     dosis: "300-3600mg c/8h",
   },
   {
@@ -1728,7 +1728,7 @@ const MEDICAMENTOS_CO_BASE = [
       "Pregabalina MK 75mg cap",
       "Lyrica 300mg cap",
     ],
-    cat: "Dolor neuropÃ¡tico / Anticonvulsivante",
+    cat: "Dolor neuropático / Anticonvulsivante",
     dosis: "75-300mg c/12h",
   },
   {
@@ -1738,18 +1738,18 @@ const MEDICAMENTOS_CO_BASE = [
       "Luminal 100mg tab",
       "Fenobarbital 200mg/mL amp",
     ],
-    cat: "Anticonvulsivante barbitÃºrico",
+    cat: "Anticonvulsivante barbitúrico",
     dosis: "60-180mg c/24h (noche)",
   },
   {
-    g: "FenitoÃ­na",
+    g: "Fenitoína",
     p: [
       "Dilantin 100mg cap",
-      "FenitoÃ­na MK 100mg cap",
+      "Fenitoína MK 100mg cap",
       "Epamin 100mg cap",
-      "FenitoÃ­na 50mg/mL amp",
+      "Fenitoína 50mg/mL amp",
     ],
-    cat: "Anticonvulsivante hidantoÃ­na",
+    cat: "Anticonvulsivante hidantoína",
     dosis: "200-400mg c/24h",
   },
   {
@@ -1772,7 +1772,7 @@ const MEDICAMENTOS_CO_BASE = [
       "Alprazolam MK 0.25mg tab",
       "Xanax XR 0.5mg tab",
     ],
-    cat: "Benzodiazepina ansiolÃ­tica",
+    cat: "Benzodiazepina ansiolítica",
     dosis: "0.25-1mg c/8h",
   },
   {
@@ -1783,7 +1783,7 @@ const MEDICAMENTOS_CO_BASE = [
       "Diazepam MK 5mg tab",
       "Diazepam 5mg/mL amp IV",
     ],
-    cat: "Benzodiazepina ansiolÃ­tica",
+    cat: "Benzodiazepina ansiolítica",
     dosis: "2-10mg c/8-12h",
   },
   {
@@ -1794,13 +1794,13 @@ const MEDICAMENTOS_CO_BASE = [
       "Lorazepam MK 1mg tab",
       "Lorax 2mg tab",
     ],
-    cat: "Benzodiazepina ansiolÃ­tica",
+    cat: "Benzodiazepina ansiolítica",
     dosis: "0.5-2mg c/12h",
   },
   {
     g: "Bromazepam",
     p: ["Lexotan 3mg tab", "Bromazepam MK 3mg tab", "Lexotanil 3mg tab"],
-    cat: "Benzodiazepina ansiolÃ­tica",
+    cat: "Benzodiazepina ansiolítica",
     dosis: "1.5-3mg c/8-12h",
   },
   {
@@ -1815,7 +1815,7 @@ const MEDICAMENTOS_CO_BASE = [
       "Fluoxetina susp 20mg/5mL",
     ],
     cat: "ISRS antidepresivo",
-    dosis: "20-80mg c/24h maÃ±ana",
+    dosis: "20-80mg c/24h mañana",
   },
   {
     g: "Sertralina",
@@ -1872,16 +1872,16 @@ const MEDICAMENTOS_CO_BASE = [
   {
     g: "Duloxetina",
     p: ["Cymbalta 30mg cap", "Cymbalta 60mg cap", "Duloxetina MK 30mg cap"],
-    cat: "IRSN antidepresivo/dolor neuropÃ¡tico",
+    cat: "IRSN antidepresivo/dolor neuropático",
     dosis: "30-120mg c/24h",
   },
   {
-    g: "BupropiÃ³n",
+    g: "Bupropión",
     p: [
       "Wellbutrin SR 150mg tab",
       "Wellbutrin XL 300mg tab",
-      "BupropiÃ³n MK 150mg tab",
-      "Zyban 150mg (cesaciÃ³n tabaco)",
+      "Bupropión MK 150mg tab",
+      "Zyban 150mg (cesación tabaco)",
     ],
     cat: "Inhibidor NA/DA antidepresivo",
     dosis: "150-300mg c/24h",
@@ -1894,19 +1894,19 @@ const MEDICAMENTOS_CO_BASE = [
       "Amitriptilina 10mg tab",
       "Elavil 25mg tab",
     ],
-    cat: "Antidepresivo tricÃ­clico",
+    cat: "Antidepresivo tricíclico",
     dosis: "25-150mg c/24h noche",
   },
   {
     g: "Nortriptilina",
     p: ["Pamelor 25mg cap", "Nortriptilina MK 25mg cap", "Aventyl 25mg cap"],
-    cat: "Antidepresivo tricÃ­clico",
+    cat: "Antidepresivo tricíclico",
     dosis: "25-150mg c/24h noche",
   },
   {
     g: "Imipramina",
     p: ["Tofranil 25mg tab", "Imipramina MK 25mg tab", "Melipramine 25mg tab"],
-    cat: "Antidepresivo tricÃ­clico",
+    cat: "Antidepresivo tricíclico",
     dosis: "25-200mg c/24h",
   },
   {
@@ -1930,7 +1930,7 @@ const MEDICAMENTOS_CO_BASE = [
       "Haldol 5mg/mL amp",
       "Haldol decanoato 100mg amp",
     ],
-    cat: "AntipsicÃ³tico tÃ­pico",
+    cat: "Antipsicótico típico",
     dosis: "2-10mg c/12-24h",
   },
   {
@@ -1942,7 +1942,7 @@ const MEDICAMENTOS_CO_BASE = [
       "Risperdal M-Tab 1mg",
       "Risperdal Consta 25mg amp IM",
     ],
-    cat: "AntipsicÃ³tico atÃ­pico",
+    cat: "Antipsicótico atípico",
     dosis: "1-6mg c/12-24h",
   },
   {
@@ -1953,7 +1953,7 @@ const MEDICAMENTOS_CO_BASE = [
       "Seroquel XR 200mg tab",
       "Quetiapina MK 100mg tab",
     ],
-    cat: "AntipsicÃ³tico atÃ­pico",
+    cat: "Antipsicótico atípico",
     dosis: "25-800mg c/12-24h",
   },
   {
@@ -1964,14 +1964,14 @@ const MEDICAMENTOS_CO_BASE = [
       "Olanzapina MK 5mg tab",
       "Zyprexa Velotab 10mg ODT",
     ],
-    cat: "AntipsicÃ³tico atÃ­pico",
+    cat: "Antipsicótico atípico",
     dosis: "5-20mg c/24h",
   },
   {
     g: "Clozapina",
     p: ["Clozaril 100mg tab", "Clozapina MK 100mg tab", "Leponex 100mg tab"],
-    cat: "AntipsicÃ³tico atÃ­pico clÃ¡sico",
-    dosis: "150-450mg c/24h (monitoreo hematolÃ³gico)",
+    cat: "Antipsicótico atípico clásico",
+    dosis: "150-450mg c/24h (monitoreo hematológico)",
   },
   {
     g: "Aripiprazol",
@@ -1981,7 +1981,7 @@ const MEDICAMENTOS_CO_BASE = [
       "Abilify 15mg tab",
       "Abilify 1mg/mL sol oral",
     ],
-    cat: "AntipsicÃ³tico parcial D2",
+    cat: "Antipsicótico parcial D2",
     dosis: "10-30mg c/24h",
   },
   {
@@ -1991,7 +1991,7 @@ const MEDICAMENTOS_CO_BASE = [
       "Paliperidona MK 3mg tab CR",
       "Invega Sustenna 50mg amp IM",
     ],
-    cat: "AntipsicÃ³tico atÃ­pico",
+    cat: "Antipsicótico atípico",
     dosis: "3-12mg c/24h",
   },
   {
@@ -2002,13 +2002,13 @@ const MEDICAMENTOS_CO_BASE = [
       "Stilnox 10mg tab",
       "Ambien CR 12.5mg",
     ],
-    cat: "HipnÃ³tico no BZD",
+    cat: "Hipnótico no BZD",
     dosis: "10mg antes dormir",
   },
   {
     g: "Zopiclona",
     p: ["Imovane 7.5mg tab", "Zopiclona MK 7.5mg tab", "Limovan 7.5mg tab"],
-    cat: "HipnÃ³tico",
+    cat: "Hipnótico",
     dosis: "7.5mg antes dormir",
   },
   {
@@ -2036,7 +2036,7 @@ const MEDICAMENTOS_CO_BASE = [
   {
     g: "Cinnarizina",
     p: ["Stugeron 25mg tab", "Cinnarizina MK 25mg tab", "Cinnarizina 75mg tab"],
-    cat: "AntihistamÃ­nico/antivertiginoso",
+    cat: "Antihistamínico/antivertiginoso",
     dosis: "25mg c/8h",
   },
   {
@@ -2048,7 +2048,7 @@ const MEDICAMENTOS_CO_BASE = [
       "Hyoscine parche 1.5mg",
       "Transderm Scop parche",
     ],
-    cat: "AnticolinÃ©rgico antiespasmÃ³dico",
+    cat: "Anticolinérgico antiespasmódico",
     dosis: "10-20mg c/6-8h",
   },
   {
@@ -2079,26 +2079,26 @@ const MEDICAMENTOS_CO_BASE = [
     dosis: "1.5-6mg c/12h o parche",
   },
   {
-    g: "SumatriptÃ¡n",
+    g: "Sumatriptán",
     p: [
       "Imitrex 50mg tab",
-      "SumatriptÃ¡n MK 50mg tab",
+      "Sumatriptán MK 50mg tab",
       "Imigran 100mg tab",
       "Imitrex nasal spray",
     ],
-    cat: "TriptÃ¡n antimigraÃ±oso",
-    dosis: "50-100mg SOS (mÃ¡x 2 dosis/dÃ­a)",
+    cat: "Triptán antimigrañoso",
+    dosis: "50-100mg SOS (máx 2 dosis/día)",
   },
   {
-    g: "RizatriptÃ¡n",
-    p: ["Maxalt 10mg tab", "RizatriptÃ¡n MK 10mg tab", "Maxalt-MLT 10mg ODT"],
-    cat: "TriptÃ¡n antimigraÃ±oso",
-    dosis: "10mg SOS (mÃ¡x 30mg/dÃ­a)",
+    g: "Rizatriptán",
+    p: ["Maxalt 10mg tab", "Rizatriptán MK 10mg tab", "Maxalt-MLT 10mg ODT"],
+    cat: "Triptán antimigrañoso",
+    dosis: "10mg SOS (máx 30mg/día)",
   },
   {
-    g: "Topiramato (migraÃ±a)",
+    g: "Topiramato (migraña)",
     p: ["Topamax 25mg cap", "Topiramato MK 25mg tab"],
-    cat: "Profilaxis migraÃ±a",
+    cat: "Profilaxis migraña",
     dosis: "25-100mg c/12h",
   },
   {
@@ -2112,7 +2112,7 @@ const MEDICAMENTOS_CO_BASE = [
     cat: "Betabloqueador no selectivo",
     dosis: "20-80mg c/12h",
   },
-  // â”€â”€ REUMATOLÃ“GICOS / MÃšSCULO-ESQUELÃ‰TICOS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── REUMATOLÓGICOS / MÚSCULO-ESQUELÉTICOS ────────────────────────────────
   {
     g: "Prednisona",
     p: [
@@ -2127,8 +2127,8 @@ const MEDICAMENTOS_CO_BASE = [
   {
     g: "Dexametasona",
     p: [
-      "DecadrÃ³n 4mg tab",
-      "DecadrÃ³n 8mg/2mL amp",
+      "Decadrón 4mg tab",
+      "Decadrón 8mg/2mL amp",
       "Dexametasona MK 4mg tab",
       "Dexametasona 4mg/mL amp",
       "Maxidex colirio 0.1%",
@@ -2144,7 +2144,7 @@ const MEDICAMENTOS_CO_BASE = [
       "Diprophos 5mg/1mL amp",
       "Betanovate crema",
     ],
-    cat: "Corticoide IM/tÃ³pico potente",
+    cat: "Corticoide IM/tópico potente",
     dosis: "4-6mg IM c/24-48h",
   },
   {
@@ -2167,7 +2167,7 @@ const MEDICAMENTOS_CO_BASE = [
       "Depo-Medrol 40mg/mL amp",
     ],
     cat: "Corticoide parenteral/oral",
-    dosis: "4-1000mg segÃºn indicaciÃ³n",
+    dosis: "4-1000mg según indicación",
   },
   {
     g: "Ciclobenzaprina",
@@ -2179,7 +2179,7 @@ const MEDICAMENTOS_CO_BASE = [
       "Cicloflexan 10mg tab",
     ],
     cat: "Relajante muscular central",
-    dosis: "5-10mg c/8h mÃ¡x 2-3 semanas",
+    dosis: "5-10mg c/8h máx 2-3 semanas",
   },
   {
     g: "Tizanidina",
@@ -2189,14 +2189,14 @@ const MEDICAMENTOS_CO_BASE = [
       "Sirdalud 2mg tab",
       "Sirdalud 4mg tab",
     ],
-    cat: "Relajante muscular Î±2 agonista",
+    cat: "Relajante muscular α2 agonista",
     dosis: "2-8mg c/6-8h",
   },
   {
     g: "Carisoprodol",
     p: ["Soma 350mg tab", "Carisoprodol MK 350mg tab", "Dorixina Relax tab"],
     cat: "Relajante muscular central",
-    dosis: "250-350mg c/8h mÃ¡x 2-3 semanas",
+    dosis: "250-350mg c/8h máx 2-3 semanas",
   },
   {
     g: "Metocarbamol",
@@ -2216,7 +2216,7 @@ const MEDICAMENTOS_CO_BASE = [
       "Metotrexato 10mg/mL amp",
     ],
     cat: "DMARD antiinflamatorio",
-    dosis: "7.5-25mg c/semana + Ã¡cido fÃ³lico",
+    dosis: "7.5-25mg c/semana + ácido fólico",
   },
   {
     g: "Hidroxicloroquina",
@@ -2225,7 +2225,7 @@ const MEDICAMENTOS_CO_BASE = [
       "Hidroxicloroquina MK 200mg tab",
       "Quensyl 200mg tab",
     ],
-    cat: "DMARD antipalÃºdico",
+    cat: "DMARD antipalúdico",
     dosis: "200-400mg c/24h",
   },
   {
@@ -2245,24 +2245,24 @@ const MEDICAMENTOS_CO_BASE = [
     dosis: "1-3g c/24h (dividido)",
   },
   {
-    g: "Capsaicina tÃ³pica",
-    p: ["Zostrix 0.025% crema", "Capsaicina MK crema", "Capsin lociÃ³n 0.025%"],
-    cat: "AnalgÃ©sico tÃ³pico capsaicinoide",
+    g: "Capsaicina tópica",
+    p: ["Zostrix 0.025% crema", "Capsaicina MK crema", "Capsin loción 0.025%"],
+    cat: "Analgésico tópico capsaicinoide",
     dosis: "Aplicar c/8h zona dolorosa",
   },
   {
-    g: "LidocaÃ­na tÃ³pica",
+    g: "Lidocaína tópica",
     p: [
       "EMLA crema 2.5%",
-      "LidocaÃ­na gel 2%",
-      "XylocaÃ­na gel 2%",
-      "LidocaÃ­na spray",
-      "XilocaÃ­na jalea 2%",
+      "Lidocaína gel 2%",
+      "Xylocaína gel 2%",
+      "Lidocaína spray",
+      "Xilocaína jalea 2%",
     ],
-    cat: "AnestÃ©sico local tÃ³pico",
+    cat: "Anestésico local tópico",
     dosis: "Aplicar 1h antes procedimiento",
   },
-  // â”€â”€ UROLÃ“GICOS / GINECOLÃ“GICOS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── UROLÓGICOS / GINECOLÓGICOS ────────────────────────────────────────────
   {
     g: "Tamsulosina",
     p: [
@@ -2271,7 +2271,7 @@ const MEDICAMENTOS_CO_BASE = [
       "Urimax 0.4mg cap CR",
       "Secotex 0.4mg cap",
     ],
-    cat: "Î±1-bloqueante HBP",
+    cat: "α1-bloqueante HBP",
     dosis: "0.4mg c/24h desayuno",
   },
   {
@@ -2281,7 +2281,7 @@ const MEDICAMENTOS_CO_BASE = [
       "Dutasterida MK 0.5mg cap",
       "Duodart 0.5/0.4mg cap",
     ],
-    cat: "5Î±-reductasa inhibidor HBP",
+    cat: "5α-reductasa inhibidor HBP",
     dosis: "0.5mg c/24h",
   },
   {
@@ -2291,7 +2291,7 @@ const MEDICAMENTOS_CO_BASE = [
       "Propecia 1mg tab (alopecia)",
       "Finasterida MK 5mg tab",
     ],
-    cat: "5Î±-reductasa inhibidor",
+    cat: "5α-reductasa inhibidor",
     dosis: "5mg c/24h (HBP)",
   },
   {
@@ -2322,18 +2322,18 @@ const MEDICAMENTOS_CO_BASE = [
       "Loette (LNG/EE 20mcg)",
     ],
     cat: "Anticonceptivo hormonal combinado",
-    dosis: "1 tab c/24h 21 dÃ­as activos",
+    dosis: "1 tab c/24h 21 días activos",
   },
   {
     g: "Levonorgestrel",
     p: [
       "Plan B 0.75mg tab",
       "Postinor-2 0.75mg tab",
-      "Levonorgestrel 1.5mg tab (dosis Ãºnica)",
+      "Levonorgestrel 1.5mg tab (dosis única)",
       "DIU Mirena 52mg",
     ],
-    cat: "ProgestÃ¡geno anticoncepciÃ³n",
-    dosis: "1.5mg dosis Ãºnica < 72h",
+    cat: "Progestágeno anticoncepción",
+    dosis: "1.5mg dosis única < 72h",
   },
   {
     g: "Progesterona micronizada",
@@ -2342,16 +2342,16 @@ const MEDICAMENTOS_CO_BASE = [
       "Utrogestan 200mg cap",
       "Cyclogest 400mg supos",
     ],
-    cat: "ProgestÃ¡geno natural",
+    cat: "Progestágeno natural",
     dosis: "100-400mg c/24h vaginal",
   },
   {
     g: "Oxitocina",
     p: ["Syntocinon 10UI/mL amp", "Oxitocina MK 10UI amp"],
-    cat: "OxitÃ³cico",
-    dosis: "SegÃºn protocolo obstÃ©trico",
+    cat: "Oxitócico",
+    dosis: "Según protocolo obstétrico",
   },
-  // â”€â”€ DERMATOLÃ“GICOS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── DERMATOLÓGICOS ────────────────────────────────────────────────────────
   {
     g: "Hidrocortisona crema",
     p: [
@@ -2360,13 +2360,13 @@ const MEDICAMENTOS_CO_BASE = [
       "Cortaid crema 1%",
       "Locoid crema 0.1%",
     ],
-    cat: "Corticoide tÃ³pico baja potencia",
-    dosis: "Aplicar 2-3 veces/dÃ­a",
+    cat: "Corticoide tópico baja potencia",
+    dosis: "Aplicar 2-3 veces/día",
   },
   {
-    g: "Triamcinolona tÃ³pica",
+    g: "Triamcinolona tópica",
     p: ["Kenalog crema 0.1%", "Triamcinolona MK crema 0.1%", "Kenacomb crema"],
-    cat: "Corticoide tÃ³pico media potencia",
+    cat: "Corticoide tópico media potencia",
     dosis: "Aplicar c/12h",
   },
   {
@@ -2376,59 +2376,59 @@ const MEDICAMENTOS_CO_BASE = [
       "Clobetasol MK 0.05% crema",
       "Dermovate 0.05% crema",
     ],
-    cat: "Corticoide tÃ³pico alta potencia",
-    dosis: "Aplicar c/12h mÃ¡x 2 semanas",
+    cat: "Corticoide tópico alta potencia",
+    dosis: "Aplicar c/12h máx 2 semanas",
   },
   {
     g: "Mupirocina",
     p: [
-      "Bactroban 2% ungÃ¼ento",
-      "Mupirocina MK 2% ungÃ¼ento",
+      "Bactroban 2% ungüento",
+      "Mupirocina MK 2% ungüento",
       "Bactroban nasal 2%",
     ],
-    cat: "AntibiÃ³tico tÃ³pico",
-    dosis: "Aplicar c/8h x5-7 dÃ­as",
+    cat: "Antibiótico tópico",
+    dosis: "Aplicar c/8h x5-7 días",
   },
   {
     g: "Permetrina",
     p: [
       "Elimite 5% crema",
-      "Nix 1% lociÃ³n",
+      "Nix 1% loción",
       "Permetrina MK 5% crema",
-      "Quellada lociÃ³n",
+      "Quellada loción",
     ],
-    cat: "Antiparasitario tÃ³pico sarna/piojos",
-    dosis: "Aplicar toda piel lavar 8-14h despuÃ©s",
+    cat: "Antiparasitario tópico sarna/piojos",
+    dosis: "Aplicar toda piel lavar 8-14h después",
   },
   {
     g: "Adapaleno",
     p: ["Differin 0.1% crema", "Differin 0.3% gel", "Adapaleno MK 0.1% crema"],
-    cat: "Retinoide tÃ³pico acnÃ©",
-    dosis: "Aplicar 1 vez/dÃ­a noche",
+    cat: "Retinoide tópico acné",
+    dosis: "Aplicar 1 vez/día noche",
   },
   {
-    g: "TretinoÃ­na",
+    g: "Tretinoína",
     p: [
       "Retin-A 0.025% crema",
       "Retin-A 0.05% gel",
-      "TretinoÃ­na MK 0.05% crema",
+      "Tretinoína MK 0.05% crema",
     ],
-    cat: "Retinoide tÃ³pico acnÃ©/antienvejecimiento",
-    dosis: "Aplicar 1 vez/dÃ­a noche",
+    cat: "Retinoide tópico acné/antienvejecimiento",
+    dosis: "Aplicar 1 vez/día noche",
   },
   {
-    g: "Ãcido azelaico",
-    p: ["Finacea gel 15%", "Skinoren crema 20%", "Ãcido azelaico MK 20%"],
-    cat: "Antibacteriano/queratolÃ­tico tÃ³pico",
+    g: "Ácido azelaico",
+    p: ["Finacea gel 15%", "Skinoren crema 20%", "Ácido azelaico MK 20%"],
+    cat: "Antibacteriano/queratolítico tópico",
     dosis: "Aplicar c/12h",
   },
   {
-    g: "IsotretinoÃ­na oral",
-    p: ["Roacutan 20mg cap", "IsotretinoÃ­na MK 20mg cap", "Accutane 40mg cap"],
-    cat: "Retinoide oral sistÃ©mico (acnÃ© grave)",
-    dosis: "0.5-1mg/kg/dÃ­a (bajo control dermatologÃ­a)",
+    g: "Isotretinoína oral",
+    p: ["Roacutan 20mg cap", "Isotretinoína MK 20mg cap", "Accutane 40mg cap"],
+    cat: "Retinoide oral sistémico (acné grave)",
+    dosis: "0.5-1mg/kg/día (bajo control dermatología)",
   },
-  // â”€â”€ ANTIHISTAMÃNICOS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── ANTIHISTAMÍNICOS ──────────────────────────────────────────────────────
   {
     g: "Loratadina",
     p: [
@@ -2438,7 +2438,7 @@ const MEDICAMENTOS_CO_BASE = [
       "Claritin D tab",
       "Loratadina susp 5mg/5mL",
     ],
-    cat: "AntihistamÃ­nico 2G no sedante",
+    cat: "Antihistamínico 2G no sedante",
     dosis: "10mg c/24h",
   },
   {
@@ -2450,7 +2450,7 @@ const MEDICAMENTOS_CO_BASE = [
       "Alerlisin 10mg tab",
       "Cetirizina sol 5mg/5mL",
     ],
-    cat: "AntihistamÃ­nico 2G",
+    cat: "Antihistamínico 2G",
     dosis: "10mg c/24h noche",
   },
   {
@@ -2461,19 +2461,19 @@ const MEDICAMENTOS_CO_BASE = [
       "Allegra 60mg tab",
       "Telfast 120mg tab",
     ],
-    cat: "AntihistamÃ­nico 2G no sedante",
+    cat: "Antihistamínico 2G no sedante",
     dosis: "60mg c/12h o 180mg c/24h",
   },
   {
     g: "Levocetirizina",
     p: ["Xyzal 5mg tab", "Levocetirizina MK 5mg tab"],
-    cat: "AntihistamÃ­nico 2G",
+    cat: "Antihistamínico 2G",
     dosis: "5mg c/24h noche",
   },
   {
     g: "Desloratadina",
     p: ["Aerius 5mg tab", "Desloratadina MK 5mg tab", "Clarinex 5mg tab"],
-    cat: "AntihistamÃ­nico 2G",
+    cat: "Antihistamínico 2G",
     dosis: "5mg c/24h",
   },
   {
@@ -2484,7 +2484,7 @@ const MEDICAMENTOS_CO_BASE = [
       "Benadryl PM cap",
       "Difenhidramina iny 50mg/mL",
     ],
-    cat: "AntihistamÃ­nico 1G sedante",
+    cat: "Antihistamínico 1G sedante",
     dosis: "25-50mg c/6-8h",
   },
   {
@@ -2494,23 +2494,23 @@ const MEDICAMENTOS_CO_BASE = [
       "Clorfeniramina MK 4mg tab",
       "Polaramine 2mg tab",
     ],
-    cat: "AntihistamÃ­nico 1G sedante",
+    cat: "Antihistamínico 1G sedante",
     dosis: "4mg c/6-8h",
   },
   {
     g: "Hidroxizina",
     p: ["Atarax 25mg tab", "Hidroxizina MK 25mg tab", "Vistaril 25mg cap"],
-    cat: "AntihistamÃ­nico 1G ansiolÃ­tico",
+    cat: "Antihistamínico 1G ansiolítico",
     dosis: "25-100mg c/8h",
   },
-  // â”€â”€ VITAMINAS Y SUPLEMENTOS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── VITAMINAS Y SUPLEMENTOS ───────────────────────────────────────────────
   {
-    g: "Ãcido FÃ³lico",
+    g: "Ácido Fólico",
     p: [
       "Folidex 1mg tab",
-      "Ãcido FÃ³lico MK 1mg tab",
-      "FolacÃ­n 5mg tab",
-      "Ãcido FÃ³lico 0.4mg prenatal",
+      "Ácido Fólico MK 1mg tab",
+      "Folacín 5mg tab",
+      "Ácido Fólico 0.4mg prenatal",
     ],
     cat: "Vitamina B9",
     dosis: "0.4-5mg c/24h",
@@ -2573,7 +2573,7 @@ const MEDICAMENTOS_CO_BASE = [
       "Becozyme tab",
     ],
     cat: "Vitaminas grupo B",
-    dosis: "1 tab c/24h o amp IM c/7 dÃ­as",
+    dosis: "1 tab c/24h o amp IM c/7 días",
   },
   {
     g: "Vitamina C",
@@ -2581,7 +2581,7 @@ const MEDICAMENTOS_CO_BASE = [
       "Cevalin 500mg tab efervescente",
       "Vitamina C MK 500mg tab",
       "Redoxon 1g tab efervescente",
-      "CebiÃ³n 500mg tab",
+      "Cebión 500mg tab",
     ],
     cat: "Vitamina C antioxidante",
     dosis: "500-2000mg c/24h",
@@ -2617,7 +2617,7 @@ const MEDICAMENTOS_CO_BASE = [
       "Eskimo 1g cap",
       "Lovaza 1g cap",
     ],
-    cat: "Suplemento lipÃ­dico cardiosaludable",
+    cat: "Suplemento lipídico cardiosaludable",
     dosis: "1-4g c/24h con comidas",
   },
   {
@@ -2628,39 +2628,39 @@ const MEDICAMENTOS_CO_BASE = [
       "Iron Sucrose MK 100mg amp",
     ],
     cat: "Hierro parenteral",
-    dosis: "SegÃºn fÃ³rmula dÃ©ficit hierro IV",
+    dosis: "Según fórmula déficit hierro IV",
   },
-  // â”€â”€ OFTALMOLÃ“GICOS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── OFTALMOLÓGICOS ────────────────────────────────────────────────────────
   {
-    g: "Gentamicina oftÃ¡lmica",
+    g: "Gentamicina oftálmica",
     p: [
       "Gentamicina colirio 0.3%",
       "Garamycin colirio",
-      "Gentamicina ungÃ¼ento ocular",
+      "Gentamicina ungüento ocular",
     ],
-    cat: "AntibiÃ³tico ocular",
+    cat: "Antibiótico ocular",
     dosis: "1-2 gotas c/4h",
   },
   {
-    g: "Ciprofloxacino oftÃ¡lmico",
+    g: "Ciprofloxacino oftálmico",
     p: ["Ciloxan colirio 0.3%", "Ciprofloxacino colirio 0.3%"],
-    cat: "AntibiÃ³tico ocular FQ",
+    cat: "Antibiótico ocular FQ",
     dosis: "1-2 gotas c/2-4h",
   },
   {
-    g: "Tobramicina oftÃ¡lmica",
+    g: "Tobramicina oftálmica",
     p: ["Tobrex 0.3% gotas", "Tobramicina MK 0.3% gotas"],
-    cat: "AntibiÃ³tico ocular aminoglucÃ³sido",
+    cat: "Antibiótico ocular aminoglucósido",
     dosis: "1-2 gotas c/4h",
   },
   {
-    g: "LÃ¡grimas Artificiales",
+    g: "Lágrimas Artificiales",
     p: [
       "Systane Ultra gotas",
       "Tears Naturale gotas",
       "Optive gotas",
       "Artelac gotas",
-      "Hialuronato sÃ³dico 0.2% colirio",
+      "Hialuronato sódico 0.2% colirio",
       "Visine Tears",
     ],
     cat: "Lubricante ocular",
@@ -2669,11 +2669,11 @@ const MEDICAMENTOS_CO_BASE = [
   {
     g: "Latanoprost",
     p: ["Xalatan 50mcg/mL gotas", "Latanoprost MK 0.005% gotas"],
-    cat: "AnÃ¡logo prostanoide glaucoma",
+    cat: "Análogo prostanoide glaucoma",
     dosis: "1 gota c/24h noche",
   },
   {
-    g: "Timolol oftÃ¡lmico",
+    g: "Timolol oftálmico",
     p: ["Timoptol 0.25% gotas", "Timoptol 0.5% gotas", "Timolol MK 0.5% gotas"],
     cat: "Betabloqueante ocular glaucoma",
     dosis: "1 gota c/12h",
@@ -2685,12 +2685,12 @@ const MEDICAMENTOS_CO_BASE = [
       "Dorzolamida MK 2% gotas",
       "Cosopt (dorzo+timolol) gotas",
     ],
-    cat: "Inhibidor anhidrasa carbÃ³nica ocular",
+    cat: "Inhibidor anhidrasa carbónica ocular",
     dosis: "1 gota c/8h",
   },
-  // â”€â”€ MISCELÃNEOS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── MISCELÁNEOS ───────────────────────────────────────────────────────────
   {
-    g: "SoluciÃ³n Salina 0.9%",
+    g: "Solución Salina 0.9%",
     p: [
       "SSN 100mL IV",
       "SSN 500mL IV",
@@ -2698,30 +2698,30 @@ const MEDICAMENTOS_CO_BASE = [
       "ClNa 0.9% spray nasal",
       "SSN neb 3mL",
     ],
-    cat: "ElectrolÃ­tica isotÃ³nica/diluyente",
-    dosis: "SegÃºn indicaciÃ³n",
+    cat: "Electrolítica isotónica/diluyente",
+    dosis: "Según indicación",
   },
   {
     g: "Suero Oral (SRO)",
     p: [
       "Pedialyte polvo",
-      "Sales rehidrataciÃ³n oral MK sob",
+      "Sales rehidratación oral MK sob",
       "Hidrasec sobres",
       "Electrolit Plus sobre",
       "ORS polvo WHO",
     ],
     cat: "Rehidratante oral",
-    dosis: "SegÃºn nivel deshidrataciÃ³n AIEPI",
+    dosis: "Según nivel deshidratación AIEPI",
   },
   {
-    g: "N-AcetilcisteÃ­na IV",
+    g: "N-Acetilcisteína IV",
     p: [
       "Fluimucil 600mg tab efervescente",
-      "N-AcetilcisteÃ­na MK 600mg sob",
-      "NAC 150mg/mL amp IV (antÃ­doto)",
+      "N-Acetilcisteína MK 600mg sob",
+      "NAC 150mg/mL amp IV (antídoto)",
     ],
-    cat: "AntÃ­doto paracetamol/nefroprotector",
-    dosis: "150mg/kg IV x15 min luego infusiÃ³n",
+    cat: "Antídoto paracetamol/nefroprotector",
+    dosis: "150mg/kg IV x15 min luego infusión",
   },
   {
     g: "Naloxona",
@@ -2730,19 +2730,19 @@ const MEDICAMENTOS_CO_BASE = [
       "Naloxona MK 0.4mg amp",
       "Narcan 4mg intranasal",
     ],
-    cat: "AntÃ­doto opioides",
+    cat: "Antídoto opioides",
     dosis: "0.4-2mg IV/IM/IN; repetir c/2-3min SOS",
   },
   {
     g: "Flumazenil",
     p: ["Anexate 0.5mg/5mL amp", "Flumazenil MK 1mg/10mL amp"],
-    cat: "AntÃ­doto benzodiazepinas",
+    cat: "Antídoto benzodiazepinas",
     dosis: "0.2mg IV c/60s hasta respuesta",
   },
   {
-    g: "CarbÃ³n Activado",
+    g: "Carbón Activado",
     p: [
-      "CarbÃ³n Activado 25g polvo oral",
+      "Carbón Activado 25g polvo oral",
       "Norit 200mg tab",
       "Toxicarb polvo oral",
     ],
@@ -2750,14 +2750,14 @@ const MEDICAMENTOS_CO_BASE = [
     dosis: "25-50g VO adulto urgencias",
   },
   {
-    g: "Toxoide TetÃ¡nico",
+    g: "Toxoide Tetánico",
     p: [
       "Td adulto 0.5mL amp IM",
-      "Toxoide tetÃ¡nico 0.5mL",
+      "Toxoide tetánico 0.5mL",
       "Boostrix 0.5mL (Tdap)",
     ],
     cat: "Vacuna bacteriana",
-    dosis: "0.5mL IM; refuerzo c/10 aÃ±os",
+    dosis: "0.5mL IM; refuerzo c/10 años",
   },
   {
     g: "Vacuna Influenza",
@@ -2768,7 +2768,7 @@ const MEDICAMENTOS_CO_BASE = [
       "Fluarix 0.5mL iny",
     ],
     cat: "Vacuna viral influenza",
-    dosis: "0.5mL IM c/aÃ±o",
+    dosis: "0.5mL IM c/año",
   },
   {
     g: "Alendronato",
@@ -2779,12 +2779,12 @@ const MEDICAMENTOS_CO_BASE = [
       "Fosamax Plus (con vitamina D)",
     ],
     cat: "Bifosfonato osteoporosis",
-    dosis: "70mg c/semana maÃ±ana ayunas",
+    dosis: "70mg c/semana mañana ayunas",
   },
   {
     g: "Raloxifeno",
     p: ["Evista 60mg tab", "Raloxifeno MK 60mg tab"],
-    cat: "SERM osteoporosis prevenciÃ³n",
+    cat: "SERM osteoporosis prevención",
     dosis: "60mg c/24h",
   },
   {
@@ -2798,32 +2798,32 @@ const MEDICAMENTOS_CO_BASE = [
     p: [
       "Zometa 4mg/5mL IV",
       "Actonel 5mg/mL IV",
-      "Ãcido ZoledrÃ³nico MK 5mg IV",
+      "Ácido Zoledrónico MK 5mg IV",
     ],
     cat: "Bifosfonato IV osteoporosis severa",
-    dosis: "5mg IV 1 vez/aÃ±o",
+    dosis: "5mg IV 1 vez/año",
   },
   {
     g: "Calcio Gluconato IV",
     p: ["Calcio Gluconato 10% amp 10mL", "Calcio Gluconato MK 10% amp"],
-    cat: "Suplemento IV mineral/antÃ­doto hiperpotasemia",
+    cat: "Suplemento IV mineral/antídoto hiperpotasemia",
     dosis: "10-20mL IV lento urgencias",
   },
   {
     g: "Potasio Oral",
     p: ["Potasio Cloruro 20mEq sol oral", "KCl 10% amp", "Kaon-Cl 8mEq CR tab"],
     cat: "Suplemento electrolito potasio",
-    dosis: "20-80mEq/dÃ­a VO dividido",
+    dosis: "20-80mEq/día VO dividido",
   },
   {
-    g: "Bicarbonato SÃ³dico",
+    g: "Bicarbonato Sódico",
     p: [
-      "Bicarbonato sÃ³dico 8.4% amp",
+      "Bicarbonato sódico 8.4% amp",
       "NaHCO3 MK 500mg tab",
       "NaHCO3 7.5% amp",
     ],
-    cat: "Alcalinizante/correcciÃ³n acidosis",
-    dosis: "SegÃºn gasometrÃ­a o 500mg-1g c/8h VO",
+    cat: "Alcalinizante/corrección acidosis",
+    dosis: "Según gasometría o 500mg-1g c/8h VO",
   },
   {
     g: "Desmopresina",
@@ -2833,7 +2833,7 @@ const MEDICAMENTOS_CO_BASE = [
       "Nocdurna 25mcg SL",
       "Desmopresina MK 0.2mg tab",
     ],
-    cat: "AnÃ¡logo ADH (enuresis/DI)",
+    cat: "Análogo ADH (enuresis/DI)",
     dosis: "0.1-0.4mg c/24h oral",
   },
   {
@@ -2849,14 +2849,14 @@ const MEDICAMENTOS_CO_BASE = [
   {
     g: "Sulfato de Magnesio",
     p: ["MgSO4 20% amp 10mL", "MgSO4 50% amp 10mL", "Sulfato Mg MK 20% amp"],
-    cat: "TocolÃ­tico/anticonvulsivante eclampsia",
-    dosis: "4g IV carga + 1-2g/h infusiÃ³n",
+    cat: "Tocolítico/anticonvulsivante eclampsia",
+    dosis: "4g IV carga + 1-2g/h infusión",
   },
   {
     g: "Oxitocina",
     p: ["Syntocinon 10UI/mL amp", "Oxitocina MK 10UI amp"],
-    cat: "OxitÃ³cico",
-    dosis: "SegÃºn protocolo obstÃ©trico",
+    cat: "Oxitócico",
+    dosis: "Según protocolo obstétrico",
   },
   {
     g: "Testosterona",
@@ -2866,13 +2866,13 @@ const MEDICAMENTOS_CO_BASE = [
       "Testogel sobre 50mg",
       "Testosterona undecanoato 1000mg amp",
     ],
-    cat: "AndrÃ³geno TRT",
-    dosis: "SegÃºn protocolo especialista",
+    cat: "Andrógeno TRT",
+    dosis: "Según protocolo especialista",
   },
   {
     g: "Tibolona",
     p: ["Livial 2.5mg tab", "Tibolona MK 2.5mg tab"],
-    cat: "Esteroide sintÃ©tico menopausia",
+    cat: "Esteroide sintético menopausia",
     dosis: "2.5mg c/24h",
   },
   {

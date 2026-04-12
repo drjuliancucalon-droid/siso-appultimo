@@ -1,4 +1,4 @@
-﻿// src/modules/clinical/ui/LicenciasTab.jsx
+// src/modules/clinical/ui/LicenciasTab.jsx
 import React from "react";
 import { PLAN_CONFIG, _contarHC } from '../../../shared/data/planConfig.js';
 import { _sbSet } from '../../../shared/lib/supabase.js';
@@ -12,18 +12,18 @@ const LicenciasTab = ({
   pendingActivationPlan,
   setPendingActivationPlan,
 }) => {
-  // â•â• GUARD: solo administrador puede gestionar licencias â•â•
+  // ══ GUARD: solo administrador puede gestionar licencias ══
   if (currentUser?.role !== "administrador") {
     return (
       <div className="bg-red-50 border-2 border-red-300 rounded-2xl p-8 text-center space-y-3">
-        <div className="text-4xl">ðŸ”’</div>
+        <div className="text-4xl">🔒</div>
         <p className="font-black text-red-800 text-lg">Acceso denegado</p>
         <p className="text-red-600 text-sm">
-          La gestiÃ³n de planes y licencias es{" "}
+          La gestión de planes y licencias es{" "}
           <strong>exclusiva del administrador</strong>.
         </p>
         <p className="text-red-500 text-xs">
-          Si necesitas un cambio de plan, comunÃ­cate con el administrador de tu
+          Si necesitas un cambio de plan, comunícate con el administrador de tu
           cuenta.
         </p>
       </div>
@@ -33,7 +33,7 @@ const LicenciasTab = ({
   const [licEditId, setLicEditId] = React.useState(null);
   const [licForm, setLicForm] = React.useState({});
   const [licSaved, setLicSaved] = React.useState(false);
-  const [licErrors, setLicErrors] = React.useState([]); // validaciÃ³n mÃ©todo de pago
+  const [licErrors, setLicErrors] = React.useState([]); // validación método de pago
 
   const planOrder = ["libre", "starter", "pro", "clinica"];
   const planColors = {
@@ -43,7 +43,7 @@ const LicenciasTab = ({
     clinica: "purple",
   };
 
-  // â”€â”€ Auto-apertura cuando viene de "Activar para usuario" en renderPlanes â”€â”€
+  // ── Auto-apertura cuando viene de "Activar para usuario" en renderPlanes ──
   React.useEffect(() => {
     if (!pendingActivationPlan) return;
     // Abrir el primer usuario que no sea el admin activo, o el primero de la lista
@@ -84,35 +84,35 @@ const LicenciasTab = ({
   };
 
   const saveLic = (u) => {
-    // â•â• VALIDACIÃ“N ESTRICTA POR MÃ‰TODO DE PAGO â•â•
+    // ══ VALIDACIÓN ESTRICTA POR MÉTODO DE PAGO ══
     const errors = [];
     const monto = Number(licForm.monto) || 0;
     const planPrecio = PLAN_CONFIG[licForm.license]?.price || 0;
 
     if (licForm.license !== "libre") {
-      // 1. Planes de pago: monto requerido salvo prueba/cortesÃ­a
+      // 1. Planes de pago: monto requerido salvo prueba/cortesía
       if (["manual", "referido"].includes(licForm.tipo)) {
         if (!licForm.monto || monto <= 0)
           errors.push(
-            "ðŸ’° El monto cobrado es obligatorio para activaciÃ³n manual o referido."
+            "💰 El monto cobrado es obligatorio para activación manual o referido."
           );
         if (monto < planPrecio * 0.5)
           errors.push(
-            `ðŸ’° El monto ($${monto.toLocaleString(
+            `💰 El monto ($${monto.toLocaleString(
               "es-CO"
             )}) parece muy bajo para el plan ${
               PLAN_CONFIG[licForm.license]?.label
             } ($${planPrecio.toLocaleString("es-CO")}/mes). Verifica.`
           );
       }
-      // 2. CortesÃ­a: requiere nota de justificaciÃ³n
+      // 2. Cortesía: requiere nota de justificación
       if (licForm.tipo === "cortesia") {
         if (!licForm.notas || licForm.notas.trim().length < 10)
           errors.push(
-            "ðŸ“ Las activaciones por cortesÃ­a requieren justificaciÃ³n en las notas (mÃ­nimo 10 caracteres)."
+            "📝 Las activaciones por cortesía requieren justificación en las notas (mínimo 10 caracteres)."
           );
       }
-      // 3. Transferencia/Nequi/Daviplata: requieren mÃ©todo y monto
+      // 3. Transferencia/Nequi/Daviplata: requieren método y monto
       if (
         ["Transferencia", "Nequi", "Daviplata"].includes(licForm.formaPago) &&
         licForm.tipo !== "prueba" &&
@@ -120,13 +120,13 @@ const LicenciasTab = ({
       ) {
         if (!licForm.monto || monto <= 0)
           errors.push(
-            `ðŸ“² ${licForm.formaPago}: debes registrar el monto recibido para confirmar el pago.`
+            `📲 ${licForm.formaPago}: debes registrar el monto recibido para confirmar el pago.`
           );
       }
       // 4. Fecha de vencimiento requerida para planes de pago
       if (!licForm.licenseExpiry)
-        errors.push("ðŸ“… Define una fecha de vencimiento para el plan.");
-      // 5. Prueba: mÃ¡x. 30 dÃ­as
+        errors.push("📅 Define una fecha de vencimiento para el plan.");
+      // 5. Prueba: máx. 30 días
       if (licForm.tipo === "prueba" && licForm.licenseExpiry) {
         const dias = Math.ceil(
           (new Date(licForm.licenseExpiry) - new Date()) / 86400000
@@ -134,7 +134,7 @@ const LicenciasTab = ({
         const maxPrueba = PLAN_CONFIG[licForm.license]?.trialDays || 15;
         if (dias > maxPrueba)
           errors.push(
-            `â° PerÃ­odo de prueba mÃ¡ximo: ${maxPrueba} dÃ­as. Ajusta la fecha de vencimiento.`
+            `⏰ Período de prueba máximo: ${maxPrueba} días. Ajusta la fecha de vencimiento.`
           );
       }
     }
@@ -186,19 +186,19 @@ const LicenciasTab = ({
     if (!u.license || u.license === "libre")
       return (
         <span className="text-[10px] font-black text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">
-          ðŸ†“ Libre
+          🆓 Libre
         </span>
       );
     if (d !== null && d < 0)
       return (
         <span className="text-[10px] font-black text-red-600 bg-red-50 px-2 py-0.5 rounded-full">
-          âŒ Vencido
+          ❌ Vencido
         </span>
       );
     if (d !== null && d <= 7)
       return (
         <span className="text-[10px] font-black text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">
-          â° Vence en {d}d
+          ⏰ Vence en {d}d
         </span>
       );
     const hcU = _contarHC(patientsList, u.user);
@@ -207,19 +207,19 @@ const LicenciasTab = ({
       if (pct >= 1)
         return (
           <span className="text-[10px] font-black text-red-600 bg-red-50 px-2 py-0.5 rounded-full">
-            ðŸ”´ LÃ­mite HC
+            🔴 Límite HC
           </span>
         );
       if (pct >= 0.8)
         return (
           <span className="text-[10px] font-black text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">
-            ðŸŸ¡ 80% HC
+            🟡 80% HC
           </span>
         );
     }
     return (
       <span className="text-[10px] font-black text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
-        âœ… Activo
+        ✅ Activo
       </span>
     );
   };
@@ -238,20 +238,20 @@ const LicenciasTab = ({
 
   return (
     <div className="space-y-5">
-      {/* â”€â”€ BANNER GUÃA: aparece cuando viene desde "Activar para usuario" â”€â”€ */}
+      {/* ── BANNER GUÍA: aparece cuando viene desde "Activar para usuario" ── */}
       {pendingActivationPlan && pendingPlan && (
         <div className="bg-blue-600 text-white rounded-xl px-5 py-4 flex items-start gap-4">
-          <div className="text-3xl mt-0.5">ðŸŽ¯</div>
+          <div className="text-3xl mt-0.5">🎯</div>
           <div className="flex-1">
             <p className="font-black text-base">
               Activando plan {pendingPlan.label} - {pendingPlan.priceLabel}
             </p>
             <p className="text-blue-100 text-sm mt-1">
-              Se ha abierto automÃ¡ticamente el editor del primer usuario.
+              Se ha abierto automáticamente el editor del primer usuario.
               <br />
-              <strong>Â¿CÃ³mo funciona?</strong> Selecciona el usuario, confirma
+              <strong>¿Cómo funciona?</strong> Selecciona el usuario, confirma
               las fechas, el monto recibido y haz clic en{" "}
-              <em>"ðŸ’¾ Guardar cambios"</em>.
+              <em>"💾 Guardar cambios"</em>.
             </p>
             <ol className="text-blue-100 text-xs mt-2 space-y-0.5 list-decimal list-inside">
               <li>
@@ -263,7 +263,7 @@ const LicenciasTab = ({
               </li>
               <li>Ingresa el monto cobrado y la forma de pago</li>
               <li>
-                Haz clic en <strong>ðŸ’¾ Guardar cambios</strong>
+                Haz clic en <strong>💾 Guardar cambios</strong>
               </li>
             </ol>
           </div>
@@ -271,16 +271,16 @@ const LicenciasTab = ({
             onClick={() => setPendingActivationPlan(null)}
             className="text-blue-200 hover:text-white text-lg font-black leading-none"
           >
-            âœ•
+            ✕
           </button>
         </div>
       )}
 
-      {/* â”€â”€ MÃ‰TRICAS â”€â”€ */}
+      {/* ── MÉTRICAS ── */}
       <div className="grid grid-cols-3 gap-4">
         {[
           {
-            icon: "ðŸ’°",
+            icon: "💰",
             label: "Ingresos estimados/mes",
             value: `$${ingresos.toLocaleString("es-CO")} COP`,
             sub: `${
@@ -290,7 +290,7 @@ const LicenciasTab = ({
             bg: "bg-emerald-900",
           },
           {
-            icon: "ðŸ‘¥",
+            icon: "👥",
             label: "Usuarios activos",
             value: `${activeUsers.length} usuarios`,
             sub: `L:${
@@ -304,8 +304,8 @@ const LicenciasTab = ({
             bg: "bg-slate-800",
           },
           {
-            icon: "â°",
-            label: "Vencen en 7 dÃ­as",
+            icon: "⏰",
+            label: "Vencen en 7 días",
             value: `${vencenProx.length} usuarios`,
             sub:
               vencenProx.map((u) => u.name || u.user).join(", ") || "Ninguno",
@@ -321,14 +321,14 @@ const LicenciasTab = ({
         ))}
       </div>
 
-      {/* â”€â”€ TABLA DE USUARIOS â”€â”€ */}
+      {/* ── TABLA DE USUARIOS ── */}
       <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
         <div className="px-4 py-3 border-b border-gray-100 flex items-center gap-2">
           <span className="text-sm font-black text-gray-800">
-            ðŸ‘¥ Usuarios y Planes
+            👥 Usuarios y Planes
           </span>
           <span className="text-xs text-gray-400">
-            - Clic en âš™ï¸ Editar para asignar o cambiar el plan de un usuario
+            - Clic en ⚙️ Editar para asignar o cambiar el plan de un usuario
           </span>
         </div>
         <table className="w-full text-xs">
@@ -350,7 +350,7 @@ const LicenciasTab = ({
                 Estado
               </th>
               <th className="text-center px-3 py-2 font-black text-gray-600">
-                AcciÃ³n
+                Acción
               </th>
             </tr>
           </thead>
@@ -377,7 +377,7 @@ const LicenciasTab = ({
                         {u.name || u.user}
                       </p>
                       <p className="text-gray-400">
-                        @{u.user} Â· {u.role}
+                        @{u.user} · {u.role}
                       </p>
                     </td>
                     <td className="px-3 py-2.5">
@@ -438,12 +438,12 @@ const LicenciasTab = ({
                             : "text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100"
                         }`}
                       >
-                        {isEditing ? "âœ• Cerrar" : "âš™ï¸ Editar"}
+                        {isEditing ? "✕ Cerrar" : "⚙️ Editar"}
                       </button>
                     </td>
                   </tr>
 
-                  {/* â”€â”€ PANEL EDITOR INLINE â”€â”€ */}
+                  {/* ── PANEL EDITOR INLINE ── */}
                   {isEditing && (
                     <tr>
                       <td
@@ -514,7 +514,7 @@ const LicenciasTab = ({
                           {/* Tipo */}
                           <div>
                             <label className="block text-[10px] font-black text-gray-600 mb-1">
-                              Tipo de activaciÃ³n
+                              Tipo de activación
                             </label>
                             <select
                               value={licForm.tipo}
@@ -531,7 +531,7 @@ const LicenciasTab = ({
                               </option>
                               <option value="prueba">Prueba gratuita</option>
                               <option value="referido">Referido</option>
-                              <option value="cortesia">CortesÃ­a</option>
+                              <option value="cortesia">Cortesía</option>
                             </select>
                           </div>
                           {/* Monto */}
@@ -573,14 +573,14 @@ const LicenciasTab = ({
                               <option>Nequi</option>
                               <option>Daviplata</option>
                               <option>Efectivo</option>
-                              <option>CortesÃ­a</option>
+                              <option>Cortesía</option>
                             </select>
                           </div>
-                          {/* Restricciones por mÃ©todo de pago */}
+                          {/* Restricciones por método de pago */}
                           <div className="col-span-2 md:col-span-3 bg-blue-50 rounded-lg p-3 border border-blue-200">
                             <p className="text-[10px] font-black text-blue-800 uppercase mb-2">
-                              ðŸ“‹ Restricciones segÃºn mÃ©todo de pago y tipo de
-                              activaciÃ³n
+                              📋 Restricciones según método de pago y tipo de
+                              activación
                             </p>
                             <div className="grid grid-cols-2 gap-x-4 gap-y-1">
                               {[
@@ -590,26 +590,26 @@ const LicenciasTab = ({
                                 },
                                 {
                                   tipo: "Efectivo",
-                                  rule: "Monto recomendado. Verificar recibo fÃ­sico.",
+                                  rule: "Monto recomendado. Verificar recibo físico.",
                                 },
                                 {
                                   tipo: "Manual (pago verificado)",
-                                  rule: "Requiere monto â‰¥ 50% del precio del plan.",
+                                  rule: "Requiere monto ≥ 50% del precio del plan.",
                                 },
                                 {
                                   tipo: "Prueba gratuita",
-                                  rule: `MÃ¡x. ${
+                                  rule: `Máx. ${
                                     PLAN_CONFIG[licForm.license]?.trialDays ||
                                     15
-                                  } dÃ­as. Monto = $0. Sin restricciÃ³n de nota.`,
+                                  } días. Monto = $0. Sin restricción de nota.`,
                                 },
                                 {
                                   tipo: "Referido",
-                                  rule: "Requiere monto cobrado. Anota quiÃ©n refiriÃ³ en notas.",
+                                  rule: "Requiere monto cobrado. Anota quién refirió en notas.",
                                 },
                                 {
-                                  tipo: "CortesÃ­a",
-                                  rule: "Monto = $0 permitido PERO notas con justificaciÃ³n son OBLIGATORIAS (â‰¥10 caracteres).",
+                                  tipo: "Cortesía",
+                                  rule: "Monto = $0 permitido PERO notas con justificación son OBLIGATORIAS (≥10 caracteres).",
                                 },
                               ].map((r) => (
                                 <div
@@ -628,7 +628,7 @@ const LicenciasTab = ({
                                   }`}
                                 >
                                   <span className="font-black">
-                                    â€¢ {r.tipo}:
+                                    • {r.tipo}:
                                   </span>{" "}
                                   {r.rule}
                                 </div>
@@ -641,7 +641,7 @@ const LicenciasTab = ({
                               Notas internas{" "}
                               {licForm.tipo === "cortesia" ? (
                                 <span className="text-red-600">
-                                  * OBLIGATORIO para cortesÃ­a
+                                  * OBLIGATORIO para cortesía
                                 </span>
                               ) : (
                                 "(recomendado)"
@@ -658,8 +658,8 @@ const LicenciasTab = ({
                               }}
                               placeholder={
                                 licForm.tipo === "cortesia"
-                                  ? "Ej: CortesÃ­a por ser mÃ©dico fundador del proyecto."
-                                  : "Ej: Pago recibido Nequi 300 123 4567 Â· Referido por Dr. PÃ©rez"
+                                  ? "Ej: Cortesía por ser médico fundador del proyecto."
+                                  : "Ej: Pago recibido Nequi 300 123 4567 · Referido por Dr. Pérez"
                               }
                               className={`w-full p-2 border rounded-lg text-xs ${
                                 licForm.tipo === "cortesia"
@@ -669,21 +669,21 @@ const LicenciasTab = ({
                             />
                           </div>
                         </div>
-                        {/* Errores de validaciÃ³n */}
+                        {/* Errores de validación */}
                         {licErrors.length > 0 && (
                           <div className="bg-red-50 border-2 border-red-300 rounded-xl p-3 space-y-1">
                             <p className="text-xs font-black text-red-800 mb-1">
-                              â›” Corrige los siguientes errores antes de
+                              ⛔ Corrige los siguientes errores antes de
                               guardar:
                             </p>
                             {licErrors.map((e, i) => (
                               <p key={i} className="text-xs text-red-700">
-                                â€¢ {e}
+                                • {e}
                               </p>
                             ))}
                           </div>
                         )}
-                        {/* Botones de acciÃ³n */}
+                        {/* Botones de acción */}
                         <div className="flex flex-wrap gap-2 mt-4">
                           <button
                             onClick={() => {
@@ -696,7 +696,7 @@ const LicenciasTab = ({
                                 : "bg-blue-600 hover:bg-blue-700 text-white"
                             }`}
                           >
-                            {licSaved ? "âœ… Â¡Guardado!" : "ðŸ’¾ Guardar cambios"}
+                            {licSaved ? "✅ ¡Guardado!" : "💾 Guardar cambios"}
                           </button>
                           <button
                             onClick={() => {
@@ -726,7 +726,7 @@ const LicenciasTab = ({
                               }}
                               className="bg-amber-100 text-amber-700 px-4 py-2 rounded-lg text-xs font-bold hover:bg-amber-200 transition"
                             >
-                              ðŸŽ +
+                              🎁 +
                               {PLAN_CONFIG[licForm.license]?.trialDays || 15}d
                               prueba
                             </button>
@@ -762,30 +762,30 @@ const LicenciasTab = ({
                               }}
                               className="bg-purple-100 text-purple-700 px-4 py-2 rounded-lg text-xs font-bold hover:bg-purple-200 transition"
                             >
-                              +1 aÃ±o
+                              +1 año
                             </button>
                           )}
                         </div>
                         {/* Resumen de lo que se va a guardar */}
                         <div className="mt-3 p-3 bg-white rounded-lg border border-blue-200 text-xs text-gray-600 flex flex-wrap gap-4">
                           <span>
-                            ðŸ“‹ Plan:{" "}
+                            📋 Plan:{" "}
                             <strong className="text-blue-700">
                               {PLAN_CONFIG[licForm.license]?.label}
                             </strong>
                           </span>
                           <span>
-                            ðŸ“… Vence:{" "}
+                            📅 Vence:{" "}
                             <strong>
                               {licForm.licenseExpiry || "sin fecha"}
                             </strong>
                           </span>
                           <span>
-                            ðŸ’³ Pago: <strong>{licForm.formaPago}</strong>
+                            💳 Pago: <strong>{licForm.formaPago}</strong>
                           </span>
                           {licForm.monto > 0 && (
                             <span>
-                              ðŸ’°{" "}
+                              💰{" "}
                               <strong>
                                 ${Number(licForm.monto).toLocaleString("es-CO")}{" "}
                                 COP

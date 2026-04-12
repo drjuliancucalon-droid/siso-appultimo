@@ -1,4 +1,4 @@
-﻿// src/components/ui/SectionTitle.jsx
+// src/components/ui/SectionTitle.jsx
 import React from 'react';
 
 const SectionTitle = ({ title, icon: Icon, color }) => {

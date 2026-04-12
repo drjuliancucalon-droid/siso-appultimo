@@ -56,7 +56,7 @@ export const numeroALetras = (num) => {
   if (n >= 1000000) {
     out +=
       numeroALetras(Math.floor(n / 1000000)) +
-      (Math.floor(n / 1000000) === 1 ? " MILLÃ“N " : " MILLONES ");
+      (Math.floor(n / 1000000) === 1 ? " MILLÓN " : " MILLONES ");
     n %= 1000000;
   }
   if (n >= 1000) {
@@ -85,7 +85,7 @@ export const analyzeBP = (v) => {
   const [s, d] = v.split("/").map(Number);
   if (isNaN(s) || isNaN(d)) return null;
   if (s < 90 || d < 60)
-    return { text: "HipotensiÃ³n", color: "text-blue-600 bg-blue-100" };
+    return { text: "Hipotensión", color: "text-blue-600 bg-blue-100" };
   if (s < 120 && d < 80)
     return { text: "Normotenso", color: "text-green-600 bg-green-100" };
   if (s >= 120 && s <= 129 && d < 80)
@@ -141,30 +141,30 @@ export const getSpanishDate = (d) => {
 };
 export const NORMAL_DESCRIPTIONS_SYSTEMS = {
   cabeza:
-    "NormocÃ©falo, sin deformidades, sin masas palpables ni dolor a la palpaciÃ³n.",
-  ojos: "Pupilas isocÃ³ricas normorreactivas, conjuntivas rosadas, esclerÃ³ticas blancas, movimientos oculares conservados.",
+    "Normocéfalo, sin deformidades, sin masas palpables ni dolor a la palpación.",
+  ojos: "Pupilas isocóricas normorreactivas, conjuntivas rosadas, escleróticas blancas, movimientos oculares conservados.",
   oidos:
-    "Pabellones auriculares sin lesiones, conductos auditivos permeables, membranas timpÃ¡nicas Ã­ntegras.",
+    "Pabellones auriculares sin lesiones, conductos auditivos permeables, membranas timpánicas íntegras.",
   nariz:
-    "Tabique centrado, mucosa hÃºmeda rosada, sin pÃ³lipos ni secreciones patolÃ³gicas, permeabilidad nasal conservada.",
-  boca: "Mucosa oral hÃºmeda rosada, orofaringe sin eritema, amÃ­gdalas no hipertrÃ³ficas, denticiÃ³n conservada.",
+    "Tabique centrado, mucosa húmeda rosada, sin pólipos ni secreciones patológicas, permeabilidad nasal conservada.",
+  boca: "Mucosa oral húmeda rosada, orofaringe sin eritema, amígdalas no hipertróficas, dentición conservada.",
   cuello:
-    "Cuello simÃ©trico, sin adenopatÃ­as palpables, trÃ¡quea centrada, tiroides no palpable, pulsos carotÃ­deos simÃ©tricos.",
+    "Cuello simétrico, sin adenopatías palpables, tráquea centrada, tiroides no palpable, pulsos carotídeos simétricos.",
   torax:
-    "SimÃ©trico, normoexpansible, sin deformidades costales, mamas sin masas palpables.",
+    "Simétrico, normoexpansible, sin deformidades costales, mamas sin masas palpables.",
   corazon:
-    "Ruidos cardÃ­acos rÃ­tmicos, de buena intensidad, sin soplos, no se palpan thrill.",
+    "Ruidos cardíacos rítmicos, de buena intensidad, sin soplos, no se palpan thrill.",
   pulmones:
-    "Murmullo vesicular presente y simÃ©trico bilateralmente, sin agregados pulmonares (no sibilancias, no estertores).",
+    "Murmullo vesicular presente y simétrico bilateralmente, sin agregados pulmonares (no sibilancias, no estertores).",
   abdomen:
-    "Blando, depresible, no doloroso a la palpaciÃ³n, sin masas, sin organomegalias, ruidos intestinales presentes.",
+    "Blando, depresible, no doloroso a la palpación, sin masas, sin organomegalias, ruidos intestinales presentes.",
   genitourinario:
-    "Sin puÃ±o-percusiÃ³n renal positiva, regiÃ³n inguinal sin masas ni hernias palpables.",
+    "Sin puño-percusión renal positiva, región inguinal sin masas ni hernias palpables.",
   columna:
-    "Sin escoliosis, sin cifosis patolÃ³gica, movilidad conservada en todos los planos, no dolor a la palpaciÃ³n de apÃ³fisis espinosas.",
+    "Sin escoliosis, sin cifosis patológica, movilidad conservada en todos los planos, no dolor a la palpación de apófisis espinosas.",
   extremidades:
-    "SimÃ©tricas, bien conformadas, sin edemas, pulsos perifÃ©ricos presentes y simÃ©tricos, llenado capilar <2 seg.",
-  piel: "Tegumentos de coloraciÃ³n normal, hidratados, sin lesiones activas, sin cicatrices patolÃ³gicas.",
+    "Simétricas, bien conformadas, sin edemas, pulsos periféricos presentes y simétricos, llenado capilar <2 seg.",
+  piel: "Tegumentos de coloración normal, hidratados, sin lesiones activas, sin cicatrices patológicas.",
   neurologico:
-    "Orientado en tiempo, lugar y persona. Pares craneales sin alteraciones. Fuerza y sensibilidad conservadas, marcha normal, coordinaciÃ³n adecuada.",
+    "Orientado en tiempo, lugar y persona. Pares craneales sin alteraciones. Fuerza y sensibilidad conservadas, marcha normal, coordinación adecuada.",
 };

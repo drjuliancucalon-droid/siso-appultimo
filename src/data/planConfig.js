@@ -1,8 +1,8 @@
-﻿// src/data/planConfig.js - Configuración de planes y permisos
+// src/data/planConfig.js - Configuraci�n de planes y permisos
 
 const PLAN_CONFIG = {
   libre: {
-    label: "🆓 Libre",
+    label: "?? Libre",
     price: 0,
     priceLabel: "Gratis",
     maxHC: 8, // total, no mensual
@@ -31,7 +31,7 @@ const PLAN_CONFIG = {
     ],
   },
   starter: {
-    label: "🌱 Starter",
+    label: "?? Starter",
     price: 45000,
     priceLabel: "$45.000/mes",
     maxHC: 200,
@@ -69,7 +69,7 @@ const PLAN_CONFIG = {
     ],
   },
   pro: {
-    label: "⭐ Pro",
+    label: "? Pro",
     price: 79000,
     priceLabel: "$79.000/mes",
     maxHC: 9999,
@@ -122,7 +122,7 @@ const PLAN_CONFIG = {
     ],
   },
   clinica: {
-    label: "🏢 Clínica",
+    label: "?? Cl�nica",
     price: 159000,
     priceLabel: "$159.000/mes",
     maxHC: 9999,
@@ -140,22 +140,22 @@ const PLAN_CONFIG = {
   },
 };
 
-// ══════════════════════════════════════════════════════════════════════════════
-// FASE 2 — MULTI-TENANT / MULTI-ORG CONFIG
-// Organización principal del super_admin. Todos los datos existentes pertenecen
+// ------------------------------------------------------------------------------
+// FASE 2 � MULTI-TENANT / MULTI-ORG CONFIG
+// Organizaci�n principal del super_admin. Todos los datos existentes pertenecen
 // a esta org. Las nuevas orgs se crean desde el Panel Global del super_admin.
-// ══════════════════════════════════════════════════════════════════════════════
+// ------------------------------------------------------------------------------
 const ORG_DEFAULT_ID = "org_cucalon_2026";
 const ORG_CONFIG_DEFAULT = {
   orgId: ORG_DEFAULT_ID,
-  orgName: "OcupaSalud Popayán",
+  orgName: "OcupaSalud Popay�n",
   orgNit: "",
   plan: "clinica",
   createdAt: "2026-01-01",
   adminUser: "drcucalon",
 };
 
-// Helper: genera org_id único para nuevas organizaciones
+// Helper: genera org_id �nico para nuevas organizaciones
 const _genOrgId = (name) =>
   "org_" +
   name
@@ -166,20 +166,20 @@ const _genOrgId = (name) =>
   "_" +
   Date.now().toString(36);
 
-// Helper: ¿el rol tiene privilegios de administrador?
+// Helper: �el rol tiene privilegios de administrador?
 const _isAdmin = (role) => role === "administrador" || role === "super_admin";
 
-// ── IPS: helpers para admin de empresa (acceso desde login principal) ──
+// -- IPS: helpers para admin de empresa (acceso desde login principal) --
 const _isAdminEmpresa = (role) => role === "admin_empresa";
 const _isEmpresaUser = (user) => !!user?.empresaId;
 const _isAdminOrEmpresa = (role) => _isAdmin(role) || _isAdminEmpresa(role);
 
-// Helper: ¿el usuario actual tiene esta feature?
-// Uso: _canUse('ia_analisis', currentUser) → true/false
+// Helper: �el usuario actual tiene esta feature?
+// Uso: _canUse('ia_analisis', currentUser) ? true/false
 const _canUse = (feature, user) => {
   const plan = user?.license || "libre";
   const cfg = PLAN_CONFIG[plan] || PLAN_CONFIG.libre;
-  // Verificar expiración
+  // Verificar expiraci�n
   if (cfg.price > 0 && user?.licenseExpiry) {
     const exp = new Date(user.licenseExpiry);
     if (exp < new Date()) return false; // plan vencido
@@ -187,31 +187,31 @@ const _canUse = (feature, user) => {
   return cfg.features.includes("todo") || cfg.features.includes(feature);
 };
 
-// Helper: ¿cuántas HC totales tiene el usuario?
+// Helper: �cu�ntas HC totales tiene el usuario?
 const _contarHC = (lista, userId) =>
   lista.filter((p) => p._medicoId === userId && p.fechaExamen && !p._archivado)
     .length;
 
-// ══════════════════════════════════════════════════════════════════════════════
-// PERMISOS DE SECRETARIA - Solo el administrador puede activar módulos
-// por usuario. Por defecto TODO está en false (denegado).
-// ══════════════════════════════════════════════════════════════════════════════
+// ------------------------------------------------------------------------------
+// PERMISOS DE SECRETARIA - Solo el administrador puede activar m�dulos
+// por usuario. Por defecto TODO est� en false (denegado).
+// ------------------------------------------------------------------------------
 const SECRETARIA_PERMISOS_DEFAULT = {
   agenda: false, // Ver y gestionar agenda de citas
   bill: false, // Generar cuentas de cobro
-  propuestas: false, // Generar propuestas económicas
-  telemedicina: false, // Acceder al módulo de telemedicina
+  propuestas: false, // Generar propuestas econ�micas
+  telemedicina: false, // Acceder al m�dulo de telemedicina
   empresas: false, // Ver y editar empresas clientes
   pacientes_lista: false, // Ver listado de pacientes (solo lectura)
-  reporte: false, // Ver reportes epidemiológicos
+  reporte: false, // Ver reportes epidemiol�gicos
   sve: false, // Ver SVE
-  caja: false, // Acceder al módulo financiero/caja
+  caja: false, // Acceder al m�dulo financiero/caja
   adjuntos: false, // Subir adjuntos a HC
   cuentas_cobro: false, // Ver estado de cuentas por cobrar
-  pacientes_crear: false, // Crear nuevos pacientes (solo datos demográficos)
+  pacientes_crear: false, // Crear nuevos pacientes (solo datos demogr�ficos)
 };
 
-// ── Permisos que SIEMPRE tienen los médicos (no necesitan check) ──────────────
+// -- Permisos que SIEMPRE tienen los m�dicos (no necesitan check) --------------
 const MEDICO_SIEMPRE_PUEDE = new Set([
   "agenda",
   "bill",
@@ -227,13 +227,13 @@ const MEDICO_SIEMPRE_PUEDE = new Set([
   "telemedicina",
 ]);
 
-// Helper principal: ¿puede la secretaria hacer X?
+// Helper principal: �puede la secretaria hacer X?
 // - Admin siempre puede todo
-// - Médico sigue sus propias reglas (sin cambio)
-// - Secretaria: SOLO si admin habilitó explícitamente ESA feature
+// - M�dico sigue sus propias reglas (sin cambio)
+// - Secretaria: SOLO si admin habilit� expl�citamente ESA feature
 // FUENTE DE VERDAD (en orden de prioridad):
-//   1. usersList (siempre la más actualizada desde Supabase)
-//   2. currentUser.secretariaPermisos (cacheado en sesión actual)
+//   1. usersList (siempre la m�s actualizada desde Supabase)
+//   2. currentUser.secretariaPermisos (cacheado en sesi�n actual)
 //   3. SECRETARIA_PERMISOS_DEFAULT (todo denegado)
 const _secretariaPuede = (feature, currentUser, usersList) => {
   if (!currentUser) return false;
@@ -242,9 +242,9 @@ const _secretariaPuede = (feature, currentUser, usersList) => {
   if (currentUser.role === "medico")
     return MEDICO_SIEMPRE_PUEDE.has(feature) || true;
   if (currentUser.role === "secretaria") {
-    // Buscar siempre en usersList primero (tiene los datos más frescos de Supabase)
+    // Buscar siempre en usersList primero (tiene los datos m�s frescos de Supabase)
     const userObj = usersList?.find((u) => u.user === currentUser.user);
-    // Fallback a currentUser si usersList no tiene el objeto aún
+    // Fallback a currentUser si usersList no tiene el objeto a�n
     const permisos = userObj?.secretariaPermisos
       || currentUser?.secretariaPermisos
       || SECRETARIA_PERMISOS_DEFAULT;
@@ -253,7 +253,7 @@ const _secretariaPuede = (feature, currentUser, usersList) => {
   return false;
 };
 
-// ── Secretaria: ¿puede ver a este médico? (por medicosAsignados) ───────────────
+// -- Secretaria: �puede ver a este m�dico? (por medicosAsignados) ---------------
 const _secretariaMedicoAsignado = (currentUser, medicoId, usersList) => {
   if (!currentUser) return false;
   if (currentUser.role !== "secretaria") return true; // admin/medico ven todo

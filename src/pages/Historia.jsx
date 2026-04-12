@@ -1,4 +1,4 @@
-﻿// src/pages/Historia.jsx
+// src/pages/Historia.jsx
 // Historia Ocupacional + General pages
 // renderHistoriaOcupacional: line 18946
 // renderHistoriaGeneral: line 21103

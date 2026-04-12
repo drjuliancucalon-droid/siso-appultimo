@@ -1,9 +1,9 @@
 // src/shared/lib/aiProviders.js
 
 // ==========================================
-// MÃ“DULO 3: MOTOR DE IA MULTI-PROVEEDOR
+// MÓDULO 3: MOTOR DE IA MULTI-PROVEEDOR
 // Modelos verificados activos - Marzo 2026
-// Gemini Â· Groq Â· Together AI Â· OpenRouter
+// Gemini · Groq · Together AI · OpenRouter
 // CORS habilitado en todos - funcionan desde cualquier servidor externo
 // ==========================================
 export const AI_CONFIG_VERSION = "2026-03-v2";
@@ -15,20 +15,20 @@ export const fetchWithTimeout = (url, opts, ms = 40000) => {
   );
 };
 export const AI_PROVIDERS = {
-  // â”€â”€ 1. GEMINI - API Google, CORS nativo, mÃ¡s estable en browsers externos â”€
+  // ── 1. GEMINI - API Google, CORS nativo, más estable en browsers externos ─
   gemini: {
     name: "Google Gemini",
     free: true,
-    badge: "ðŸŸ¢ Gratis Â· Alta calidad",
+    badge: "🟢 Gratis · Alta calidad",
     docs: "aistudio.google.com",
-    hint: "Key gratuita: aistudio.google.com â†’ Get API Key",
+    hint: "Key gratuita: aistudio.google.com → Get API Key",
     link: "https://aistudio.google.com/apikey",
     call: async (prompt, systemPrompt, apiKey) => {
       if (!apiKey)
         throw new Error(
           "Gemini: API Key no configurada - obtenla gratis en aistudio.google.com/apikey"
         );
-      // Modelos verificados activos marzo 2026 (Gemini 1.5 retirado â†’ 404)
+      // Modelos verificados activos marzo 2026 (Gemini 1.5 retirado → 404)
       const tryModels = [
         "gemini-2.5-flash",
         "gemini-2.5-flash-lite",
@@ -49,8 +49,8 @@ export const AI_PROVIDERS = {
                 generationConfig: {
                   maxOutputTokens: 4096,
                   temperature: 0.3,
-                  ...(systemPrompt.includes("ÃšNICAMENTE CON JSON") ||
-                  systemPrompt.includes("ÃšNICAMENTE JSON")
+                  ...(systemPrompt.includes("ÚNICAMENTE CON JSON") ||
+                  systemPrompt.includes("ÚNICAMENTE JSON")
                     ? { responseMimeType: "application/json" }
                     : {}),
                 },
@@ -61,7 +61,7 @@ export const AI_PROVIDERS = {
             const errData = await res.json().catch(() => ({}));
             const msg = errData?.error?.message || res.statusText;
             lastErr = new Error(`Gemini/${model} [${res.status}]: ${msg}`);
-            // 401/403 = key invÃ¡lida | 400 solo si mensaje indica key invÃ¡lida
+            // 401/403 = key inválida | 400 solo si mensaje indica key inválida
             if (res.status === 401 || res.status === 403) break;
             if (
               res.status === 400 &&
@@ -70,12 +70,12 @@ export const AI_PROVIDERS = {
                 msg.includes("API key"))
             )
               break;
-            continue; // 404 = modelo no disponible â†’ probar siguiente
+            continue; // 404 = modelo no disponible → probar siguiente
           }
           const data = await res.json();
           const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
           if (text?.trim().length > 5) return text.trim();
-          lastErr = new Error(`Gemini/${model}: respuesta vacÃ­a`);
+          lastErr = new Error(`Gemini/${model}: respuesta vacía`);
         } catch (e) {
           if (e.name === "AbortError") {
             lastErr = new Error(`Gemini/${model}: timeout (40s)`);
@@ -92,13 +92,13 @@ export const AI_PROVIDERS = {
       );
     },
   },
-  // â”€â”€ 2. GROQ - Velocidad mÃ¡xima, CORS habilitado explÃ­citamente â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── 2. GROQ - Velocidad máxima, CORS habilitado explícitamente ────────────
   groq: {
     name: "Groq",
     free: true,
-    badge: "ðŸŸ¢ Gratis Â· UltrarrÃ¡pido",
+    badge: "🟢 Gratis · Ultrarrápido",
     docs: "console.groq.com",
-    hint: "Key gratuita: console.groq.com â†’ API Keys â†’ Create API Key",
+    hint: "Key gratuita: console.groq.com → API Keys → Create API Key",
     link: "https://console.groq.com/keys",
     call: async (prompt, systemPrompt, apiKey) => {
       if (!apiKey)
@@ -139,12 +139,12 @@ export const AI_PROVIDERS = {
             const msg = errData?.error?.message || res.statusText;
             lastErr = new Error(`Groq/${model} [${res.status}]: ${msg}`);
             if (res.status === 401 || res.status === 403) break;
-            continue; // 404/429 â†’ probar siguiente modelo
+            continue; // 404/429 → probar siguiente modelo
           }
           const data = await res.json();
           const text = data.choices?.[0]?.message?.content;
           if (text?.trim().length > 5) return text.trim();
-          lastErr = new Error(`Groq/${model}: respuesta vacÃ­a`);
+          lastErr = new Error(`Groq/${model}: respuesta vacía`);
         } catch (e) {
           if (e.name === "AbortError") {
             lastErr = new Error(`Groq/${model}: timeout`);
@@ -154,7 +154,7 @@ export const AI_PROVIDERS = {
             lastErr = new Error(
               `Groq: no se pudo conectar a api.groq.com - verifica tu red o renueva tu key en console.groq.com/keys`
             );
-            break; // error de red = no tiene sentido intentar mÃ¡s modelos
+            break; // error de red = no tiene sentido intentar más modelos
           }
           lastErr = e;
         }
@@ -167,18 +167,18 @@ export const AI_PROVIDERS = {
       );
     },
   },
-  // â”€â”€ 3. TOGETHER AI - Llama 3.3 70B 100% gratis, robusto â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── 3. TOGETHER AI - Llama 3.3 70B 100% gratis, robusto ─────────────────
   together: {
     name: "Together AI",
     free: true,
-    badge: "ðŸŸ¢ Gratis Â· Muy estable",
+    badge: "🟢 Gratis · Muy estable",
     docs: "api.together.ai",
-    hint: "Key gratuita: api.together.ai â†’ Settings â†’ API Keys - copia la key que empieza por letras/nÃºmeros (NO el cÃ³digo Python)",
+    hint: "Key gratuita: api.together.ai → Settings → API Keys - copia la key que empieza por letras/números (NO el código Python)",
     link: "https://api.together.ai",
     call: async (prompt, systemPrompt, apiKey) => {
       if (!apiKey)
         throw new Error(
-          "Together AI: API Key no configurada - obtenla gratis en api.together.ai â†’ Settings â†’ API Keys"
+          "Together AI: API Key no configurada - obtenla gratis en api.together.ai → Settings → API Keys"
         );
       // Modelos gratuitos verificados Together AI - marzo 2026
       // NOTA: los sufijos -Free fueron deprecados; ahora el acceso free
@@ -217,9 +217,9 @@ export const AI_PROVIDERS = {
             const msg = errData?.error?.message || res.statusText;
             lastErr = new Error(`Together/${model} [${res.status}]: ${msg}`);
             if (res.status === 401 || res.status === 403) {
-              // Key invÃ¡lida - no tiene sentido seguir probando modelos
+              // Key inválida - no tiene sentido seguir probando modelos
               throw new Error(
-                `Together AI [401]: API Key invÃ¡lida. Ve a api.together.ai â†’ Settings â†’ API Keys y copia SOLO la key (texto largo, no el cÃ³digo Python).`
+                `Together AI [401]: API Key inválida. Ve a api.together.ai → Settings → API Keys y copia SOLO la key (texto largo, no el código Python).`
               );
             }
             continue;
@@ -227,9 +227,9 @@ export const AI_PROVIDERS = {
           const data = await res.json();
           const text = data.choices?.[0]?.message?.content;
           if (text?.trim().length > 5) return text.trim();
-          lastErr = new Error(`Together/${model}: respuesta vacÃ­a`);
+          lastErr = new Error(`Together/${model}: respuesta vacía`);
         } catch (e) {
-          if (e.message?.includes("API Key invÃ¡lida")) throw e; // re-throw 401 immediately
+          if (e.message?.includes("API Key inválida")) throw e; // re-throw 401 immediately
           if (e.name === "AbortError") {
             lastErr = new Error(`Together/${model}: timeout`);
             continue;
@@ -245,13 +245,13 @@ export const AI_PROVIDERS = {
       );
     },
   },
-  // â”€â”€ 4. OPENROUTER - Multi-modelo, fallback mÃ¡ximo â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── 4. OPENROUTER - Multi-modelo, fallback máximo ─────────────────────────
   openrouter: {
     name: "OpenRouter",
     free: true,
-    badge: "ðŸŸ¢ Gratis Â· Multi-modelo",
+    badge: "🟢 Gratis · Multi-modelo",
     docs: "openrouter.ai",
-    hint: "Key gratuita: openrouter.ai â†’ Keys â†’ Create Key (login con Google)",
+    hint: "Key gratuita: openrouter.ai → Keys → Create Key (login con Google)",
     link: "https://openrouter.ai/keys",
     call: async (prompt, systemPrompt, apiKey) => {
       if (!apiKey)
@@ -259,7 +259,7 @@ export const AI_PROVIDERS = {
           "OpenRouter: API Key no configurada - obtenla gratis en openrouter.ai/keys"
         );
       // Modelos free VERIFICADOS activos en OpenRouter - marzo 2026
-      // (si alguno da 404, el cÃ³digo pasa automÃ¡ticamente al siguiente)
+      // (si alguno da 404, el código pasa automáticamente al siguiente)
       const tryModels = [
         "openrouter/auto",
         "meta-llama/llama-3.3-70b-instruct:free",
@@ -303,13 +303,13 @@ export const AI_PROVIDERS = {
             const errData = await res.json().catch(() => ({}));
             const msg = errData?.error?.message || res.statusText;
             lastErr = new Error(`OpenRouter/${model} [${res.status}]: ${msg}`);
-            if (res.status === 401 || res.status === 403) break; // key invÃ¡lida
-            continue; // 404 = modelo deprecado â†’ probar siguiente
+            if (res.status === 401 || res.status === 403) break; // key inválida
+            continue; // 404 = modelo deprecado → probar siguiente
           }
           const data = await res.json();
           const text = data.choices?.[0]?.message?.content;
           if (text?.trim().length > 5) return text.trim();
-          lastErr = new Error(`OpenRouter/${model}: respuesta vacÃ­a`);
+          lastErr = new Error(`OpenRouter/${model}: respuesta vacía`);
         } catch (e) {
           if (e.name === "AbortError") {
             lastErr = new Error(`OpenRouter/${model}: timeout`);
@@ -328,7 +328,7 @@ export const AI_PROVIDERS = {
   },
 };
 export const parseAIJSON = (raw) => {
-  if (!raw) throw new Error("Respuesta vacÃ­a");
+  if (!raw) throw new Error("Respuesta vacía");
   let clean = raw
     .replace(/^\uFEFF/, "")
     .replace(/```json\s*/gi, "")

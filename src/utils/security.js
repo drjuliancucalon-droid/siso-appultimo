@@ -1,4 +1,4 @@
-﻿// src/utils/security.js - Utilidades de seguridad OcupaSalud
+// src/utils/security.js - Utilidades de seguridad OcupaSalud
 import { _ls } from './storage.js';
 
 const sanitizeInput = (str) => {
@@ -13,17 +13,17 @@ const sanitizeInput = (str) => {
     .trim();
 };
 
-// SEC-U2: Validación fuerte de contraseña
+// SEC-U2: Validaci�n fuerte de contrase�a
 const validatePasswordStrength = (password) => {
   const errors = [];
-  if (!password || password.length < 8) errors.push('Mínimo 8 caracteres');
-  if (!/[A-Z]/.test(password)) errors.push('Al menos una mayúscula');
-  if (!/[a-z]/.test(password)) errors.push('Al menos una minúscula');
-  if (!/[0-9]/.test(password)) errors.push('Al menos un número');
+  if (!password || password.length < 8) errors.push('M�nimo 8 caracteres');
+  if (!/[A-Z]/.test(password)) errors.push('Al menos una may�scula');
+  if (!/[a-z]/.test(password)) errors.push('Al menos una min�scula');
+  if (!/[0-9]/.test(password)) errors.push('Al menos un n�mero');
   return { valid: errors.length === 0, errors };
 };
 
-// SEC-U3: Logger de auditoría
+// SEC-U3: Logger de auditor�a
 const _auditLog = (action, user, detail = '') => {
   try {
     const logs = JSON.parse(localStorage.getItem('siso_audit_log') || '[]');
@@ -34,7 +34,7 @@ const _auditLog = (action, user, detail = '') => {
       detail: sanitizeInput(String(detail)),
       ua: navigator.userAgent.substring(0, 80),
     });
-    // Mantener solo los últimos 200 registros
+    // Mantener solo los �ltimos 200 registros
     if (logs.length > 200) logs.splice(0, logs.length - 200);
     localStorage.setItem('siso_audit_log', JSON.stringify(logs));
   } catch (_) {}
@@ -63,7 +63,7 @@ const _rl = {
   getAttempts: () => _rl.get().attempts || 0,
 };
 
-// SEC-U5: Timeout de sesión inactiva (30 minutos)
+// SEC-U5: Timeout de sesi�n inactiva (30 minutos)
 const SESSION_TIMEOUT_MS = 30 * 60 * 1000;
 let _sessionTimer = null;
 const _resetSessionTimer = (logoutCallback) => {
@@ -86,7 +86,7 @@ const _sha256 = async (str) => {
     .map((b) => b.toString(16).padStart(2, "0"))
     .join("");
 };
-// SEC-09: PBKDF2 con salt para contraseñas (más seguro que SHA-256 puro)
+// SEC-09: PBKDF2 con salt para contrase�as (m�s seguro que SHA-256 puro)
 // salt se genera una vez por usuario y se guarda junto al hash
 const _pbkdf2Hash = async (password, saltHex) => {
   const enc = new TextEncoder();
@@ -113,28 +113,28 @@ const _pbkdf2Hash = async (password, saltHex) => {
     .join("");
   return { hash: hashHex, salt: saltHexOut };
 };
-// Verificar contraseña con PBKDF2 (compatible con hashes legacy SHA-256 sin salt)
+// Verificar contrase�a con PBKDF2 (compatible con hashes legacy SHA-256 sin salt)
 const _verifyPassword = async (password, storedHash, storedSalt) => {
   if (!storedSalt) return (await _sha256(password)) === storedHash; // legacy
   const { hash } = await _pbkdf2Hash(password, storedSalt);
   return hash === storedHash;
 };
-// Hash síncrono simple para comparaciones en memoria (FNV-1a 64-bit expandido)
-// NOTA: SHA-256 real se usa al crear/cambiar contraseñas. Para validación en memoria
+// Hash s�ncrono simple para comparaciones en memoria (FNV-1a 64-bit expandido)
+// NOTA: SHA-256 real se usa al crear/cambiar contrase�as. Para validaci�n en memoria
 // se compara passHash (ya almacenado como SHA-256 hex) vs hash del input.
 const _hashSync = (str) => {
-  // Usamos la Web Crypto API de forma síncrona mediante un truco de Promise sync
+  // Usamos la Web Crypto API de forma s�ncrona mediante un truco de Promise sync
   // En este entorno (browser/React) usamos el valor pre-computado para el default
-  // y SHA-256 async para nuevas contraseñas.
+  // y SHA-256 async para nuevas contrase�as.
   return str; // placeholder - reemplazado por passHash en el flujo real
 };
-// ══ B-03 SEGURIDAD: Hashes de credenciales por defecto eliminados (OWASP A07) ══
+// -- B-03 SEGURIDAD: Hashes de credenciales por defecto eliminados (OWASP A07) --
 // adminCode: se configura en el primer uso desde el panel de administracion.
 // El hash se genera dinamicamente con _sha256() - nunca se almacena en codigo.
 // Para restablecer adminCode: usar el panel de usuarios con autenticacion activa.
 const _H = {
-  // SHA-256('9207') - código de borrado de datos por admin
-  // Para cambiar el código: recalcular SHA-256 del nuevo código y actualizar este valor
+  // SHA-256('9207') - c�digo de borrado de datos por admin
+  // Para cambiar el c�digo: recalcular SHA-256 del nuevo c�digo y actualizar este valor
   adminCode: "8cd110accd359cbd1cba8e0d423314c09e531aa4f5fdbc926621198e911fa308",
 };
 // SEGURIDAD: Sanitizador XSS para document.write - escapa caracteres HTML peligrosos
@@ -146,7 +146,7 @@ const _sanitize = (str) =>
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#x27;")
     .replace(/\//g, "&#x2F;");
-// SEC-FIX-02: Validación estricta de URL para imágenes (previene XSS via javascript: protocol)
+// SEC-FIX-02: Validaci�n estricta de URL para im�genes (previene XSS via javascript: protocol)
 // OWASP A03: Injection - solo permite data:image/, https:// y http:// (CWE-79)
 const _safeLogoUrl = (url) => {
   if (!url) return "";
@@ -154,7 +154,7 @@ const _safeLogoUrl = (url) => {
   if (u.startsWith("data:image/") || u.startsWith("https://") || u.startsWith("http://")) return u;
   return ""; // Rechaza javascript:, vbscript:, file://, etc.
 };
-// ── HELPER: Columna izquierda para cabeceras de documentos impresos ──────────
-// Si se pasa ipsData (objeto empresa), muestra logo+nombre+NIT+dirección de la IPS.
+// -- HELPER: Columna izquierda para cabeceras de documentos impresos ----------
+// Si se pasa ipsData (objeto empresa), muestra logo+nombre+NIT+direcci�n de la IPS.
 
 export { sanitizeInput, validatePasswordStrength, _auditLog, _rl, SESSION_TIMEOUT_MS, _resetSessionTimer, _clearSessionTimer, _sha256, _pbkdf2Hash, _verifyPassword, _hashSync, _H, _sanitize, _safeLogoUrl };

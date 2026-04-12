@@ -11,12 +11,12 @@ export const initialOccupPatientState = {
   codigoVerificacion: "",
   conteoEdiciones: 0,
   motivoEdicion: "",
-  // FoliaciÃ³n HC - Res. 1995/1999 Art. 3
+  // Foliación HC - Res. 1995/1999 Art. 3
   folioHC: "",
-  // NÃºmero consecutivo de versiÃ³n del documento
+  // Número consecutivo de versión del documento
   versionDocumento: 1,
   fechaExamen: new Date().toISOString().split("T")[0],
-  ciudad: "PopayÃ¡n",
+  ciudad: "Popayán",
   tipoExamen: "INGRESO",
   frecuenciaSeguimiento: "",
   enfasisExamen: "GENERAL",
@@ -31,12 +31,12 @@ export const initialOccupPatientState = {
   // Campos de incapacidad y ausencia (Res. 1843/2025 Art. 9 y 13)
   diasIncapacidad: "",
   diasAusenciaNoMedica: "",
-  // â•â• B-10: Nuevos campos Res. 1843/2025 â•â•
-  plazoImplementacionRecomendaciones: "20", // Art. 25 - plazo en dÃ­as calendario
-  periodicidadUltimaEval: "", // Para alerta de evaluaciÃ³n vencida (max 3 aÃ±os)
+  // ══ B-10: Nuevos campos Res. 1843/2025 ══
+  plazoImplementacionRecomendaciones: "20", // Art. 25 - plazo en días calendario
+  periodicidadUltimaEval: "", // Para alerta de evaluación vencida (max 3 años)
   pausasActivasPrograma: false, // Art. 26 - empresa tiene programa de pausas activas
   pausasActivasParticipa: false, // Trabajador participa en pausas activas
-  justificacionPruebaEspecial: "", // JustificaciÃ³n clÃ­nica si se ordena prueba sensible
+  justificacionPruebaEspecial: "", // Justificación clínica si se ordena prueba sensible
   nombres: "",
   docNumero: "",
   docTipo: "CC",
@@ -77,7 +77,7 @@ export const initialOccupPatientState = {
   // Consentimiento con evidencia probatoria (Ley 1581/2012 + Res. 1843/2025 Art. 12)
   consentimientoVersion: "v2025-1843",
   consentimientoTimestamp: "",
-  consentimientoIp: "sesiÃ³n-web",
+  consentimientoIp: "sesión-web",
   riesgos: {
     fisicos: false,
     quimicos: false,
@@ -209,7 +209,7 @@ export const initialOccupPatientState = {
   peso: "",
   talla: "",
   imc: "",
-  diagnosticoPrincipal: "Z10.0 - EXAMEN MÃ‰DICO OCUPACIONAL",
+  diagnosticoPrincipal: "Z10.0 - EXAMEN MÉDICO OCUPACIONAL",
   diagnosticoSecundario1: "",
   diagnosticoSecundario2: "",
   conceptoAptitud: "",
@@ -243,8 +243,8 @@ export const initialOccupPatientState = {
   // NORMATIVO: Res. 1843/2025 Art. 25 - Entrega del certificado al trabajador
   certificadoEntregado: false,
   fechaEntregaCertificado: "",
-  metodoEntregaCertificado: "FÃ­sica",
-  // B-16: Adjuntos de paraclÃ­nicos (espirometrÃ­a, audiometrÃ­a, RX, laboratorios)
+  metodoEntregaCertificado: "Física",
+  // B-16: Adjuntos de paraclínicos (espirometría, audiometría, RX, laboratorios)
   // Estructura: [{id, nombre, tipo, mimeType, tamano, fecha, subidoPor, path, url}]
   adjuntos: [],
 };
@@ -334,22 +334,22 @@ export const initialUsers = [
     user: "drcucalon",
     passHash:
       "49679f37304820e18bae7ed12292e42a7722a7d1a55f12e41b1abca5cc5162fd",
-    mustChangePassword: false, // FIX: no forzar cambio â€” Supabase tiene la contraseÃ±a real
+    mustChangePassword: false, // FIX: no forzar cambio — Supabase tiene la contraseña real
     name: "Dr. Julian Cucalon",
     role: "super_admin", // FASE 2: promovido a super_admin (puede crear orgs + HC)
-    orgId: ORG_DEFAULT_ID, // FASE 2: organizaciÃ³n principal
+    orgId: ORG_DEFAULT_ID, // FASE 2: organización principal
     license: "clinica",
     licenseExpiry: "2099-12-31",
     licenseStarted: "2026-01-01",
-    porcentajeHonorarios: 100, // FASE 2: hook distribuciÃ³n futura (Componente 10)
+    porcentajeHonorarios: 100, // FASE 2: hook distribución futura (Componente 10)
     secretariaPermisos: { ...SECRETARIA_PERMISOS_DEFAULT },
     // Perfil del super_admin - aparece en navbar, certificados y firmas
     doctorData: {
       ...DEFAULT_DOCTOR_DATA,
       nombre: "Dr. Julian Cucalon",
-      titulo: "MÃ©dico Especialista en Salud Ocupacional",
-      ciudad: "PopayÃ¡n",
-      // licencia, cedula, celular, email: se configuran en Ajustes â†’ Firma
+      titulo: "Médico Especialista en Salud Ocupacional",
+      ciudad: "Popayán",
+      // licencia, cedula, celular, email: se configuran en Ajustes → Firma
     },
   },
 ];
@@ -366,29 +366,29 @@ export const initialCompanyState = {
   correo: "",
   arl: "",
   gerente: "",
-  // â”€â”€ Convenio â”€â”€
-  medicoResponsableId: "", // mÃ©dico principal para esta empresa
+  // ── Convenio ──
+  medicoResponsableId: "", // médico principal para esta empresa
   tarifaIngreso: "", // tarifa examen de ingreso COP
-  tarifaPeriodico: "", // tarifa examen periÃ³dico
+  tarifaPeriodico: "", // tarifa examen periódico
   tarifaEgreso: "", // tarifa examen de egreso
   tarifaConsulta: "", // tarifa consulta general
   condicionesPago: "contado", // contado / 30dias / 60dias
   convenioFecha: "", // inicio del convenio
-  convenioVencimiento: "", // vencimiento (alerta 30 dÃ­as antes)
+  convenioVencimiento: "", // vencimiento (alerta 30 días antes)
   descuento: "", // % descuento sobre tarifa
   portalActivo: false, // portal cliente habilitado
-  facturacionAgrupada: false, // agrupar varios exÃ¡menes en una factura
-  planExamenes: [], // exÃ¡menes incluidos en el convenio
+  facturacionAgrupada: false, // agrupar varios exámenes en una factura
+  planExamenes: [], // exámenes incluidos en el convenio
   notasConvenio: "", // notas adicionales del convenio
-  // â”€â”€ Multi-mÃ©dico / Multi-sede (FASE 2) â”€â”€
-  medicoIds: [], // array de usernames de mÃ©dicos asignados a esta empresa
+  // ── Multi-médico / Multi-sede (FASE 2) ──
+  medicoIds: [], // array de usernames de médicos asignados a esta empresa
   sedes: [], // array de sedes [{nombre, ciudad, direccion}]
-  // â”€â”€ Admin del Portal Empresa (FASE 2) â”€â”€
+  // ── Admin del Portal Empresa (FASE 2) ──
   portalAdminUser: "", // username del admin del portal empresa
-  portalAdminPassHash: "", // SHA-256 de la contraseÃ±a admin del portal
-  // â”€â”€ IPS: Admin de empresa con acceso al login principal â”€â”€
+  portalAdminPassHash: "", // SHA-256 de la contraseña admin del portal
+  // ── IPS: Admin de empresa con acceso al login principal ──
   adminEmpresaUser: "", // username del admin_empresa (login principal)
-  // â”€â”€ PASO 1: Perfil IPS â”€â”€
+  // ── PASO 1: Perfil IPS ──
   logo: "", // base64 del logo de la empresa
   lema: "", // slogan/lema de la IPS
 };

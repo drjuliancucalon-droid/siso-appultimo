@@ -1,4 +1,4 @@
-﻿// src/components/modals/ConsentimientoModal.jsx
+// src/components/modals/ConsentimientoModal.jsx
 import React from 'react';
 import { CheckCircle2, X, FileText } from 'lucide-react';
 
@@ -34,7 +34,7 @@ const ConsentimientoModal = ({
       return;
     }
     if (!aceptado) {
-      setError("Debe marcar la casilla de aceptación para continuar.");
+      setError("Debe marcar la casilla de aceptaci�n para continuar.");
       return;
     }
     const ts = new Date().toISOString();
@@ -44,7 +44,7 @@ const ConsentimientoModal = ({
       tipoConsentimiento: "Digital",
       fechaConsentimiento: ts.split("T")[0],
       consentimientoTimestamp: ts,
-      consentimientoIp: "sesión-web",
+      consentimientoIp: "sesi�n-web",
       consentimientoVersion: "v2025-1843",
     });
   };
@@ -67,7 +67,7 @@ const ConsentimientoModal = ({
               Consentimiento Informado
             </h2>
             <p className="text-emerald-200 text-xs mt-0.5">
-              Ley 23/1981 · Res. 8430/1993 · Ley 1581/2012 · Res. 1843/2025
+              Ley 23/1981 � Res. 8430/1993 � Ley 1581/2012 � Res. 1843/2025
               Art.12
             </p>
           </div>
@@ -77,7 +77,7 @@ const ConsentimientoModal = ({
               className="text-emerald-200 hover:text-white text-xl font-black leading-none"
               aria-label="Cerrar"
             >
-              ✕
+              ?
             </button>
           )}
         </div>
@@ -85,49 +85,49 @@ const ConsentimientoModal = ({
         {/* Cuerpo scrollable */}
         <div className="overflow-y-auto flex-grow px-6 py-4 text-xs text-gray-700 space-y-3">
           <p className="font-bold text-gray-900 text-sm">
-            AUTORIZACIÓN PARA EVALUACIÓN MÉDICA OCUPACIONAL
+            AUTORIZACI�N PARA EVALUACI�N M�DICA OCUPACIONAL
           </p>
           <p>
             Yo, el/la trabajador(a) identificado(a) con el nombre y documento
-            que diligencie a continuación, en ejercicio de mi capacidad legal y
+            que diligencie a continuaci�n, en ejercicio de mi capacidad legal y
             actuando de manera libre y voluntaria, <strong>AUTORIZO</strong> al
             profesional de medicina del trabajo y salud ocupacional a:
           </p>
           <ul className="list-disc pl-5 space-y-1">
             <li>
-              Realizar la evaluación médica ocupacional de ingreso, periódica o
-              de egreso, según corresponda, de conformidad con la{" "}
-              <strong>Resolución 1843 de 2025</strong> y la Resolución 2346 de
+              Realizar la evaluaci�n m�dica ocupacional de ingreso, peri�dica o
+              de egreso, seg�n corresponda, de conformidad con la{" "}
+              <strong>Resoluci�n 1843 de 2025</strong> y la Resoluci�n 2346 de
               2007.
             </li>
             <li>
               Recopilar, almacenar y procesar mis datos personales y de salud
-              con fines exclusivamente médico-ocupacionales, en cumplimiento de
+              con fines exclusivamente m�dico-ocupacionales, en cumplimiento de
               la <strong>Ley 1581 de 2012</strong> (Habeas Data) y el Decreto
               1377 de 2013.
             </li>
             <li>
               Compartir el <em>Certificado de Aptitud Laboral</em> con la
-              empresa contratante o solicitante de la evaluación, en los
-              términos del artículo 12 de la Resolución 1843 de 2025.
+              empresa contratante o solicitante de la evaluaci�n, en los
+              t�rminos del art�culo 12 de la Resoluci�n 1843 de 2025.
             </li>
           </ul>
           <p>
-            <strong>Confidencialidad:</strong> Mi historia clínica ocupacional
-            es un documento privado. Su acceso está restringido únicamente al
+            <strong>Confidencialidad:</strong> Mi historia cl�nica ocupacional
+            es un documento privado. Su acceso est� restringido �nicamente al
             equipo de salud tratante y a las autoridades que lo requieran por
-            mandato legal (<strong>Ley 23 de 1981, Art. 37</strong>). El médico
-            está sujeto al secreto profesional.
+            mandato legal (<strong>Ley 23 de 1981, Art. 37</strong>). El m�dico
+            est� sujeto al secreto profesional.
           </p>
           <p>
             <strong>Derechos como titular de datos (Ley 1581/2012):</strong>{" "}
             Tengo derecho a conocer, actualizar, rectificar y solicitar la
-            supresión de mis datos personales. Puedo ejercer estos derechos
-            directamente ante el médico tratante.
+            supresi�n de mis datos personales. Puedo ejercer estos derechos
+            directamente ante el m�dico tratante.
           </p>
           <p>
             <strong>Voluntariedad:</strong> Entiendo que puedo revocar esta
-            autorización en cualquier momento, aunque ello puede implicar la
+            autorizaci�n en cualquier momento, aunque ello puede implicar la
             imposibilidad de emitir el certificado de aptitud laboral requerido
             por mi empleador.
           </p>
@@ -157,7 +157,7 @@ const ConsentimientoModal = ({
                   setNombre(e.target.value);
                   setError("");
                 }}
-                placeholder="Ej: JUAN CARLOS PÉREZ GÓMEZ"
+                placeholder="Ej: JUAN CARLOS P�REZ G�MEZ"
                 className="w-full p-2 border-2 border-gray-300 rounded-lg text-sm font-semibold focus:border-emerald-500 focus:outline-none"
                 autoComplete="off"
               />
@@ -173,13 +173,13 @@ const ConsentimientoModal = ({
                 className="mt-0.5 w-4 h-4 accent-emerald-600 flex-shrink-0"
               />
               <span className="text-xs text-gray-700 leading-relaxed">
-                He leído, comprendido y acepto voluntariamente el presente
-                consentimiento informado. Confirmo que la información es veraz y
-                que actúo sin presión alguna.
+                He le�do, comprendido y acepto voluntariamente el presente
+                consentimiento informado. Confirmo que la informaci�n es veraz y
+                que act�o sin presi�n alguna.
               </span>
             </label>
             {error && (
-              <p className="text-red-600 text-xs font-bold">⚠️ {error}</p>
+              <p className="text-red-600 text-xs font-bold">?? {error}</p>
             )}
             <div className="flex gap-3 justify-end pt-1">
               <button
@@ -193,14 +193,14 @@ const ConsentimientoModal = ({
                 disabled={!nombre.trim() || !aceptado}
                 className="px-5 py-2 text-xs font-black text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5"
               >
-                ✅ Confirmar consentimiento
+                ? Confirmar consentimiento
               </button>
             </div>
           </div>
         ) : (
           <div className="border-t border-gray-200 px-6 py-4 bg-emerald-50 flex-shrink-0">
             <p className="text-xs text-emerald-800 font-bold">
-              ✅ Consentimiento registrado - Historia clínica cerrada (solo
+              ? Consentimiento registrado - Historia cl�nica cerrada (solo
               lectura)
             </p>
           </div>
@@ -242,7 +242,7 @@ function LoginForm({ onLogin, blockedUntil, attempts }) {
     <div className="space-y-4 mb-6">
       {isBlocked && (
         <div className="bg-red-50 border border-red-300 rounded-xl p-3 text-center">
-          <p className="text-red-700 font-black text-sm">🔒 Acceso bloqueado</p>
+          <p className="text-red-700 font-black text-sm">?? Acceso bloqueado</p>
           <p className="text-red-500 text-xs mt-1">
             Espere <span className="font-black">{remaining}s</span> antes de
             intentar de nuevo
@@ -252,8 +252,8 @@ function LoginForm({ onLogin, blockedUntil, attempts }) {
       {!isBlocked && attempts > 0 && (
         <div className="bg-yellow-50 border border-yellow-300 rounded-xl p-2 text-center">
           <p className="text-yellow-700 text-xs font-bold">
-            ⚠️ {attempts} intento{attempts > 1 ? "s" : ""} fallido
-            {attempts > 1 ? "s" : ""}. Máx. 5 antes del bloqueo.
+            ?? {attempts} intento{attempts > 1 ? "s" : ""} fallido
+            {attempts > 1 ? "s" : ""}. M�x. 5 antes del bloqueo.
           </p>
         </div>
       )}
@@ -272,7 +272,7 @@ function LoginForm({ onLogin, blockedUntil, attempts }) {
         value={p}
         onChange={(e) => setP(e.target.value.slice(0, MAX_PASS_LEN))}
         className="w-full p-3 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-400 outline-none"
-        placeholder="Contraseña"
+        placeholder="Contrase�a"
         onKeyDown={(e) => e.key === "Enter" && submit()}
         autoComplete="current-password"
         maxLength={MAX_PASS_LEN}
@@ -287,7 +287,7 @@ function LoginForm({ onLogin, blockedUntil, attempts }) {
             : "bg-gradient-to-r from-emerald-600 to-teal-500 text-white hover:opacity-90"
         }`}
       >
-        {isBlocked ? `Bloqueado (${remaining}s)` : "Iniciar Sesión"}
+        {isBlocked ? `Bloqueado (${remaining}s)` : "Iniciar Sesi�n"}
       </button>
     </div>
   );

@@ -1,11 +1,11 @@
 // src/shared/lib/normativa.js
 
 // ==========================================
-// MÃ“DULO: FIRMA DIGITAL VÃLIDA - Ley 527/1999
-// Implementa firma electrÃ³nica con integridad verificable:
-// hash SHA-256 del contenido clÃ­nico + cÃ³digo QR de verificaciÃ³n
-// + timestamp de servidor + identificaciÃ³n del firmante
-// Cumple: Ley 527/1999, Decreto 2364/2012 (firma electrÃ³nica)
+// MÓDULO: FIRMA DIGITAL VÁLIDA - Ley 527/1999
+// Implementa firma electrónica con integridad verificable:
+// hash SHA-256 del contenido clínico + código QR de verificación
+// + timestamp de servidor + identificación del firmante
+// Cumple: Ley 527/1999, Decreto 2364/2012 (firma electrónica)
 // ==========================================
 // Genera hash SHA-256 del contenido de la HC para verificabilidad
 export const _generarHashHC = async (data) => {
@@ -33,8 +33,8 @@ export const _generarHashHC = async (data) => {
     return "HASH-NO-DISPONIBLE-" + Date.now();
   }
 };
-// Genera cÃ³digo de verificaciÃ³n QR para la HC firmada
-// El cÃ³digo contiene: ID paciente + hash (primeros 16 chars) + fecha
+// Genera código de verificación QR para la HC firmada
+// El código contiene: ID paciente + hash (primeros 16 chars) + fecha
 export const _generarCodigoQR = (id, hash, fecha) => {
   const short = hash.substring(0, 16).toUpperCase();
   const fechaShort = (fecha || new Date().toISOString())
@@ -54,18 +54,18 @@ export const _formatFirmaDigital = (firma) => {
   };
 };
 // ==========================================
-// MÃ“DULO: RIPS JSON - ResoluciÃ³n 2275/2023
-// GeneraciÃ³n de archivos RIPS para reporte al MinSalud
-// Archivos: AF (afiliaciÃ³n), AT (atenciones), AC (consultas)
-// NOTA: Este mÃ³dulo genera la estructura base. Para radicar
+// MÓDULO: RIPS JSON - Resolución 2275/2023
+// Generación de archivos RIPS para reporte al MinSalud
+// Archivos: AF (afiliación), AT (atenciones), AC (consultas)
+// NOTA: Este módulo genera la estructura base. Para radicar
 // ante MinSalud se requiere firma digital certificada DIAN.
 // ==========================================
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ══════════════════════════════════════════════════════════════════════════
 // B-28: HL7 FHIR R4 - Res. 1888/2025 RDA - Generador de recursos FHIR
 // Recursos: Patient, Practitioner, Observation, DiagnosticReport
 // Deadline de interoperabilidad: 15 de abril de 2026
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ══════════════════════════════════════════════════════════════════════════
 export const _generarFHIRPatient = (p) => ({
   resourceType: "Patient",
   id:
@@ -209,12 +209,12 @@ export const _generarFHIRBundle = (paciente, doctor) => {
   return bundle;
 };
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-// B-25: VALIDACIÃ“N RIPS - Res. 2275/2023 Schema v2
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ══════════════════════════════════════════════════════════════════════════
+// B-25: VALIDACIÓN RIPS - Res. 2275/2023 Schema v2
+// ══════════════════════════════════════════════════════════════════════════
 const validarRIPSPaciente = (p) => {
   const errs = [];
-  if (!p.docNumero || p.docNumero.length < 4) errs.push("docNumero invÃ¡lido");
+  if (!p.docNumero || p.docNumero.length < 4) errs.push("docNumero inválido");
   if (!p.fechaExamen) errs.push("fechaExamen requerida");
   if (!p.tipoExamen) errs.push("tipoExamen requerido");
   if (!p.conceptoAptitud) errs.push("conceptoAptitud requerido para RIPS");
@@ -235,7 +235,7 @@ const validarRIPSLote = (pacientes) => {
 export const _generarRIPSJson = (pacientes, doctorData, periodo) => {
   const now = new Date().toISOString();
   const numFactura = "SISO-" + Date.now();
-  // Archivo AF: Datos de afiliaciÃ³n de cada paciente atendido
+  // Archivo AF: Datos de afiliación de cada paciente atendido
   const AF = pacientes.map((p) => ({
     tipoDocumentoIdentificacion: p.docTipo || "CC",
     numDocumentoIdentificacion: p.docNumero || "",
@@ -244,12 +244,12 @@ export const _generarRIPSJson = (pacientes, doctorData, periodo) => {
     codSexo:
       p.genero === "Femenino" ? "F" : p.genero === "Masculino" ? "M" : "N",
     codPaisResidencia: "CO",
-    codMunicipioResidencia: "19001", // Default PopayÃ¡n - personalizable
+    codMunicipioResidencia: "19001", // Default Popayán - personalizable
     codZonaTerritorialResidencia: p.zonaResidencia === "Rural" ? "2" : "1",
     incapacidad: p.diasIncapacidad ? "S" : "N",
     codPaisOrigen: "CO",
   }));
-  // Archivo AT: Resumen de atenciÃ³n
+  // Archivo AT: Resumen de atención
   const AT = [
     {
       codPrestador: doctorData?.licencia?.substring(0, 12) || "SISO001",
@@ -262,7 +262,7 @@ export const _generarRIPSJson = (pacientes, doctorData, periodo) => {
       grupoServicios: "01",
       codServicio: "890201", // Medicina del trabajo
       finalidadTecnologiaSalud: "27", // Medicina laboral
-      causaMotivoAtencion: "26", // EvaluaciÃ³n ocupacional
+      causaMotivoAtencion: "26", // Evaluación ocupacional
       codDiagnosticoPrincipal:
         pacientes[0]?.diagnosticoPrincipal?.substring(0, 4) || "Z00",
       codDiagnosticoPrincipalE: "",
@@ -301,7 +301,7 @@ export const _generarRIPSJson = (pacientes, doctorData, periodo) => {
     version: "1.0",
     generadoEn: now,
     periodo: periodo || now.substring(0, 7),
-    norma: "ResoluciÃ³n 2275/2023",
+    norma: "Resolución 2275/2023",
     prestador: {
       nombre: doctorData?.nombre || "",
       nit: doctorData?.rut?.replace("-", "") || "",
@@ -313,7 +313,7 @@ export const _generarRIPSJson = (pacientes, doctorData, periodo) => {
     AC,
     totalRegistros: { AF: AF.length, AT: AT.length, AC: AC.length },
     advertencia:
-      "RIPS generado por SISO v4.0. Para radicaciÃ³n formal ante MinSalud se requiere firma electrÃ³nica DIAN certificada y validaciÃ³n en ADRES.",
+      "RIPS generado por SISO v4.0. Para radicación formal ante MinSalud se requiere firma electrónica DIAN certificada y validación en ADRES.",
   };
 };
 // Descarga RIPS JSON sin createObjectURL (compatible con sandbox/CSP)
@@ -337,22 +337,22 @@ export const _descargarRIPSJson = (pacientes, doctorData, periodo) => {
   }
 };
 // ==========================================
-// MÃ“DULO: RDA - Res. 1888/2025 (Resumen Digital de AtenciÃ³n)
-// GeneraciÃ³n del JSON RDA para transmisiÃ³n al IHCE MinSalud
+// MÓDULO: RDA - Res. 1888/2025 (Resumen Digital de Atención)
+// Generación del JSON RDA para transmisión al IHCE MinSalud
 // ==========================================
-// â•â• B-13: Generador RDA - Res. 1888/2025 â•â•
+// ══ B-13: Generador RDA - Res. 1888/2025 ══
 export const _generarRDA = (paciente, doctorData, sesionId) => {
   if (!paciente || !paciente.fechaExamen) return null;
   const now = new Date().toISOString();
   return {
     version: "1.0",
-    norma: "ResoluciÃ³n 1888/2025 MinSalud",
+    norma: "Resolución 1888/2025 MinSalud",
     fechaGeneracion: now,
     entidadGeneradora: {
       tipoDocumento: "CC",
       numDocumento: (doctorData?.cedula || "").replace(/[^0-9]/g, ""),
       nombreEntidad: doctorData?.nombre || "",
-      municipio: doctorData?.ciudad || "PopayÃ¡n",
+      municipio: doctorData?.ciudad || "Popayán",
     },
     paciente: {
       tipoDocumento: paciente.docTipo || "CC",
@@ -389,7 +389,7 @@ export const _generarRDA = (paciente, doctorData, sesionId) => {
     restricciones: (paciente.restricciones || []).length,
     rdaGeneradoEn: now,
     _nota:
-      "RDA generado por SISO. Para transmisiÃ³n oficial al IHCE se requiere firma electrÃ³nica certificada.",
+      "RDA generado por SISO. Para transmisión oficial al IHCE se requiere firma electrónica certificada.",
   };
 };
 export const _descargarRDA = (paciente, doctorData, sesionId) => {

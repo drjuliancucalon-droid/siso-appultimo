@@ -1,4 +1,4 @@
-﻿// src/components/ui/MedicamentoAutocomplete.jsx
+// src/components/ui/MedicamentoAutocomplete.jsx
 import React, { useState, useRef, useEffect } from 'react';
 import { MEDICAMENTOS_CO_BASE, getCustomMeds } from '../../data/medicamentos.js';
 import { Pill } from 'lucide-react';
@@ -26,7 +26,7 @@ const MedicamentoAutocomplete = ({
       if (med.g.toLowerCase().includes(q))
         res.push({
           label: med.g,
-          sub: `${med.cat} · ${med.dosis}`,
+          sub: `${med.cat} � ${med.dosis}`,
           full: med.g,
           dosis: med.dosis,
           presentaciones: med.p,
@@ -36,7 +36,7 @@ const MedicamentoAutocomplete = ({
         if (p.toLowerCase().includes(q))
           res.push({
             label: p,
-            sub: `${med.g} · ${med.cat}`,
+            sub: `${med.g} � ${med.cat}`,
             full: p,
             dosis: med.dosis,
             presentaciones: med.p,
@@ -66,7 +66,7 @@ const MedicamentoAutocomplete = ({
         g: query.trim(),
         p: [query.trim()],
         cat: "Personalizado",
-        dosis: "Según prescripción",
+        dosis: "Seg�n prescripci�n",
       };
       addCustomMed(newEntry);
       setCustomMeds((prev) => [...prev, newEntry]);
@@ -91,7 +91,7 @@ const MedicamentoAutocomplete = ({
             onChange(e.target.value);
           }}
           onFocus={() => query.length >= 2 && setShow(true)}
-          placeholder={placeholder || "Nombre genérico o comercial..."}
+          placeholder={placeholder || "Nombre gen�rico o comercial..."}
           className="flex-1 p-1.5 border border-gray-200 rounded-l text-xs focus:ring-2 focus:ring-emerald-400 outline-none"
         />
         <button
@@ -100,7 +100,7 @@ const MedicamentoAutocomplete = ({
           title="Agregar como medicamento personalizado"
           className="px-2 bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-r text-xs font-bold hover:bg-emerald-200 flex items-center gap-0.5"
         >
-          <Plus className="w-3 h-3" /> Añadir
+          <Plus className="w-3 h-3" /> A�adir
         </button>
       </div>
       {show && suggestions.length > 0 && (
@@ -123,7 +123,7 @@ const MedicamentoAutocomplete = ({
                 <p className="text-xs font-bold text-emerald-900">{s.label}</p>
                 {s.isGeneric && (
                   <span className="text-[9px] bg-emerald-100 text-emerald-700 px-1 rounded">
-                    Genérico
+                    Gen�rico
                   </span>
                 )}
               </div>
@@ -132,7 +132,7 @@ const MedicamentoAutocomplete = ({
           ))}
           {suggestions.length === 0 && query.length >= 2 && (
             <div className="px-3 py-2 text-[10px] text-gray-400 italic">
-              No encontrado -- pulse "Añadir" para agregarlo a su base de datos
+              No encontrado -- pulse "A�adir" para agregarlo a su base de datos
             </div>
           )}
         </div>
@@ -141,7 +141,7 @@ const MedicamentoAutocomplete = ({
         <div className="absolute z-50 bg-white border border-emerald-200 rounded-xl shadow-xl mt-1 w-full">
           <div className="px-3 py-2 text-[10px] text-gray-400 italic flex items-center gap-2">
             <AlertCircle className="w-3 h-3" />
-            No encontrado en base de datos -- pulse "Añadir" para guardarlo.
+            No encontrado en base de datos -- pulse "A�adir" para guardarlo.
           </div>
         </div>
       )}

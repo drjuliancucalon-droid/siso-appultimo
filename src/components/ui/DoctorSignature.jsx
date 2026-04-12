@@ -1,4 +1,4 @@
-﻿// src/components/ui/DoctorSignature.jsx
+// src/components/ui/DoctorSignature.jsx
 import React from 'react';
 
 const DoctorSignature = ({ signature, data, showData = true }) => {

@@ -1,4 +1,4 @@
-﻿// src/utils/doctorHelpers.js - Helpers para documentos médicos
+// src/utils/doctorHelpers.js - Helpers para documentos m�dicos
 import { _sanitize, _safeLogoUrl } from './security.js';
 export { _sanitize } from './security.js';
 
@@ -30,7 +30,7 @@ const _ipsDocLeftHtml = (ipsData, docData, accentSafe) => {
       ${
         dir
           ? `<p style="font-size:7.5pt;color:#555;margin:1px 0;">${dir}${
-              ciu ? " · " + ciu : ""
+              ciu ? " � " + ciu : ""
             }</p>`
           : ""
       }
@@ -61,10 +61,10 @@ const _ipsDocLeftHtml = (ipsData, docData, accentSafe) => {
     )}</p>
     <p style="font-size:7.5pt;color:#555;margin:1px 0;">Lic: ${_sanitize(
       d.licencia || ""
-    )} · ${_sanitize(d.ciudad || "")}</p>
+    )} � ${_sanitize(d.ciudad || "")}</p>
     <p style="font-size:7.5pt;color:#555;margin:1px 0;">Tel: ${_sanitize(
       d.celular || ""
-    )} · ${_sanitize(d.email || "")}</p>
+    )} � ${_sanitize(d.email || "")}</p>
   </div>`;
 };
 

@@ -1,6 +1,6 @@
-﻿// src/utils/storage.js - Almacenamiento local persistente
+// src/utils/storage.js - Almacenamiento local persistente
 
-const _memStore = {}; // fallback si localStorage no está disponible
+const _memStore = {}; // fallback si localStorage no est� disponible
 const _ls = {
   getItem: (k) => {
     try {
@@ -24,7 +24,7 @@ const _ls = {
     }
   },
 };
-// sessionStorage: para API Keys - se limpia automáticamente al cerrar la pestaña
+// sessionStorage: para API Keys - se limpia autom�ticamente al cerrar la pesta�a
 const _ss = {
   getItem: (k) => {
     try {
@@ -48,7 +48,7 @@ const _ss = {
     }
   },
 };
-// Helper global - accesible desde cualquier función incluyendo goTo
+// Helper global - accesible desde cualquier funci�n incluyendo goTo
 const sp = (k, fb) => {
   const s = _ls.getItem(k);
   if (!s) return fb;
