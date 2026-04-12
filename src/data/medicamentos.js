@@ -1,7 +1,20 @@
-// Catálogo de medicamentos genéricos Colombia
-export const MEDICAMENTOS_CO_CUSTOM_KEY = 'siso_custom_meds';
+﻿// src/data/medicamentos.js - Catálogo de medicamentos Colombia
+import { _ls } from '../utils/storage.js';
 
-export const MEDICAMENTOS_CO_BASE = [
+const MEDICAMENTOS_CO_CUSTOM_KEY = "siso_custom_meds";
+const getCustomMeds = () => {
+  try {
+    return JSON.parse(_ls.getItem(MEDICAMENTOS_CO_CUSTOM_KEY) || "[]");
+  } catch {
+    return [];
+  }
+};
+const addCustomMed = (entry) => {
+  const arr = getCustomMeds();
+  arr.push(entry);
+  _ls.setItem(MEDICAMENTOS_CO_CUSTOM_KEY, JSON.stringify(arr));
+};
+const MEDICAMENTOS_CO_BASE = [
   // ── ANALGÉSICOS / ANTIINFLAMATORIOS ──────────────────────────────────────
   {
     g: "Acetaminofén (Paracetamol)",
@@ -2868,13 +2881,7 @@ export const MEDICAMENTOS_CO_BASE = [
     dosis: "20mg c/8h",
   },
 ];
-export const getAllMeds = () => [...MEDICAMENTOS_CO_BASE, ...getCustomMeds()];
+const getAllMeds = () => [...MEDICAMENTOS_CO_BASE, ...getCustomMeds()];
 const MEDICAMENTOS_CO = MEDICAMENTOS_CO_BASE; // Backward compat
 
-export const getCustomMeds = () => {
-  try { return JSON.parse(localStorage.getItem(MEDICAMENTOS_CO_CUSTOM_KEY) || '[]'); } catch { return []; }
-};
-export const addCustomMed = (entry) => {
-  const arr = getCustomMeds(); arr.push(entry);
-  localStorage.setItem(MEDICAMENTOS_CO_CUSTOM_KEY, JSON.stringify(arr));
-};
+export { MEDICAMENTOS_CO_CUSTOM_KEY, getCustomMeds, addCustomMed, MEDICAMENTOS_CO_BASE, getAllMeds };

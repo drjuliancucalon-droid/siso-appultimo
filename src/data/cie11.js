@@ -1,4 +1,7 @@
-export const CIE11_EQUIVALENCIAS = [
+﻿// src/data/cie11.js - CIE-11 Equivalencias
+import React from 'react';
+
+const CIE11_EQUIVALENCIAS = [
   {
     cie10: "Z10.0",
     cie11: "QC00",
@@ -140,8 +143,62 @@ export const CIE11_EQUIVALENCIAS = [
   { cie10: "N39.0", cie11: "GC08", desc: "Infección de vías urinarias" },
 ];
 const _equivalenciaCIE11 = (cie10code) => {
-
-  const found = CIE11_EQUIVALENCIAS.find(e => e.cie10 === cie10code);
-  return found ? found.cie11 : null;
+  if (!cie10code) return null;
+  const c = cie10code.toUpperCase().split(" ")[0].split("-")[0];
+  return (
+    CIE11_EQUIVALENCIAS.find((e) => e.cie10 === c || c.startsWith(e.cie10)) ||
+    null
+  );
 };
-export { _equivalenciaCIE11 };
+const CIE11Badge = ({ cie10value }) => {
+  if (!cie10value || cie10value.trim().length < 3) return null;
+  const eq = _equivalenciaCIE11(cie10value);
+  if (!eq) return null;
+  return (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: "5px",
+        background: "#fef9c3",
+        border: "1px solid #fbbf24",
+        borderRadius: "5px",
+        padding: "2px 7px",
+        marginTop: "2px",
+        fontSize: "9px",
+        color: "#78350f",
+        flexWrap: "wrap",
+      }}
+    >
+      <span style={{ fontWeight: "900", color: "#92400e", flexShrink: 0 }}>
+        CIE-11:
+      </span>
+      <span
+        style={{
+          fontFamily: "monospace",
+          fontWeight: "800",
+          background: "#fde68a",
+          padding: "1px 4px",
+          borderRadius: "3px",
+          flexShrink: 0,
+        }}
+      >
+        {eq.cie11}
+      </span>
+      <span style={{ color: "#713f12", flex: 1 }}>{eq.desc}</span>
+      <span
+        style={{
+          fontSize: "8px",
+          color: "#b45309",
+          fontStyle: "italic",
+          flexShrink: 0,
+        }}
+      >
+        Res. 1442/2024
+      </span>
+    </div>
+  );
+};
+
+export { CIE11_EQUIVALENCIAS, _equivalenciaCIE11 };
+export default CIE11Badge;
