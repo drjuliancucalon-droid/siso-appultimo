@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
   User,
   FileText,
@@ -141,8 +141,8 @@ import CajaPage from './pages/Caja.jsx';
 // [EXTRACTED â†’ shared/lib/storage.js: _memStore, _ls, _ss, sp, sps]
 // [EXTRACTED ? shared/lib/supabase.js + shared/data/planConfig.js: Supabase sync, PLAN_CONFIG, ORG_CONFIG, permissions, helpers]
 // [EXTRACTED ? shared/lib/crypto.js: _sha256, _pbkdf2Hash, _verifyPassword, _hashSync, _H, _sanitize, _safeLogoUrl]
-// Si se pasa ipsData (objeto empresa), muestra logo+nombre+NIT+direcciÃ³n de la IPS.
-// Si ipsData es null, muestra los datos del mÃ©dico (docData).
+// Si se pasa ipsData (objeto empresa), muestra logo+nombre+NIT+dirección de la IPS.
+// Si ipsData es null, muestra los datos del médico (docData).
 const _ipsDocLeftHtml = (ipsData, docData, accentSafe) => {
   const ac = accentSafe || "#059669";
   if (ipsData) {
@@ -171,7 +171,7 @@ const _ipsDocLeftHtml = (ipsData, docData, accentSafe) => {
       ${
         dir
           ? `<p style="font-size:7.5pt;color:#555;margin:1px 0;">${dir}${
-              ciu ? " Â· " + ciu : ""
+              ciu ? " · " + ciu : ""
             }</p>`
           : ""
       }
@@ -202,14 +202,14 @@ const _ipsDocLeftHtml = (ipsData, docData, accentSafe) => {
     )}</p>
     <p style="font-size:7.5pt;color:#555;margin:1px 0;">Lic: ${_sanitize(
       d.licencia || ""
-    )} Â· ${_sanitize(d.ciudad || "")}</p>
+    )} · ${_sanitize(d.ciudad || "")}</p>
     <p style="font-size:7.5pt;color:#555;margin:1px 0;">Tel: ${_sanitize(
       d.celular || ""
-    )} Â· ${_sanitize(d.email || "")}</p>
+    )} · ${_sanitize(d.email || "")}</p>
   </div>`;
 };
 // ==========================================
-// MÃ“DULO 1: CONSTANTES ESTÃTICAS
+// MÃ“DULO 1: CONSTANTES ESTÁTICAS
 // ==========================================
 // â•â• B-02 SEGURIDAD: Datos personales del medico eliminados del codigo (Ley 1581/2012) â•â•
 // Los valores reales se ingresan desde el modulo de Perfil del Doctor en la aplicacion.
@@ -223,7 +223,7 @@ const _ipsDocLeftHtml = (ipsData, docData, accentSafe) => {
 // ==========================================
 // MÃ“DULO 3: MOTOR DE IA MULTI-PROVEEDOR
 // Modelos verificados activos - Marzo 2026
-// Gemini Â· Groq Â· Together AI Â· OpenRouter
+// Gemini · Groq · Together AI · OpenRouter
 // CORS habilitado en todos - funcionan desde cualquier servidor externo
 // ==========================================
 const AI_CONFIG_VERSION = "2026-03-v2";
@@ -235,11 +235,11 @@ const fetchWithTimeout = (url, opts, ms = 40000) => {
   );
 };
 const AI_PROVIDERS = {
-  // â”€â”€ 1. GEMINI - API Google, CORS nativo, mÃ¡s estable en browsers externos â”€
+  // â”€â”€ 1. GEMINI - API Google, CORS nativo, más estable en browsers externos â”€
   gemini: {
     name: "Google Gemini",
     free: true,
-    badge: "ðŸŸ¢ Gratis Â· Alta calidad",
+    badge: "ðŸŸ¢ Gratis · Alta calidad",
     docs: "aistudio.google.com",
     hint: "Key gratuita: aistudio.google.com â†’ Get API Key",
     link: "https://aistudio.google.com/apikey",
@@ -269,8 +269,8 @@ const AI_PROVIDERS = {
                 generationConfig: {
                   maxOutputTokens: 4096,
                   temperature: 0.3,
-                  ...(systemPrompt.includes("ÃšNICAMENTE CON JSON") ||
-                  systemPrompt.includes("ÃšNICAMENTE JSON")
+                  ...(systemPrompt.includes("ÚNICAMENTE CON JSON") ||
+                  systemPrompt.includes("ÚNICAMENTE JSON")
                     ? { responseMimeType: "application/json" }
                     : {}),
                 },
@@ -281,7 +281,7 @@ const AI_PROVIDERS = {
             const errData = await res.json().catch(() => ({}));
             const msg = errData?.error?.message || res.statusText;
             lastErr = new Error(`Gemini/${model} [${res.status}]: ${msg}`);
-            // 401/403 = key invÃ¡lida | 400 solo si mensaje indica key invÃ¡lida
+            // 401/403 = key inválida | 400 solo si mensaje indica key inválida
             if (res.status === 401 || res.status === 403) break;
             if (
               res.status === 400 &&
@@ -295,7 +295,7 @@ const AI_PROVIDERS = {
           const data = await res.json();
           const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
           if (text?.trim().length > 5) return text.trim();
-          lastErr = new Error(`Gemini/${model}: respuesta vacÃ­a`);
+          lastErr = new Error(`Gemini/${model}: respuesta vacía`);
         } catch (e) {
           if (e.name === "AbortError") {
             lastErr = new Error(`Gemini/${model}: timeout (40s)`);
@@ -312,11 +312,11 @@ const AI_PROVIDERS = {
       );
     },
   },
-  // â”€â”€ 2. GROQ - Velocidad mÃ¡xima, CORS habilitado explÃ­citamente â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // â”€â”€ 2. GROQ - Velocidad máxima, CORS habilitado explícitamente â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   groq: {
     name: "Groq",
     free: true,
-    badge: "ðŸŸ¢ Gratis Â· UltrarrÃ¡pido",
+    badge: "ðŸŸ¢ Gratis · Ultrarrápido",
     docs: "console.groq.com",
     hint: "Key gratuita: console.groq.com â†’ API Keys â†’ Create API Key",
     link: "https://console.groq.com/keys",
@@ -364,7 +364,7 @@ const AI_PROVIDERS = {
           const data = await res.json();
           const text = data.choices?.[0]?.message?.content;
           if (text?.trim().length > 5) return text.trim();
-          lastErr = new Error(`Groq/${model}: respuesta vacÃ­a`);
+          lastErr = new Error(`Groq/${model}: respuesta vacía`);
         } catch (e) {
           if (e.name === "AbortError") {
             lastErr = new Error(`Groq/${model}: timeout`);
@@ -374,7 +374,7 @@ const AI_PROVIDERS = {
             lastErr = new Error(
               `Groq: no se pudo conectar a api.groq.com - verifica tu red o renueva tu key en console.groq.com/keys`
             );
-            break; // error de red = no tiene sentido intentar mÃ¡s modelos
+            break; // error de red = no tiene sentido intentar más modelos
           }
           lastErr = e;
         }
@@ -391,9 +391,9 @@ const AI_PROVIDERS = {
   together: {
     name: "Together AI",
     free: true,
-    badge: "ðŸŸ¢ Gratis Â· Muy estable",
+    badge: "ðŸŸ¢ Gratis · Muy estable",
     docs: "api.together.ai",
-    hint: "Key gratuita: api.together.ai â†’ Settings â†’ API Keys - copia la key que empieza por letras/nÃºmeros (NO el cÃ³digo Python)",
+    hint: "Key gratuita: api.together.ai â†’ Settings â†’ API Keys - copia la key que empieza por letras/números (NO el código Python)",
     link: "https://api.together.ai",
     call: async (prompt, systemPrompt, apiKey) => {
       if (!apiKey)
@@ -437,9 +437,9 @@ const AI_PROVIDERS = {
             const msg = errData?.error?.message || res.statusText;
             lastErr = new Error(`Together/${model} [${res.status}]: ${msg}`);
             if (res.status === 401 || res.status === 403) {
-              // Key invÃ¡lida - no tiene sentido seguir probando modelos
+              // Key inválida - no tiene sentido seguir probando modelos
               throw new Error(
-                `Together AI [401]: API Key invÃ¡lida. Ve a api.together.ai â†’ Settings â†’ API Keys y copia SOLO la key (texto largo, no el cÃ³digo Python).`
+                `Together AI [401]: API Key inválida. Ve a api.together.ai â†’ Settings â†’ API Keys y copia SOLO la key (texto largo, no el código Python).`
               );
             }
             continue;
@@ -447,9 +447,9 @@ const AI_PROVIDERS = {
           const data = await res.json();
           const text = data.choices?.[0]?.message?.content;
           if (text?.trim().length > 5) return text.trim();
-          lastErr = new Error(`Together/${model}: respuesta vacÃ­a`);
+          lastErr = new Error(`Together/${model}: respuesta vacía`);
         } catch (e) {
-          if (e.message?.includes("API Key invÃ¡lida")) throw e; // re-throw 401 immediately
+          if (e.message?.includes("API Key inválida")) throw e; // re-throw 401 immediately
           if (e.name === "AbortError") {
             lastErr = new Error(`Together/${model}: timeout`);
             continue;
@@ -465,11 +465,11 @@ const AI_PROVIDERS = {
       );
     },
   },
-  // â”€â”€ 4. OPENROUTER - Multi-modelo, fallback mÃ¡ximo â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // â”€â”€ 4. OPENROUTER - Multi-modelo, fallback máximo â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   openrouter: {
     name: "OpenRouter",
     free: true,
-    badge: "ðŸŸ¢ Gratis Â· Multi-modelo",
+    badge: "ðŸŸ¢ Gratis · Multi-modelo",
     docs: "openrouter.ai",
     hint: "Key gratuita: openrouter.ai â†’ Keys â†’ Create Key (login con Google)",
     link: "https://openrouter.ai/keys",
@@ -479,7 +479,7 @@ const AI_PROVIDERS = {
           "OpenRouter: API Key no configurada - obtenla gratis en openrouter.ai/keys"
         );
       // Modelos free VERIFICADOS activos en OpenRouter - marzo 2026
-      // (si alguno da 404, el cÃ³digo pasa automÃ¡ticamente al siguiente)
+      // (si alguno da 404, el código pasa automáticamente al siguiente)
       const tryModels = [
         "openrouter/auto",
         "meta-llama/llama-3.3-70b-instruct:free",
@@ -523,13 +523,13 @@ const AI_PROVIDERS = {
             const errData = await res.json().catch(() => ({}));
             const msg = errData?.error?.message || res.statusText;
             lastErr = new Error(`OpenRouter/${model} [${res.status}]: ${msg}`);
-            if (res.status === 401 || res.status === 403) break; // key invÃ¡lida
+            if (res.status === 401 || res.status === 403) break; // key inválida
             continue; // 404 = modelo deprecado â†’ probar siguiente
           }
           const data = await res.json();
           const text = data.choices?.[0]?.message?.content;
           if (text?.trim().length > 5) return text.trim();
-          lastErr = new Error(`OpenRouter/${model}: respuesta vacÃ­a`);
+          lastErr = new Error(`OpenRouter/${model}: respuesta vacía`);
         } catch (e) {
           if (e.name === "AbortError") {
             lastErr = new Error(`OpenRouter/${model}: timeout`);
@@ -548,7 +548,7 @@ const AI_PROVIDERS = {
   },
 };
 const parseAIJSON = (raw) => {
-  if (!raw) throw new Error("Respuesta vacÃ­a");
+  if (!raw) throw new Error("Respuesta vacía");
   let clean = raw
     .replace(/^\uFEFF/, "")
     .replace(/```json\s*/gi, "")
@@ -636,11 +636,11 @@ const parseAIJSON = (raw) => {
   throw new Error("JSON irreparable: " + raw.substring(0, 80));
 };
 // ==========================================
-// MÃ“DULO: FIRMA DIGITAL VÃLIDA - Ley 527/1999
-// Implementa firma electrÃ³nica con integridad verificable:
-// hash SHA-256 del contenido clÃ­nico + cÃ³digo QR de verificaciÃ³n
-// + timestamp de servidor + identificaciÃ³n del firmante
-// Cumple: Ley 527/1999, Decreto 2364/2012 (firma electrÃ³nica)
+// MÃ“DULO: FIRMA DIGITAL VÁLIDA - Ley 527/1999
+// Implementa firma electrónica con integridad verificable:
+// hash SHA-256 del contenido clínico + código QR de verificación
+// + timestamp de servidor + identificación del firmante
+// Cumple: Ley 527/1999, Decreto 2364/2012 (firma electrónica)
 // ==========================================
 // Genera hash SHA-256 del contenido de la HC para verificabilidad
 const _generarHashHC = async (data) => {
@@ -668,8 +668,8 @@ const _generarHashHC = async (data) => {
     return "HASH-NO-DISPONIBLE-" + Date.now();
   }
 };
-// Genera cÃ³digo de verificaciÃ³n QR para la HC firmada
-// El cÃ³digo contiene: ID paciente + hash (primeros 16 chars) + fecha
+// Genera código de verificación QR para la HC firmada
+// El código contiene: ID paciente + hash (primeros 16 chars) + fecha
 const _generarCodigoQR = (id, hash, fecha) => {
   const short = hash.substring(0, 16).toUpperCase();
   const fechaShort = (fecha || new Date().toISOString())
@@ -689,10 +689,10 @@ const _formatFirmaDigital = (firma) => {
   };
 };
 // ==========================================
-// MÃ“DULO: RIPS JSON - ResoluciÃ³n 2275/2023
-// GeneraciÃ³n de archivos RIPS para reporte al MinSalud
-// Archivos: AF (afiliaciÃ³n), AT (atenciones), AC (consultas)
-// NOTA: Este mÃ³dulo genera la estructura base. Para radicar
+// MÃ“DULO: RIPS JSON - Resolución 2275/2023
+// Generación de archivos RIPS para reporte al MinSalud
+// Archivos: AF (afiliación), AT (atenciones), AC (consultas)
+// NOTA: Este módulo genera la estructura base. Para radicar
 // ante MinSalud se requiere firma digital certificada DIAN.
 // ==========================================
 
@@ -849,7 +849,7 @@ const _generarFHIRBundle = (paciente, doctor) => {
 // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 const validarRIPSPaciente = (p) => {
   const errs = [];
-  if (!p.docNumero || p.docNumero.length < 4) errs.push("docNumero invÃ¡lido");
+  if (!p.docNumero || p.docNumero.length < 4) errs.push("docNumero inválido");
   if (!p.fechaExamen) errs.push("fechaExamen requerida");
   if (!p.tipoExamen) errs.push("tipoExamen requerido");
   if (!p.conceptoAptitud) errs.push("conceptoAptitud requerido para RIPS");
@@ -870,7 +870,7 @@ const validarRIPSLote = (pacientes) => {
 const _generarRIPSJson = (pacientes, doctorData, periodo) => {
   const now = new Date().toISOString();
   const numFactura = "SISO-" + Date.now();
-  // Archivo AF: Datos de afiliaciÃ³n de cada paciente atendido
+  // Archivo AF: Datos de afiliación de cada paciente atendido
   const AF = pacientes.map((p) => ({
     tipoDocumentoIdentificacion: p.docTipo || "CC",
     numDocumentoIdentificacion: p.docNumero || "",
@@ -879,12 +879,12 @@ const _generarRIPSJson = (pacientes, doctorData, periodo) => {
     codSexo:
       p.genero === "Femenino" ? "F" : p.genero === "Masculino" ? "M" : "N",
     codPaisResidencia: "CO",
-    codMunicipioResidencia: "19001", // Default PopayÃ¡n - personalizable
+    codMunicipioResidencia: "19001", // Default Popayán - personalizable
     codZonaTerritorialResidencia: p.zonaResidencia === "Rural" ? "2" : "1",
     incapacidad: p.diasIncapacidad ? "S" : "N",
     codPaisOrigen: "CO",
   }));
-  // Archivo AT: Resumen de atenciÃ³n
+  // Archivo AT: Resumen de atención
   const AT = [
     {
       codPrestador: doctorData?.licencia?.substring(0, 12) || "SISO001",
@@ -897,7 +897,7 @@ const _generarRIPSJson = (pacientes, doctorData, periodo) => {
       grupoServicios: "01",
       codServicio: "890201", // Medicina del trabajo
       finalidadTecnologiaSalud: "27", // Medicina laboral
-      causaMotivoAtencion: "26", // EvaluaciÃ³n ocupacional
+      causaMotivoAtencion: "26", // Evaluación ocupacional
       codDiagnosticoPrincipal:
         pacientes[0]?.diagnosticoPrincipal?.substring(0, 4) || "Z00",
       codDiagnosticoPrincipalE: "",
@@ -936,7 +936,7 @@ const _generarRIPSJson = (pacientes, doctorData, periodo) => {
     version: "1.0",
     generadoEn: now,
     periodo: periodo || now.substring(0, 7),
-    norma: "ResoluciÃ³n 2275/2023",
+    norma: "Resolución 2275/2023",
     prestador: {
       nombre: doctorData?.nombre || "",
       nit: doctorData?.rut?.replace("-", "") || "",
@@ -948,7 +948,7 @@ const _generarRIPSJson = (pacientes, doctorData, periodo) => {
     AC,
     totalRegistros: { AF: AF.length, AT: AT.length, AC: AC.length },
     advertencia:
-      "RIPS generado por SISO v4.0. Para radicaciÃ³n formal ante MinSalud se requiere firma electrÃ³nica DIAN certificada y validaciÃ³n en ADRES.",
+      "RIPS generado por SISO v4.0. Para radicación formal ante MinSalud se requiere firma electrónica DIAN certificada y validación en ADRES.",
   };
 };
 // Descarga RIPS JSON sin createObjectURL (compatible con sandbox/CSP)
@@ -972,8 +972,8 @@ const _descargarRIPSJson = (pacientes, doctorData, periodo) => {
   }
 };
 // ==========================================
-// MÃ“DULO: RDA - Res. 1888/2025 (Resumen Digital de AtenciÃ³n)
-// GeneraciÃ³n del JSON RDA para transmisiÃ³n al IHCE MinSalud
+// MÃ“DULO: RDA - Res. 1888/2025 (Resumen Digital de Atención)
+// Generación del JSON RDA para transmisión al IHCE MinSalud
 // [IMPORTED from shared/lib/formatters.js: numeroALetras, analyzeBP, analyzeHR, analyzeBMI, getSpanishDate, NORMAL_DESCRIPTIONS_SYSTEMS]
 // ==========================================
 const _generarRDA = (paciente, doctorData, sesionId) => {
@@ -1051,18 +1051,18 @@ const _descargarRDA = (paciente, doctorData, sesionId) => {
 // ==========================================
 // MÃ“DULO 6: COMPONENTES UI REUTILIZABLES
 // ==========================================
-// â•â• B-07: Validador de contraseÃ±a centralizado (OWASP A07 + polÃ­tica SISO) â•â•
+// â•â• B-07: Validador de contraseña centralizado (OWASP A07 + política SISO) â•â•
 const _validarContrasena = (pw) => {
   const errores = [];
-  if (!pw || pw.length < 10) errores.push("MÃ­nimo 10 caracteres");
-  if (!/[A-Z]/.test(pw)) errores.push("Al menos 1 letra mayÃºscula");
-  if (!/[a-z]/.test(pw)) errores.push("Al menos 1 letra minÃºscula");
-  if (!/[0-9]/.test(pw)) errores.push("Al menos 1 nÃºmero");
+  if (!pw || pw.length < 10) errores.push("Mínimo 10 caracteres");
+  if (!/[A-Z]/.test(pw)) errores.push("Al menos 1 letra mayúscula");
+  if (!/[a-z]/.test(pw)) errores.push("Al menos 1 letra minúscula");
+  if (!/[0-9]/.test(pw)) errores.push("Al menos 1 número");
   if (!/[^A-Za-z0-9]/.test(pw))
-    errores.push("Al menos 1 carÃ¡cter especial (!@#$%...)");
+    errores.push("Al menos 1 carácter especial (!@#$%...)");
   const comunes = [
     "password",
-    "contraseÃ±a",
+    "contraseña",
     "123456",
     "qwerty",
     "admin",
@@ -1092,8 +1092,8 @@ const _FortalezaPass = ({ pw }) => {
   ];
   const labels = [
     "",
-    "Muy dÃ©bil",
-    "DÃ©bil",
+    "Muy débil",
+    "Débil",
     "Aceptable",
     "Fuerte",
     "Muy fuerte",
@@ -1234,8 +1234,8 @@ const TabFormulaDerivacion = ({
         ).slice(0, 15)
       : [];
   const today = new Date().toISOString().split("T")[0];
-  // â”€â”€ Genera ventana de impresiÃ³n premium con HTML nativo â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-  // No captura innerHTML (pierde Ã­conos). Genera HTML directamente del state.
+  // â”€â”€ Genera ventana de impresión premium con HTML nativo â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // No captura innerHTML (pierde íconos). Genera HTML directamente del state.
   const buildPrintHeader = (titleDoc, accentColor) => {
     const fechaDoc =
       data.fechaExamen ||
@@ -1295,7 +1295,7 @@ const TabFormulaDerivacion = ({
             ${
               ipsDir
                 ? `<p style="font-size:7.5pt;color:#555;margin:1px 0;">${ipsDir}${
-                    ipsCiudad ? " Â· " + ipsCiudad : ""
+                    ipsCiudad ? " · " + ipsCiudad : ""
                   }</p>`
                 : ""
             }
@@ -1331,7 +1331,7 @@ const TabFormulaDerivacion = ({
           <p style="font-size:13pt;font-weight:900;color:${accentSafe};text-transform:uppercase;margin:2px 0;">${_sanitize(
       titleDoc
     )}</p>
-          <p style="font-size:7pt;color:#888;margin:2px 0;">Res. 1995&#x2F;1999 Â· Res. 1843&#x2F;2025</p>
+          <p style="font-size:7pt;color:#888;margin:2px 0;">Res. 1995&#x2F;1999 · Res. 1843&#x2F;2025</p>
           <p style="font-size:8pt;font-weight:700;color:#333;margin:5px 0 2px 0;">Fecha: ${_sanitize(
             fechaDoc
           )}</p>
@@ -1339,7 +1339,7 @@ const TabFormulaDerivacion = ({
         </div>
         <div style="width:32%;text-align:right;padding-left:8px;">
           <p style="font-size:10.5pt;font-weight:900;color:${accentSafe};text-transform:uppercase;margin:0 0 3px 0;">${pNombre}</p>
-          <p style="font-size:7.5pt;color:#444;margin:1px 0;">${pDocTipo}: <b>${pDocNum}</b> &nbsp;|&nbsp; Edad: <b>${pEdad} aÃ±os</b></p>
+          <p style="font-size:7.5pt;color:#444;margin:1px 0;">${pDocTipo}: <b>${pDocNum}</b> &nbsp;|&nbsp; Edad: <b>${pEdad} años</b></p>
           <p style="font-size:7.5pt;color:#444;margin:1px 0;">Sexo: ${pGenero} &nbsp;|&nbsp; EPS: <b>${pEps}</b></p>
           <p style="font-size:7.5pt;color:#444;margin:1px 0;">ARL: <b>${pArl}</b> &nbsp;|&nbsp; AFP: ${pAfp}</p>
           <p style="font-size:7.5pt;color:#444;margin:1px 0;">Empresa: <b>${pEmpresa}</b></p>
@@ -1366,7 +1366,7 @@ const TabFormulaDerivacion = ({
     const w = window.open("", "_blank", "width=600,height=700");
     if (!w) return;
     const accent = "#059669";
-    const header = buildPrintHeader("PrescripciÃ³n Individual", accent);
+    const header = buildPrintHeader("Prescripción Individual", accent);
     const singleMedHtml = `
       <div class="med-card" style="display:flex;gap:10px;align-items:flex-start;margin-bottom:10px;">
         <span class="med-num">${idx + 1}</span>
@@ -1378,9 +1378,9 @@ const TabFormulaDerivacion = ({
     )})</span></p>
           <p style="font-size:9.5pt;color:#374151;margin:2px 0;"><b>Dosis:</b> ${_sanitize(
             med.dosis || "--"
-          )} &nbsp;Â·&nbsp; <b>Frecuencia:</b> ${_sanitize(
+          )} &nbsp;·&nbsp; <b>Frecuencia:</b> ${_sanitize(
       med.frecuencia || "--"
-    )} &nbsp;Â·&nbsp; <b>DuraciÃ³n:</b> ${_sanitize(med.duracion || "--")}</p>
+    )} &nbsp;·&nbsp; <b>Duración:</b> ${_sanitize(med.duracion || "--")}</p>
           ${
             med.indicaciones
               ? `<p style="font-size:9pt;color:#92400e;font-style:italic;margin:4px 0;">âš  ${_sanitize(
@@ -1391,7 +1391,7 @@ const TabFormulaDerivacion = ({
         </div>
       </div>
       <div style="background:#ecfdf5;border:1px solid #a7f3d0;border-radius:4px;padding:8px 12px;margin-top:8px;">
-        <p style="font-size:8.5pt;"><b>DiagnÃ³stico:</b> ${_sanitize(
+        <p style="font-size:8.5pt;"><b>Diagnóstico:</b> ${_sanitize(
           data.diagnosticoPrincipal ||
             (data.diagnosticos || [])[0]?.descripcion ||
             "--"
@@ -1479,9 +1479,9 @@ body{padding-top:52px;}
                 )}</span></p>
             <p style="font-size:8.5pt;color:#374151;margin:1px 0;"><b>Dosis:</b> ${_sanitize(
               m.dosis || "--"
-            )} &nbsp;Â·&nbsp; <b>Frec.:</b> ${_sanitize(
+            )} &nbsp;·&nbsp; <b>Frec.:</b> ${_sanitize(
                   m.frecuencia || "--"
-                )} &nbsp;Â·&nbsp; <b>DuraciÃ³n:</b> ${_sanitize(
+                )} &nbsp;·&nbsp; <b>Duración:</b> ${_sanitize(
                   m.duracion || "--"
                 )}</p>
             ${
@@ -1513,10 +1513,10 @@ body{padding-top:52px;}
           : "";
       bodyHtml = `
         <div style="background:#ecfdf5;border:1px solid #a7f3d0;border-radius:4px;padding:10px 12px;margin-bottom:12px;">
-          <p class="section-title" style="color:#065f46;">&#128138; PrescripciÃ³n MÃ©dica</p>
+          <p class="section-title" style="color:#065f46;">&#128138; Prescripción Médica</p>
           ${medsHtml}${planMeds}
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;border-top:1px solid #a7f3d0;padding-top:8px;">
-            <p style="font-size:8.5pt;"><b>DiagnÃ³stico:</b> ${dx}</p>
+            <p style="font-size:8.5pt;"><b>Diagnóstico:</b> ${dx}</p>
             <p style="font-size:8.5pt;"><b>Control en:</b> ${control}</p>
           </div>
         </div>
@@ -1654,31 +1654,31 @@ body{padding-top:52px;}
         <div className="w-1/3 text-center">
           <h1 className="text-sm font-black text-gray-800 uppercase">
             {activeSubTab === "formula"
-              ? "FÃ³rmula MÃ©dica"
-              : "DerivaciÃ³n / Interconsulta"}
+              ? "Fórmula Médica"
+              : "Derivación / Interconsulta"}
           </h1>
           <p className="text-[9px] text-gray-500">
-            Res. 1995/1999 Â· Res. 1843/2025
+            Res. 1995/1999 · Res. 1843/2025
           </p>
         </div>
         <div className="w-1/3 text-right text-[9px] text-gray-500">
           <p className="font-black text-gray-800 text-[10px]">{data.nombres}</p>
           <p>
-            {data.docTipo || "CC"}: {data.docNumero} Â· {data.edad} aÃ±os
+            {data.docTipo || "CC"}: {data.docNumero} · {data.edad} años
           </p>
           <p>Empresa: {data.empresaNombre || "--"}</p>
           <p>Cargo: {data.cargo || "--"}</p>
           <p>
-            EPS: {data.eps || "--"} Â· ARL: {data.arl || "--"}
+            EPS: {data.eps || "--"} · ARL: {data.arl || "--"}
           </p>
           <p>Fecha: {data.fechaExamen || today}</p>
         </div>
       </div>
-      {/* Tabs + botones de impresiÃ³n individual */}
+      {/* Tabs + botones de impresión individual */}
       <div className="flex gap-2 mb-4 no-print flex-wrap items-center justify-between">
         <div className="flex gap-2">
           {[
-            { k: "formula", l: "ðŸ’Š FÃ³rmula MÃ©dica" },
+            { k: "formula", l: "ðŸ’Š Fórmula Médica" },
             { k: "derivacion", l: "ðŸ¥ Derivaciones" },
           ].map((t) => (
             <button
@@ -1697,20 +1697,20 @@ body{padding-top:52px;}
         <div className="flex gap-2">
           {activeSubTab === "formula" && (
             <button
-              onClick={() => openPrintWindow("formula", "FÃ³rmula MÃ©dica")}
+              onClick={() => openPrintWindow("formula", "Fórmula Médica")}
               className="flex items-center gap-1 bg-emerald-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-emerald-700"
             >
-              <Printer className="w-3 h-3" /> Imprimir FÃ³rmula
+              <Printer className="w-3 h-3" /> Imprimir Fórmula
             </button>
           )}
           {activeSubTab === "derivacion" && (
             <button
               onClick={() =>
-                openPrintWindow("derivacion", "DerivaciÃ³n / Interconsulta")
+                openPrintWindow("derivacion", "Derivación / Interconsulta")
               }
               className="flex items-center gap-1 bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-blue-700"
             >
-              <Printer className="w-3 h-3" /> Imprimir DerivaciÃ³n
+              <Printer className="w-3 h-3" /> Imprimir Derivación
             </button>
           )}
         </div>
@@ -1722,12 +1722,12 @@ body{padding-top:52px;}
       >
         <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 mb-3 print:bg-transparent print:border-gray-300">
           <h3 className="font-black text-emerald-900 text-xs uppercase mb-3 flex items-center gap-2">
-            <Pill className="w-4 h-4" /> PrescripciÃ³n MÃ©dica
+            <Pill className="w-4 h-4" /> Prescripción Médica
           </h3>
           {/* Input nuevo medicamento */}
           <div className="no-print mb-3 bg-white p-3 rounded-lg border border-emerald-100 space-y-2">
             <p className="text-[10px] font-bold text-gray-600 uppercase">
-              Agregar Medicamento a la FÃ³rmula
+              Agregar Medicamento a la Fórmula
             </p>
             <div className="grid grid-cols-2 gap-2">
               <div>
@@ -1746,12 +1746,12 @@ body{padding-top:52px;}
                       dosis: p.dosis || s.dosis || "",
                     }))
                   }
-                  placeholder="Buscar por nombre genÃ©rico o comercial..."
+                  placeholder="Buscar por nombre genérico o comercial..."
                 />
               </div>
               <div>
                 <label className="block text-[10px] font-bold text-gray-500 mb-0.5">
-                  PresentaciÃ³n
+                  Presentación
                 </label>
                 <input
                   value={newMed.presentacion}
@@ -1790,14 +1790,14 @@ body{padding-top:52px;}
               </div>
               <div>
                 <label className="block text-[10px] font-bold text-gray-500 mb-0.5">
-                  DuraciÃ³n
+                  Duración
                 </label>
                 <input
                   value={newMed.duracion}
                   onChange={(e) =>
                     setNewMed((p) => ({ ...p, duracion: e.target.value }))
                   }
-                  placeholder="Ej: 7 dÃ­as"
+                  placeholder="Ej: 7 días"
                   className="w-full p-1.5 border rounded text-xs"
                 />
               </div>
@@ -1820,7 +1820,7 @@ body{padding-top:52px;}
               type="button"
               className="w-full bg-emerald-600 text-white py-1.5 rounded-lg text-xs font-bold hover:bg-emerald-700 flex items-center justify-center gap-1"
             >
-              <Plus className="w-3 h-3" /> Agregar a la FÃ³rmula
+              <Plus className="w-3 h-3" /> Agregar a la Fórmula
             </button>
           </div>
           {/* Lista */}
@@ -1842,8 +1842,8 @@ body{padding-top:52px;}
                       </span>
                     </p>
                     <p className="text-xs text-gray-700 mt-0.5">
-                      <b>Dosis:</b> {med.dosis}&nbsp;Â·&nbsp;<b>Frec:</b>{" "}
-                      {med.frecuencia}&nbsp;Â·&nbsp;<b>Dur:</b> {med.duracion}
+                      <b>Dosis:</b> {med.dosis}&nbsp;·&nbsp;<b>Frec:</b>{" "}
+                      {med.frecuencia}&nbsp;·&nbsp;<b>Dur:</b> {med.duracion}
                     </p>
                     {med.indicaciones && (
                       <p className="text-[10px] text-amber-700 mt-0.5 italic">
@@ -1871,13 +1871,13 @@ body{padding-top:52px;}
             </div>
           ) : (
             <p className="text-center text-gray-400 text-xs italic py-3">
-              Sin medicamentos en la fÃ³rmula.
+              Sin medicamentos en la fórmula.
             </p>
           )}
           <div className="mt-3 grid grid-cols-2 gap-2">
             <div>
               <label className="block text-[10px] font-bold text-gray-600 mb-0.5 uppercase">
-                DiagnÃ³stico
+                Diagnóstico
               </label>
               <input
                 value={data.diagnosticoPrincipal || ""}
@@ -1897,13 +1897,13 @@ body{padding-top:52px;}
                     frecuenciaSeguimiento: e.target.value,
                   }))
                 }
-                placeholder="Ej: 15 dÃ­as"
+                placeholder="Ej: 15 días"
                 className="w-full p-1.5 border-b border-gray-300 text-xs outline-none"
               />
             </div>
           </div>
         </div>
-        {/* Firma fÃ³rmula - solo impresiÃ³n */}
+        {/* Firma fórmula - solo impresión */}
         <div className="hidden print:flex mt-8 justify-between items-end px-2 signature-block">
           <div className="text-center w-2/5 pt-8 border-t-2 border-gray-800">
             <p className="text-[10px] font-bold">
@@ -1931,15 +1931,15 @@ body{padding-top:52px;}
           <h3 className="font-black text-blue-900 text-xs uppercase mb-3 flex items-center gap-2">
             <Share2 className="w-4 h-4" /> Derivaciones / Interconsultas
           </h3>
-          {/* Formulario agregar derivaciÃ³n */}
+          {/* Formulario agregar derivación */}
           <div
             className="no-print mb-3 bg-white p-3 rounded-lg border border-blue-100"
             ref={derivRef}
           >
             <p className="text-[10px] font-bold text-gray-600 uppercase mb-2">
-              Agregar DerivaciÃ³n
+              Agregar Derivación
             </p>
-            {/* Barra de bÃºsqueda interactiva de especialidades */}
+            {/* Barra de búsqueda interactiva de especialidades */}
             <div className="relative mb-2">
               <Search className="absolute left-2.5 top-2 w-3.5 h-3.5 text-blue-400 pointer-events-none" />
               <input
@@ -2038,7 +2038,7 @@ body{padding-top:52px;}
               </div>
               <div className="col-span-2">
                 <label className="block text-[10px] font-bold text-gray-500 mb-0.5">
-                  Motivo de la derivaciÃ³n{" "}
+                  Motivo de la derivación{" "}
                   <span className="text-red-500">*</span>
                 </label>
                 <textarea
@@ -2047,7 +2047,7 @@ body{padding-top:52px;}
                   onChange={(e) =>
                     setNewDeriv((p) => ({ ...p, motivo: e.target.value }))
                   }
-                  placeholder="Describa el motivo clÃ­nico de la derivaciÃ³n..."
+                  placeholder="Describa el motivo clínico de la derivación..."
                   className="w-full p-1.5 border rounded text-xs resize-none"
                 />
               </div>
@@ -2063,7 +2063,7 @@ body{padding-top:52px;}
                       observaciones: e.target.value,
                     }))
                   }
-                  placeholder="Antecedentes relevantes, informaciÃ³n adicional..."
+                  placeholder="Antecedentes relevantes, información adicional..."
                   className="w-full p-1.5 border rounded text-xs"
                 />
               </div>
@@ -2073,7 +2073,7 @@ body{padding-top:52px;}
               type="button"
               className="w-full bg-blue-600 text-white py-1.5 rounded-lg text-xs font-bold hover:bg-blue-700 flex items-center justify-center gap-1 mt-2"
             >
-              <Plus className="w-3 h-3" /> Agregar DerivaciÃ³n
+              <Plus className="w-3 h-3" /> Agregar Derivación
             </button>
           </div>
           {/* Lista derivaciones */}
@@ -2130,7 +2130,7 @@ body{padding-top:52px;}
             </p>
           )}
         </div>
-        {/* Firma derivaciÃ³n - solo impresiÃ³n */}
+        {/* Firma derivación - solo impresión */}
         <div className="hidden print:flex mt-8 justify-between items-end px-2 signature-block">
           <div className="text-center w-2/5 pt-8 border-t-2 border-gray-800">
             <p className="text-[10px] font-bold">
@@ -2159,8 +2159,8 @@ body{padding-top:52px;}
 
 // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // B-20: FACTURACIÃ“N ELECTRÃ“NICA DIAN - UBL 2.1
-// Decreto 358 de 2020 Â· ResoluciÃ³n DIAN 000012 de 2021
-// Genera XML base para envÃ­o a software autorizado (Siigo, Alegra, Facture)
+// Decreto 358 de 2020 · Resolución DIAN 000012 de 2021
+// Genera XML base para envío a software autorizado (Siigo, Alegra, Facture)
 // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 const _generarFacturaDIAN_UBL = (billData, doctorData, numero) => {
   const now = new Date();
@@ -2168,7 +2168,7 @@ const _generarFacturaDIAN_UBL = (billData, doctorData, numero) => {
   const hora = now.toISOString().split("T")[1].slice(0, 8);
   const cufe = `SISO-${numero}-${fecha}`.replace(/-/g, "");
   const bruto = parseFloat(billData.amount || "0");
-  const iva = 0; // Servicios mÃ©dicos exentos de IVA (Art. 476 E.T. numeral 1)
+  const iva = 0; // Servicios médicos exentos de IVA (Art. 476 E.T. numeral 1)
   const total = bruto;
 
   return `<?xml version="1.0" encoding="UTF-8"?>
@@ -2185,15 +2185,15 @@ const _generarFacturaDIAN_UBL = (billData, doctorData, numero) => {
   <cbc:IssueDate>${fecha}</cbc:IssueDate>
   <cbc:IssueTime>${hora}-05:00</cbc:IssueTime>
   <cbc:InvoiceTypeCode>01</cbc:InvoiceTypeCode>
-  <cbc:Note>Servicios mÃ©dicos ocupacionales exentos de IVA - Art. 476 E.T. num. 1</cbc:Note>
+  <cbc:Note>Servicios médicos ocupacionales exentos de IVA - Art. 476 E.T. num. 1</cbc:Note>
   <cbc:DocumentCurrencyCode>COP</cbc:DocumentCurrencyCode>
   <cbc:LineCountNumeric>1</cbc:LineCountNumeric>
-  <!-- Emisor (mÃ©dico) -->
+  <!-- Emisor (médico) -->
   <cac:AccountingSupplierParty>
     <cac:Party>
       <cac:PartyTaxScheme>
         <cbc:RegistrationName>${
-          doctorData?.nombre || "MÃ‰DICO OCUPACIONAL"
+          doctorData?.nombre || "MÉDICO OCUPACIONAL"
         }</cbc:RegistrationName>
         <cbc:CompanyID schemeID="13">${(doctorData?.cedula || "").replace(
           /[^0-9]/g,
@@ -2234,7 +2234,7 @@ const _generarFacturaDIAN_UBL = (billData, doctorData, numero) => {
     )}</cbc:TaxInclusiveAmount>
     <cbc:PayableAmount currencyID="COP">${total.toFixed(2)}</cbc:PayableAmount>
   </cac:LegalMonetaryTotal>
-  <!-- LÃ­nea de factura -->
+  <!-- Línea de factura -->
   <cac:InvoiceLine>
     <cbc:ID>1</cbc:ID>
     <cbc:InvoicedQuantity unitCode="94">1</cbc:InvoicedQuantity>
@@ -2275,7 +2275,7 @@ const _generarFacturaDIAN_UBL = (billData, doctorData, numero) => {
 
 // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // B-18: 2FA TOTP - RFC 6238 con Web Crypto API (HMAC-SHA1)
-// Res. 3100/2019 (habilitaciÃ³n IPS) - Seguridad en sistemas de informaciÃ³n
+// Res. 3100/2019 (habilitación IPS) - Seguridad en sistemas de información
 // Compatible con Google Authenticator, Authy, Microsoft Authenticator
 // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 const _totpBase32Chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
@@ -2373,12 +2373,12 @@ const _generarPaqueteRetencion = async (hcData, medicoData) => {
     _tipo: "SISO_HC_RETENCION_CERTIFICADA",
     metadata: {
       norma:
-        "ResoluciÃ³n 1995 de 1999 Art. 15 - RetenciÃ³n Historia ClÃ­nica 20 aÃ±os",
+        "Resolución 1995 de 1999 Art. 15 - Retención Historia Clínica 20 años",
       version: "SISO-OCUPASALUD-v4",
       fechaPreservacion: ts,
       anioVencimientoLegal: new Date().getFullYear() + 20,
       medicoId: medicoData?.cedula || "desconocido",
-      medicoNombre: medicoData?.nombre || "MÃ©dico Ocupacional",
+      medicoNombre: medicoData?.nombre || "Médico Ocupacional",
       paciente: hcData.nombres || "Desconocido",
       docNumero: hcData.docNumero || "--",
       empresa: hcData.empresaNombre || "PARTICULAR",
@@ -2414,14 +2414,14 @@ const _dateRef = data.fechaCierre ? new Date(data.fechaCierre + "T12:00:00") : n
     day: "numeric",
   });
   const nomDoc =
-    doctorData && doctorData.nombre ? doctorData.nombre : "MÃ‰DICO OCUPACIONAL";
+    doctorData && doctorData.nombre ? doctorData.nombre : "MÉDICO OCUPACIONAL";
   const nomTit =
     doctorData && doctorData.titulo
       ? doctorData.titulo
-      : "MÃ©dico Especialista en Salud Ocupacional";
+      : "Médico Especialista en Salud Ocupacional";
   const nomLic = doctorData && doctorData.licencia ? doctorData.licencia : "--";
   const nomCiu =
-    doctorData && doctorData.ciudad ? doctorData.ciudad : "PopayÃ¡n";
+    doctorData && doctorData.ciudad ? doctorData.ciudad : "Popayán";
   const nomCell =
     doctorData && doctorData.celular
       ? doctorData.celular
@@ -2449,7 +2449,7 @@ const _dateRef = data.fechaCierre ? new Date(data.fechaCierre + "T12:00:00") : n
       .filter(Boolean);
     if (
       lines.some(
-        (l) => /^[â€¢*\-]/.test(l) || /^\*\*/.test(l) || /^\d+\./.test(l)
+        (l) => /^[•*\-]/.test(l) || /^\*\*/.test(l) || /^\d+\./.test(l)
       )
     ) {
       return (
@@ -2459,7 +2459,7 @@ const _dateRef = data.fechaCierre ? new Date(data.fechaCierre + "T12:00:00") : n
             (l) =>
               '<li style="margin-bottom:3px;font-size:9.5pt;">' +
               l
-                .replace(/^[â€¢*\-]+\s*/, "")
+                .replace(/^[•*\-]+\s*/, "")
                 .replace(/^\d+\.\s*/, "")
                 .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>") +
               "</li>"
@@ -2493,7 +2493,7 @@ const _dateRef = data.fechaCierre ? new Date(data.fechaCierre + "T12:00:00") : n
   const recCheck = checkItems(data.recomendacionesChecklist);
 
   /* â”€â”€ Fecha de vigencia â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
-  const vigencia = data.vigencia || "1 aÃ±o";
+  const vigencia = data.vigencia || "1 año";
 
   /* â”€â”€ Color concepto â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
   const cLow = conceptoRaw.toLowerCase();
@@ -2586,9 +2586,9 @@ const _dateRef = data.fechaCierre ? new Date(data.fechaCierre + "T12:00:00") : n
     (ipsData
       ? _sanitize(
           (ipsData.direccion || "") +
-            (ipsData.ciudad ? " Â· " + ipsData.ciudad : "")
+            (ipsData.ciudad ? " · " + ipsData.ciudad : "")
         )
-      : "Lic. " + nomLic + " Â· " + nomCiu) +
+      : "Lic. " + nomLic + " · " + nomCiu) +
     "</div>" +
     (ipsData && ipsData.telefono
       ? '<div class="hdr-sub">Tel: ' + _sanitize(ipsData.telefono) + "</div>"
@@ -2604,11 +2604,11 @@ const _dateRef = data.fechaCierre ? new Date(data.fechaCierre + "T12:00:00") : n
     "</div>" +
     /* â”€â”€ TITLE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     '<div class="title">Certificado de Aptitud Laboral</div>' +
-    '<div class="subtitle">Conforme a la ResoluciÃ³n 1843 de 2025</div>' +
+    '<div class="subtitle">Conforme a la Resolución 1843 de 2025</div>' +
     /* â”€â”€ INTRO â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
-    '<p class="intro">El suscrito MÃ©dico Especialista en Salud Ocupacional, con licencia vigente, certifica que ha realizado la evaluaciÃ³n mÃ©dica ocupacional de tipo <strong>' +
+    '<p class="intro">El suscrito Médico Especialista en Salud Ocupacional, con licencia vigente, certifica que ha realizado la evaluación médica ocupacional de tipo <strong>' +
     tipoExamen +
-    "</strong> con Ã©nfasis <strong>" +
+    "</strong> con énfasis <strong>" +
     enfasis +
     "</strong> a:</p>" +
     /* â”€â”€ PATIENT BOX â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
@@ -2616,7 +2616,7 @@ const _dateRef = data.fechaCierre ? new Date(data.fechaCierre + "T12:00:00") : n
     '<div class="pat-field"><span class="pat-label">Nombre</span><span class="pat-val">' +
     (data.nombres || "--") +
     "</span></div>" +
-    '<div class="pat-field"><span class="pat-label">IdentificaciÃ³n</span><span class="pat-val">' +
+    '<div class="pat-field"><span class="pat-label">Identificación</span><span class="pat-val">' +
     (data.docTipo || "CC") +
     " " +
     (data.docNumero || "--") +
@@ -2657,7 +2657,7 @@ const _dateRef = data.fechaCierre ? new Date(data.fechaCierre + "T12:00:00") : n
         "</div>"
       : "") +
     /* â”€â”€ ALERTA CONFIDENCIALIDAD â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
-    '<div class="alerta">âš  <strong>Confidencialidad:</strong> El diagnÃ³stico clÃ­nico no es entregado al empleador (Art. 16 Res. 1843/2025). Solo uso para gestiÃ³n del riesgo ocupacional.</div>' +
+    '<div class="alerta">âš  <strong>Confidencialidad:</strong> El diagnóstico clínico no es entregado al empleador (Art. 16 Res. 1843/2025). Solo uso para gestión del riesgo ocupacional.</div>' +
     /* â”€â”€ FIRMA ROW â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     '<div class="firma-row">' +
     '<div class="firma-col">' +
@@ -2671,7 +2671,7 @@ const _dateRef = data.fechaCierre ? new Date(data.fechaCierre + "T12:00:00") : n
     "</div>" +
     "</div>" +
     '<div class="cv-box">' +
-    '<div class="cv-lbl">CÃ³digo VerificaciÃ³n</div>' +
+    '<div class="cv-lbl">Código Verificación</div>' +
     '<div class="cv-code">' +
     (data.codigoVerificacion || "--") +
     "</div>" +
@@ -2699,15 +2699,15 @@ const _dateRef = data.fechaCierre ? new Date(data.fechaCierre + "T12:00:00") : n
     "</div>" +
     /* â”€â”€ FOOTER â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     '<div class="footer">' +
-    "<span>Res. 1843/2025 Â· Res. 1995/1999 Â· Ley 23/1981 Â· Ley 1581/2012</span>" +
+    "<span>Res. 1843/2025 · Res. 1995/1999 · Ley 23/1981 · Ley 1581/2012</span>" +
     "<span>SISO OcupaSalud v4.8</span>" +
     "</div>" +
     /* â”€â”€ CONSENTIMIENTO â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
-    '<div class="consent">El suscrito MÃ©dico Especialista en Salud Ocupacional, con licencia vigente, certifica que realizÃ³ el examen mÃ©dico ocupacional registrado en este documento. ' +
-    "El paciente fue informado de las medidas de protecciÃ³n de la confidencialidad de los resultados. " +
-    "Las respuestas dadas fueron consideradas verÃ­dicas. " +
-    "Se autoriza al doctor para suministrar la Historia ClÃ­nica a la EPS y a las personas o entidades contempladas en la legislaciÃ³n vigente, para el buen cumplimiento del sistema de seguridad y salud en el trabajo. " +
-    "Res. 1843/2025 Â· Ley 1581/2012 Â· Ley 23/1981.</div>" +
+    '<div class="consent">El suscrito Médico Especialista en Salud Ocupacional, con licencia vigente, certifica que realizó el examen médico ocupacional registrado en este documento. ' +
+    "El paciente fue informado de las medidas de protección de la confidencialidad de los resultados. " +
+    "Las respuestas dadas fueron consideradas verídicas. " +
+    "Se autoriza al doctor para suministrar la Historia Clínica a la EPS y a las personas o entidades contempladas en la legislación vigente, para el buen cumplimiento del sistema de seguridad y salud en el trabajo. " +
+    "Res. 1843/2025 · Ley 1581/2012 · Ley 23/1981.</div>" +
     "</body></html>"
   );
 };
@@ -2718,7 +2718,7 @@ const _dateRef = data.fechaCierre ? new Date(data.fechaCierre + "T12:00:00") : n
 // FASE 1 â€” ESTABILIZACIÃ“N: SEGURIDAD Y RESILIENCIA
 // ============================================================
 
-// SEC-F1-01: HTTPS enforcement (producciÃ³n)
+// SEC-F1-01: HTTPS enforcement (producción)
 if (typeof window !== "undefined" && window.location.protocol === "http:" && 
     !window.location.hostname.includes("localhost") && 
     !window.location.hostname.includes("127.0.0.1") &&
@@ -2760,7 +2760,7 @@ class AppErrorBoundary extends React.Component {
         React.createElement("div", { key: "icon", style: { fontSize: "48px", marginBottom: "16px" } }, "âš ï¸"),
         React.createElement("h1", { key: "title", style: { fontSize: "20px", fontWeight: "900", color: "#1e293b", marginBottom: "8px" } }, "OcupaSalud â€” Error inesperado"),
         React.createElement("p", { key: "msg", style: { fontSize: "13px", color: "#64748b", marginBottom: "20px", lineHeight: "1.5" } },
-          "Se produjo un error en la aplicaciÃ³n. Sus datos estÃ¡n seguros en la nube. Intente recargar la pÃ¡gina."
+          "Se produjo un error en la aplicación. Sus datos están seguros en la nube. Intente recargar la página."
         ),
         React.createElement("pre", { key: "detail", style: { fontSize: "11px", color: "#dc2626", marginBottom: "10px", background: "#fef2f2", padding: "10px", borderRadius: "8px", wordBreak: "break-word", whiteSpace: "pre-wrap", textAlign: "left", maxHeight: "180px", overflow: "auto" } },
           String(this.state.error || "Error desconocido") + "\n\n" + (this.state.error && this.state.error.stack ? this.state.error.stack : "No stack")
@@ -2837,7 +2837,7 @@ if (typeof navigator !== "undefined" && "serviceWorker" in navigator) {
 // â”€â”€ App principal envuelta en ErrorBoundary â”€â”€
 function AppInner() {
   const [view, setView] = useState(() => {
-    // Restaurar vista activa al recargar - si habÃ­a sesiÃ³n activa
+    // Restaurar vista activa al recargar - si había sesión activa
     try {
       const sess = JSON.parse(_ls.getItem("siso_session") || "null");
       if (sess?.user && sess?.view && sess.view !== "login") return sess.view;
@@ -2853,7 +2853,7 @@ function AppInner() {
     }
   });
   const [currentUser, setCurrentUser] = useState(() => {
-    // Restaurar usuario de sesiÃ³n al recargar
+    // Restaurar usuario de sesión al recargar
     try {
       const sess = JSON.parse(_ls.getItem("siso_session") || "null");
       if (sess?.user) {
@@ -2861,10 +2861,10 @@ function AppInner() {
         const users = JSON.parse(_ls.getItem("siso_users") || "[]");
         const found = users.find((u) => u.user === sess.user);
         if (!found) return null;
-        // MigraciÃ³n: si doctorData.nombre estÃ¡ vacÃ­o, rellenar desde initialUsers (no sobreescribir datos ya guardados)
+        // Migración: si doctorData.nombre está vacío, rellenar desde initialUsers (no sobreescribir datos ya guardados)
         const init = initialUsers.find((i) => i.user === found.user);
         if (init && init.doctorData?.nombre && !found.doctorData?.nombre) {
-          // Usar init como base, sobreescribir solo con valores no vacÃ­os del stored
+          // Usar init como base, sobreescribir solo con valores no vacíos del stored
           const mergedDoc = Object.fromEntries(
             Object.entries(init.doctorData).map(([k, v]) => [k, found.doctorData?.[k] || v])
           );
@@ -2875,7 +2875,7 @@ function AppInner() {
     } catch {}
     return null;
   });
-  // SEGURIDAD: protecciÃ³n fuerza bruta
+  // SEGURIDAD: protección fuerza bruta
   // â•â• B-05: Rate limiting persistente en localStorage (OWASP A07) â•â•
   const [loginAttempts, setLoginAttempts] = useState(() => {
     const stored = parseInt(_ls.getItem("siso_login_attempts") || "0");
@@ -2885,7 +2885,7 @@ function AppInner() {
     const stored = parseInt(_ls.getItem("siso_login_blocked_until") || "0");
     return stored > Date.now() ? stored : null;
   });
-  // NORMATIVO: Ley 1581/2012 - aceptaciÃ³n polÃ­tica de privacidad
+  // NORMATIVO: Ley 1581/2012 - aceptación política de privacidad
   const [privacidadAceptada, setPrivacidadAceptada] = useState(() => {
     try {
       return !!JSON.parse(_ls.getItem("siso_privacidad_aceptada") || "false");
@@ -2898,7 +2898,7 @@ function AppInner() {
     _sync("siso_privacidad_aceptada", JSON.stringify(registro));
     setPrivacidadAceptada(true);
   };
-  // NORMATIVO: Res. 1888/2025 RDA - FunciÃ³n de registro de auditorÃ­a (reemplaza Res. 1918/2009 Art. 8)
+  // NORMATIVO: Res. 1888/2025 RDA - Función de registro de auditoría (reemplaza Res. 1918/2009 Art. 8)
   // NORMATIVO: Res. 1888/2025 RDA - Registro de Datos Autorizados (trazabilidad completa)
   // Campos obligatorios: usuario, accion, seccion, pacienteId, timestamp ISO, userAgent
   const logAccess = (accion, pacienteId, extra, seccion) => {
@@ -2909,7 +2909,7 @@ function AppInner() {
       nombreUsuario: currentUser?.name || "Sistema",
       rol: currentUser?.role || "desconocido",
       accion, // 'Apertura'|'Guardado'|'Cierre'|'Edicion'|'Login'|'Impresion'|'Exportacion'
-      seccion: seccion || extra || null, // secciÃ³n especÃ­fica accedida (RDA)
+      seccion: seccion || extra || null, // sección específica accedida (RDA)
       tipo: extra || null,
       pacienteId: pacienteId || null,
       userAgent:
@@ -2924,7 +2924,7 @@ function AppInner() {
       return nuevo;
     });
   };
-  // SUPABASE: estado del indicador de sincronizaciÃ³n en la nube
+  // SUPABASE: estado del indicador de sincronización en la nube
   const [syncStatus, setSyncStatus] = useState("idle");
   const [showSyncReport, setShowSyncReport] = useState(false);
   const [syncReport, setSyncReport] = useState(null); // 'idle'|'loading'|'syncing'|'ok'|'error'
@@ -2953,7 +2953,7 @@ function AppInner() {
     }
   });
   const [doctorSignature, setDoctorSignature] = useState(null);
-  // NORMATIVO: Res. 1888/2025 RDA - Log de auditorÃ­a de accesos (trazabilidad completa)
+  // NORMATIVO: Res. 1888/2025 RDA - Log de auditoría de accesos (trazabilidad completa)
   const [auditLog, setAuditLog] = useState(() => {
     try {
       return JSON.parse(_ls.getItem("siso_audit_log") || "[]");
@@ -3005,9 +3005,9 @@ function AppInner() {
   const [hcChoiceAgenda, setHcChoiceAgenda] = useState(null);
   const [historyRecords, setHistoryRecords] = useState([]);
   const [patientSearchTerm, setPatientSearchTerm] = useState("");
-  const [genPatSearch, setGenPatSearch] = useState(""); // bÃºsqueda paciente HC General
+  const [genPatSearch, setGenPatSearch] = useState(""); // búsqueda paciente HC General
   const [examSearch, setExamSearch] = useState(""); // solicitud examenes
-  const [examList, setExamList] = useState([]); // lista exÃ¡menes solicitados
+  const [examList, setExamList] = useState([]); // lista exámenes solicitados
   const [showExamSuggs, setShowExamSuggs] = useState(false);
   const [diagExamen, setDiagExamen] = useState("");
   const [justExamen, setJustExamen] = useState("");
@@ -3024,7 +3024,7 @@ function AppInner() {
   // Exportar tabla de pacientes como CSV (sin datos sensibles -- confidencialidad Res.1843/2025 Art.19)
   const exportPatientTable = (patients, compName) => {
     const headers = [
-      "NÂ°",
+      "N°",
       "Nombre_Trabajador",
       "Tipo_Doc",
       "Documento",
@@ -3073,11 +3073,11 @@ function AppInner() {
     a.click();
     document.body.removeChild(a);
   };
-  // B-20: DIAN FacturaciÃ³n ElectrÃ³nica
+  // B-20: DIAN Facturación Electrónica
   const [showDianPanel, setShowDianPanel] = useState(false);
-  // Modal datos paciente para secretaria (sin ficha clÃ­nica)
+  // Modal datos paciente para secretaria (sin ficha clínica)
   const [showSecretariaPatientModal, setShowSecretariaPatientModal] = useState(null);
-  // Selector mÃ©dico para reportes
+  // Selector médico para reportes
   const [selectedMedicoReport, setSelectedMedicoReport] = useState("");
   // Modal checklist "Todo"
   const [showTodoChecklist, setShowTodoChecklist] = useState(false);
@@ -3127,7 +3127,7 @@ function AppInner() {
     nombre: "",
     codigo: "",
     precio: "",
-    unidad: "SesiÃ³n",
+    unidad: "Sesión",
     descripcion: "",
   });
   const [portafolioEditId, setPortafolioEditId] = useState(null);
@@ -3155,7 +3155,7 @@ function AppInner() {
   // â”€â”€ B-F2-01 Caja diaria â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const [cajaMovimientos, setCajaMovimientos] = useState(() => {
     try {
-      // PASO 6: usar clave aislada por empresa/usuario (si hay sesiÃ³n guardada)
+      // PASO 6: usar clave aislada por empresa/usuario (si hay sesión guardada)
       const sess = JSON.parse(localStorage.getItem("siso_session") || "{}");
       const suf = sess?.empresaId
         ? "empresa_" + sess.empresaId
@@ -3181,7 +3181,7 @@ function AppInner() {
   const [cajaFiltroPeriodo, setCajaFiltroPeriodo] = useState("hoy");
   const [cajaFiltroDesde, setCajaFiltroDesde] = useState("");
   const [cajaFiltroHasta, setCajaFiltroHasta] = useState("");
-  // PASO 5: MÃ³dulo Contabilidad
+  // PASO 5: Módulo Contabilidad
   const [contabTab, setContabTab] = useState("resumen");
   const [contabPeriodo, setContabPeriodo] = useState("mes");
   // â”€â”€ B-F2-04 Asistencia agenda â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -3193,7 +3193,7 @@ function AppInner() {
     texto: "",
     nuevoConcept: "",
     fecha: new Date().toISOString().split("T")[0],
-    // Sub-consulta completa (se llena al abrir modal de EvoluciÃ³n)
+    // Sub-consulta completa (se llena al abrir modal de Evolución)
     codigoEvolucion: "",
     activeEvTab: "nota",
     motivoConsulta: "",
@@ -3205,14 +3205,14 @@ function AppInner() {
     incapacidad: {
       aplica: false,
       dias: 0,
-      origen: "ComÃºn",
+      origen: "Común",
       diagnostico: "",
       desde: "",
       hasta: "",
     },
   });
   const [showEvolucionModal, setShowEvolucionModal] = useState(false);
-  // â”€â”€ B-PKG: Package de exÃ¡menes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // â”€â”€ B-PKG: Package de exámenes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const [selectedPackage, setSelectedPackage] = useState(null);
   const [packageChecklist, setPackageChecklist] = useState({});
   const [showPackages, setShowPackages] = useState(false);
@@ -3262,7 +3262,7 @@ function AppInner() {
   });
   const [selSvc, setSelSvc] = useState("");
   const [propModulo, setPropModulo] = useState("propuesta"); // 'propuesta' | 'cotizacion'
-  // â”€â”€ MENSAJERÃA INTERNA â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // â”€â”€ MENSAJERÍA INTERNA â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const [mensajes, setMensajes] = useState([]); // [{id,from,to,text,fecha,leido,respuesta,respondido}]
   const [showMensajePanel, setShowMensajePanel] = useState(false);
   const [showConsentModal, setShowConsentModal] = useState(false); // B-19
@@ -3286,7 +3286,7 @@ function AppInner() {
     descripcion: "",
     fecha: new Date().toISOString().split("T")[0],
   });
-  // Portal PÃºblico (acceso sin login)
+  // Portal Público (acceso sin login)
   const [showPortalPublico, setShowPortalPublico] = useState(false);
   // B-29: IA Resumen
   const [aiResumen, setAiResumen] = React.useState("");
@@ -3310,8 +3310,8 @@ function AppInner() {
   // B-24: Portal del Trabajador
   const [portalCodigo, setPortalCodigo] = useState("");
   const [portalPaciente, setPortalPaciente] = useState(null);
-  const [portalMultiple, setPortalMultiple] = useState([]); // mÃºltiples HCs por cÃ©dula
-  // B-21: DiagnÃ³stico EpidemiolÃ³gico
+  const [portalMultiple, setPortalMultiple] = useState([]); // múltiples HCs por cédula
+  // B-21: Diagnóstico Epidemiológico
   const [epiEmpresa, setEpiEmpresa] = useState("todas");
   const [epiPeriodo, setEpiPeriodo] = useState("anio");
   const [epiTab, setEpiTab] = useState("resumen");
@@ -3341,11 +3341,11 @@ function AppInner() {
   const [agendados, setAgendados] = useState([]); // [{id,nombre,doc,tipo,medicoId,hora,estado:'espera'|'atendiendo'|'atendido',horaInicio,horaFin}]
   const [showAgenda, setShowAgenda] = useState(false);
   const [agendaForm, setAgendaForm] = useState({
-    // IdentificaciÃ³n
+    // Identificación
     nombre: "",
     docTipo: "CC",
     docNumero: "",
-    // SociodemogrÃ¡ficos
+    // Sociodemográficos
     fechaNacimiento: "",
     edad: "",
     genero: "",
@@ -3381,7 +3381,7 @@ function AppInner() {
     fechaCita: "",
     horaCita: "",
     observacion: "",
-    // BÃºsqueda
+    // Búsqueda
     _busquedaQuery: "",
     _showSuggs: false,
   });
@@ -3407,10 +3407,10 @@ function AppInner() {
   // â”€â”€ EMPRESAS (component-level to avoid React #310) â”€â”€
   const [companiesTab, setCompaniesTab] = useState("lista");
   const [editingCompany, setEditingCompany] = useState(null);
-  // â”€â”€ CAJA POR MÃ‰DICO (component-level) â”€â”€
+  // â”€â”€ CAJA POR MÉDICO (component-level) â”€â”€
   const [cajaMedicoPeriodo, setCajaMedicoPeriodo] = useState("mes");
-  const [porcentajeMedico, setPorcentajeMedico] = useState(60); // % honorarios mÃ©dico vs clÃ­nica
-  // â”€â”€ FASE 2: MÃ©dico de turno activo â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  const [porcentajeMedico, setPorcentajeMedico] = useState(60); // % honorarios médico vs clínica
+  // â”€â”€ FASE 2: Médico de turno activo â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const [medicoTurnoActivo, setMedicoTurnoActivo] = useState(() => {
     try {
       return localStorage.getItem("siso_medico_turno") || "";
@@ -3428,13 +3428,13 @@ function AppInner() {
     } catch {
       /* */
     }
-    return [{ ...ORG_CONFIG_DEFAULT }]; // organizaciÃ³n inicial
+    return [{ ...ORG_CONFIG_DEFAULT }]; // organización inicial
   });
   // â”€â”€ FASE 2: Org activa para super_admin (puede navegar entre orgs) â”€â”€â”€â”€â”€â”€â”€
   const [activeOrgId, setActiveOrgId] = useState(ORG_DEFAULT_ID);
   // â”€â”€ FASE 2: Tab panel super_admin â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const [superAdminTab, setSuperAdminTab] = useState("orgs");
-  // â”€â”€ FASE 2: Form nueva organizaciÃ³n â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // â”€â”€ FASE 2: Form nueva organización â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const [newOrgForm, setNewOrgForm] = useState({
     orgName: "",
     orgNit: "",
@@ -3449,8 +3449,8 @@ function AppInner() {
   const [portalEmpresaPacientes, setPortalEmpresaPacientes] = useState([]);
   const [portalEmpresaTab, setPortalEmpresaTab] = useState("trabajadores");
   const [portalEmpresaBuscando, setPortalEmpresaBuscando] = useState(false);
-  const [portalEmpresaFiltroDoc, setPortalEmpresaFiltroDoc] = useState(""); // filtro cÃ©dula en portal empresa
-  const [portalActivadoInfo, setPortalActivadoInfo] = useState(null); // {empresa, portalCode} post-activaciÃ³n
+  const [portalEmpresaFiltroDoc, setPortalEmpresaFiltroDoc] = useState(""); // filtro cédula en portal empresa
+  const [portalActivadoInfo, setPortalActivadoInfo] = useState(null); // {empresa, portalCode} post-activación
   // â”€â”€ PORTAL EMPRESA ADMIN (FASE 2) â”€â”€
   const [portalEmpresaAdmin, setPortalEmpresaAdmin] = useState(null); // empresa admin logueado
   const [portalAdminTab, setPortalAdminTab] = useState("medicos");
@@ -3477,7 +3477,7 @@ function AppInner() {
   const [ipsEditingEmpId, setIpsEditingEmpId] = useState(null);
   const activeDoctorData = currentUser?.doctorData || DEFAULT_DOCTOR_DATA;
   const activeSignature = currentUser?.doctorData?.signature || doctorSignature;
-  // â”€â”€ Bloque 4-A: useMemo para cÃ³mputos costosos (bajo rendimiento) â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // â”€â”€ Bloque 4-A: useMemo para cómputos costosos (bajo rendimiento) â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const _memoPatients = React.useMemo(() => patientsList, [patientsList]);
   const _memoCompanies = React.useMemo(() => companies, [companies]);
   const _memoBills = React.useMemo(() => savedBillsList, [savedBillsList]);
@@ -3507,7 +3507,7 @@ function AppInner() {
     setPromptValue("");
     setPromptConfig({ msg, onSubmit, type });
   };
-  // B-24: Detectar acceso pÃºblico al portal desde URL hash
+  // B-24: Detectar acceso público al portal desde URL hash
   useEffect(() => {
     const hash = window.location.hash;
     if (hash === "#portaltrabajador" || hash === "#portal") {
@@ -3526,7 +3526,7 @@ function AppInner() {
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Portal empresa: auto-buscar empresa cuando llega deep-link con cÃ³digo
+  // Portal empresa: auto-buscar empresa cuando llega deep-link con código
   useEffect(() => {
     if (
       view === "portalempresa" &&
@@ -3567,10 +3567,10 @@ function AppInner() {
   // Garantiza que los cambios del admin se apliquen en tiempo real para cualquier
   // usuario activo (especialmente secretarias cuyo admin modifica sus permisos)
   useEffect(() => {
-    if (!currentUser) return; // solo si hay sesiÃ³n activa
+    if (!currentUser) return; // solo si hay sesión activa
     const _reloadUsersFromCloud = async () => {
       try {
-        // Estrategia 1: clave dedicada de permisos (mÃ¡s ligera, solo para secretaria)
+        // Estrategia 1: clave dedicada de permisos (más ligera, solo para secretaria)
         if (currentUser.role === "secretaria") {
           const permKey = `siso_permisos_${currentUser.user}`;
           const r = await fetch(
@@ -3603,22 +3603,22 @@ function AppInner() {
           }
           return; // para secretaria, la clave dedicada es suficiente
         }
-        // Estrategia 2: para admin/mÃ©dico, recargar siso_users completo (menos frecuente)
+        // Estrategia 2: para admin/médico, recargar siso_users completo (menos frecuente)
         // Solo cuando la lista local parece desactualizada
       } catch (_) { /* silencioso */ }
     };
     // Ejecutar inmediatamente al montar/cambiar currentUser
     _reloadUsersFromCloud();
-    // Polling cada 30 segundos mientras la sesiÃ³n estÃ© activa
+    // Polling cada 30 segundos mientras la sesión esté activa
     const _pollInterval = setInterval(_reloadUsersFromCloud, 30000);
     return () => clearInterval(_pollInterval);
   }, [currentUser?.user]); // eslint-disable-line react-hooks/exhaustive-deps
   // â•â• B-09: Seguridad de cabeceras â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   // NOTA: El meta CSP ha sido eliminado porque causa el error 'unsafe-eval'.
-  // RazÃ³n tÃ©cnica: CodeSandbox/React/Babel usan eval() internamente para el
+  // Razón técnica: CodeSandbox/React/Babel usan eval() internamente para el
   // compilador en tiempo real (HMR). Un meta CSP sin 'unsafe-eval' bloquea el
-  // propio bundler, rompiendo la aplicaciÃ³n.
-  // La polÃ­tica CSP correcta debe ir en los HTTP headers del servidor:
+  // propio bundler, rompiendo la aplicación.
+  // La política CSP correcta debe ir en los HTTP headers del servidor:
   //   Content-Security-Policy: script-src 'self' 'unsafe-inline' 'unsafe-eval' ...
   // Solo X-Frame-Options se mantiene (es seguro y no interfiere con nada).
   useEffect(() => {
@@ -3650,7 +3650,7 @@ function AppInner() {
     const style = document.createElement("style");
     style.id = "siso-perf-styles";
     style.textContent = `
-      /* â”€â”€ PRINT: evitar texto cortado en historias clÃ­nicas â”€â”€ */
+      /* â”€â”€ PRINT: evitar texto cortado en historias clínicas â”€â”€ */
       @media print {
         * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
         body { font-size: 9pt !important; }
@@ -3668,13 +3668,13 @@ function AppInner() {
         table { width: 100% !important; table-layout: fixed !important; border-collapse: collapse !important; }
         td, th { word-break: break-word !important; overflow-wrap: break-word !important; vertical-align: top !important; padding: 3px 5px !important; }
 
-        /* Secciones que NO deben cortarse entre pÃ¡ginas */
+        /* Secciones que NO deben cortarse entre páginas */
         .no-break-inside, section, article, .rounded-2xl, .rounded-xl, .bg-white {
           page-break-inside: avoid !important;
           break-inside: avoid !important;
         }
 
-        /* Grids y flex en columna Ãºnica para impresiÃ³n */
+        /* Grids y flex en columna única para impresión */
         .grid, .grid-cols-2, .grid-cols-3, .grid-cols-4 {
           display: block !important;
         }
@@ -3699,10 +3699,10 @@ function AppInner() {
           padding: 0 !important;
         }
 
-        /* Saltos de pÃ¡gina antes de secciones principales */
+        /* Saltos de página antes de secciones principales */
         .page-break-before { page-break-before: always !important; }
 
-        /* TamaÃ±o de pÃ¡gina */
+        /* Tamaño de página */
         @page { size: letter portrait; margin: 1.5cm; }
       }
 
@@ -3712,7 +3712,7 @@ function AppInner() {
         nav { flex-wrap: wrap !important; gap: 4px !important; padding: 8px !important; }
         nav button, nav a { font-size: 11px !important; padding: 6px 8px !important; }
 
-        /* Formularios en columna Ãºnica */
+        /* Formularios en columna única */
         .grid-cols-2, .grid-cols-3, .grid-cols-4 {
           grid-template-columns: 1fr !important;
         }
@@ -3720,7 +3720,7 @@ function AppInner() {
         /* Tablas scroll horizontal */
         table { display: block !important; overflow-x: auto !important; -webkit-overflow-scrolling: touch !important; }
 
-        /* Touch targets mÃ­nimo 44px (Apple HIG / WCAG 2.5.5) */
+        /* Touch targets mínimo 44px (Apple HIG / WCAG 2.5.5) */
         button, a, [role="button"], input[type="submit"] {
           min-height: 44px !important;
           min-width: 44px !important;
@@ -3742,14 +3742,14 @@ function AppInner() {
         /* Modales ocupan pantalla completa */
         .fixed.inset-0 > div { width: 96vw !important; max-width: 96vw !important; margin: 0 auto !important; }
 
-        /* Inputs mÃ¡s grandes para touch */
+        /* Inputs más grandes para touch */
         input, select, textarea {
-          font-size: 16px !important; /* Evita zoom automÃ¡tico en iOS */
+          font-size: 16px !important; /* Evita zoom automático en iOS */
           padding: 10px 12px !important;
         }
       }
 
-      /* â”€â”€ EXTRA SMALL: telÃ©fonos 360px â”€â”€ */
+      /* â”€â”€ EXTRA SMALL: teléfonos 360px â”€â”€ */
       @media (max-width: 480px) {
         .grid-cols-2 { grid-template-columns: 1fr !important; }
         .flex.gap-2, .flex.gap-3 { flex-wrap: wrap !important; }
@@ -3757,8 +3757,8 @@ function AppInner() {
         .px-4 { padding-left: 10px !important; padding-right: 10px !important; }
       }
 
-      /* â”€â”€ PERF: content-visibility para carga inicial rÃ¡pida â”€â”€ */
-      /* Solo aplica a secciones que no estÃ¡n visibles al inicio */
+      /* â”€â”€ PERF: content-visibility para carga inicial rápida â”€â”€ */
+      /* Solo aplica a secciones que no están visibles al inicio */
       .siso-lazy-section {
         content-visibility: auto;
         contain-intrinsic-size: 0 400px;
@@ -3767,12 +3767,12 @@ function AppInner() {
       /* Smooth scrolling nativo (sin JS) */
       html { scroll-behavior: smooth; }
 
-      /* Evitar parpadeo/reflow en imÃ¡genes */
+      /* Evitar parpadeo/reflow en imágenes */
       img { max-width: 100%; height: auto; }
     `;
     document.head.appendChild(style);
   }, []);
-  // Load desde localStorage (inmediato) + Supabase (en background, gana si mÃ¡s reciente)
+  // Load desde localStorage (inmediato) + Supabase (en background, gana si más reciente)
   useEffect(() => {
     // 1. Carga local inmediata para que la UI no espere
     const sessionUser = (() => {
@@ -3783,12 +3783,12 @@ function AppInner() {
       }
     })();
     setCompanies(sp(_compKey(sessionUser || "shared"), []));
-    // Pacientes: cargar SOLO los del usuario de sesiÃ³n activa (aislamiento absoluto)
-    // Si no hay sesiÃ³n guardada, dejar la lista vacÃ­a - se cargarÃ¡ en handleLogin
+    // Pacientes: cargar SOLO los del usuario de sesión activa (aislamiento absoluto)
+    // Si no hay sesión guardada, dejar la lista vacía - se cargará en handleLogin
     if (sessionUser) {
       setPatientsList(sp(_patKey(sessionUser), []));
     }
-    // NO cargar 'siso_db_patients' genÃ©rico - mezclaria pacientes de todos los mÃ©dicos
+    // NO cargar 'siso_db_patients' genérico - mezclaria pacientes de todos los médicos
     // â•â• FIX DEFINITIVO: Cargar usuarios con persistencia real â•â•
     const storedUsers = sp("siso_users", null);
     if (storedUsers && Array.isArray(storedUsers) && storedUsers.length > 0) {
@@ -3805,7 +3805,7 @@ function AppInner() {
       setUsersList(fixed);
       setUsersReady(true);
     } else {
-      // â•â• Cache vacÃ­o â€” ESPERAR a Supabase antes de permitir login â•â•
+      // â•â• Cache vacío â€” ESPERAR a Supabase antes de permitir login â•â•
       (async () => {
         try {
           // Timeout de 8 segundos para no bloquear la UI si no hay internet
@@ -3815,7 +3815,7 @@ function AppInner() {
           ]);
           if (cloud && cloud["siso_users"]?.value && Array.isArray(cloud["siso_users"].value) && cloud["siso_users"].value.length > 0) {
             let cloudUsers = cloud["siso_users"].value;
-            // â•â• MERGE: para cada usuario, verificar si hay doctorData dedicada mÃ¡s reciente â•â•
+            // â•â• MERGE: para cada usuario, verificar si hay doctorData dedicada más reciente â•â•
             cloudUsers = cloudUsers.map(u => {
               const dedicatedDD = cloud[`siso_doctor_data_${u.user}`]?.value;
               if (dedicatedDD && typeof dedicatedDD === "object") {
@@ -3825,7 +3825,7 @@ function AppInner() {
             });
             setUsersList(cloudUsers);
             _ls.setItem("siso_users", JSON.stringify(cloudUsers));
-            // TambiÃ©n restaurar firma, empresas y otros datos del mÃ©dico
+            // También restaurar firma, empresas y otros datos del médico
             if (cloud["siso_doctor_signature"]?.value) {
               setDoctorSignature(cloud["siso_doctor_signature"].value);
               _ls.setItem("siso_doctor_signature", cloud["siso_doctor_signature"].value);
@@ -3854,7 +3854,7 @@ function AppInner() {
     }
     setSavedReports(sp("siso_saved_reports", []));
     setMensajes(sp("siso_mensajes", []));
-    // PASO 6: cargar datos aislados por empresa/usuario desde sesiÃ³n previa
+    // PASO 6: cargar datos aislados por empresa/usuario desde sesión previa
     const _initSess = (() => {
       try {
         return JSON.parse(_ls.getItem("siso_session") || "{}");
@@ -3887,14 +3887,14 @@ function AppInner() {
       activeProvider: savedProvider.activeProvider || "gemini",
       keys: mergedKeys,
     });
-    // 2. Carga desde Supabase en background (datos mÃ¡s actualizados / otros dispositivos)
+    // 2. Carga desde Supabase en background (datos más actualizados / otros dispositivos)
     setSyncStatus("loading");
     _sbGetAll().then((cloud) => {
       if (!cloud) {
         setSyncStatus("error");
         return;
       }
-      // Para cada colecciÃ³n: si Supabase tiene datos mÃ¡s recientes, actualizar local y estado
+      // Para cada colección: si Supabase tiene datos más recientes, actualizar local y estado
       const applyCloud = (key, setter, fallback, localKey) => {
         if (!cloud[key]) return;
         const cloudVal = cloud[key].value;
@@ -3908,8 +3908,8 @@ function AppInner() {
           else setter(cloudVal);
         }
       };
-      // Pacientes: cargados por usuario especÃ­fico en handleLogin - no cargar genÃ©rico
-      // Empresas: se cargan por usuario en handleLogin, no aquÃ­
+      // Pacientes: cargados por usuario específico en handleLogin - no cargar genérico
+      // Empresas: se cargan por usuario en handleLogin, no aquí
       applyCloud("siso_saved_bills", setSavedBillsList, [], "siso_saved_bills");
       applyCloud(
         "siso_saved_reports",
@@ -3926,7 +3926,7 @@ function AppInner() {
         [],
         "siso_atenciones_cerradas"
       );
-      // Usuarios: PREFERIR datos de nube sobre initialUsers (FIX: persistencia de contraseÃ±a y datos mÃ©dico)
+      // Usuarios: PREFERIR datos de nube sobre initialUsers (FIX: persistencia de contraseña y datos médico)
       if (
         cloud["siso_users"]?.value &&
         Array.isArray(cloud["siso_users"].value) &&
@@ -3938,7 +3938,7 @@ function AppInner() {
           const merged = prev.map((localUser) => {
             const cloudVersion = cloudUsers.find((cu) => cu.user === localUser.user);
             if (cloudVersion) {
-              // Cloud tiene este usuario - usar datos de nube (contraseÃ±a, doctorData, etc.)
+              // Cloud tiene este usuario - usar datos de nube (contraseña, doctorData, etc.)
               return {
                 ...localUser,
                 ...cloudVersion,
@@ -3998,7 +3998,7 @@ function AppInner() {
     }, 120000); // 2 minutos
     return () => clearInterval(timer);
   }, [currentUser, view, data, patientsList]);
-  // â”€â”€ BEFOREUNLOAD: advertir al recargar/cerrar pestaÃ±a con HC sucia â”€â”€â”€â”€â”€â”€â”€â”€
+  // â”€â”€ BEFOREUNLOAD: advertir al recargar/cerrar pestaña con HC sucia â”€â”€â”€â”€â”€â”€â”€â”€
   useEffect(() => {
     if (!_hcDirty || view !== "historia") return;
     const handler = (e) => { e.preventDefault(); e.returnValue = ""; };
@@ -4077,7 +4077,7 @@ function AppInner() {
         if (currentUser?.doctorData && currentUser?.user) {
           tasks.push(_sbSet(`siso_doctor_data_${currentUser.user}`, currentUser.doctorData));
         }
-        // Bloque 3: mÃ³dulos que antes solo vivÃ­an en localStorage
+        // Bloque 3: módulos que antes solo vivían en localStorage
         const _u = currentUser?.user || "shared";
         if (cajaMovimientos?.length)
           tasks.push(_sbSet(`siso_caja_movs_${_u}`, cajaMovimientos));
@@ -4097,7 +4097,7 @@ function AppInner() {
         // Vaciar cola de pendientes
         await _sbQueue.flush();
       } catch (err) {
-        console.warn("[OCUPASALUD] Auto-sync fallÃ³:", err.message);
+        console.warn("[OCUPASALUD] Auto-sync falló:", err.message);
         if (_getSyncStatusCallback()) _getSyncStatusCallback()("error");
       }
     };
@@ -4138,7 +4138,7 @@ function AppInner() {
     savedReports,
     aiConfig,
   ]);
-  // â”€â”€ FIX: Auto-expandir textareas al escribir (delegaciÃ³n global) â”€â”€
+  // â”€â”€ FIX: Auto-expandir textareas al escribir (delegación global) â”€â”€
   useEffect(() => {
     const handler = (e) => {
       if (e.target.tagName === "TEXTAREA") {
@@ -4149,27 +4149,27 @@ function AppInner() {
     document.addEventListener("input", handler);
     return () => document.removeEventListener("input", handler);
   }, []);
-  // â”€â”€ SEC-F1-05: Prevenir pÃ©rdida de datos al cerrar pestaÃ±a â”€â”€
+  // â”€â”€ SEC-F1-05: Prevenir pérdida de datos al cerrar pestaña â”€â”€
   useEffect(() => {
     const handler = (e) => {
       if (_hcDirty && view === "historia") {
         e.preventDefault();
-        e.returnValue = "Tiene cambios sin guardar en la historia clÃ­nica. Â¿Desea salir?";
+        e.returnValue = "Tiene cambios sin guardar en la historia clínica. ¿Desea salir?";
         return e.returnValue;
       }
     };
     window.addEventListener("beforeunload", handler);
     return () => window.removeEventListener("beforeunload", handler);
   }, [_hcDirty, view]);
-  // â”€â”€ SEC-F1-06: Timeout de sesiÃ³n inactiva (30 min) â”€â”€
+  // â”€â”€ SEC-F1-06: Timeout de sesión inactiva (30 min) â”€â”€
   useEffect(() => {
     if (!currentUser) return;
     const resetTimer = () => _resetSessionTimer(() => {
-      showAlert("â° SesiÃ³n expirada por inactividad (30 minutos).\nSus datos estÃ¡n guardados. Debe iniciar sesiÃ³n nuevamente.");
+      showAlert("â° Sesión expirada por inactividad (30 minutos).\nSus datos están guardados. Debe iniciar sesión nuevamente.");
       setCurrentUser(null);
       _ls.removeItem("siso_session");
       setView("login");
-      _auditLog("SessionTimeout", currentUser?.user, "SesiÃ³n expirada por inactividad 30 min");
+      _auditLog("SessionTimeout", currentUser?.user, "Sesión expirada por inactividad 30 min");
     });
     resetTimer();
     const events = ["mousedown", "keydown", "scroll", "touchstart"];
@@ -4194,7 +4194,7 @@ function AppInner() {
         })
       );
     } else if (!currentUser) {
-      // Al cerrar sesiÃ³n, limpiar la sesiÃ³n guardada
+      // Al cerrar sesión, limpiar la sesión guardada
       _ls.removeItem("siso_session");
       _ls.removeItem("siso_active_form");
     }
@@ -4220,7 +4220,7 @@ function AppInner() {
   // â”€â”€ PERSISTENCIA DEL FORMULARIO ACTIVO: guarda el borrador en tiempo real
   useEffect(() => {
     if (!currentUser || view !== "historia") return;
-    // Solo guardar si hay datos mÃ­nimos para no sobreescribir con formulario vacÃ­o
+    // Solo guardar si hay datos mínimos para no sobreescribir con formulario vacío
     if (data && (data.nombres || data.id)) {
       _ls.setItem("siso_active_form", JSON.stringify(data));
     }
@@ -4251,7 +4251,7 @@ function AppInner() {
       _ls.removeItem("siso_session");
       _ls.removeItem("siso_active_form");
       showAlert(
-        "â±ï¸ SesiÃ³n cerrada por inactividad (30 min). Vuelva a iniciar sesiÃ³n."
+        "â±ï¸ Sesión cerrada por inactividad (30 min). Vuelva a iniciar sesión."
       );
     }, _TIMEOUT_MS);
   }, [currentUser]);
@@ -4272,10 +4272,10 @@ function AppInner() {
   const callAI = useCallback(
     async (prompt, expectJson = false) => {
       const systemPrompt = expectJson
-        ? `Eres mÃ©dico especialista en Medicina del Trabajo y Salud Ocupacional en Colombia, con mÃ¡s de 15 aÃ±os de experiencia en evaluaciones de aptitud laboral, ingresos, egresos, seguimientos periÃ³dicos y post-incapacidad, manejo de enfermedades laborales, calificaciÃ³n de origen y PCL, y gestiÃ³n de programas de vigilancia epidemiolÃ³gica (PVE) conforme a la Res. 1843/2025 (deroga 2346/2007), Res. 2404/2019, Dec. 1072/2015 y Ley 1562/2012. Cuando la consulta sea de medicina general, actÃºas como mÃ©dico general con especializaciÃ³n en medicina interna y mÃ¡s de 15 aÃ±os de experiencia clÃ­nica. Redactas con lenguaje tÃ©cnico-mÃ©dico formal, directo y puntual. RESPONDE ÃšNICAMENTE CON JSON VÃLIDO, sin texto previo, sin bloques markdown, sin explicaciones adicionales. El JSON debe comenzar con { y terminar con }.`
-        : `Eres mÃ©dico especialista en Medicina del Trabajo y Salud Ocupacional en Colombia, con mÃ¡s de 15 aÃ±os de experiencia en evaluaciones ocupacionales (ingreso, egreso, periÃ³dico, reintegro, post-incapacidad), restricciones mÃ©dico-laborales, enfermedades laborales, vigilancia epidemiolÃ³gica, calificaciÃ³n de origen y pÃ©rdida de capacidad laboral (PCL). Conoces a fondo la normativa vigente: Res. 1843/2025 (norma vigente, deroga Res. 2346/2007), Res. 2404/2019, Dec. 1072/2015, GTC-45:2012, GATISO-DME, GATISO-TME, Ley 1562/2012 y Res. 0312/2019. Cuando la consulta corresponde a medicina general, actÃºas como mÃ©dico general con especializaciÃ³n clÃ­nica y mÃ¡s de 15 aÃ±os de experiencia, manejando patologÃ­a ambulatoria, crÃ³nica y aguda con criterio clÃ­nico sÃ³lido. Tu lenguaje es tÃ©cnico, formal, directo y puntual. Respondes en espaÃ±ol.`;
+        ? `Eres médico especialista en Medicina del Trabajo y Salud Ocupacional en Colombia, con más de 15 años de experiencia en evaluaciones de aptitud laboral, ingresos, egresos, seguimientos periódicos y post-incapacidad, manejo de enfermedades laborales, calificación de origen y PCL, y gestión de programas de vigilancia epidemiológica (PVE) conforme a la Res. 1843/2025 (deroga 2346/2007), Res. 2404/2019, Dec. 1072/2015 y Ley 1562/2012. Cuando la consulta sea de medicina general, actúas como médico general con especialización en medicina interna y más de 15 años de experiencia clínica. Redactas con lenguaje técnico-médico formal, directo y puntual. RESPONDE ÚNICAMENTE CON JSON VÁLIDO, sin texto previo, sin bloques markdown, sin explicaciones adicionales. El JSON debe comenzar con { y terminar con }.`
+        : `Eres médico especialista en Medicina del Trabajo y Salud Ocupacional en Colombia, con más de 15 años de experiencia en evaluaciones ocupacionales (ingreso, egreso, periódico, reintegro, post-incapacidad), restricciones médico-laborales, enfermedades laborales, vigilancia epidemiológica, calificación de origen y pérdida de capacidad laboral (PCL). Conoces a fondo la normativa vigente: Res. 1843/2025 (norma vigente, deroga Res. 2346/2007), Res. 2404/2019, Dec. 1072/2015, GTC-45:2012, GATISO-DME, GATISO-TME, Ley 1562/2012 y Res. 0312/2019. Cuando la consulta corresponde a medicina general, actúas como médico general con especialización clínica y más de 15 años de experiencia, manejando patología ambulatoria, crónica y aguda con criterio clínico sólido. Tu lenguaje es técnico, formal, directo y puntual. Respondes en español.`;
       // Orden de prioridad fijo: gemini â†’ openrouter â†’ groq â†’ together
-      // Groq puede fallar por CORS segÃºn el dominio; gemini y openrouter son mÃ¡s estables en browser
+      // Groq puede fallar por CORS según el dominio; gemini y openrouter son más estables en browser
       const PRIORITY_ORDER = ["gemini", "openrouter", "groq", "together"];
       const activeKey = aiConfig.activeProvider || "gemini";
       // Poner el activo primero, luego el resto en orden de prioridad
@@ -4288,7 +4288,7 @@ function AppInner() {
         const provider = AI_PROVIDERS[providerKey];
         if (!provider) continue;
         const key = aiConfig.keys?.[providerKey];
-        if (!key || key === "auto") continue; // skip si no tiene key vÃ¡lida
+        if (!key || key === "auto") continue; // skip si no tiene key válida
         try {
           // [SEGURIDAD] log eliminado
           const text = await provider.call(prompt, systemPrompt, key);
@@ -4298,7 +4298,7 @@ function AppInner() {
             return text; // â† BUG CORREGIDO: return siempre, no solo si no es activeKey
           }
         } catch (e) {
-          console.warn(`[IA] ${providerKey} fallÃ³: ${e.message}`);
+          console.warn(`[IA] ${providerKey} falló: ${e.message}`);
           lastError = e;
         }
       }
@@ -4308,23 +4308,23 @@ function AppInner() {
         .join(", ");
       throw new Error(
         `âš ï¸ IA no disponible. Probados: ${providerNames}\n` +
-          `Ãšltimo error: ${lastError?.message || "sin respuesta"}\n\n` +
-          `SOLUCIÃ“N: Abra âš™ï¸ IA â†’ use el botÃ³n "Probar" en cada proveedor â†’ obtenga una key nueva gratis en el enlace que aparece â†’ guarde.\n` +
-          `Las keys gratuitas expiran o alcanzan su lÃ­mite. Renovarlas toma menos de 2 minutos.`
+          `Último error: ${lastError?.message || "sin respuesta"}\n\n` +
+          `SOLUCIÃ“N: Abra âš™ï¸ IA â†’ use el botón "Probar" en cada proveedor â†’ obtenga una key nueva gratis en el enlace que aparece â†’ guarde.\n` +
+          `Las keys gratuitas expiran o alcanzan su límite. Renovarlas toma menos de 2 minutos.`
       );
     },
     [aiConfig]
   );
-  // â”€â”€ GENERACIÃ“N IA COMPLETA (Concepto + DiagnÃ³sticos) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // â”€â”€ GENERACIÃ“N IA COMPLETA (Concepto + Diagnósticos) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const generateAIAnalysis = async () => {
     if (!_canUse("ia_analisis", currentUser)) {
       showAlert(
-        "ðŸ”’ El anÃ¡lisis IA estÃ¡ disponible en el plan â­ Pro ($79.000/mes).\n\nMenÃº â†’ â­ Ver Planes para actualizar."
+        "ðŸ”’ El análisis IA está disponible en el plan â­ Pro ($79.000/mes).\n\nMenú â†’ â­ Ver Planes para actualizar."
       );
       return;
     }
     if (!data.cargo) {
-      showAlert("Ingrese el cargo del trabajador para usar el anÃ¡lisis IA.");
+      showAlert("Ingrese el cargo del trabajador para usar el análisis IA.");
       return;
     }
     setIsGenerating(true);
@@ -4332,7 +4332,7 @@ function AppInner() {
       Object.entries(data.examenFisicoSistemas || {})
         .filter(([, v]) => v.estado === "Anormal")
         .map(([k, v]) => `${k}: ${v.hallazgo}`)
-        .join("; ") || "Sin hallazgos patolÃ³gicos";
+        .join("; ") || "Sin hallazgos patológicos";
     const antecedentes =
       Object.entries(data.antecedentesAgrupados || {})
         .filter(([, v]) => v.val)
@@ -4343,50 +4343,50 @@ function AppInner() {
         .filter(([, v]) => v)
         .map(([k]) => k)
         .join(", ") || "No reportados";
-    // â”€â”€ Contexto clÃ­nico adaptado al TIPO DE EXAMEN â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // â”€â”€ Contexto clínico adaptado al TIPO DE EXAMEN â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     const _tipoExamen = (data.tipoExamen || "").toUpperCase();
     const _contextoTipo = (() => {
       if (_tipoExamen.includes("INGRESO"))
-        return "EXAMEN DE INGRESO: EvalÃºa la aptitud INICIAL para el cargo. Las recomendaciones deben incluir: (A) Medidas preventivas desde el inicio de la relaciÃ³n laboral, (B) IdentificaciÃ³n de factores de riesgo preexistentes vs laborales, (C) LÃ­nea de base para seguimiento futuro, (D) Programa de inducciÃ³n en SST, (E) ExÃ¡menes paraclÃ­nicos de ingreso recomendados segÃºn riesgos.";
+        return "EXAMEN DE INGRESO: Evalúa la aptitud INICIAL para el cargo. Las recomendaciones deben incluir: (A) Medidas preventivas desde el inicio de la relación laboral, (B) Identificación de factores de riesgo preexistentes vs laborales, (C) Línea de base para seguimiento futuro, (D) Programa de inducción en SST, (E) Exámenes paraclínicos de ingreso recomendados según riesgos.";
       if (
         _tipoExamen.includes("PERIÃ“DICO") ||
         _tipoExamen.includes("PERIODICO")
       )
-        return "EXAMEN PERIÃ“DICO: EvalÃºa cambios en el estado de salud respecto al examen anterior. Las recomendaciones deben incluir: (A) ComparaciÃ³n con hallazgos previos y tendencias, (B) Seguimiento de patologÃ­as crÃ³nicas ya identificadas, (C) Adherencia a PVE (Programas de Vigilancia EpidemiolÃ³gica) activos, (D) Refuerzo de medidas de control de riesgos laborales, (E) Indicadores de salud ocupacional: ausentismo, accidentes recientes.";
+        return "EXAMEN PERIÃ“DICO: Evalúa cambios en el estado de salud respecto al examen anterior. Las recomendaciones deben incluir: (A) Comparación con hallazgos previos y tendencias, (B) Seguimiento de patologías crónicas ya identificadas, (C) Adherencia a PVE (Programas de Vigilancia Epidemiológica) activos, (D) Refuerzo de medidas de control de riesgos laborales, (E) Indicadores de salud ocupacional: ausentismo, accidentes recientes.";
       if (_tipoExamen.includes("EGRESO") || _tipoExamen.includes("RETIRO"))
-        return "EXAMEN DE EGRESO: EvalÃºa el estado de salud AL FINALIZAR el vÃ­nculo laboral. Las recomendaciones deben incluir: (A) DetecciÃ³n de enfermedades o secuelas de origen laboral (Decreto 1477/2014), (B) DeterminaciÃ³n de origen laboral o comÃºn de hallazgos, (C) Indicar si el trabajador requiere seguimiento mÃ©dico post-retiro, (D) DocumentaciÃ³n de condiciones para eventual reporte a ARL, (E) Concepto sobre relaciÃ³n de causalidad con el cargo/empresa.";
+        return "EXAMEN DE EGRESO: Evalúa el estado de salud AL FINALIZAR el vínculo laboral. Las recomendaciones deben incluir: (A) Detección de enfermedades o secuelas de origen laboral (Decreto 1477/2014), (B) Determinación de origen laboral o común de hallazgos, (C) Indicar si el trabajador requiere seguimiento médico post-retiro, (D) Documentación de condiciones para eventual reporte a ARL, (E) Concepto sobre relación de causalidad con el cargo/empresa.";
       if (
         _tipoExamen.includes("POST") ||
         _tipoExamen.includes("INCAPACIDAD") ||
         _tipoExamen.includes("REINTEGRO")
       )
-        return "EXAMEN POST-INCAPACIDAD / REINTEGRO LABORAL: EvalÃºa aptitud para retornar al trabajo tras incapacidad. Las recomendaciones deben incluir: (A) Condiciones especÃ­ficas para el reintegro (gradual, modificado, pleno), (B) Restricciones temporales o permanentes con plazos y seguimiento, (C) Adaptaciones del puesto de trabajo necesarias, (D) Plan de rehabilitaciÃ³n laboral si aplica, (E) Criterios de seguimiento mÃ©dico post-reintegro, (F) Articular con ARL para plan de reincorporaciÃ³n.";
+        return "EXAMEN POST-INCAPACIDAD / REINTEGRO LABORAL: Evalúa aptitud para retornar al trabajo tras incapacidad. Las recomendaciones deben incluir: (A) Condiciones específicas para el reintegro (gradual, modificado, pleno), (B) Restricciones temporales o permanentes con plazos y seguimiento, (C) Adaptaciones del puesto de trabajo necesarias, (D) Plan de rehabilitación laboral si aplica, (E) Criterios de seguimiento médico post-reintegro, (F) Articular con ARL para plan de reincorporación.";
       if (_tipoExamen.includes("SEGUIMIENTO"))
-        return "EXAMEN DE SEGUIMIENTO: EvalÃºa la evoluciÃ³n de condiciones ya identificadas. Las recomendaciones deben incluir: (A) Respuesta al tratamiento o intervenciÃ³n previa, (B) ActualizaciÃ³n del concepto de aptitud si hay cambios clÃ­nicos, (C) Ajuste de restricciones segÃºn evoluciÃ³n, (D) PrÃ³xima cita de seguimiento, (E) Indicadores de mejora o deterioro documentados.";
-      // Default genÃ©rico
-      return "EvalÃºa la aptitud del trabajador segÃºn los hallazgos clÃ­nicos actuales. Las recomendaciones deben ser especÃ­ficas para el cargo, la empresa y los riesgos identificados.";
+        return "EXAMEN DE SEGUIMIENTO: Evalúa la evolución de condiciones ya identificadas. Las recomendaciones deben incluir: (A) Respuesta al tratamiento o intervención previa, (B) Actualización del concepto de aptitud si hay cambios clínicos, (C) Ajuste de restricciones según evolución, (D) Próxima cita de seguimiento, (E) Indicadores de mejora o deterioro documentados.";
+      // Default genérico
+      return "Evalúa la aptitud del trabajador según los hallazgos clínicos actuales. Las recomendaciones deben ser específicas para el cargo, la empresa y los riesgos identificados.";
     })();
 
-    const prompt = `Eres mÃ©dico especialista en Medicina del Trabajo con mÃ¡s de 15 aÃ±os de experiencia en evaluaciones ocupacionales en Colombia (ingresos, egresos, periÃ³dicos, reintegros, post-incapacidad). Analiza con criterio clÃ­nico-ocupacional experto la siguiente historia y genera el concepto mÃ©dico ocupacional conforme a Res. 1843/2025 (norma vigente - deroga Res. 2346/2007). Devuelve ÃšNICAMENTE JSON.
+    const prompt = `Eres médico especialista en Medicina del Trabajo con más de 15 años de experiencia en evaluaciones ocupacionales en Colombia (ingresos, egresos, periódicos, reintegros, post-incapacidad). Analiza con criterio clínico-ocupacional experto la siguiente historia y genera el concepto médico ocupacional conforme a Res. 1843/2025 (norma vigente - deroga Res. 2346/2007). Devuelve ÚNICAMENTE JSON.
 DATOS DEL TRABAJADOR: Cargo: ${data.cargo} | Empresa: ${data.empresaNombre} (${
       data.actividadEconomica || "N/E"
-    }) | Tipo examen: ${data.tipoExamen} | Ã‰nfasis: ${data.enfasisExamen}
-Edad: ${data.edad}a | GÃ©nero: ${data.genero} | Escolaridad: ${
+    }) | Tipo examen: ${data.tipoExamen} | Énfasis: ${data.enfasisExamen}
+Edad: ${data.edad}a | Género: ${data.genero} | Escolaridad: ${
       data.escolaridad
     } | ARL: ${data.arl || "N/R"}
 Signos vitales: TA ${data.ta || "N/R"} | FC ${data.fc || "N/R"} | IMC ${
       data.imc || "N/R"
     } | Talla ${data.talla || "N/R"}cm | Peso ${data.peso || "N/R"}kg
-Hallazgos fÃ­sicos patolÃ³gicos: ${hallazgos}
+Hallazgos físicos patológicos: ${hallazgos}
 Antecedentes personales relevantes: ${antecedentes}
 Riesgos ocupacionales identificados: ${riesgos}
-HÃ¡bitos: Tabaquismo ${data.habitos?.fuma} | Alcohol ${
+Hábitos: Tabaquismo ${data.habitos?.fuma} | Alcohol ${
       data.habitos?.alcohol
-    } | Actividad fÃ­sica ${data.habitos?.deporte}
-CONTEXTO ESPECÃFICO DEL TIPO DE EXAMEN: ${_contextoTipo}
-CRITERIOS OBLIGATORIOS: 1) El concepto de aptitud debe citar el artÃ­culo de la Res. 1843/2025 correspondiente (norma vigente desde 29 abril 2025 - Res. 2346/2007 derogada). 2) Si es egreso o post-incapacidad, incluir anÃ¡lisis de reintegro laboral. 3) Las restricciones deben ser operativas, cuantificables y con base normativa (GTC-45, GATISO). 4) Las recomendaciones deben ser especÃ­ficas para el cargo y los riesgos, no genÃ©ricas, y deben responder al contexto del tipo de examen indicado arriba.
+    } | Actividad física ${data.habitos?.deporte}
+CONTEXTO ESPECÍFICO DEL TIPO DE EXAMEN: ${_contextoTipo}
+CRITERIOS OBLIGATORIOS: 1) El concepto de aptitud debe citar el artículo de la Res. 1843/2025 correspondiente (norma vigente desde 29 abril 2025 - Res. 2346/2007 derogada). 2) Si es egreso o post-incapacidad, incluir análisis de reintegro laboral. 3) Las restricciones deben ser operativas, cuantificables y con base normativa (GTC-45, GATISO). 4) Las recomendaciones deben ser específicas para el cargo y los riesgos, no genéricas, y deben responder al contexto del tipo de examen indicado arriba.
 JSON REQUERIDO (sin markdown, sin texto adicional):
-{"diagnosticoPrincipal":"Z10.0 - EXAMEN MÃ‰DICO OCUPACIONAL","diagnosticoSecundario1":"CIE-10 - Hallazgo clÃ­nico identificado o cadena vacÃ­a","diagnosticoSecundario2":"CIE-10 - Segundo hallazgo o cadena vacÃ­a","conceptoAptitud":"Concepto de aptitud laboral (APTO/APTO CON RESTRICCIONES/NO APTO) con justificaciÃ³n cargo-hallazgos. NO mencionar diagnÃ³sticos especÃ­ficos, medicamentos, ni tratamientos. Solo aptitud y condiciones laborales. Conforme Res. 1843/2025 Art. 20","vigencia":"X meses con justificaciÃ³n clÃ­nica","recomendaciones":"MÃ­nimo 10 recomendaciones de medicina preventiva y salud ocupacional enfocadas en cargo y riesgos. NO incluir medicamentos ni tratamiento farmacolÃ³gico. NO referir tratamiento mÃ©dico actual","restriccionesTexto":"Restricciones mÃ©dico-laborales operativas y cuantificables (mÃ­nimo 5 si hay hallazgos), formato: [TIPO] (Segmento) DescripciÃ³n - Base legal","derivaciones":[{"especialidad":"Especialidad mÃ©dica requerida","motivo":"Motivo clÃ­nico concreto","urgencia":"Electiva"}],"examenesSugeridos":["Examen paraclÃ­nico 1"],"interconsultaResumen":"Resumen clÃ­nico para interconsulta o cadena vacÃ­a","incapacidadSugerida":{"aplica":false,"dias":0,"motivo":"","diagnosticoCIE":""},"analisisClinico":"AnÃ¡lisis clÃ­nico detallado con lenguaje tÃ©cnico-formal de mÃ©dico especialista en medicina laboral con mÃ¡s de 15 aÃ±os de experiencia. Incluir: interpretaciÃ³n de hallazgos, correlaciÃ³n cargo-riesgos ocupacionales, referencias a normativa colombiana (Dec. 1072/2015, Res. 2346/2007, Res. 1843/2025). MÃ­nimo 200 palabras.","sveRecomendado":["SVE Osteomuscular si aplica segÃºn GATISO-DME Res. 2844/2007","SVE Psicosocial si aplica segÃºn Res. 2764/2022","SVE Visual / SVE Respiratorio / SVE NeurolÃ³gico / SVE DermatolÃ³gico segÃºn hallazgos"]}`;    try {
+{"diagnosticoPrincipal":"Z10.0 - EXAMEN MÉDICO OCUPACIONAL","diagnosticoSecundario1":"CIE-10 - Hallazgo clínico identificado o cadena vacía","diagnosticoSecundario2":"CIE-10 - Segundo hallazgo o cadena vacía","conceptoAptitud":"Concepto de aptitud laboral (APTO/APTO CON RESTRICCIONES/NO APTO) con justificación cargo-hallazgos. NO mencionar diagnósticos específicos, medicamentos, ni tratamientos. Solo aptitud y condiciones laborales. Conforme Res. 1843/2025 Art. 20","vigencia":"X meses con justificación clínica","recomendaciones":"Mínimo 10 recomendaciones de medicina preventiva y salud ocupacional enfocadas en cargo y riesgos. NO incluir medicamentos ni tratamiento farmacológico. NO referir tratamiento médico actual","restriccionesTexto":"Restricciones médico-laborales operativas y cuantificables (mínimo 5 si hay hallazgos), formato: [TIPO] (Segmento) Descripción - Base legal","derivaciones":[{"especialidad":"Especialidad médica requerida","motivo":"Motivo clínico concreto","urgencia":"Electiva"}],"examenesSugeridos":["Examen paraclínico 1"],"interconsultaResumen":"Resumen clínico para interconsulta o cadena vacía","incapacidadSugerida":{"aplica":false,"dias":0,"motivo":"","diagnosticoCIE":""},"analisisClinico":"Análisis clínico detallado con lenguaje técnico-formal de médico especialista en medicina laboral con más de 15 años de experiencia. Incluir: interpretación de hallazgos, correlación cargo-riesgos ocupacionales, referencias a normativa colombiana (Dec. 1072/2015, Res. 2346/2007, Res. 1843/2025). Mínimo 200 palabras.","sveRecomendado":["SVE Osteomuscular si aplica según GATISO-DME Res. 2844/2007","SVE Psicosocial si aplica según Res. 2764/2022","SVE Visual / SVE Respiratorio / SVE Neurológico / SVE Dermatológico según hallazgos"]}`;    try {
       let text;
       try {
         text = await callAI(prompt, true);
@@ -4399,8 +4399,8 @@ JSON REQUERIDO (sin markdown, sin texto adicional):
         }
       }
       const parsed = parseAIJSON(text);
-      // Para Ã©nfasis OCUPACIONAL: diagnÃ³stico principal siempre Z10.0 (examen ocupacional)
-      // Los diagnÃ³sticos encontrados pasan a secundarios
+      // Para énfasis OCUPACIONAL: diagnóstico principal siempre Z10.0 (examen ocupacional)
+      // Los diagnósticos encontrados pasan a secundarios
       const isOcupacional =
         (data.enfasisExamen || "GENERAL").toUpperCase() !== "GENERAL" ||
         [
@@ -4413,8 +4413,8 @@ JSON REQUERIDO (sin markdown, sin texto adicional):
           "REINTEGRO",
           "SEGUIMIENTO",
         ].some((t) => (data.tipoExamen || "").toUpperCase().includes(t));
-      const dxPrincipalFinal = "Z10.0 - EXAMEN MÃ‰DICO OCUPACIONAL";
-      // El dx que traerÃ­a la IA como principal pasa a secundario1 si es ocupacional
+      const dxPrincipalFinal = "Z10.0 - EXAMEN MÉDICO OCUPACIONAL";
+      // El dx que traería la IA como principal pasa a secundario1 si es ocupacional
       const aiDxPrincipal = parsed.diagnosticoPrincipal || "";
       const dxSec1Final = isOcupacional
         ? aiDxPrincipal && !aiDxPrincipal.includes("Z10")
@@ -4448,7 +4448,7 @@ JSON REQUERIDO (sin markdown, sin texto adicional):
             }))
           : prev.formulaMedicamentos,
       }));
-      // Aplicar tambiÃ©n derivaciones, exÃ¡menes, interconsulta e incapacidad si la IA los sugiriÃ³
+      // Aplicar también derivaciones, exámenes, interconsulta e incapacidad si la IA los sugirió
       if (parsed.derivaciones?.length > 0) {
         const newDervs = parsed.derivaciones.map((d, i) => ({
           id: Date.now() + i,
@@ -4506,7 +4506,7 @@ JSON REQUERIDO (sin markdown, sin texto adicional):
           },
         }));
       }
-      // â”€â”€ Guardar AnÃ¡lisis ClÃ­nico IA (campo independiente) â”€â”€
+      // â”€â”€ Guardar Análisis Clínico IA (campo independiente) â”€â”€
       if (parsed.analisisClinico) {
         setData((prev) => ({
           ...prev,
@@ -4522,29 +4522,29 @@ JSON REQUERIDO (sin markdown, sin texto adicional):
       }
       const extraMsg = [
         parsed.derivaciones?.length > 0
-          ? `\nâ€¢ ${parsed.derivaciones.length} derivaciÃ³n(es) sugerida(s)`
+          ? `\n• ${parsed.derivaciones.length} derivación(es) sugerida(s)`
           : "",
         parsed.examenesSugeridos?.length > 0
-          ? `\nâ€¢ ${parsed.examenesSugeridos.length} examen(es) sugerido(s)`
+          ? `\n• ${parsed.examenesSugeridos.length} examen(es) sugerido(s)`
           : "",
         parsed.incapacidadSugerida?.aplica
-          ? `\nâ€¢ Incapacidad sugerida: ${parsed.incapacidadSugerida.dias} dÃ­as`
+          ? `\n• Incapacidad sugerida: ${parsed.incapacidadSugerida.dias} días`
           : "",
         parsed.analisisClinico
-          ? `\nâ€¢ AnÃ¡lisis clÃ­nico generado`
+          ? `\n• Análisis clínico generado`
           : "",
         parsed.sveRecomendado?.length > 0
-          ? `\nâ€¢ ${parsed.sveRecomendado.filter(s => s && !s.includes("si aplica")).length} SVE sugerido(s)`
+          ? `\n• ${parsed.sveRecomendado.filter(s => s && !s.includes("si aplica")).length} SVE sugerido(s)`
           : "",
       ].join("");
       showAlert(
-        "âœ… AnÃ¡lisis IA completado.\nâ€¢ DiagnÃ³stico principal: Z10.0 - EXAMEN MÃ‰DICO OCUPACIONAL\nâ€¢ DiagnÃ³sticos secundarios incluidos si hay hallazgos." +
+        "âœ… Análisis IA completado.\n• Diagnóstico principal: Z10.0 - EXAMEN MÉDICO OCUPACIONAL\n• Diagnósticos secundarios incluidos si hay hallazgos." +
           extraMsg +
-          "\n\nRevise y ajuste los campos segÃºn su criterio clÃ­nico."
+          "\n\nRevise y ajuste los campos según su criterio clínico."
       );
     } catch (e) {
       showAlert(
-        `Error IA: ${e.message}\n\nConfigure un proveedor de IA en el botÃ³n âš™ï¸ IA o verifique su conexiÃ³n.`
+        `Error IA: ${e.message}\n\nConfigure un proveedor de IA en el botón âš™ï¸ IA o verifique su conexión.`
       );
     } finally {
       setIsGenerating(false);
@@ -4562,7 +4562,7 @@ JSON REQUERIDO (sin markdown, sin texto adicional):
       .filter(([, v]) => v.estado === "Anormal")
       .map(([k, v]) => `${k}: ${v.hallazgo}`)
       .join("; ");
-    const prompt = `Eres mÃ©dico especialista en Medicina del Trabajo con mÃ¡s de 15 aÃ±os de experiencia en Colombia, experto en restricciones mÃ©dico-laborales, reintegro laboral y vigilancia epidemiolÃ³gica. Con base en los hallazgos clÃ­nicos del trabajador, genera las restricciones mÃ©dico-laborales correspondientes. Devuelve ÃšNICAMENTE JSON.
+    const prompt = `Eres médico especialista en Medicina del Trabajo con más de 15 años de experiencia en Colombia, experto en restricciones médico-laborales, reintegro laboral y vigilancia epidemiológica. Con base en los hallazgos clínicos del trabajador, genera las restricciones médico-laborales correspondientes. Devuelve ÚNICAMENTE JSON.
 DATOS: Cargo: ${data.cargo} | Empresa: ${data.empresaNombre} | Tipo examen: ${
       data.tipoExamen
     }
@@ -4572,15 +4572,15 @@ Riesgos ocupacionales: ${
         .map(([k]) => k)
         .join(", ") || "No reportados"
     }
-Hallazgos fÃ­sicos patolÃ³gicos: ${hallazgos}
+Hallazgos físicos patológicos: ${hallazgos}
 Maniobras osteomusculares positivas: ${osteo || "Ninguna"}
-IMC: ${data.imc} | TA: ${data.ta} | DiagnÃ³stico principal: ${
+IMC: ${data.imc} | TA: ${data.ta} | Diagnóstico principal: ${
       data.diagnosticoPrincipal
     }
-INSTRUCCIÃ“N: Las restricciones deben ser operativas, cuantificables (en kg, min, grados o frecuencias), con segmento anatÃ³mico identificado, tipo (TEMPORAL/PERMANENTE/PREVENTIVA), duraciÃ³n si temporal (ej: "Temporal 30 dÃ­as", "Permanente"), y base normativa. Si el examen es egreso, post-incapacidad o retorno-laboral (Res. 1843/2025 Art. 13), incluir restricciones de reintegro progresivo.
-FORMATO DESEADO: [TIPO: Temporal X dÃ­as / Permanente] (Segmento) DescripciÃ³n â€” Normativa
+INSTRUCCIÃ“N: Las restricciones deben ser operativas, cuantificables (en kg, min, grados o frecuencias), con segmento anatómico identificado, tipo (TEMPORAL/PERMANENTE/PREVENTIVA), duración si temporal (ej: "Temporal 30 días", "Permanente"), y base normativa. Si el examen es egreso, post-incapacidad o retorno-laboral (Res. 1843/2025 Art. 13), incluir restricciones de reintegro progresivo.
+FORMATO DESEADO: [TIPO: Temporal X días / Permanente] (Segmento) Descripción â€” Normativa
 JSON REQUERIDO (sin markdown):
-{"restricciones":[{"segmento":"Miembro Superior/Lumbar/Cervical/Postural/General","tipo":"TEMPORAL/PERMANENTE/PREVENTIVA","duracion":"X semanas o N/A","texto":"RestricciÃ³n especÃ­fica, operativa y cuantificable para el puesto de trabajo","normativa":"GTC-45:2012 / GATISO-DME / GATISO-TME / Res. 1843/2025 / Res. 2404/2019"}]}`;
+{"restricciones":[{"segmento":"Miembro Superior/Lumbar/Cervical/Postural/General","tipo":"TEMPORAL/PERMANENTE/PREVENTIVA","duracion":"X semanas o N/A","texto":"Restricción específica, operativa y cuantificable para el puesto de trabajo","normativa":"GTC-45:2012 / GATISO-DME / GATISO-TME / Res. 1843/2025 / Res. 2404/2019"}]}`;
     try {
       const text = await callAI(prompt, true);
       const parsed = parseAIJSON(text);
@@ -4603,10 +4603,10 @@ JSON REQUERIDO (sin markdown):
   // â”€â”€ GENERACIÃ“N IA SOLO RECOMENDACIONES â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const generateAIRecomendaciones = async () => {
     setIsGeneratingReco(true);
-    const prompt = `Eres mÃ©dico especialista en Medicina del Trabajo con mÃ¡s de 15 aÃ±os de experiencia en Colombia. Genera recomendaciones mÃ©dico-laborales y de promociÃ³n de la salud ESPECÃFICAS para el trabajador evaluado. No uses recomendaciones genÃ©ricas. Responde en texto plano numerado, sin JSON, en espaÃ±ol formal y directo.
+    const prompt = `Eres médico especialista en Medicina del Trabajo con más de 15 años de experiencia en Colombia. Genera recomendaciones médico-laborales y de promoción de la salud ESPECÍFICAS para el trabajador evaluado. No uses recomendaciones genéricas. Responde en texto plano numerado, sin JSON, en español formal y directo.
 DATOS: Cargo: ${data.cargo} | Empresa: ${
       data.empresaNombre
-    } | Actividad econÃ³mica: ${data.actividadEconomica || "N/E"}
+    } | Actividad económica: ${data.actividadEconomica || "N/E"}
 Riesgos laborales identificados: ${
       Object.entries(data.riesgos || {})
         .filter(([, v]) => v)
@@ -4615,12 +4615,12 @@ Riesgos laborales identificados: ${
     }
 IMC: ${data.imc} | TA: ${data.ta} | Tabaquismo: ${
       data.habitos?.fuma
-    } | Alcohol: ${data.habitos?.alcohol} | Actividad fÃ­sica: ${
+    } | Alcohol: ${data.habitos?.alcohol} | Actividad física: ${
       data.habitos?.deporte
     }
-DiagnÃ³stico principal: ${data.diagnosticoPrincipal}
+Diagnóstico principal: ${data.diagnosticoPrincipal}
 Tipo de examen: ${data.tipoExamen}
-INSTRUCCIÃ“N: Genera mÃ­nimo 12 recomendaciones numeradas diferenciando: (A) Recomendaciones mÃ©dicas y de estilo de vida (B) Recomendaciones ergonÃ³micas especÃ­ficas para el cargo (C) Recomendaciones de vigilancia epidemiolÃ³gica y seguimiento (D) Recomendaciones al empleador conforme Res. 1843/2025 y Dec. 1072/2015. Lenguaje tÃ©cnico-mÃ©dico, formal, directo y puntual.`;
+INSTRUCCIÃ“N: Genera mínimo 12 recomendaciones numeradas diferenciando: (A) Recomendaciones médicas y de estilo de vida (B) Recomendaciones ergonómicas específicas para el cargo (C) Recomendaciones de vigilancia epidemiológica y seguimiento (D) Recomendaciones al empleador conforme Res. 1843/2025 y Dec. 1072/2015. Lenguaje técnico-médico, formal, directo y puntual.`;
     try {
       const text = await callAI(prompt, false);
       setData((prev) => ({ ...prev, recomendaciones: text.trim() }));
@@ -4635,7 +4635,7 @@ INSTRUCCIÃ“N: Genera mÃ­nimo 12 recomendaciones numeradas diferenciando: (A
   const generateAIGeneral = async () => {
     if (!_canUse("ia_analisis", currentUser)) {
       showAlert(
-        "ðŸ”’ El anÃ¡lisis IA estÃ¡ disponible en el plan â­ Pro ($79.000/mes).\n\nMenÃº â†’ â­ Ver Planes para actualizar."
+        "ðŸ”’ El análisis IA está disponible en el plan â­ Pro ($79.000/mes).\n\nMenú â†’ â­ Ver Planes para actualizar."
       );
       return;
     }
@@ -4644,23 +4644,23 @@ INSTRUCCIÃ“N: Genera mÃ­nimo 12 recomendaciones numeradas diferenciando: (A
       return;
     }
     setIsGenerating(true);
-    const prompt = `Eres mÃ©dico general con mÃ¡s de 15 aÃ±os de experiencia clÃ­nica en Colombia, especializado en medicina ambulatoria, patologÃ­a crÃ³nica y aguda. Analiza la consulta mÃ©dica del paciente con criterio clÃ­nico sÃ³lido y elabora el plan de manejo completo. Devuelve ÃšNICAMENTE JSON.
-DATOS DEL PACIENTE: ${data.nombres} | Edad: ${data.edad}a | GÃ©nero: ${
+    const prompt = `Eres médico general con más de 15 años de experiencia clínica en Colombia, especializado en medicina ambulatoria, patología crónica y aguda. Analiza la consulta médica del paciente con criterio clínico sólido y elabora el plan de manejo completo. Devuelve ÚNICAMENTE JSON.
+DATOS DEL PACIENTE: ${data.nombres} | Edad: ${data.edad}a | Género: ${
       data.genero
     }
 Motivo de consulta: ${data.motivoConsulta}
 Enfermedad actual: ${data.enfermedadActual || "No detallada"}
 Antecedentes: ${JSON.stringify(data.antecedentes || {})}
-Examen fÃ­sico: TA ${data.examenFisico?.ta || "N/R"} | FC ${
+Examen físico: TA ${data.examenFisico?.ta || "N/R"} | FC ${
       data.examenFisico?.fc || "N/R"
     } | Temp ${data.examenFisico?.temp || "N/R"} | IMC ${
       data.examenFisico?.imc || "N/R"
     }
-Hallazgos fÃ­sicos: ${data.examenFisico?.hallazgos || "Ninguno referido"}
-RevisiÃ³n por sistemas: ${JSON.stringify(data.revisionSistemas || {})}
-INSTRUCCIÃ“N: El anÃ¡lisis clÃ­nico debe ser razonado, con diagnÃ³stico diferencial implÃ­cito. La conducta debe ser especÃ­fica para este paciente. Los medicamentos deben incluir principio activo, presentaciÃ³n, dosis, frecuencia y duraciÃ³n. Las remisiones deben justificarse clÃ­nicamente. El control debe ser en tiempo especÃ­fico. Lenguaje tÃ©cnico-mÃ©dico formal y directo.
+Hallazgos físicos: ${data.examenFisico?.hallazgos || "Ninguno referido"}
+Revisión por sistemas: ${JSON.stringify(data.revisionSistemas || {})}
+INSTRUCCIÃ“N: El análisis clínico debe ser razonado, con diagnóstico diferencial implícito. La conducta debe ser específica para este paciente. Los medicamentos deben incluir principio activo, presentación, dosis, frecuencia y duración. Las remisiones deben justificarse clínicamente. El control debe ser en tiempo específico. Lenguaje técnico-médico formal y directo.
 JSON REQUERIDO (sin markdown, sin texto adicional):
-{"diagnosticos":[{"cie10":"CIE-10","descripcion":"Nombre diagnÃ³stico completo","tipo":"Principal/Secundario/Presuntivo"}],"plan":{"conducta":"Conducta mÃ©dica detallada y razonada","medicamentos":"Resumen breve del plan farmacolÃ³gico","formulaMedicamentos":[{"nombre":"Nombre genÃ©rico (principio activo)","presentacion":"Forma farmacÃ©utica y concentraciÃ³n - ej: Tableta 500mg","dosis":"Cantidad por toma - ej: 1 tableta","frecuencia":"Intervalo - ej: cada 8 horas","duracion":"Ej: 7 dÃ­as","indicaciones":"IndicaciÃ³n especial o cadena vacÃ­a"}],"paraclinicosSolicitados":"ParaclÃ­nicos con justificaciÃ³n clÃ­nica","remisiones":"Remisiones a especialista justificadas clÃ­nicamente o 'No aplica'","recomendaciones":"Recomendaciones especÃ­ficas al paciente: dieta, actividad, signos de alarma, medidas no farmacolÃ³gicas","controlEn":"Control en X dÃ­as/semanas con criterios especÃ­ficos"},"analisis":"Razonamiento clÃ­nico del caso en 4-5 lÃ­neas: hipÃ³tesis diagnÃ³stica, correlaciÃ³n clÃ­nica y justificaciÃ³n del plan"}`;
+{"diagnosticos":[{"cie10":"CIE-10","descripcion":"Nombre diagnóstico completo","tipo":"Principal/Secundario/Presuntivo"}],"plan":{"conducta":"Conducta médica detallada y razonada","medicamentos":"Resumen breve del plan farmacológico","formulaMedicamentos":[{"nombre":"Nombre genérico (principio activo)","presentacion":"Forma farmacéutica y concentración - ej: Tableta 500mg","dosis":"Cantidad por toma - ej: 1 tableta","frecuencia":"Intervalo - ej: cada 8 horas","duracion":"Ej: 7 días","indicaciones":"Indicación especial o cadena vacía"}],"paraclinicosSolicitados":"Paraclínicos con justificación clínica","remisiones":"Remisiones a especialista justificadas clínicamente o 'No aplica'","recomendaciones":"Recomendaciones específicas al paciente: dieta, actividad, signos de alarma, medidas no farmacológicas","controlEn":"Control en X días/semanas con criterios específicos"},"analisis":"Razonamiento clínico del caso en 4-5 líneas: hipótesis diagnóstica, correlación clínica y justificación del plan"}`;
     try {
       const text = await callAI(prompt, true);
       const parsed = parseAIJSON(text);
@@ -4684,10 +4684,10 @@ JSON REQUERIDO (sin markdown, sin texto adicional):
         enfermedadActual:
           prev.enfermedadActual ||
           (parsed.analisis
-            ? `ANÃLISIS IA: ${parsed.analisis}`
+            ? `ANÁLISIS IA: ${parsed.analisis}`
             : prev.enfermedadActual),
       }));
-      showAlert("âœ… AnÃ¡lisis IA completado para consulta general.");
+      showAlert("âœ… Análisis IA completado para consulta general.");
     } catch (e) {
       showAlert(`Error IA: ${e.message}`);
     } finally {
@@ -4698,7 +4698,7 @@ JSON REQUERIDO (sin markdown, sin texto adicional):
   const generateAIReport = async (stats, total, companyName) => {
     if (!_canUse("ia_reporte", currentUser)) {
       showAlert(
-        "ðŸ”’ Los reportes IA estÃ¡n disponibles en el plan â­ Pro ($79.000/mes).\n\nMenÃº â†’ â­ Ver Planes para actualizar."
+        "ðŸ”’ Los reportes IA están disponibles en el plan â­ Pro ($79.000/mes).\n\nMenú â†’ â­ Ver Planes para actualizar."
       );
       return;
     }
@@ -4710,19 +4710,19 @@ JSON REQUERIDO (sin markdown, sin texto adicional):
         .join(" | ");
     const datosBase = [
       `Empresa: "${companyName}" | Trabajadores: ${total}`,
-      `SOCIODEM: GÃ©nero: ${fmtDist(stats.genero)} | Edad: ${fmtDist(
+      `SOCIODEM: Género: ${fmtDist(stats.genero)} | Edad: ${fmtDist(
         stats.edad
       )} | Escolaridad: ${fmtDist(stats.escolaridad)} | E.civil: ${fmtDist(
         stats.estadoCivil
       )} | Estrato: ${fmtDist(stats.estrato)}`,
       `OCUPACIONAL: Cargos: ${fmtDist(stats.cargo)} | Contrato: ${fmtDist(
         stats.tipoContrato
-      )} | Turno: ${fmtDist(stats.turnoTrabajo)} | AntigÃ¼edad: ${fmtDist(
+      )} | Turno: ${fmtDist(stats.turnoTrabajo)} | Antigüedad: ${fmtDist(
         stats.antiguedad
       )} | Tipo examen: ${fmtDist(stats.tipoExamen)}`,
-      `CLÃNICO: IMC: ${fmtDist(stats.imc)} | TA: ${fmtDist(
+      `CLÍNICO: IMC: ${fmtDist(stats.imc)} | TA: ${fmtDist(
         stats.ta
-      )} | DiagnÃ³sticos: ${fmtDist(stats.diagnosticos)} | Aptitud: ${fmtDist(
+      )} | Diagnósticos: ${fmtDist(stats.diagnosticos)} | Aptitud: ${fmtDist(
         stats.conceptoAptitud
       )} | Hallazgos: ${fmtDist(stats.hallazgos)}`,
       `ANTECEDENTES: Cardio ${stats.antecCardio || 0} | Resp ${
@@ -4741,22 +4741,22 @@ JSON REQUERIDO (sin markdown, sin texto adicional):
     ].join("\n");
     // LLAMADA 1 - campos cortos: resumen, PVE, tabla, normativa
     const prompt1 =
-      "MÃ©dico especialista Medicina del Trabajo Colombia. Datos:\n" +
+      "Médico especialista Medicina del Trabajo Colombia. Datos:\n" +
       datosBase +
-      "\n\nDevuelve ÃšNICAMENTE JSON sin markdown con 4 claves exactas:" +
-      '{"resumenEjecutivo":"4 lÃ­neas gerencia: hallazgos crÃ­ticos, morbilidad, aptitud, acciones. Max 400 chars.",' +
+      "\n\nDevuelve ÚNICAMENTE JSON sin markdown con 4 claves exactas:" +
+      '{"resumenEjecutivo":"4 líneas gerencia: hallazgos críticos, morbilidad, aptitud, acciones. Max 400 chars.",' +
       '"pveRecomendados":["PVE Osteomuscular - Res.2404/2019","PVE Cardiovascular - Res.2404/2019","PVE Psicosocial - Res.2404/2019","PVE Auditivo - Res.2400/1979","PVE Visual - Res.2400/1979"],' +
-      '"tabla":[{"diagnostico":"CIE-10 descripciÃ³n","cantidad":0,"porcentaje":"0%","relacion":"probable/posible/no relacionado"}],' +
+      '"tabla":[{"diagnostico":"CIE-10 descripción","cantidad":0,"porcentaje":"0%","relacion":"probable/posible/no relacionado"}],' +
       '"matrizLegalNormativa":"Res.1843/2025, Dec.1072/2015, Res.0312/2019, Ley 1562/2012, Res.2404/2019 - cumplimiento verificado."}';
-    // LLAMADA 2 - conclusiones + anÃ¡lisis justificado + recomendaciones (Punto 11)
+    // LLAMADA 2 - conclusiones + análisis justificado + recomendaciones (Punto 11)
     const prompt2 =
-      "Eres mÃ©dico especialista en Medicina del Trabajo y Salud Ocupacional en Colombia con mÃ¡s de 15 aÃ±os de experiencia (Res.1843/2025, Dec.1072/2015, Res.0312/2019, GTC-45:2012). Datos:\n" +
+      "Eres médico especialista en Medicina del Trabajo y Salud Ocupacional en Colombia con más de 15 años de experiencia (Res.1843/2025, Dec.1072/2015, Res.0312/2019, GTC-45:2012). Datos:\n" +
       datosBase +
-      "\n\nElabora un informe tÃ©cnico-epidemiolÃ³gico completo con las siguientes 3 secciones:" +
-      "\n\n1. ANÃLISIS JUSTIFICADO (mÃ­nimo 300 palabras): InterpretaciÃ³n epidemiolÃ³gica de los resultados colectivos. Prevalencia de patologÃ­as con soporte estadÃ­stico. DistribuciÃ³n por cargo/Ã¡rea. Factores de riesgo identificados segÃºn GTC-45. CorrelaciÃ³n entre morbilidad encontrada y exposiciÃ³n ocupacional. MenciÃ³n de normativa aplicable." +
-      "\n\n2. CONCLUSIONES (mÃ­nimo 200 palabras): Resumen ejecutivo de los hallazgos mÃ¡s relevantes. Indicadores epidemiolÃ³gicos crÃ­ticos. Nivel de cumplimiento del SG-SST. Riesgos prioritarios identificados." +
-      "\n\n3. RECOMENDACIONES (mÃ­nimo 250 palabras): Acciones correctivas especÃ­ficas. Programas de vigilancia epidemiolÃ³gica (PVE/SVE) sugeridos con base normativa. Ajustes en el SG-SST conforme Res. 0312/2019. Seguimiento mÃ©dico prioritario por grupos de riesgo. Cronograma sugerido de intervenciones." +
-      '\n\nDevuelve ÃšNICAMENTE JSON vÃ¡lido sin markdown: {"analisisJustificado":"texto completo secciÃ³n 1","conclusiones":"texto completo secciÃ³n 2","recomendacionesInforme":"texto completo secciÃ³n 3"}';
+      "\n\nElabora un informe técnico-epidemiológico completo con las siguientes 3 secciones:" +
+      "\n\n1. ANÁLISIS JUSTIFICADO (mínimo 300 palabras): Interpretación epidemiológica de los resultados colectivos. Prevalencia de patologías con soporte estadístico. Distribución por cargo/área. Factores de riesgo identificados según GTC-45. Correlación entre morbilidad encontrada y exposición ocupacional. Mención de normativa aplicable." +
+      "\n\n2. CONCLUSIONES (mínimo 200 palabras): Resumen ejecutivo de los hallazgos más relevantes. Indicadores epidemiológicos críticos. Nivel de cumplimiento del SG-SST. Riesgos prioritarios identificados." +
+      "\n\n3. RECOMENDACIONES (mínimo 250 palabras): Acciones correctivas específicas. Programas de vigilancia epidemiológica (PVE/SVE) sugeridos con base normativa. Ajustes en el SG-SST conforme Res. 0312/2019. Seguimiento médico prioritario por grupos de riesgo. Cronograma sugerido de intervenciones." +
+      '\n\nDevuelve ÚNICAMENTE JSON válido sin markdown: {"analisisJustificado":"texto completo sección 1","conclusiones":"texto completo sección 2","recomendacionesInforme":"texto completo sección 3"}';
     try {
       const [text1, text2] = await Promise.all([
         callAI(prompt1, true),
@@ -4795,18 +4795,18 @@ JSON REQUERIDO (sin markdown, sin texto adicional):
       "Usuarios y perfiles": _sbSet("siso_users", usersList),
       "Facturas / Cuentas de cobro": _sbSet(`siso_saved_bills_${_bkSuf}`, savedBillsList),
       "Informes guardados": _sbSet("siso_saved_reports", savedReports),
-      "Log de auditorÃ­a": _sbSet("siso_audit_log", auditLog),
+      "Log de auditoría": _sbSet("siso_audit_log", auditLog),
       "Mensajes internos": _sbSet("siso_mensajes", mensajes),
       "Agenda / Citas": _sbSet(`siso_agendados_${_bkSuf}`, agendados),
       "Atenciones cerradas": _sbSet(`siso_atenciones_${_bkSuf}`, atencionesCerradas),
-      "ConfiguraciÃ³n IA (proveedor)": _sbSet("siso_ai_config_provider", {
+      "Configuración IA (proveedor)": _sbSet("siso_ai_config_provider", {
         activeProvider: aiConfig.activeProvider,
       }),
       ...(doctorSignature
         ? { "Firma digital": _sbSet("siso_doctor_signature", doctorSignature) }
         : {}),
       ...(currentUser?.doctorData && currentUser?.user
-        ? { [`Datos mÃ©dico (${currentUser.user})`]: _sbSet(`siso_doctor_data_${currentUser.user}`, currentUser.doctorData) }
+        ? { [`Datos médico (${currentUser.user})`]: _sbSet(`siso_doctor_data_${currentUser.user}`, currentUser.doctorData) }
         : {}),
       ...(currentUser?.user && keysGuardadas.length
         ? {
@@ -4853,12 +4853,12 @@ JSON REQUERIDO (sin markdown, sin texto adicional):
       "siso_ai_config_provider",
       JSON.stringify({ activeProvider: cfg.activeProvider })
     );
-    // Guardar keys en Supabase bajo clave especÃ­fica del usuario
+    // Guardar keys en Supabase bajo clave específica del usuario
     const userKey = `siso_ai_keys_${currentUser?.user || "default"}`;
     _sbSet(userKey, cfg.keys || {}).then(() => {});
-    // TambiÃ©n guardar en localStorage para fallback offline
+    // También guardar en localStorage para fallback offline
     _ls.setItem("siso_ai_config_version", "v3");
-    showAlert("âœ… ConfiguraciÃ³n de IA guardada en la nube.");
+    showAlert("âœ… Configuración de IA guardada en la nube.");
   };
   
 const handleLogin = (u, p) => {
@@ -4872,11 +4872,11 @@ const handleLogin = (u, p) => {
 // ============================================================
     // FIX C-01: SOLO comparar contra passHash (SHA-256) - eliminado fallback texto plano
     _sha256(p).then(async (hash) => {
-      // MigraciÃ³n automÃ¡tica: si el usuario tiene .pass en texto plano (versiÃ³n anterior),
+      // Migración automática: si el usuario tiene .pass en texto plano (versión anterior),
       // se migra a passHash en este momento sin exponer el texto plano
       const migratedList = usersList.map((usr) => {
         if (!usr.passHash && usr.pass) {
-          // Programar migraciÃ³n asÃ­ncrona
+          // Programar migración asíncrona
           _sha256(usr.pass).then((h) => {
             const updated = usersList.map((x) =>
               x.id === usr.id ? { ...x, passHash: h, pass: undefined } : x
@@ -4898,7 +4898,7 @@ const handleLogin = (u, p) => {
         }
       }
       // CAMBIO 7 - SEC: Fallback a Supabase si usuario no hallado en lista local
-      // Resuelve el caso de nuevo dispositivo / cachÃ© borrado / contraseÃ±a cambiada
+      // Resuelve el caso de nuevo dispositivo / caché borrado / contraseña cambiada
       if (!found) {
         try {
           const cloudData = await _sbGetAll();
@@ -4909,7 +4909,7 @@ const handleLogin = (u, p) => {
               _ls.setItem("siso_users", JSON.stringify(cloudUserList));
               return cloudUserList;
             });
-            // TambiÃ©n restaurar firma y empresas desde nube
+            // También restaurar firma y empresas desde nube
             if (cloudData["siso_doctor_signature"]?.value) {
               setDoctorSignature(cloudData["siso_doctor_signature"].value);
               _ls.setItem("siso_doctor_signature", cloudData["siso_doctor_signature"].value);
@@ -4947,7 +4947,7 @@ const handleLogin = (u, p) => {
       }
       if (found && found.activo === false) {
         showAlert(
-          "â›” Esta cuenta estÃ¡ desactivada. Contacte al administrador."
+          "â›” Esta cuenta está desactivada. Contacte al administrador."
         );
         return;
       }
@@ -4963,19 +4963,19 @@ const handleLogin = (u, p) => {
         setLoginAttempts(0);
         _ls.removeItem("siso_login_attempts");
         _ls.removeItem("siso_login_blocked_until");
-        // CIBERSEGURIDAD: Agregar sesionId Ãºnico al usuario (trazabilidad RDA Res. 1888/2025)
+        // CIBERSEGURIDAD: Agregar sesionId único al usuario (trazabilidad RDA Res. 1888/2025)
         const sesId =
           "SES-" +
           Date.now().toString(36).toUpperCase() +
           "-" +
           Math.random().toString(36).substr(2, 6).toUpperCase();
-        // FASE 2: Asegurar que el usuario tiene orgId (migraciÃ³n automÃ¡tica de datos existentes)
+        // FASE 2: Asegurar que el usuario tiene orgId (migración automática de datos existentes)
         const foundConOrg = found.orgId
           ? found
           : { ...found, orgId: ORG_DEFAULT_ID };
         const foundConSesion = { ...foundConOrg, sesionId: sesId };
         // â”€â”€ Para secretaria: cargar permisos actualizados desde Supabase al login â”€â”€
-        // Esto garantiza que los permisos del admin estÃ©n vigentes desde el primer momento
+        // Esto garantiza que los permisos del admin estén vigentes desde el primer momento
         const _initWithPermisos = async (baseSesion) => {
           if (baseSesion.role === "secretaria") {
             try {
@@ -4989,14 +4989,14 @@ const handleLogin = (u, p) => {
                 if (rows && rows.length > 0 && rows[0].value) {
                   const permData = rows[0].value;
                   _ls.setItem(permKey, JSON.stringify(permData));
-                  // Fusionar permisos frescos de Supabase con el objeto de sesiÃ³n
+                  // Fusionar permisos frescos de Supabase con el objeto de sesión
                   const sesionConPermisos = {
                     ...baseSesion,
                     secretariaPermisos: permData.secretariaPermisos || baseSesion.secretariaPermisos,
                     medicosAsignados: permData.medicosAsignados || baseSesion.medicosAsignados || [],
                   };
                   setCurrentUser(sesionConPermisos);
-                  // TambiÃ©n actualizar usersList local
+                  // También actualizar usersList local
                   setUsersList(prev => prev.map(u =>
                     u.user === baseSesion.user ? { ...u, ...sesionConPermisos } : u
                   ));
@@ -5008,7 +5008,7 @@ const handleLogin = (u, p) => {
           setCurrentUser(baseSesion);
         };
         _initWithPermisos(foundConSesion);
-        // CIBERSEGURIDAD: Activar timer de sesiÃ³n 30 min (Punto 4 - Supabase/sesiÃ³n segura)
+        // CIBERSEGURIDAD: Activar timer de sesión 30 min (Punto 4 - Supabase/sesión segura)
         _resetSessionTimer(() => {
           setCurrentUser(null);
           setView("login");
@@ -5023,7 +5023,7 @@ const handleLogin = (u, p) => {
           sesionId: sesId,
           accion: "Login",
           pacienteId: null,
-          tipo: "AutenticaciÃ³n",
+          tipo: "Autenticación",
           userAgent:
             typeof navigator !== "undefined"
               ? navigator.userAgent?.substring(0, 120)
@@ -5034,7 +5034,7 @@ const handleLogin = (u, p) => {
           setTimeout(() => _sync("siso_audit_log", JSON.stringify(n)), 0);
           return n;
         });
-        // Al hacer login: cargar pacientes del mÃ©dico especÃ­fico (aislamiento)
+        // Al hacer login: cargar pacientes del médico específico (aislamiento)
         // â”€â”€ IPS: si el usuario tiene empresaId, usar storage compartido de empresa â”€â”€
         const _storageUserId = found.empresaId
           ? "empresa_" + found.empresaId
@@ -5042,7 +5042,7 @@ const handleLogin = (u, p) => {
         const userPatKey = _patKey(_storageUserId);
         const userPatKeyCloud = _patKeyCloud(_storageUserId);
         const localPats = sp(userPatKey, []);
-        // IPS: migraciÃ³n â€” si el usuario tenÃ­a datos personales, copiarlos al bucket empresa
+        // IPS: migración â€” si el usuario tenía datos personales, copiarlos al bucket empresa
         if (found.empresaId) {
           const personalPats = sp(_patKey(found.user), []);
           if (personalPats.length > 0 && localPats.length === 0) {
@@ -5050,7 +5050,7 @@ const handleLogin = (u, p) => {
             _ls.setItem(userPatKey, JSON.stringify(personalPats));
             setPatientsList(personalPats);
           } else if (personalPats.length > 0 && localPats.length > 0) {
-            // Merge: agregar pacientes personales que no estÃ©n en el bucket empresa
+            // Merge: agregar pacientes personales que no estén en el bucket empresa
             const existingIds = new Set(localPats.map((p) => p.id));
             const nuevos = personalPats.filter((p) => !existingIds.has(p.id));
             if (nuevos.length > 0) {
@@ -5083,7 +5083,7 @@ const handleLogin = (u, p) => {
           for (const adm of orgAdmins) {
             const admComps = sp(_compKey(adm.user), []);
             if (admComps.length > 0) {
-              // Copiar la empresa especÃ­fica + "PARTICULAR" si existe
+              // Copiar la empresa específica + "PARTICULAR" si existe
               const miEmpresa = admComps.filter(
                 (c) => c.id === found.empresaId
               );
@@ -5100,7 +5100,7 @@ const handleLogin = (u, p) => {
         const _loadScoped = (scopedKey, globalKey) => {
           const s = sp(scopedKey, null);
           if (s !== null) return s;
-          // MigraciÃ³n: si hay datos en clave global, copiar a clave propia
+          // Migración: si hay datos en clave global, copiar a clave propia
           const g = sp(globalKey, []);
           if (g.length > 0) {
             try {
@@ -5126,7 +5126,7 @@ const handleLogin = (u, p) => {
         );
         _sbGetAll().then((cloud) => {
           if (!cloud) return;
-          // Pacientes del usuario especÃ­fico (o empresa compartida)
+          // Pacientes del usuario específico (o empresa compartida)
           const cloudPats = cloud?.[userPatKeyCloud]?.value;
           const currentLocalPats = sp(userPatKey, []);
           if (
@@ -5136,7 +5136,7 @@ const handleLogin = (u, p) => {
             setPatientsList(cloudPats);
             _ls.setItem(userPatKey, JSON.stringify(cloudPats));
           }
-          // Empresas del usuario especÃ­fico (o empresa compartida)
+          // Empresas del usuario específico (o empresa compartida)
           const cloudComps = cloud?.[userCompKeyCloud]?.value;
           if (
             Array.isArray(cloudComps) &&
@@ -5154,7 +5154,7 @@ const handleLogin = (u, p) => {
               if (mine.length > 0) {
                 setCompanies(mine);
                 _ls.setItem(userCompKey, JSON.stringify(mine));
-                // Migrar automÃ¡ticamente a clave propia
+                // Migrar automáticamente a clave propia
                 _sbSet(userCompKeyCloud, mine);
               }
             }
@@ -5166,7 +5166,7 @@ const handleLogin = (u, p) => {
             _ss.setItem("siso_ai_keys", JSON.stringify(aiKeyCloud));
             setAiConfig((prev) => ({ ...prev, keys: aiKeyCloud }));
           }
-          // 2. DoctorData desde clave DEDICADA (siempre la mÃ¡s actualizada)
+          // 2. DoctorData desde clave DEDICADA (siempre la más actualizada)
           const doctorDataCloud = cloud?.[`siso_doctor_data_${found.user}`]?.value;
           // 3. DoctorData desde siso_users (embebido en el array de usuarios)
           const cloudUsersList = cloud?.["siso_users"]?.value;
@@ -5184,7 +5184,7 @@ const handleLogin = (u, p) => {
               ...prev,
               doctorData: mergedDoctorData,
             }));
-            // Persistir en usersList y localStorage para prÃ³xima carga
+            // Persistir en usersList y localStorage para próxima carga
             setUsersList((prev) => {
               const updated = prev.map((u) =>
                 u.user === found.user ? { ...u, doctorData: mergedDoctorData } : u
@@ -5212,7 +5212,7 @@ const handleLogin = (u, p) => {
             _ls.setItem("siso_ai_config_provider", JSON.stringify(prov));
           }
         });
-        // â•â• B-07: Si primer login, forzar cambio de contraseÃ±a â•â•
+        // â•â• B-07: Si primer login, forzar cambio de contraseña â•â•
         if (foundConSesion.mustChangePassword) {
           goTo("changePassword");
         } else {
@@ -5242,11 +5242,11 @@ const handleLogin = (u, p) => {
               return n;
             });
             showAlert(
-              "ðŸ”’ Acceso bloqueado por 15 minutos debido a mÃºltiples intentos fallidos.\nSi olvidÃ³ su contraseÃ±a, contacte al administrador del sistema."
+              "ðŸ”’ Acceso bloqueado por 15 minutos debido a múltiples intentos fallidos.\nSi olvidó su contraseña, contacte al administrador del sistema."
             );
           } else {
             showAlert(
-              `âš ï¸ Credenciales incorrectas. Intentos fallidos: ${next}/5. Tras 5 intentos se bloquearÃ¡ el acceso por 15 minutos.`
+              `âš ï¸ Credenciales incorrectas. Intentos fallidos: ${next}/5. Tras 5 intentos se bloqueará el acceso por 15 minutos.`
             );
           }
           return next;
@@ -5261,12 +5261,12 @@ const handleLogin = (u, p) => {
     const ok = await _totpVerify(foundUser.twoFA.secret, twoFAToken.trim());
     if (!ok) {
       setTwoFAError(
-        "âŒ CÃ³digo incorrecto. Verifique su app autenticadora e intente de nuevo."
+        "âŒ Código incorrecto. Verifique su app autenticadora e intente de nuevo."
       );
       setTwoFAToken("");
       return;
     }
-    // CÃ³digo correcto - continuar con el flujo normal de login
+    // Código correcto - continuar con el flujo normal de login
     setTwoFAStep(null);
     setTwoFAError("");
     setLoginAttempts(0);
@@ -5310,7 +5310,7 @@ const handleLogin = (u, p) => {
       goTo("dashboard");
     }
   };
-  // â”€â”€ Guard: visibilidad de HC segÃºn rol y org (FASE 2) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // â”€â”€ Guard: visibilidad de HC según rol y org (FASE 2) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const canViewPatient = (p) => {
     if (!p) return false;
     if (!currentUser) return false;
@@ -5330,7 +5330,7 @@ const handleLogin = (u, p) => {
       );
     }
     if (currentUser.role === "medico") {
-      // IPS: mÃ©dico vinculado a empresa â†’ ve TODOS los pacientes de la empresa (cross-read)
+      // IPS: médico vinculado a empresa â†’ ve TODOS los pacientes de la empresa (cross-read)
       if (currentUser.empresaId) {
         const emp = companies.find((c) => c.id === currentUser.empresaId);
         return (
@@ -5338,19 +5338,19 @@ const handleLogin = (u, p) => {
           (emp && p.empresaNit === emp.nit)
         );
       }
-      // MÃ©dico sin empresa: ve todos los pacientes de la org (con lectura cruzada)
+      // Médico sin empresa: ve todos los pacientes de la org (con lectura cruzada)
       if (!p._medicoId) return true; // paciente sin asignar
       if (p._medicoId === currentUser.user) return true;
-      // Otro mÃ©dico de la misma org: acceso en modo lectura âœ… (Fase 2 req.)
+      // Otro médico de la misma org: acceso en modo lectura âœ… (Fase 2 req.)
       return true;
     }
     if (currentUser.role === "secretaria") {
-      // Secretaria siempre puede ver pacientes de sus mÃ©dicos asignados
+      // Secretaria siempre puede ver pacientes de sus médicos asignados
       return _secretariaMedicoAsignado(currentUser, p._medicoId || "", usersList);
     }
     return false;
   };
-  // FASE 2: Â¿el mÃ©dico actual es el autor de esta HC? (controla ediciÃ³n vs lectura)
+  // FASE 2: ¿el médico actual es el autor de esta HC? (controla edición vs lectura)
   const isHcOwner = (p) => {
     if (!p || !currentUser) return false;
     if (currentUser.role === "super_admin") return true;
@@ -5360,16 +5360,16 @@ const handleLogin = (u, p) => {
   const openPatient = (p) => {
     if (!canViewPatient(p)) {
       showAlert(
-        "â›” No tiene permiso para ver esta historia clÃ­nica.\nSolo puede acceder a historias creadas por usted."
+        "â›” No tiene permiso para ver esta historia clínica.\nSolo puede acceder a historias creadas por usted."
       );
       return;
     }
-    // SECRETARIA: puede ver datos del paciente pero NO la ficha clÃ­nica
+    // SECRETARIA: puede ver datos del paciente pero NO la ficha clínica
     if (currentUser?.role === "secretaria") {
       setShowSecretariaPatientModal(p);
       return;
     }
-    // â”€â”€ RecuperaciÃ³n de autoguardado â”€â”€
+    // â”€â”€ Recuperación de autoguardado â”€â”€
     const _autoRaw = _ls.getItem("siso_autosave_" + p.id);
     if (_autoRaw) {
       try {
@@ -5378,7 +5378,7 @@ const handleLogin = (u, p) => {
           const autoTime = new Date(_autoData._autoSaved).getTime();
           const now = Date.now();
           if (now - autoTime < 86400000) {
-            if (window.confirm("Se encontraron datos autoguardados. Â¿Desea recuperarlos?")) {
+            if (window.confirm("Se encontraron datos autoguardados. ¿Desea recuperarlos?")) {
               setData({ ...p, ..._autoData, id: p.id });
               setDataType(p.type || "ocupacional");
               setActiveTab(p.type === "general" ? "formGeneral" : "form");
@@ -5405,13 +5405,13 @@ const handleLogin = (u, p) => {
         return;
       }
     }
-    // â”€â”€ PLAN GATE: verificar lÃ­mite de HC (super_admin, admin y admin_empresa exentos) â”€â”€
+    // â”€â”€ PLAN GATE: verificar límite de HC (super_admin, admin y admin_empresa exentos) â”€â”€
     if (!_isAdminOrEmpresa(currentUser?.role)) {
       const plan = PLAN_CONFIG[currentUser?.license || "libre"];
       const usadas = _contarHC(patientsList, currentUser?.user);
       if (usadas >= plan.maxHC) {
         showAlert(
-          `ðŸ”’ Plan ${plan.label}: lÃ­mite de ${plan.maxHC} historias clÃ­nicas alcanzado.\n\nActualiza tu plan para continuar creando HC.\nMenÃº â†’ â­ Ver Planes`
+          `ðŸ”’ Plan ${plan.label}: límite de ${plan.maxHC} historias clínicas alcanzado.\n\nActualiza tu plan para continuar creando HC.\nMenú â†’ â­ Ver Planes`
         );
         return;
       }
@@ -5424,9 +5424,9 @@ const handleLogin = (u, p) => {
       String(
         patientsList.filter((p) => p.fechaExamen && !p._archivado).length + 1
       ).padStart(4, "0");
-    // FASE 2: org_id se asigna automÃ¡ticamente al crear HC
+    // FASE 2: org_id se asigna automáticamente al crear HC
     const myOrgId = currentUser?.orgId || ORG_DEFAULT_ID;
-    // FASE 2: MÃ©dico de turno â€” si admin/secretaria crea HC, proponer turno activo
+    // FASE 2: Médico de turno â€” si admin/secretaria crea HC, proponer turno activo
     const medicoDefault =
       _isAdmin(currentUser?.role) || currentUser?.role === "secretaria"
         ? medicoTurnoActivo || currentUser?.user
@@ -5465,13 +5465,13 @@ const handleLogin = (u, p) => {
         return;
       }
     }
-    // â”€â”€ PLAN GATE: verificar lÃ­mite de HC (super_admin, admin y admin_empresa exentos) â”€â”€
+    // â”€â”€ PLAN GATE: verificar límite de HC (super_admin, admin y admin_empresa exentos) â”€â”€
     if (!_isAdminOrEmpresa(currentUser?.role)) {
       const plan = PLAN_CONFIG[currentUser?.license || "libre"];
       const usadas = _contarHC(patientsList, currentUser?.user);
       if (usadas >= plan.maxHC) {
         showAlert(
-          `ðŸ”’ Plan ${plan.label}: lÃ­mite de ${plan.maxHC} historias clÃ­nicas alcanzado.\n\nActualiza tu plan para continuar creando HC.\nMenÃº â†’ â­ Ver Planes`
+          `ðŸ”’ Plan ${plan.label}: límite de ${plan.maxHC} historias clínicas alcanzado.\n\nActualiza tu plan para continuar creando HC.\nMenú â†’ â­ Ver Planes`
         );
         return;
       }
@@ -5505,7 +5505,7 @@ const handleLogin = (u, p) => {
     goTo("historia");
     logAccess("Apertura", newId, "general"); // AUDIT: Res. 1888/2025 RDA
   };
-  // Guardar pacientes bajo la clave del usuario activo (aislamiento por mÃ©dico)
+  // Guardar pacientes bajo la clave del usuario activo (aislamiento por médico)
   // â”€â”€ IPS: si el usuario tiene empresaId, usar storage compartido de empresa â”€â”€
   const _syncPatients = (list) => {
     const _suid = currentUser?.empresaId
@@ -5535,18 +5535,18 @@ const handleLogin = (u, p) => {
       if (!ok) _sbQueue.pending[cloudKey] = list;
     });
   };
-  // NORMATIVO: Res. 1843/2025 Art. 9 y 13 - Verificar alertas de evaluaciÃ³n obligatoria
+  // NORMATIVO: Res. 1843/2025 Art. 9 y 13 - Verificar alertas de evaluación obligatoria
   const checkAlertasObligatorias = (d) => {
     const alertas = [];
-    // â•â• B-10 Res. 1843/2025 Art. 4 - Periodicidad mÃ¡xima 3 aÃ±os â•â•
-    // ValidaciÃ³n de periodicidad vencida (>3 aÃ±os sin evaluaciÃ³n) se maneja en CardPaciente con badge
+    // â•â• B-10 Res. 1843/2025 Art. 4 - Periodicidad máxima 3 años â•â•
+    // Validación de periodicidad vencida (>3 años sin evaluación) se maneja en CardPaciente con badge
     if (
       d.diasIncapacidad &&
       parseInt(d.diasIncapacidad) >= 30 &&
       d.tipoExamen !== "POST-INCAPACIDAD"
     ) {
       alertas.push(
-        "âš ï¸ ALERTA Res. 1843/2025 Art. 9: Trabajador con â‰¥30 dÃ­as de incapacidad - se requiere evaluaciÃ³n POST-INCAPACIDAD obligatoria."
+        "âš ï¸ ALERTA Res. 1843/2025 Art. 9: Trabajador con â‰¥30 días de incapacidad - se requiere evaluación POST-INCAPACIDAD obligatoria."
       );
     }
     if (
@@ -5555,7 +5555,7 @@ const handleLogin = (u, p) => {
       d.tipoExamen !== "RETORNO-LABORAL"
     ) {
       alertas.push(
-        "âš ï¸ ALERTA Res. 1843/2025 Art. 13: Ausencia >90 dÃ­as (no mÃ©dica) - se requiere evaluaciÃ³n de RETORNO LABORAL obligatoria."
+        "âš ï¸ ALERTA Res. 1843/2025 Art. 13: Ausencia >90 días (no médica) - se requiere evaluación de RETORNO LABORAL obligatoria."
       );
     }
     return alertas;
@@ -5590,13 +5590,13 @@ const handleLogin = (u, p) => {
     // NORMATIVO: Res. 1843/2025 - aviso no-bloqueante de vigencia
     if (dataType === "ocupacional" && !data.vigencia) {
       showAlert(
-        "âš ï¸ Recuerde registrar la vigencia del concepto de aptitud (Res. 1843/2025). Puede editar la HC para aÃ±adirla."
+        "âš ï¸ Recuerde registrar la vigencia del concepto de aptitud (Res. 1843/2025). Puede editar la HC para añadirla."
       );
     }
     showConfirm(
-      "Â¿Cerrar la historia clÃ­nica? No podrÃ¡ editarla sin cÃ³digo de auditorÃ­a.",
+      "¿Cerrar la historia clínica? No podrá editarla sin código de auditoría.",
       async () => {
-        // NORMATIVO: Ley 527/1999 - Firma electrÃ³nica con hash SHA-256 para integridad del documento
+        // NORMATIVO: Ley 527/1999 - Firma electrónica con hash SHA-256 para integridad del documento
         const hashHC = await _generarHashHC(data);
         const fechaFirma = new Date().toISOString();
         const baseCode =
@@ -5610,13 +5610,13 @@ const handleLogin = (u, p) => {
         const firmaDigital = {
           hash: hashHC,
           codigoQR,
-          firmadoPor: currentUser?.name || currentUser?.user || "mÃ©dico",
+          firmadoPor: currentUser?.name || currentUser?.user || "médico",
           medicoId: currentUser?.user,
           fechaFirma,
           ley: "Ley 527/1999 - Decreto 2364/2012",
           verificable: true,
         };
-        const code = codigoQR; // El cÃ³digo de verificaciÃ³n ES el cÃ³digo QR
+        const code = codigoQR; // El código de verificación ES el código QR
         const closed = {
           ...data,
           estadoHistoria: "Cerrada",
@@ -5630,10 +5630,10 @@ const handleLogin = (u, p) => {
         else list.push(closed);
         setPatientsList(list);
         _syncPatients(list);
-        // PORTAL PÃšBLICO: guardar resumen en clave pÃºblica (sin RLS)
-        // PolÃ­tica SQL necesaria: CREATE POLICY portal_public_read ON siso_store FOR SELECT USING (key LIKE 'siso_portal_%');
+        // PORTAL PÚBLICO: guardar resumen en clave pública (sin RLS)
+        // Política SQL necesaria: CREATE POLICY portal_public_read ON siso_store FOR SELECT USING (key LIKE 'siso_portal_%');
         const portalData = {
-          // â”€â”€ IdentificaciÃ³n paciente â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+          // â”€â”€ Identificación paciente â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
           nombres: closed.nombres,
           docTipo: closed.docTipo,
           docNumero: closed.docNumero,
@@ -5646,7 +5646,7 @@ const handleLogin = (u, p) => {
           tipoExamen: closed.tipoExamen,
           enfasisExamen: closed.enfasisExamen || "GENERAL",
           fechaExamen: closed.fechaExamen,
-          vigencia: closed.vigencia || "1 aÃ±o",
+          vigencia: closed.vigencia || "1 año",
           conceptoAptitud: closed.conceptoAptitud,
           codigoVerificacion: code,
           estadoHistoria: "Cerrada",
@@ -5661,18 +5661,18 @@ const handleLogin = (u, p) => {
             closed.recomendacionesOcupacionales || "",
           recomendacionesChecklist: closed.recomendacionesChecklist || {},
           diagnosticoPrincipal: closed.diagnosticoPrincipal || "",
-          // â”€â”€ Datos completos del mÃ©dico (para generar PDF en portal) â”€â”€â”€â”€â”€â”€â”€â”€â”€
+          // â”€â”€ Datos completos del médico (para generar PDF en portal) â”€â”€â”€â”€â”€â”€â”€â”€â”€
           medicoNombre: activeDoctorData?.nombre || currentUser?.name || "",
           _doctorData: {
             nombre:
               activeDoctorData?.nombre ||
               currentUser?.name ||
-              "MÃ‰DICO OCUPACIONAL",
+              "MÉDICO OCUPACIONAL",
             titulo:
               activeDoctorData?.titulo ||
-              "MÃ©dico Especialista en Salud Ocupacional",
+              "Médico Especialista en Salud Ocupacional",
             licencia: activeDoctorData?.licencia || "--",
-            ciudad: activeDoctorData?.ciudad || "PopayÃ¡n",
+            ciudad: activeDoctorData?.ciudad || "Popayán",
             email: activeDoctorData?.email || "",
             cel: activeDoctorData?.cel || "",
           },
@@ -5684,7 +5684,7 @@ const handleLogin = (u, p) => {
             "siso_portal_doc_" + closed.docNumero.replace(/\s/g, ""),
             portalData
           );
-        // FIX: tambiÃ©n guardar con formato alternativo para compatibilidad con cÃ³digos viejos
+        // FIX: también guardar con formato alternativo para compatibilidad con códigos viejos
         if (code && !code.startsWith("CV-")) {
           _sbSet("siso_portal_CV-" + code, portalData);
         }
@@ -5733,12 +5733,12 @@ const handleLogin = (u, p) => {
             cerradaEn: new Date().toISOString(),
             estadoHistoria: "Cerrada",
           };
-          const updAC = [nuevaAtencion, ...atencionesCerradas].slice(0, 100); // mÃ¡x 100 registros
+          const updAC = [nuevaAtencion, ...atencionesCerradas].slice(0, 100); // máx 100 registros
           setAtencionesCerradas(updAC);
           _sync(`siso_atenciones_${_hcSuf}`, JSON.stringify(updAC));
           _sbSet(`siso_atenciones_${_hcSuf}`, updAC);
         }
-        // â”€â”€ PASO 3: Auto-facturaciÃ³n â€” generar movimiento en Caja â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // â”€â”€ PASO 3: Auto-facturación â€” generar movimiento en Caja â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         try {
           const agOrig2 = data._agendaId
             ? agendados.find((a) => a.id === data._agendaId)
@@ -5749,7 +5749,7 @@ const handleLogin = (u, p) => {
             closed.tipoExamen ||
             "general"
           ).toLowerCase();
-          // Calcular tarifa: convenio empresa â†’ tarifa mÃ©dico â†’ 0
+          // Calcular tarifa: convenio empresa â†’ tarifa médico â†’ 0
           const _empCliente = companies.find(
             (c) =>
               c.id === closed.empresaId ||
@@ -5762,7 +5762,7 @@ const handleLogin = (u, p) => {
               _tarifa = Number(_empCliente.tarifaIngreso || 0);
             else if (
               _tipoConsulta.includes("periodico") ||
-              _tipoConsulta.includes("periÃ³dico")
+              _tipoConsulta.includes("periódico")
             )
               _tarifa = Number(_empCliente.tarifaPeriodico || 0);
             else if (
@@ -5777,20 +5777,20 @@ const handleLogin = (u, p) => {
           const _tipoLabel = _tipoConsulta.includes("ingreso")
             ? "Examen Ingreso"
             : _tipoConsulta.includes("periodico") ||
-              _tipoConsulta.includes("periÃ³dico")
-            ? "Examen PeriÃ³dico"
+              _tipoConsulta.includes("periódico")
+            ? "Examen Periódico"
             : _tipoConsulta.includes("egreso") ||
               _tipoConsulta.includes("retiro")
             ? "Examen Egreso"
             : _tipoConsulta.includes("general")
             ? "Consulta General"
-            : "Examen MÃ©dico";
+            : "Examen Médico";
           const autoMov = {
             id: "mob_" + Date.now(),
             tipo: "ingreso",
-            concepto: `${_tipoLabel} Â· ${_sanitize(
+            concepto: `${_tipoLabel} · ${_sanitize(
               closed.nombres || ""
-            )} Â· ${_sanitize(
+            )} · ${_sanitize(
               closed.empresaNombre || agOrig2?.empresa || "Particular"
             )}`,
             monto: String(_tarifa),
@@ -5819,10 +5819,10 @@ const handleLogin = (u, p) => {
           console.warn("[PASO3] Auto-billing error:", _autoErr);
         }
         showAlert(
-          `âœ… Historia cerrada y firmada digitalmente.\nðŸ“‹ CÃ³digo QR: ${code}\nðŸ” Hash integridad: ${hashHC.substring(
+          `âœ… Historia cerrada y firmada digitalmente.\nðŸ“‹ Código QR: ${code}\nðŸ” Hash integridad: ${hashHC.substring(
             0,
             20
-          )}...\nâš–ï¸ VÃ¡lido: Ley 527/1999 - Decreto 2364/2012`
+          )}...\nâš–ï¸ Válido: Ley 527/1999 - Decreto 2364/2012`
         );
         logAccess("Cierre", data.id, dataType); // AUDIT: Res. 1888/2025 RDA
       }
@@ -5833,7 +5833,7 @@ const handleLogin = (u, p) => {
   const handleAiResumen = async (hcData) => {
     if (!_canUse("ia_resumen", currentUser)) {
       showAlert(
-        "ðŸ”’ El resumen IA estÃ¡ disponible en el plan â­ Pro ($79.000/mes).\n\nMenÃº â†’ â­ Ver Planes para actualizar."
+        "ðŸ”’ El resumen IA está disponible en el plan â­ Pro ($79.000/mes).\n\nMenú â†’ â­ Ver Planes para actualizar."
       );
       return;
     }
@@ -5841,13 +5841,13 @@ const handleLogin = (u, p) => {
     setAiCargando(true);
     setAiResumen("");
     try {
-      const prompt = `Eres un mÃ©dico especialista en salud ocupacional. Resume de forma clara y profesional esta evaluaciÃ³n mÃ©dica ocupacional para uso interno del mÃ©dico tratante. SÃ© conciso (mÃ¡ximo 150 palabras). Datos: Paciente: ${
+      const prompt = `Eres un médico especialista en salud ocupacional. Resume de forma clara y profesional esta evaluación médica ocupacional para uso interno del médico tratante. Sé conciso (máximo 150 palabras). Datos: Paciente: ${
         hcData.nombres || "--"
       } | Empresa: ${hcData.empresaNombre || hcData.empresa || "--"} | Cargo: ${
         hcData.cargo || "--"
       } | Examen: ${hcData.tipoExamen || "--"} | Concepto: ${
         hcData.conceptoAptitud || "--"
-      } | Restricciones: ${hcData.restricciones || "ninguna"} | DiagnÃ³sticos: ${
+      } | Restricciones: ${hcData.restricciones || "ninguna"} | Diagnósticos: ${
         (hcData.diagnosticos || [])
           .map((d) => d.descripcion || d.codigo)
           .filter(Boolean)
@@ -5878,17 +5878,17 @@ const handleLogin = (u, p) => {
   // Una HC firmada NO se modifica. Solo se agregan notas aclaratorias con trazabilidad completa.
   const handleEditHistory = () => {
     if (currentUser?.role === "secretaria") {
-      showAlert("â›” La secretaria no puede modificar historias clÃ­nicas.");
+      showAlert("â›” La secretaria no puede modificar historias clínicas.");
       return;
     }
     const isAdminUser = _isAdmin(currentUser?.role) || currentUser?.role === "super_admin";
     
-    // Usar confirmConfig con botones claros en lugar de input de nÃºmero
+    // Usar confirmConfig con botones claros en lugar de input de número
     setConfirmConfig({
-      msg: `ðŸ“‹ HC Cerrada â€” ${data.nombres}\nCÃ³digo: ${data.codigoVerificacion || "â€”"}\n\nÂ¿QuÃ© desea hacer?`,
+      msg: `ðŸ“‹ HC Cerrada â€” ${data.nombres}\nCódigo: ${data.codigoVerificacion || "â€”"}\n\n¿Qué desea hacer?`,
       buttons: [
         {
-          label: "ðŸ“ EvoluciÃ³n clÃ­nica",
+          label: "ðŸ“ Evolución clínica",
           color: "bg-purple-600 hover:bg-purple-700",
           action: () => {
             setConfirmConfig(null);
@@ -5902,7 +5902,7 @@ const handleLogin = (u, p) => {
             setConfirmConfig(null);
             setTimeout(() => {
               showPrompt(
-                "ðŸ“Œ Escriba la nota aclaratoria:\n(Se registrarÃ¡ con su nombre, fecha y hora en la HC)",
+                "ðŸ“Œ Escriba la nota aclaratoria:\n(Se registrará con su nombre, fecha y hora en la HC)",
                 (nota) => {
                   if (!nota || nota.trim().length < 10) {
                     setTimeout(() => showAlert("La nota debe tener al menos 10 caracteres."), 100);
@@ -5945,18 +5945,18 @@ const handleLogin = (u, p) => {
             setConfirmConfig(null);
             setTimeout(() => {
               showPrompt(
-                "ðŸ” Ingrese el cÃ³digo de administrador para reabrir la HC:",
+                "ðŸ” Ingrese el código de administrador para reabrir la HC:",
                 (adminCode) => {
                   if (!adminCode) return;
                   _sha256(adminCode).then((h) => {
                     const storedCode = _ls.getItem("siso_admin_code_hash") || _H.adminCode;
                     if (h !== storedCode) {
-                      setTimeout(() => showAlert("â›” CÃ³digo incorrecto."), 100);
+                      setTimeout(() => showAlert("â›” Código incorrecto."), 100);
                       return;
                     }
                     setTimeout(() => {
                       showPrompt(
-                        "ðŸ“‹ Motivo de reapertura (mÃ­n. 20 caracteres â€” queda en auditorÃ­a):",
+                        "ðŸ“‹ Motivo de reapertura (mín. 20 caracteres â€” queda en auditoría):",
                         (reason) => {
                           if (!reason || reason.trim().length < 20) {
                             setTimeout(() => showAlert("El motivo debe tener al menos 20 caracteres."), 100);
@@ -5978,7 +5978,7 @@ const handleLogin = (u, p) => {
                             ],
                           }));
                           logAccess("ReaperturaAdmin", data.id, `Motivo: ${reason}`);
-                          setTimeout(() => showAlert("âš ï¸ HC reabierta para ediciÃ³n completa.\nEste evento quedÃ³ registrado en auditorÃ­a."), 100);
+                          setTimeout(() => showAlert("âš ï¸ HC reabierta para edición completa.\nEste evento quedó registrado en auditoría."), 100);
                         }
                       );
                     }, 150);
@@ -5989,19 +5989,19 @@ const handleLogin = (u, p) => {
           }
         }] : []),
         ...(isAdminUser ? [{
-          label: "âœï¸ Editar campos especÃ­ficos",
+          label: "âœï¸ Editar campos específicos",
           color: "bg-blue-600 hover:bg-blue-700",
           action: () => {
             setConfirmConfig(null);
             setTimeout(() => {
               showPrompt(
-                "ðŸ” CÃ³digo de administrador para editar campos:",
+                "ðŸ” Código de administrador para editar campos:",
                 (adminCode) => {
                   if (!adminCode) return;
                   _sha256(adminCode).then((h) => {
                     const storedCode = _ls.getItem("siso_admin_code_hash") || _H.adminCode;
                     if (h !== storedCode) {
-                      setTimeout(() => showAlert("â›” CÃ³digo incorrecto."), 100);
+                      setTimeout(() => showAlert("â›” Código incorrecto."), 100);
                       return;
                     }
                     // Mostrar selector de campo a editar
@@ -6010,18 +6010,18 @@ const handleLogin = (u, p) => {
                         msg: `âœï¸ Editar campo de HC cerrada\nPaciente: ${data.nombres}\n\nSeleccione el campo a modificar:`,
                         buttons: [
                           {
-                            label: "ðŸ“‹ Tipo de EvaluaciÃ³n (actual: " + (data.tipoExamen || "â€”") + ")",
+                            label: "ðŸ“‹ Tipo de Evaluación (actual: " + (data.tipoExamen || "â€”") + ")",
                             color: "bg-indigo-600 hover:bg-indigo-700",
                             action: () => {
                               setConfirmConfig(null);
                               setTimeout(() => {
                                 showPrompt(
-                                  `Nuevo tipo de evaluaciÃ³n:\n(Actual: ${data.tipoExamen || "â€”"})\n\nOpciones: INGRESO, PERIÃ“DICO, EGRESO, POST-INCAPACIDAD, SEGUIMIENTO, RETIRO`,
+                                  `Nuevo tipo de evaluación:\n(Actual: ${data.tipoExamen || "â€”"})\n\nOpciones: INGRESO, PERIÃ“DICO, EGRESO, POST-INCAPACIDAD, SEGUIMIENTO, RETIRO`,
                                   (nuevoValor) => {
                                     if (!nuevoValor || nuevoValor.trim().length < 3) return;
                                     setTimeout(() => {
                                       showPrompt(
-                                        "ðŸ“ Motivo del cambio (obligatorio â€” queda en auditorÃ­a):",
+                                        "ðŸ“ Motivo del cambio (obligatorio â€” queda en auditoría):",
                                         (motivo) => {
                                           if (!motivo || motivo.trim().length < 10) {
                                             setTimeout(() => showAlert("El motivo debe tener al menos 10 caracteres."), 100);
@@ -6053,7 +6053,7 @@ const handleLogin = (u, p) => {
                                             _sync(_patKey(_suid), JSON.stringify(updPats));
                                           }, 0);
                                           logAccess("EditCampoHCCerrada", data.id, `tipoExamen: ${data.tipoExamen} â†’ ${nuevoValor.trim().toUpperCase()} | Motivo: ${motivo}`);
-                                          setTimeout(() => showAlert(`âœ… Tipo de evaluaciÃ³n cambiado.\n\n${data.tipoExamen} â†’ ${nuevoValor.trim().toUpperCase()}\nMotivo: ${motivo}\n\nRegistrado en auditorÃ­a.`), 100);
+                                          setTimeout(() => showAlert(`âœ… Tipo de evaluación cambiado.\n\n${data.tipoExamen} â†’ ${nuevoValor.trim().toUpperCase()}\nMotivo: ${motivo}\n\nRegistrado en auditoría.`), 100);
                                         }
                                       );
                                     }, 150);
@@ -6074,7 +6074,7 @@ const handleLogin = (u, p) => {
                                     if (!nuevoValor || nuevoValor.trim().length < 3) return;
                                     setTimeout(() => {
                                       showPrompt(
-                                        "ðŸ“ Motivo del cambio (obligatorio â€” queda en auditorÃ­a):",
+                                        "ðŸ“ Motivo del cambio (obligatorio â€” queda en auditoría):",
                                         (motivo) => {
                                           if (!motivo || motivo.trim().length < 10) {
                                             setTimeout(() => showAlert("El motivo debe tener al menos 10 caracteres."), 100);
@@ -6106,7 +6106,7 @@ const handleLogin = (u, p) => {
                                             _sync(_patKey(_suid), JSON.stringify(updPats));
                                           }, 0);
                                           logAccess("EditCampoHCCerrada", data.id, `empresaNombre: ${data.empresaNombre} â†’ ${nuevoValor.trim()} | Motivo: ${motivo}`);
-                                          setTimeout(() => showAlert(`âœ… Empresa cambiada.\n\n${data.empresaNombre} â†’ ${nuevoValor.trim()}\nMotivo: ${motivo}\n\nRegistrado en auditorÃ­a.`), 100);
+                                          setTimeout(() => showAlert(`âœ… Empresa cambiada.\n\n${data.empresaNombre} â†’ ${nuevoValor.trim()}\nMotivo: ${motivo}\n\nRegistrado en auditoría.`), 100);
                                         }
                                       );
                                     }, 150);
@@ -6116,18 +6116,18 @@ const handleLogin = (u, p) => {
                             }
                           },
                           {
-                            label: "ðŸ”¬ Ã‰nfasis (actual: " + (data.enfasisExamen || "â€”") + ")",
+                            label: "ðŸ”¬ Énfasis (actual: " + (data.enfasisExamen || "â€”") + ")",
                             color: "bg-purple-600 hover:bg-purple-700",
                             action: () => {
                               setConfirmConfig(null);
                               setTimeout(() => {
                                 showPrompt(
-                                  `Nuevo Ã©nfasis:\n(Actual: ${data.enfasisExamen || "â€”"})\n\nOpciones: GENERAL, ALTURAS, ALIMENTOS, CONFINADOS, OSTEOMUSCULAR, CORAZON`,
+                                  `Nuevo énfasis:\n(Actual: ${data.enfasisExamen || "â€”"})\n\nOpciones: GENERAL, ALTURAS, ALIMENTOS, CONFINADOS, OSTEOMUSCULAR, CORAZON`,
                                   (nuevoValor) => {
                                     if (!nuevoValor || nuevoValor.trim().length < 3) return;
                                     setTimeout(() => {
                                       showPrompt(
-                                        "ðŸ“ Motivo del cambio (obligatorio â€” queda en auditorÃ­a):",
+                                        "ðŸ“ Motivo del cambio (obligatorio â€” queda en auditoría):",
                                         (motivo) => {
                                           if (!motivo || motivo.trim().length < 10) {
                                             setTimeout(() => showAlert("El motivo debe tener al menos 10 caracteres."), 100);
@@ -6159,7 +6159,7 @@ const handleLogin = (u, p) => {
                                             _sync(_patKey(_suid), JSON.stringify(updPats));
                                           }, 0);
                                           logAccess("EditCampoHCCerrada", data.id, `enfasisExamen: ${data.enfasisExamen} â†’ ${nuevoValor.trim().toUpperCase()} | Motivo: ${motivo}`);
-                                          setTimeout(() => showAlert(`âœ… Ã‰nfasis cambiado.\n\n${data.enfasisExamen} â†’ ${nuevoValor.trim().toUpperCase()}\nMotivo: ${motivo}\n\nRegistrado en auditorÃ­a.`), 100);
+                                          setTimeout(() => showAlert(`âœ… Énfasis cambiado.\n\n${data.enfasisExamen} â†’ ${nuevoValor.trim().toUpperCase()}\nMotivo: ${motivo}\n\nRegistrado en auditoría.`), 100);
                                         }
                                       );
                                     }, 150);
@@ -6212,12 +6212,12 @@ const handleLogin = (u, p) => {
         actividadEconomica: c.actividad,
       }));
   };
-  // NORMATIVO: Res. 1995/1999 Art. 15 - RETENCIÃ“N DOCUMENTAL MÃNIMA 20 AÃ‘OS
-  // Se reemplaza el borrado definitivo por ARCHIVADO para cumplir con la obligaciÃ³n de conservaciÃ³n
+  // NORMATIVO: Res. 1995/1999 Art. 15 - RETENCIÃ“N DOCUMENTAL MÍNIMA 20 AÃ‘OS
+  // Se reemplaza el borrado definitivo por ARCHIVADO para cumplir con la obligación de conservación
   const handleDeletePatient = (id) => {
     const pac = patientsList.find((p) => p.id === id);
     if (!pac) return;
-    // Si la HC tiene menos de 20 aÃ±os desde su creaciÃ³n, no se puede eliminar definitivamente
+    // Si la HC tiene menos de 20 años desde su creación, no se puede eliminar definitivamente
     const fechaCreacion = pac.fechaExamen || pac.fechaCreacion || null;
     const aniosTranscurridos = fechaCreacion
       ? new Date().getFullYear() - new Date(fechaCreacion).getFullYear()
@@ -6225,9 +6225,9 @@ const handleLogin = (u, p) => {
     if (pac.estadoHistoria === "Cerrada" || aniosTranscurridos < 20) {
       showConfirm(
         `âš ï¸ RETENCIÃ“N DOCUMENTAL (Res. 1995/1999 Art. 15)
-Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
-Â¿Desea ARCHIVAR el registro en vez de eliminarlo?
-(QuedarÃ¡ oculto pero conservado para cumplimiento legal)`,
+Esta historia clínica debe conservarse mínimo 20 años.
+¿Desea ARCHIVAR el registro en vez de eliminarlo?
+(Quedará oculto pero conservado para cumplimiento legal)`,
         () => {
           const upd = patientsList.map((p) =>
             p.id === id
@@ -6241,20 +6241,20 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
           );
           setPatientsList(upd);
           _syncPatients(upd);
-          logAccess("Archivado", id, "retenciÃ³n-documental", "GestiÃ³n HC");
+          logAccess("Archivado", id, "retención-documental", "Gestión HC");
           showAlert(
-            "âœ… Registro archivado correctamente.\nSe conserva segÃºn Res. 1995/1999 Art. 15 (20 aÃ±os mÃ­nimo)."
+            "âœ… Registro archivado correctamente.\nSe conserva según Res. 1995/1999 Art. 15 (20 años mínimo)."
           );
         }
       );
     } else {
       showConfirm(
-        "Â¿Eliminar este registro? Han transcurrido mÃ¡s de 20 aÃ±os desde su creaciÃ³n.",
+        "¿Eliminar este registro? Han transcurrido más de 20 años desde su creación.",
         () => {
           const upd = patientsList.filter((p) => p.id !== id);
           setPatientsList(upd);
           _syncPatients(upd);
-          logAccess("Eliminacion", id, "borrado-definitivo", "GestiÃ³n HC");
+          logAccess("Eliminacion", id, "borrado-definitivo", "Gestión HC");
         }
       );
     }
@@ -6288,7 +6288,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
         },
       };
     });
-    // Leer keys desde sessionStorage para capturar las mÃ¡s recientes (incluye sesiÃ³n actual)
+    // Leer keys desde sessionStorage para capturar las más recientes (incluye sesión actual)
     const savedKeys = sps("siso_ai_keys", aiConfig.keys || {});
     const aiConfigBackup = { ...aiConfig, keys: savedKeys };
     const backup = {
@@ -6317,33 +6317,33 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
     setBackupModalData({
       json: JSON.stringify(backup, null, 2),
       filename: backupFilename,
-      summary: `${patientsList.length} pacientes Â· ${companies.length} empresas Â· ${usersList.length} usuarios Â· ${sigsCount} firma(s) Â· ${customMeds.length} meds personalizados`,
+      summary: `${patientsList.length} pacientes · ${companies.length} empresas · ${usersList.length} usuarios · ${sigsCount} firma(s) · ${customMeds.length} meds personalizados`,
     });
   };
   const handleImportData = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    // SEGURIDAD FIX 6: Validar tipo MIME y tamaÃ±o antes de leer
+    // SEGURIDAD FIX 6: Validar tipo MIME y tamaño antes de leer
     if (
       file.type &&
       file.type !== "application/json" &&
       !file.name.endsWith(".json")
     ) {
       showAlert(
-        "âŒ Archivo invÃ¡lido. Solo se permiten archivos .json de backup de OCUPASALUD."
+        "âŒ Archivo inválido. Solo se permiten archivos .json de backup de OCUPASALUD."
       );
       return;
     }
     if (file.size > 10 * 1024 * 1024) {
-      // 10 MB mÃ¡ximo
-      showAlert("âŒ Archivo demasiado grande (mÃ¡ximo 10 MB).");
+      // 10 MB máximo
+      showAlert("âŒ Archivo demasiado grande (máximo 10 MB).");
       return;
     }
     const reader = new FileReader();
     reader.onload = async (ev) => {
       try {
         const d = JSON.parse(ev.target.result);
-        // SEGURIDAD: validar estructura mÃ­nima del backup
+        // SEGURIDAD: validar estructura mínima del backup
         const hasKnownKeys =
           d &&
           typeof d === "object" &&
@@ -6415,7 +6415,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
             _sync("siso_doctor_signature", activeRestored.doctorData.signature);
           }
         }
-        // ConfiguraciÃ³n IA - FIX C-03: keys a sessionStorage, proveedor a localStorage
+        // Configuración IA - FIX C-03: keys a sessionStorage, proveedor a localStorage
         if (d.aiConfig) {
           setAiConfig(d.aiConfig);
           _ss.setItem("siso_ai_keys", JSON.stringify(d.aiConfig.keys || {}));
@@ -6478,7 +6478,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
               tipoExamen: p.tipoExamen || "",
               enfasisExamen: p.enfasisExamen || "GENERAL",
               fechaExamen: p.fechaExamen || "",
-              vigencia: p.vigencia || "1 aÃ±o",
+              vigencia: p.vigencia || "1 año",
               conceptoAptitud: p.conceptoAptitud || "",
               restricciones: p.analisisRestricciones || p.restricciones || "",
               restriccionesChecklist: p.restriccionesChecklist || {},
@@ -6500,12 +6500,12 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                 nombre:
                   activeDoctorData?.nombre ||
                   currentUser?.name ||
-                  "MÃ‰DICO OCUPACIONAL",
+                  "MÉDICO OCUPACIONAL",
                 titulo:
                   activeDoctorData?.titulo ||
-                  "MÃ©dico Especialista en Salud Ocupacional",
+                  "Médico Especialista en Salud Ocupacional",
                 licencia: activeDoctorData?.licencia || "--",
-                ciudad: activeDoctorData?.ciudad || "PopayÃ¡n",
+                ciudad: activeDoctorData?.ciudad || "Popayán",
                 email: activeDoctorData?.email || "",
               },
               _firma: activeSignature || "",
@@ -6517,30 +6517,30 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                 "siso_portal_doc_" + p.docNumero.replace(/\s/g, ""),
                 portalData
               );
-            // compatibilidad cÃ³digos viejos CV-
+            // compatibilidad códigos viejos CV-
             if (!code.startsWith("CV-"))
               await _sbSet("siso_portal_CV-" + code, portalData);
             synced++;
           }
           showAlert(
-            `âœ… RestauraciÃ³n completada.\nðŸ“ ${
+            `âœ… Restauración completada.\nðŸ“ ${
               (d.patients || []).length
-            } pacientes Â· ${(d.companies || []).length} empresas Â· ${
+            } pacientes · ${(d.companies || []).length} empresas · ${
               (d.users || []).length
-            } usuarios\nâœï¸ ${sigsRestored} firma(s) Â· ðŸ§¾ ${billsR} cuentas Â· ðŸ“Š ${repsR} informes restaurados\nâ˜ï¸ ${synced} certificado(s) sincronizados al Portal del Trabajador`
+            } usuarios\nâœï¸ ${sigsRestored} firma(s) · ðŸ§¾ ${billsR} cuentas · ðŸ“Š ${repsR} informes restaurados\nâ˜ï¸ ${synced} certificado(s) sincronizados al Portal del Trabajador`
           );
         } else {
           showAlert(
-            `âœ… RestauraciÃ³n completada.\nðŸ“ ${
+            `âœ… Restauración completada.\nðŸ“ ${
               (d.patients || []).length
-            } pacientes Â· ${(d.companies || []).length} empresas Â· ${
+            } pacientes · ${(d.companies || []).length} empresas · ${
               (d.users || []).length
-            } usuarios\nâœï¸ ${sigsRestored} firma(s) Â· ðŸ§¾ ${billsR} cuentas Â· ðŸ“Š ${repsR} informes restaurados`
+            } usuarios\nâœï¸ ${sigsRestored} firma(s) · ðŸ§¾ ${billsR} cuentas · ðŸ“Š ${repsR} informes restaurados`
           );
         }
       } catch (err) {
         showAlert(
-          "Error al leer el archivo de backup. Verifique que sea un archivo JSON vÃ¡lido de OCUPASALUD."
+          "Error al leer el archivo de backup. Verifique que sea un archivo JSON válido de OCUPASALUD."
         );
       }
     };
@@ -6589,7 +6589,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
   const selectPatientSuggestion = (p) => {
     if (p.historyCount > 0) setHistoryNotification(p.historyCount);
     else setHistoryNotification(null);
-    // Memoria de antecedentes: copia todos los datos clÃ­nicos previos del paciente
+    // Memoria de antecedentes: copia todos los datos clínicos previos del paciente
     setData((prev) => ({
       ...prev,
       // â”€â”€ Datos personales â”€â”€
@@ -6636,7 +6636,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
         prev.empresaId !== "particular"
           ? prev.actividadEconomica
           : p.actividadEconomica || "",
-      // â”€â”€ ANTECEDENTES POR MEMORIA (nÃºcleo de la funciÃ³n) â”€â”€
+      // â”€â”€ ANTECEDENTES POR MEMORIA (núcleo de la función) â”€â”€
       antecedentesAgrupados: p.antecedentesAgrupados
         ? JSON.parse(JSON.stringify(p.antecedentesAgrupados))
         : initialOccupPatientState.antecedentesAgrupados,
@@ -6652,7 +6652,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
       riesgos: p.riesgos
         ? { ...p.riesgos }
         : { ...initialOccupPatientState.riesgos },
-      // â”€â”€ Pausa: NO copiar examen fÃ­sico, diagnÃ³sticos, conceptos - son propios de cada evaluaciÃ³n â”€â”€
+      // â”€â”€ Pausa: NO copiar examen físico, diagnósticos, conceptos - son propios de cada evaluación â”€â”€
     }));
     setPatientSuggestions([]);
   };
@@ -6663,7 +6663,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
     let records = patientsList.filter(
       (p) => p.docNumero === docNumber && p.fechaExamen
     );
-    // Para consultar certificados de TODOS los mÃ©dicos (solo certificados)
+    // Para consultar certificados de TODOS los médicos (solo certificados)
     if (searchAllDoctors) {
       try {
         const cloud = await _sbGetAll();
@@ -6703,7 +6703,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
       seg.items.forEach((item) => {
         if (checklist[item.id])
           selectedItems.push(
-            `â€¢ [PREVENTIVA] ${item.texto} -- ${item.normativa}`
+            `• [PREVENTIVA] ${item.texto} -- ${item.normativa}`
           );
       });
     });
@@ -6724,7 +6724,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
     const selectedItems = [];
     Object.entries(RECOMENDACIONES_CATALOG).forEach(([, cat]) => {
       cat.items.forEach((item) => {
-        if (checklist[item.id]) selectedItems.push(`â€¢ ${item.texto}`);
+        if (checklist[item.id]) selectedItems.push(`• ${item.texto}`);
       });
     });
     if (selectedItems.length > 0) {
@@ -6750,7 +6750,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
       document.head.removeChild(printStyle);
     }, 100);
   };
-  // â•â• FIX: Imprimir HC como documento HTML limpio (sin sobreposiciÃ³n) â•â•
+  // â•â• FIX: Imprimir HC como documento HTML limpio (sin sobreposición) â•â•
   const _printHCClean = () => {
     const _e = (v) => String(v == null ? "" : v).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     const _nl = (v) => _e(v).replace(/\n/g, "<br/>");
@@ -6763,8 +6763,8 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
       const s = Array.isArray(txt) ? txt.join("\n") : String(txt || "");
       if (!s.trim()) return "";
       const lines = s.split("\n").map(l => l.trim()).filter(Boolean);
-      if (lines.some(l => /^[â€¢*\-\d]/.test(l))) {
-        return '<ul style="margin:4px 0;padding-left:16px;">' + lines.map(l => '<li style="margin-bottom:2px;font-size:9pt;">' + _e(l).replace(/^[â€¢*\-]+\s*/, "").replace(/^\d+\.\s*/, "") + '</li>').join("") + '</ul>';
+      if (lines.some(l => /^[•*\-\d]/.test(l))) {
+        return '<ul style="margin:4px 0;padding-left:16px;">' + lines.map(l => '<li style="margin-bottom:2px;font-size:9pt;">' + _e(l).replace(/^[•*\-]+\s*/, "").replace(/^\d+\.\s*/, "") + '</li>').join("") + '</ul>';
       }
       return '<p style="font-size:9pt;white-space:pre-wrap;line-height:1.5;">' + _nl(s) + '</p>';
     };
@@ -6778,14 +6778,14 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
 
     // â•â•â• 1. HEADER â•â•â•
     var hdrLeft = '<div><div style="font-size:12pt;font-weight:900;color:#065f46;">' + _e(ipsName) + '</div>';
-    hdrLeft += '<p style="font-size:8pt;color:#555;">' + _e(doc.titulo || "MÃ©dico Especialista SST") + '</p>';
-    hdrLeft += '<p style="font-size:8pt;color:#555;">Lic: ' + _e(doc.licencia || "--") + ' Â· ' + _e(doc.ciudad || "") + '</p>';
-    if (doc.celular) hdrLeft += '<p style="font-size:7.5pt;color:#888;">Tel: ' + _e(doc.celular) + (doc.email ? " Â· " + _e(doc.email) : "") + '</p>';
+    hdrLeft += '<p style="font-size:8pt;color:#555;">' + _e(doc.titulo || "Médico Especialista SST") + '</p>';
+    hdrLeft += '<p style="font-size:8pt;color:#555;">Lic: ' + _e(doc.licencia || "--") + ' · ' + _e(doc.ciudad || "") + '</p>';
+    if (doc.celular) hdrLeft += '<p style="font-size:7.5pt;color:#888;">Tel: ' + _e(doc.celular) + (doc.email ? " · " + _e(doc.email) : "") + '</p>';
     hdrLeft += '</div>';
-    var hdrRight = '<div style="text-align:right;"><div style="font-size:13pt;font-weight:900;color:#065f46;text-transform:uppercase;">HISTORIA CLÃNICA ' + _e(dataType === "ocupacional" ? "OCUPACIONAL" : "GENERAL") + '</div>';
+    var hdrRight = '<div style="text-align:right;"><div style="font-size:13pt;font-weight:900;color:#065f46;text-transform:uppercase;">HISTORIA CLÍNICA ' + _e(dataType === "ocupacional" ? "OCUPACIONAL" : "GENERAL") + '</div>';
     hdrRight += '<p style="font-size:8.5pt;color:#555;">Fecha: ' + _e(data.fechaExamen || data.fechaConsulta || new Date().toLocaleDateString("es-CO")) + '</p>';
-    hdrRight += '<p style="font-size:8pt;color:#888;">Tipo: ' + _e(data.tipoExamen || "CONSULTA") + ' Â· ' + _e(data.enfasisExamen || "") + '</p>';
-    if (data.codigoVerificacion) hdrRight += '<p style="font-size:7.5pt;font-family:monospace;color:#065f46;font-weight:900;">CÃ³digo: ' + _e(data.codigoVerificacion) + '</p>';
+    hdrRight += '<p style="font-size:8pt;color:#888;">Tipo: ' + _e(data.tipoExamen || "CONSULTA") + ' · ' + _e(data.enfasisExamen || "") + '</p>';
+    if (data.codigoVerificacion) hdrRight += '<p style="font-size:7.5pt;font-family:monospace;color:#065f46;font-weight:900;">Código: ' + _e(data.codigoVerificacion) + '</p>';
     if (data.estado) hdrRight += '<p style="font-size:8pt;color:#555;">Estado: ' + _e(data.estado) + '</p>';
     hdrRight += '</div>';
     sections.push('<div style="display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #065f46;padding-bottom:10px;margin-bottom:12px;">' + hdrLeft + hdrRight + '</div>');
@@ -6793,10 +6793,10 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
     // â•â•â• 2. DATOS DEL PACIENTE â•â•â•
     sections.push(sec("ðŸ‘¤", "Datos del Paciente") + tb(
       r2("Nombres", data.nombres, "Documento", (data.docTipo||"CC")+" "+(data.docNumero||"")) +
-      r2("Fecha Nac.", data.fechaNacimiento, "Edad", (data.edad||"--")+" aÃ±os") +
-      r2("GÃ©nero", data.genero, "Estado Civil", data.estadoCivil) +
-      r2("Escolaridad", data.escolaridad, "Grupo SanguÃ­neo", data.grupoSanguineo) +
-      r2("Lateralidad", data.lateralidad, "Grupo Ã‰tnico", data.grupoEtnico) +
+      r2("Fecha Nac.", data.fechaNacimiento, "Edad", (data.edad||"--")+" años") +
+      r2("Género", data.genero, "Estado Civil", data.estadoCivil) +
+      r2("Escolaridad", data.escolaridad, "Grupo Sanguíneo", data.grupoSanguineo) +
+      r2("Lateralidad", data.lateralidad, "Grupo Étnico", data.grupoEtnico) +
       r2("Estrato", data.estrato, "Tipo Vivienda", data.tipoVivienda) +
       r2("Zona Residencia", data.zonaResidencia, "Residencia", data.residencia) +
       r2("Celular", data.celular||data.telefono, "Email", data.email) +
@@ -6808,18 +6808,18 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
     if (dataType === "ocupacional") {
       sections.push(sec("ðŸ¢", "Datos Laborales") + tb(
         r2("Empresa", data.empresaNombre||data.empresa, "NIT", data.empresaNit||data.NIT||"") +
-        r2("Actividad EconÃ³mica", data.actividadEconomica, "ARL", data.arl) +
+        r2("Actividad Económica", data.actividadEconomica, "ARL", data.arl) +
         r2("Nivel Riesgo ARL", data.nivelRiesgoARL, "Cargo", data.cargo) +
         r2("Dependencia", data.dependencia, "Tipo Contrato", data.tipoContrato) +
-        r2("Turno Trabajo", data.turnoTrabajo, "AntigÃ¼edad Empresa", data.antiguedadEmpresa) +
-        r2("Tipo Examen", data.tipoExamen, "Ã‰nfasis", data.enfasisExamen)
+        r2("Turno Trabajo", data.turnoTrabajo, "Antigüedad Empresa", data.antiguedadEmpresa) +
+        r2("Tipo Examen", data.tipoExamen, "Énfasis", data.enfasisExamen)
       ));
     }
 
     // â•â•â• 4. FACTORES DE RIESGO â•â•â•
     var riesgos = data.riesgos || {};
     var riesgoCategories = ["fisicos","quimicos","biologicos","mecanicos","biomecanicos","psicosocial","seguridad","locativos"];
-    var riesgoLabels = {fisicos:"FÃ­sicos",quimicos:"QuÃ­micos",biologicos:"BiolÃ³gicos",mecanicos:"MecÃ¡nicos",biomecanicos:"BiomecÃ¡nicos",psicosocial:"Psicosocial",seguridad:"Seguridad",locativos:"Locativos"};
+    var riesgoLabels = {fisicos:"Físicos",quimicos:"Químicos",biologicos:"Biológicos",mecanicos:"Mecánicos",biomecanicos:"Biomecánicos",psicosocial:"Psicosocial",seguridad:"Seguridad",locativos:"Locativos"};
     var riesgoPills = "";
     riesgoCategories.forEach(function(cat) {
       var val = riesgos[cat];
@@ -6850,11 +6850,11 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
       sections.push(sec("ðŸ©º", "Motivo de Consulta / Enfermedad Actual") + '<div style="padding:6px 10px;">' + motivoHtml + '</div>');
     }
 
-    // â•â•â• 6. HÃBITOS â•â•â•
+    // â•â•â• 6. HÁBITOS â•â•â•
     var hab = data.habitos || {};
-    sections.push(sec("ðŸš¬", "HÃ¡bitos") + tb(
+    sections.push(sec("ðŸš¬", "Hábitos") + tb(
       r2("Tabaquismo", hab.fuma||"No", "Alcohol", hab.alcohol||"No") +
-      r2("Actividad FÃ­sica", hab.deporte||"No", "Sustancias Psicoactivas", hab.psicoactivas||hab.drogas||"No") +
+      r2("Actividad Física", hab.deporte||"No", "Sustancias Psicoactivas", hab.psicoactivas||hab.drogas||"No") +
       (hab.detalle ? r1("Detalle", hab.detalle) : "")
     ));
 
@@ -6863,11 +6863,11 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
     var antRows = "";
     // Antecedentes Agrupados
     var antCats = [
-      ["PatolÃ³gicos", antAgrup.patologicos],
-      ["QuirÃºrgicos", antAgrup.quirurgicos],
-      ["TraumÃ¡ticos", antAgrup.traumaticos],
-      ["FarmacolÃ³gicos", antAgrup.farmacologicos],
-      ["AlÃ©rgicos", antAgrup.alergicos]
+      ["Patológicos", antAgrup.patologicos],
+      ["Quirúrgicos", antAgrup.quirurgicos],
+      ["Traumáticos", antAgrup.traumaticos],
+      ["Farmacológicos", antAgrup.farmacologicos],
+      ["Alérgicos", antAgrup.alergicos]
     ];
     antCats.forEach(function(pair) {
       var label = pair[0];
@@ -6876,7 +6876,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
       var hasData = det && det !== "Niega" && det !== "No";
       antRows += '<tr><th style="background:#d1fae5;font-weight:700;width:28%;font-size:8.5pt;padding:4px 8px;border:1px solid #ccc;">' + _e(label) + '</th>';
       if (hasData) {
-        antRows += '<td style="font-size:8.5pt;padding:4px 8px;border:1px solid #ccc;color:#dc2626;font-weight:700;" colspan="3">SÃ­ â€” ' + _e(det) + '</td></tr>';
+        antRows += '<td style="font-size:8.5pt;padding:4px 8px;border:1px solid #ccc;color:#dc2626;font-weight:700;" colspan="3">Sí â€” ' + _e(det) + '</td></tr>';
       } else {
         antRows += '<td style="font-size:8.5pt;padding:4px 8px;border:1px solid #ccc;color:#065f46;" colspan="3">Niega</td></tr>';
       }
@@ -6885,10 +6885,10 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
     var antGeneral = [
       ["Personales", data.antecedentes?.personales || data.antecedentesPersonales],
       ["Familiares", data.antecedentes?.familiares || data.antecedentesFamiliares],
-      ["Gineco-obstÃ©tricos", data.antecedentes?.ginecologicos || data.antecedentesGinecoObstetricos],
+      ["Gineco-obstétricos", data.antecedentes?.ginecologicos || data.antecedentesGinecoObstetricos],
       ["Ocupacionales", data.antecedentesOcupacionales],
       ["Hospitalarios", data.antecedentesHospitalarios],
-      ["ToxicolÃ³gicos", data.antecedentesToxicologicos]
+      ["Toxicológicos", data.antecedentesToxicologicos]
     ];
     antGeneral.forEach(function(pair) {
       if (pair[1]) antRows += r1(pair[0], pair[1]);
@@ -6904,11 +6904,11 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
 
     // â•â•â• 8. SIGNOS VITALES â•â•â•
     sections.push(sec("ðŸ”", "Signos Vitales") + tb(
-      r2("TensiÃ³n Arterial", data.ta||data.tensionArterial||"--", "F. CardÃ­aca", (data.fc||data.frecuenciaCardiaca||"--")+" lpm") +
-      r2("F. Respiratoria", (data.fr||data.frecuenciaRespiratoria||"--")+" rpm", "Temperatura", (data.temp||data.temperatura||"--")+"Â°C") +
+      r2("Tensión Arterial", data.ta||data.tensionArterial||"--", "F. Cardíaca", (data.fc||data.frecuenciaCardiaca||"--")+" lpm") +
+      r2("F. Respiratoria", (data.fr||data.frecuenciaRespiratoria||"--")+" rpm", "Temperatura", (data.temp||data.temperatura||"--")+"°C") +
       r2("Peso", (data.peso||"--")+" kg", "Talla", (data.talla||"--")+" cm") +
-      r2("IMC", data.imc||"--", "ClasificaciÃ³n IMC", data.clasificacionIMC||"--") +
-      r2("SpO2", (data.satO2||"--")+"%", "PerÃ­metro Abdominal", (data.perimetroAbdominal||"--")+" cm")
+      r2("IMC", data.imc||"--", "Clasificación IMC", data.clasificacionIMC||"--") +
+      r2("SpO2", (data.satO2||"--")+"%", "Perímetro Abdominal", (data.perimetroAbdominal||"--")+" cm")
     ));
 
     // â•â•â• 9. AGUDEZA VISUAL â•â•â•
@@ -6916,24 +6916,24 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
     if (av.lejanaOD || av.lejanaOI || av.proximaOD || av.proximaOI) {
       sections.push(sec("ðŸ‘ï¸", "Agudeza Visual") + tb(
         r2("Lejana OD", av.lejanaOD||"--", "Lejana OI", av.lejanaOI||"--") +
-        r2("PrÃ³xima OD", av.proximaOD||"--", "PrÃ³xima OI", av.proximaOI||"--") +
-        r1("CorrecciÃ³n", av.correccion||"Sin correcciÃ³n")
+        r2("Próxima OD", av.proximaOD||"--", "Próxima OI", av.proximaOI||"--") +
+        r1("Corrección", av.correccion||"Sin corrección")
       ));
     }
 
-    // â•â•â• 10. EXAMEN FÃSICO POR SISTEMAS â€” TODOS 15 SISTEMAS â•â•â•
+    // â•â•â• 10. EXAMEN FÍSICO POR SISTEMAS â€” TODOS 15 SISTEMAS â•â•â•
     var efSis = data.examenFisicoSistemas || {};
     var allSystems = ["cabeza","ojos","oidos","nariz","boca","cuello","torax","corazon","pulmones","abdomen","genitourinario","columna","extremidades","piel","neurologico"];
-    var sysLabels = {cabeza:"Cabeza",ojos:"Ojos",oidos:"OÃ­dos",nariz:"Nariz",boca:"Boca/Faringe",cuello:"Cuello",torax:"TÃ³rax",corazon:"CorazÃ³n",pulmones:"Pulmones",abdomen:"Abdomen",genitourinario:"Genitourinario",columna:"Columna",extremidades:"Extremidades",piel:"Piel/Faneras",neurologico:"NeurolÃ³gico"};
+    var sysLabels = {cabeza:"Cabeza",ojos:"Ojos",oidos:"Oídos",nariz:"Nariz",boca:"Boca/Faringe",cuello:"Cuello",torax:"Tórax",corazon:"Corazón",pulmones:"Pulmones",abdomen:"Abdomen",genitourinario:"Genitourinario",columna:"Columna",extremidades:"Extremidades",piel:"Piel/Faneras",neurologico:"Neurológico"};
     var sysRows = allSystems.map(function(k) {
       var v = efSis[k] || {};
       var label = sysLabels[k] || k;
       var estado = v.estado || "Normal";
       var hallazgo = v.hallazgo || "";
-      var isAnormal = estado === "Anormal" || (hallazgo && hallazgo !== "Sin hallazgos patolÃ³gicos");
+      var isAnormal = estado === "Anormal" || (hallazgo && hallazgo !== "Sin hallazgos patológicos");
       var color = isAnormal ? "#dc2626" : "#065f46";
       var bgColor = isAnormal ? "#fef2f2" : "#f0fdf4";
-      var descNormal = NORMAL_DESCRIPTIONS_SYSTEMS[k] || "Sin hallazgos patolÃ³gicos";
+      var descNormal = NORMAL_DESCRIPTIONS_SYSTEMS[k] || "Sin hallazgos patológicos";
       var descFinal = isAnormal ? (hallazgo || "Hallazgo registrado") : (hallazgo || descNormal);
       return '<tr style="background:' + bgColor + '"><td style="font-size:8.5pt;padding:4px 8px;border:1px solid #ccc;width:25%;font-weight:700;">' + _e(label) + '</td><td style="font-size:8.5pt;padding:4px 8px;border:1px solid #ccc;width:15%;color:' + color + ';font-weight:700;">' + _e(estado) + '</td><td style="font-size:8.5pt;padding:4px 8px;border:1px solid #ccc;color:' + color + ';">' + _e(descFinal) + '</td></tr>';
     }).join("");
@@ -6948,14 +6948,14 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
         sysRows += '<tr><td style="font-size:8.5pt;padding:4px 8px;border:1px solid #ccc;width:25%;font-weight:700;">' + _e(k) + '</td><td style="font-size:8.5pt;padding:4px 8px;border:1px solid #ccc;width:15%;color:' + color + ';font-weight:700;">' + _e(estado) + '</td><td style="font-size:8.5pt;padding:4px 8px;border:1px solid #ccc;">' + _e(hallazgo) + '</td></tr>';
       }
     });
-    sections.push(sec("ðŸ¥", "Examen FÃ­sico por Sistemas") + '<table style="width:100%;border-collapse:collapse;margin-top:4px;"><thead><tr><th style="background:#065f46;color:white;padding:4px 8px;font-size:8pt;text-align:left;">Sistema</th><th style="background:#065f46;color:white;padding:4px 8px;font-size:8pt;">Estado</th><th style="background:#065f46;color:white;padding:4px 8px;font-size:8pt;text-align:left;">Hallazgo</th></tr></thead><tbody>' + sysRows + '</tbody></table>');
+    sections.push(sec("ðŸ¥", "Examen Físico por Sistemas") + '<table style="width:100%;border-collapse:collapse;margin-top:4px;"><thead><tr><th style="background:#065f46;color:white;padding:4px 8px;font-size:8pt;text-align:left;">Sistema</th><th style="background:#065f46;color:white;padding:4px 8px;font-size:8pt;">Estado</th><th style="background:#065f46;color:white;padding:4px 8px;font-size:8pt;text-align:left;">Hallazgo</th></tr></thead><tbody>' + sysRows + '</tbody></table>');
 
-    // â•â•â• 11. MANIOBRAS ORTOPÃ‰DICAS â€” Solo si Ã©nfasis OSTEOMUSCULAR â•â•â•
+    // â•â•â• 11. MANIOBRAS ORTOPÉDICAS â€” Solo si énfasis OSTEOMUSCULAR â•â•â•
     var _enfasis = (data.enfasisExamen || "").toUpperCase();
     var _mostrarManiobras = _enfasis === "OSTEOMUSCULAR" || _enfasis.includes("OSTEO");
     var manio = data.maniobrasOsteomusculares || {};
     var allManiobras = ["phalen","tinel","finkelstein","jobe","lasegue","adams","wells","schober"];
-    var manioLabels = {phalen:"Phalen",tinel:"Tinel",finkelstein:"Finkelstein",jobe:"Jobe",lasegue:"LasÃ¨gue",adams:"Adams",wells:"Wells",schober:"Schober"};
+    var manioLabels = {phalen:"Phalen",tinel:"Tinel",finkelstein:"Finkelstein",jobe:"Jobe",lasegue:"Lasègue",adams:"Adams",wells:"Wells",schober:"Schober"};
     var manioRows = allManiobras.map(function(k) {
       var v = manio[k] || {};
       var label = manioLabels[k] || k;
@@ -6979,66 +6979,66 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
       }
     });
     if (_mostrarManiobras) {
-      sections.push(sec("ðŸ¦´", "Maniobras OrtopÃ©dicas â€” Ã‰nfasis Osteomuscular") + '<table style="width:100%;border-collapse:collapse;margin-top:4px;"><thead><tr><th style="background:#065f46;color:white;padding:4px 8px;font-size:8pt;text-align:left;">Maniobra</th><th style="background:#065f46;color:white;padding:4px 8px;font-size:8pt;">Resultado</th><th style="background:#065f46;color:white;padding:4px 8px;font-size:8pt;text-align:left;">Hallazgo</th></tr></thead><tbody>' + manioRows + '</tbody></table>');
+      sections.push(sec("ðŸ¦´", "Maniobras Ortopédicas â€” Énfasis Osteomuscular") + '<table style="width:100%;border-collapse:collapse;margin-top:4px;"><thead><tr><th style="background:#065f46;color:white;padding:4px 8px;font-size:8pt;text-align:left;">Maniobra</th><th style="background:#065f46;color:white;padding:4px 8px;font-size:8pt;">Resultado</th><th style="background:#065f46;color:white;padding:4px 8px;font-size:8pt;text-align:left;">Hallazgo</th></tr></thead><tbody>' + manioRows + '</tbody></table>');
     }
 
-    // â•â•â• 12. Ã‰NFASIS ESPECIALES â€” Solo se imprime el Ã©nfasis que tiene la HC â•â•â•
+    // â•â•â• 12. ÉNFASIS ESPECIALES â€” Solo se imprime el énfasis que tiene la HC â•â•â•
     var _enfasisHC = (data.enfasisExamen || "").toUpperCase();
-    // ALTURAS â€” solo si el Ã©nfasis es ALTURAS
+    // ALTURAS â€” solo si el énfasis es ALTURAS
     var alt = data.examenAlturas || {};
     if (_enfasisHC === "ALTURAS" && (alt.romberg || alt.marcha || alt.vertigo || alt.coordinacion || alt.nistagmus || alt.testMiedo || alt.observaciones)) {
-      sections.push(sec("ðŸ§—", "Ã‰nfasis: Trabajo en Alturas") + tb(
+      sections.push(sec("ðŸ§—", "Énfasis: Trabajo en Alturas") + tb(
         r2("Romberg", alt.romberg||"--", "Marcha", alt.marcha||"--") +
-        r2("VÃ©rtigo", alt.vertigo||"No", "CoordinaciÃ³n", alt.coordinacion||"--") +
+        r2("Vértigo", alt.vertigo||"No", "Coordinación", alt.coordinacion||"--") +
         r2("Nistagmus", alt.nistagmus||"No", "Test de Miedo", alt.testMiedo||"--") +
         (alt.observaciones ? r1("Observaciones", alt.observaciones) : "")
       ));
     }
-    // ALIMENTOS â€” solo si el Ã©nfasis es ALIMENTOS
+    // ALIMENTOS â€” solo si el énfasis es ALIMENTOS
     var alim = data.examenAlimentos || {};
     if (_enfasisHC === "ALIMENTOS" && (alim.pielFaneras || alim.orl || alim.gastrointestinal || alim.observaciones)) {
-      sections.push(sec("ðŸ½ï¸", "Ã‰nfasis: ManipulaciÃ³n de Alimentos") + tb(
+      sections.push(sec("ðŸ½ï¸", "Énfasis: Manipulación de Alimentos") + tb(
         r2("Piel y Faneras", alim.pielFaneras||"--", "ORL", alim.orl||"--") +
         r1("Gastrointestinal", alim.gastrointestinal||"--") +
         (alim.observaciones ? r1("Observaciones", alim.observaciones) : "")
       ));
     }
-    // CONFINADOS â€” solo si el Ã©nfasis es CONFINADOS
+    // CONFINADOS â€” solo si el énfasis es CONFINADOS
     var conf = data.examenConfinados || {};
     if (_enfasisHC === "CONFINADOS" && (conf.cardiovascular || conf.respiratorio || conf.neurologico || conf.psicologico || conf.otorrino || conf.usoEpp || conf.observaciones)) {
-      sections.push(sec("ðŸ”’", "Ã‰nfasis: Espacios Confinados") + tb(
+      sections.push(sec("ðŸ”’", "Énfasis: Espacios Confinados") + tb(
         r2("Cardiovascular", conf.cardiovascular||"--", "Respiratorio", conf.respiratorio||"--") +
-        r2("NeurolÃ³gico", conf.neurologico||"--", "PsicolÃ³gico", conf.psicologico||"--") +
+        r2("Neurológico", conf.neurologico||"--", "Psicológico", conf.psicologico||"--") +
         r2("Otorrino", conf.otorrino||"--", "Uso EPP", conf.usoEpp||"--") +
         (conf.hallazgosCardio ? r1("Hallazgos Cardio", conf.hallazgosCardio) : "") +
         (conf.observaciones ? r1("Observaciones", conf.observaciones) : "")
       ));
     }
-    // OSTEOMUSCULAR â€” solo si el Ã©nfasis es OSTEOMUSCULAR
+    // OSTEOMUSCULAR â€” solo si el énfasis es OSTEOMUSCULAR
     var osteo = data.examenOsteomuscular || {};
     if (_enfasisHC === "OSTEOMUSCULAR" && (osteo.columna || osteo.miembrosSup || osteo.miembrosInf || osteo.muscular || osteo.articular || osteo.postural || osteo.hallazgos || osteo.diagnosticoFuncional)) {
-      sections.push(sec("ðŸ’ª", "Ã‰nfasis: Osteomuscular") + tb(
+      sections.push(sec("ðŸ’ª", "Énfasis: Osteomuscular") + tb(
         r2("Columna", osteo.columna||"--", "Miembros Superiores", osteo.miembrosSup||"--") +
         r2("Miembros Inferiores", osteo.miembrosInf||"--", "Muscular", osteo.muscular||"--") +
         r2("Articular", osteo.articular||"--", "Postural", osteo.postural||"--") +
         (osteo.hallazgos ? r1("Hallazgos", osteo.hallazgos) : "") +
-        (osteo.diagnosticoFuncional ? r1("DiagnÃ³stico Funcional", osteo.diagnosticoFuncional) : "")
+        (osteo.diagnosticoFuncional ? r1("Diagnóstico Funcional", osteo.diagnosticoFuncional) : "")
       ));
     }
-    // CORAZÃ“N â€” solo si el Ã©nfasis es CORAZON
+    // CORAZÃ“N â€” solo si el énfasis es CORAZON
     var cora = data.examenCorazon || {};
     if (_enfasisHC === "CORAZON" && (cora.frecuenciaCardiaca || cora.presionArterial || cora.ritmoyTonos || cora.pulsos || cora.edemas || cora.perfusionPeriferica || cora.riesgoCV || cora.hallazgos || cora.restricciones)) {
-      sections.push(sec("â¤ï¸", "Ã‰nfasis: Cardiovascular") + tb(
-        r2("F. CardÃ­aca", cora.frecuenciaCardiaca||"--", "PresiÃ³n Arterial", cora.presionArterial||"--") +
+      sections.push(sec("â¤ï¸", "Énfasis: Cardiovascular") + tb(
+        r2("F. Cardíaca", cora.frecuenciaCardiaca||"--", "Presión Arterial", cora.presionArterial||"--") +
         r2("Ritmo y Tonos", cora.ritmoyTonos||"--", "Pulsos", cora.pulsos||"--") +
-        r2("Edemas", cora.edemas||"No", "PerfusiÃ³n PerifÃ©rica", cora.perfusionPeriferica||"--") +
+        r2("Edemas", cora.edemas||"No", "Perfusión Periférica", cora.perfusionPeriferica||"--") +
         r2("IMC", cora.imc||data.imc||"--", "Riesgo CV", cora.riesgoCV||"--") +
         (cora.hallazgos ? r1("Hallazgos", cora.hallazgos) : "") +
         (cora.restricciones ? r1("Restricciones", cora.restricciones) : "")
       ));
     }
 
-    // â•â•â• 13. PARACLÃNICOS â•â•â•
+    // â•â•â• 13. PARACLÍNICOS â•â•â•
     var paraCheck = data.paraclinicosCheck || {};
     var paraKeys = Object.keys(paraCheck).filter(function(k) { return k !== "_aiSugeridos" && paraCheck[k]; });
     var examList = data.solicitudExamenes || [];
@@ -7048,18 +7048,18 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
         paraHtml += '<div style="padding:6px 10px;margin-bottom:6px;">' + paraKeys.map(function(k) { return pill(k, "#0d9488"); }).join("") + '</div>';
       }
       if (examList.length > 0) {
-        paraHtml += '<table style="width:100%;border-collapse:collapse;"><thead><tr><th style="background:#0d9488;color:white;padding:4px 8px;font-size:8pt;text-align:left;">NÂ°</th><th style="background:#0d9488;color:white;padding:4px 8px;font-size:8pt;text-align:left;">Examen / Procedimiento</th><th style="background:#0d9488;color:white;padding:4px 8px;font-size:8pt;text-align:center;">Urgente</th></tr></thead><tbody>';
+        paraHtml += '<table style="width:100%;border-collapse:collapse;"><thead><tr><th style="background:#0d9488;color:white;padding:4px 8px;font-size:8pt;text-align:left;">N°</th><th style="background:#0d9488;color:white;padding:4px 8px;font-size:8pt;text-align:left;">Examen / Procedimiento</th><th style="background:#0d9488;color:white;padding:4px 8px;font-size:8pt;text-align:center;">Urgente</th></tr></thead><tbody>';
         examList.forEach(function(ex, i) {
-          paraHtml += '<tr style="background:' + (i % 2 === 0 ? "#f0fdfa" : "white") + '"><td style="padding:4px 8px;font-size:8.5pt;border:1px solid #ccc;">' + (i+1) + '</td><td style="padding:4px 8px;font-size:8.5pt;border:1px solid #ccc;">' + _e(ex.nombre) + '</td><td style="padding:4px 8px;font-size:8.5pt;border:1px solid #ccc;text-align:center;">' + (ex.urgente ? "âš¡ SÃ" : "") + '</td></tr>';
+          paraHtml += '<tr style="background:' + (i % 2 === 0 ? "#f0fdfa" : "white") + '"><td style="padding:4px 8px;font-size:8.5pt;border:1px solid #ccc;">' + (i+1) + '</td><td style="padding:4px 8px;font-size:8.5pt;border:1px solid #ccc;">' + _e(ex.nombre) + '</td><td style="padding:4px 8px;font-size:8.5pt;border:1px solid #ccc;text-align:center;">' + (ex.urgente ? "âš¡ SÍ" : "") + '</td></tr>';
         });
         paraHtml += '</tbody></table>';
       }
-      sections.push(sec("ðŸ”¬", "ParaclÃ­nicos y ExÃ¡menes Solicitados") + paraHtml);
+      sections.push(sec("ðŸ”¬", "Paraclínicos y Exámenes Solicitados") + paraHtml);
     }
 
     // â•â•â• 14. DIAGNÃ“STICOS CIE-10 â•â•â•
     var dxList = data.diagnosticos?.length ? data.diagnosticos : [];
-    sections.push(sec("ðŸ¥", "DiagnÃ³sticos CIE-10") + tb(
+    sections.push(sec("ðŸ¥", "Diagnósticos CIE-10") + tb(
       r2("Dx Principal", data.diagnosticoPrincipal||"Z10.0", "Dx Secundario 1", data.diagnosticoSecundario1||"") +
       (data.diagnosticoSecundario2 ? r1("Dx Secundario 2", data.diagnosticoSecundario2) : "") +
       dxList.map(function(d,i) { return r1("Dx " + (i+1) + " (" + _e(d.tipo||"â€”") + ")", (d.cie10||"") + " " + (d.descripcion||"")); }).join("")
@@ -7112,12 +7112,12 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
       sections.push(restricHtml);
     }
 
-    // â•â•â• 18. ANÃLISIS CLÃNICO IA â•â•â•
-    if (data.analisisIA) sections.push(sec("ðŸ§ ", "AnÃ¡lisis ClÃ­nico IA") + '<div style="padding:6px 10px;font-size:9pt;white-space:pre-wrap;line-height:1.5;background:#fefce8;border:1px solid #fde68a;border-radius:4px;margin:4px 0;">' + _nl(data.analisisIA) + '</div>');
+    // â•â•â• 18. ANÁLISIS CLÍNICO IA â•â•â•
+    if (data.analisisIA) sections.push(sec("ðŸ§ ", "Análisis Clínico IA") + '<div style="padding:6px 10px;font-size:9pt;white-space:pre-wrap;line-height:1.5;background:#fefce8;border:1px solid #fde68a;border-radius:4px;margin:4px 0;">' + _nl(data.analisisIA) + '</div>');
 
     // â•â•â• 19. SVE â•â•â•
     if (data.sveRecomendado?.length > 0) {
-      sections.push(sec("ðŸ›¡ï¸", "Sistema de Vigilancia EpidemiolÃ³gica (SVE)") + '<ul style="padding-left:16px;margin:4px 0;">' + data.sveRecomendado.map(function(s) { return '<li style="font-size:9pt;margin-bottom:3px;">' + _e(typeof s === "string" ? s : (s.nombre || JSON.stringify(s))) + '</li>'; }).join("") + '</ul>');
+      sections.push(sec("ðŸ›¡ï¸", "Sistema de Vigilancia Epidemiológica (SVE)") + '<ul style="padding-left:16px;margin:4px 0;">' + data.sveRecomendado.map(function(s) { return '<li style="font-size:9pt;margin-bottom:3px;">' + _e(typeof s === "string" ? s : (s.nombre || JSON.stringify(s))) + '</li>'; }).join("") + '</ul>');
     }
 
     // â•â•â• 20. DERIVACIONES â•â•â•
@@ -7129,29 +7129,29 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
       sections.push(sec("ðŸ”—", "Derivaciones / Interconsultas") + '<table style="width:100%;border-collapse:collapse;"><thead><tr><th style="background:#2563eb;color:white;padding:4px 8px;font-size:8pt;">Especialidad</th><th style="background:#2563eb;color:white;padding:4px 8px;font-size:8pt;">Motivo</th><th style="background:#2563eb;color:white;padding:4px 8px;font-size:8pt;">Urgencia</th></tr></thead><tbody>' + derivRows + '</tbody></table>');
     }
 
-    // â•â•â• 21. FÃ“RMULA MÃ‰DICA â•â•â•
+    // â•â•â• 21. FÃ“RMULA MÉDICA â•â•â•
     var meds = data.formulaMedicamentos || [];
     var formulaTxt = data.formulaMedica || "";
     if (meds.length > 0 || formulaTxt) {
       var medHtml = "";
       if (meds.length > 0) {
-        medHtml += '<table style="width:100%;border-collapse:collapse;"><thead><tr><th style="background:#7c3aed;color:white;padding:4px 8px;font-size:8pt;">Medicamento</th><th style="background:#7c3aed;color:white;padding:4px 8px;font-size:8pt;">PresentaciÃ³n</th><th style="background:#7c3aed;color:white;padding:4px 8px;font-size:8pt;">Dosis</th><th style="background:#7c3aed;color:white;padding:4px 8px;font-size:8pt;">Frecuencia</th><th style="background:#7c3aed;color:white;padding:4px 8px;font-size:8pt;">DuraciÃ³n</th></tr></thead><tbody>';
+        medHtml += '<table style="width:100%;border-collapse:collapse;"><thead><tr><th style="background:#7c3aed;color:white;padding:4px 8px;font-size:8pt;">Medicamento</th><th style="background:#7c3aed;color:white;padding:4px 8px;font-size:8pt;">Presentación</th><th style="background:#7c3aed;color:white;padding:4px 8px;font-size:8pt;">Dosis</th><th style="background:#7c3aed;color:white;padding:4px 8px;font-size:8pt;">Frecuencia</th><th style="background:#7c3aed;color:white;padding:4px 8px;font-size:8pt;">Duración</th></tr></thead><tbody>';
         meds.forEach(function(m, i) {
           medHtml += '<tr style="background:' + (i % 2 === 0 ? "#faf5ff" : "white") + '"><td style="padding:4px 8px;border:1px solid #ccc;font-size:8.5pt;font-weight:700;">' + _e(m.nombre) + '</td><td style="padding:4px 8px;border:1px solid #ccc;font-size:8.5pt;">' + _e(m.presentacion) + '</td><td style="padding:4px 8px;border:1px solid #ccc;font-size:8.5pt;">' + _e(m.dosis) + '</td><td style="padding:4px 8px;border:1px solid #ccc;font-size:8.5pt;">' + _e(m.frecuencia) + '</td><td style="padding:4px 8px;border:1px solid #ccc;font-size:8.5pt;">' + _e(m.duracion) + '</td></tr>';
         });
         medHtml += '</tbody></table>';
       }
       if (formulaTxt) medHtml += '<div style="padding:6px 10px;margin-top:6px;">' + fmtList(formulaTxt) + '</div>';
-      sections.push(sec("ðŸ’Š", "FÃ³rmula MÃ©dica") + medHtml);
+      sections.push(sec("ðŸ’Š", "Fórmula Médica") + medHtml);
     }
 
     // â•â•â• 22. INCAPACIDAD â•â•â•
     var inc = data.incapacidad || {};
     if (inc.aplica || inc.dias > 0) {
-      sections.push(sec("ðŸ“‹", "Incapacidad MÃ©dica") + tb(
-        r2("DÃ­as", inc.dias||0, "Origen", inc.origen||"Enfermedad General") +
+      sections.push(sec("ðŸ“‹", "Incapacidad Médica") + tb(
+        r2("Días", inc.dias||0, "Origen", inc.origen||"Enfermedad General") +
         r2("Desde", inc.desde||"--", "Hasta", inc.hasta||"--") +
-        r1("DiagnÃ³stico CIE", inc.diagnosticoCIE||inc.diagnostico||"--")
+        r1("Diagnóstico CIE", inc.diagnosticoCIE||inc.diagnostico||"--")
       ));
     }
 
@@ -7179,14 +7179,14 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
     if (evols.length > 0) {
       var evolsHtml = evols.map(function(ev) {
         var h = '<div style="background:#faf5ff;border:1px solid #e9d5ff;border-radius:4px;padding:8px;margin:4px 0;font-size:8.5pt;">';
-        h += '<strong>' + _e(ev.fecha||"") + ' â€” ' + _e(ev.medico||"") + ' Â· CÃ³digo: ' + _e(ev.codigoEvolucion||"") + '</strong><br/>';
+        h += '<strong>' + _e(ev.fecha||"") + ' â€” ' + _e(ev.medico||"") + ' · Código: ' + _e(ev.codigoEvolucion||"") + '</strong><br/>';
         if (ev.motivoConsulta) h += _e(ev.motivoConsulta);
         if (ev.texto) h += '<br/>' + _nl(ev.texto);
         if (ev.nuevoConcept) h += '<br/><strong>Concepto:</strong> ' + _e(ev.nuevoConcept);
         h += '</div>';
         return h;
       }).join("");
-      sections.push(sec("ðŸ“œ", "Evoluciones ClÃ­nicas") + evolsHtml);
+      sections.push(sec("ðŸ“œ", "Evoluciones Clínicas") + evolsHtml);
     }
 
     // â•â•â• 26. FIRMA â•â•â•
@@ -7196,7 +7196,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
 
     // â•â•â• CÃ“DIGO VERIFICACIÃ“N â•â•â•
     if (data.codigoVerificacion) {
-      sections.push('<div style="text-align:center;margin-top:12px;background:#f0fdf4;border:1.5px solid #86efac;border-radius:6px;padding:8px;"><p style="font-size:7.5pt;font-weight:900;color:#6b7280;text-transform:uppercase;">Historia ClÃ­nica Firmada y Cerrada</p><p style="font-size:11pt;font-family:monospace;font-weight:900;color:#065f46;letter-spacing:2px;">' + _e(data.codigoVerificacion) + '</p></div>');
+      sections.push('<div style="text-align:center;margin-top:12px;background:#f0fdf4;border:1.5px solid #86efac;border-radius:6px;padding:8px;"><p style="font-size:7.5pt;font-weight:900;color:#6b7280;text-transform:uppercase;">Historia Clínica Firmada y Cerrada</p><p style="font-size:11pt;font-family:monospace;font-weight:900;color:#065f46;letter-spacing:2px;">' + _e(data.codigoVerificacion) + '</p></div>');
     }
 
     // â•â•â• ENSAMBLAR DOCUMENTO â•â•â•
@@ -7209,8 +7209,8 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
     w.document.close();
     w.focus();
   };
-  // â”€â”€ NavegaciÃ³n con historial -- permite â† Volver sin volver al login â”€â”€â”€â”€â”€â”€
-  // Helper: mostrar diÃ¡logo guardar-antes-de-salir si la HC tiene cambios pendientes
+  // â”€â”€ Navegación con historial -- permite â† Volver sin volver al login â”€â”€â”€â”€â”€â”€
+  // Helper: mostrar diálogo guardar-antes-de-salir si la HC tiene cambios pendientes
   const _maybeExitHC = (proceed) => {
     if (view === "historia" && _hcDirty && (data.id || data.nombres)) {
       _setExitHcConfirm({ onProceed: proceed });
@@ -7223,9 +7223,9 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
     if (view === "historia" && data.nombres) {
       _ls.setItem("siso_active_form", JSON.stringify({ ...data, _autoSaved: new Date().toISOString() }));
     }
-    // Al entrar al dashboard, asegurar que todos los datos del _ls estÃ©n cargados
+    // Al entrar al dashboard, asegurar que todos los datos del _ls estén cargados
     if (newView === "dashboard") {
-      // AISLAMIENTO: usar clave especÃ­fica del usuario activo (o empresa compartida)
+      // AISLAMIENTO: usar clave específica del usuario activo (o empresa compartida)
       const _activeUser = currentUser?.user;
       if (_activeUser) {
         const _suidGoTo = currentUser?.empresaId
@@ -7310,7 +7310,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
         : syncStatus === "loading"
         ? "Cargando datos..."
         : syncStatus === "error"
-        ? "Error de sincronizaciÃ³n"
+        ? "Error de sincronización"
         : "Listo";
     const _agCls =
       view === "agenda"
@@ -7357,13 +7357,13 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                 <span className="text-[10px] font-black text-teal-700 bg-teal-50 border border-teal-200 px-2 py-0.5 rounded-lg ml-1 hidden sm:inline-block">
                   ðŸ¥{" "}
                   {_navEmp.nombre?.length > 25
-                    ? _navEmp.nombre.substring(0, 25) + "â€¦"
+                    ? _navEmp.nombre.substring(0, 25) + "…"
                     : _navEmp.nombre}
                 </span>
               ) : null;
             })()}
         </div>
-        {/* â”€â”€ Bloque 1: Datos mÃ©dico activo en header â”€â”€ */}
+        {/* â”€â”€ Bloque 1: Datos médico activo en header â”€â”€ */}
         {currentUser && activeDoctorData?.nombre && (
           <div className="hidden md:flex items-center gap-2 flex-shrink-0 ml-2">
             {activeSignature ? (
@@ -7413,13 +7413,13 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
               <div className="w-px h-6 bg-gray-200 no-print" />
               {data.estadoHistoria === "Cerrada" && (
                 <div className="hidden no-print bg-red-50 border border-red-300 rounded-lg px-3 py-1 flex items-center gap-1.5 text-[10px] font-bold text-red-700">
-                  <Lock className="w-3 h-3" /> Historia Cerrada Â·{" "}
+                  <Lock className="w-3 h-3" /> Historia Cerrada ·{" "}
                   {data.firmaDigital?.codigoQR || data.codigoVerificacion || ""}
                 </div>
               )}
               {data.estadoHistoria === "Cerrada" ? (
                 <div className="flex items-center gap-1">
-                  {/* BotÃ³n Ãºnico: EvoluciÃ³n (incluye nota clÃ­nica, fÃ³rmula, exÃ¡menes, incapacidad, nuevo certificado) */}
+                  {/* Botón único: Evolución (incluye nota clínica, fórmula, exámenes, incapacidad, nuevo certificado) */}
                   <button
                     onClick={() => {
                       setEvolucionForm({
@@ -7442,7 +7442,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                         incapacidad: {
                           aplica: false,
                           dias: 0,
-                          origen: "ComÃºn",
+                          origen: "Común",
                           diagnostico: "",
                           desde: "",
                           hasta: "",
@@ -7453,9 +7453,9 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                     }}
                     className="bg-purple-600 text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-purple-700 flex items-center gap-1.5 shadow"
                   >
-                    <ClipboardList className="w-3.5 h-3.5" /> EvoluciÃ³n / Nuevo Certificado
+                    <ClipboardList className="w-3.5 h-3.5" /> Evolución / Nuevo Certificado
                   </button>
-                  {/* Mini-botÃ³n admin: Nota Aclaratoria / Reapertura / Editar */}
+                  {/* Mini-botón admin: Nota Aclaratoria / Reapertura / Editar */}
                   {(_isAdmin(currentUser?.role) ||
                     currentUser?.role === "admin_empresa") && (
                     <button
@@ -7506,7 +7506,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                     onClick={() => setActiveTab("solicitudExamenes")}
                     className={_tabBlue("solicitudExamenes")}
                   >
-                    ðŸ”¬ ExÃ¡menes
+                    ðŸ”¬ Exámenes
                   </button>
                   <button
                     onClick={() => setActiveTab("adjuntos")}
@@ -7519,7 +7519,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                       onClick={() => setActiveTab("carnetAlimentos")}
                       className={_tabBlue("carnetAlimentos")}
                     >
-                      ðŸ½ï¸ CarnÃ©
+                      ðŸ½ï¸ Carné
                     </button>
                   )}
                 </>
@@ -7560,7 +7560,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                 <Printer className="w-3 h-3" /> PDF
               </button>
 
-              {/* â”€â”€ Descargar Todo: Certificado + Incapacidad + FÃ³rmula/DerivaciÃ³n â”€â”€ */}
+              {/* â”€â”€ Descargar Todo: Certificado + Incapacidad + Fórmula/Derivación â”€â”€ */}
               {dataType === "ocupacional" && (
                 <button
                   onClick={() => {
@@ -7624,7 +7624,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                       if (
                         lines.some(
                           (l) =>
-                            /^[â€¢*\-]/.test(l) ||
+                            /^[•*\-]/.test(l) ||
                             /^\*\*/.test(l) ||
                             /^\d+\./.test(l)
                         )
@@ -7636,7 +7636,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                               (l) =>
                                 '<li style="margin-bottom:2px;font-size:9.5pt;">' +
                                 l
-                                  .replace(/^[â€¢*\-]+\s*/, "")
+                                  .replace(/^[•*\-]+\s*/, "")
                                   .replace(/^\d+\.\s*/, "")
                                   .replace(
                                     /\*\*(.+?)\*\*/g,
@@ -7672,14 +7672,14 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                       <div class="hdr">
                         <div class="hdr-left">
                           <div class="doc-name">${_esc(
-                            docData.nombre || "MÃ‰DICO OCUPACIONAL"
+                            docData.nombre || "MÉDICO OCUPACIONAL"
                           )}</div>
                           <p>${_esc(
                             docData.titulo ||
-                              "MÃ©dico Especialista en Salud Ocupacional"
+                              "Médico Especialista en Salud Ocupacional"
                           )}</p>
-                          <p>Lic. ${_esc(docData.licencia || "--")} Â· ${_esc(
-                      docData.ciudad || "PopayÃ¡n"
+                          <p>Lic. ${_esc(docData.licencia || "--")} · ${_esc(
+                      docData.ciudad || "Popayán"
                     )}</p>
                         </div>
                         <div class="hdr-right">
@@ -7690,10 +7690,10 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                         </div>
                       </div>
                       <h2 style="text-align:center;font-size:14pt;font-weight:900;text-transform:uppercase;letter-spacing:2px;margin:8px 0 4px;">Certificado de Aptitud Laboral</h2>
-                      <p style="text-align:center;font-size:8.5pt;color:#6b7280;margin-bottom:10px;">Conforme a la ResoluciÃ³n 1843 de 2025</p>
-                      <p style="font-size:9.5pt;margin-bottom:10px;line-height:1.5;">El suscrito MÃ©dico Especialista en Salud Ocupacional certifica que realizÃ³ la evaluaciÃ³n de tipo <strong>${_esc(
+                      <p style="text-align:center;font-size:8.5pt;color:#6b7280;margin-bottom:10px;">Conforme a la Resolución 1843 de 2025</p>
+                      <p style="font-size:9.5pt;margin-bottom:10px;line-height:1.5;">El suscrito Médico Especialista en Salud Ocupacional certifica que realizó la evaluación de tipo <strong>${_esc(
                         data.tipoExamen || "--"
-                      )}</strong> con Ã©nfasis <strong>${_esc(
+                      )}</strong> con énfasis <strong>${_esc(
                       data.enfasisExamen || "GENERAL"
                     )}</strong> a:</p>
                       <table style="margin-bottom:10px;">
@@ -7710,7 +7710,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                         <tr><th style="background:#d1fae5;">Fecha</th><td>${_esc(
                           data.fechaExamen
                         )}</td><th style="background:#d1fae5;">Vigencia</th><td>${_esc(
-                      data.vigencia || "1 aÃ±o"
+                      data.vigencia || "1 año"
                     )}</td></tr>
                       </table>
                       <p style="text-align:center;font-size:8pt;font-weight:900;text-transform:uppercase;color:#6b7280;margin:6px 0 4px;">Concepto Emitido</p>
@@ -7734,12 +7734,12 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                             "</div>"
                           : ""
                       }
-                      <div class="alerta">âš  <strong>Confidencialidad:</strong> El diagnÃ³stico clÃ­nico no es entregado al empleador (Art. 16 Res. 1843/2025).</div>
+                      <div class="alerta">âš  <strong>Confidencialidad:</strong> El diagnóstico clínico no es entregado al empleador (Art. 16 Res. 1843/2025).</div>
                       <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:20px;align-items:end;border-top:2px solid #d1d5db;padding-top:12px;margin-top:4px;">
                         <div style="text-align:center;"><div style="height:50px;"></div><div style="border-top:1px solid #333;width:180px;margin:0 auto;padding-top:4px;font-size:8pt;font-weight:700;">Firma del Trabajador<br/>${_esc(
                           data.docTipo || "CC"
                         )}: ${_esc(data.docNumero)}</div></div>
-                        <div style="background:#f0fdf4;border:1.5px solid #86efac;border-radius:8px;padding:8px 16px;text-align:center;"><p style="font-size:7.5pt;font-weight:900;color:#6b7280;text-transform:uppercase;">CÃ³digo VerificaciÃ³n</p><p style="font-size:13pt;font-family:monospace;font-weight:900;letter-spacing:3px;color:#065f46;">${_esc(
+                        <div style="background:#f0fdf4;border:1.5px solid #86efac;border-radius:8px;padding:8px 16px;text-align:center;"><p style="font-size:7.5pt;font-weight:900;color:#6b7280;text-transform:uppercase;">Código Verificación</p><p style="font-size:13pt;font-family:monospace;font-weight:900;letter-spacing:3px;color:#065f46;">${_esc(
                           data.codigoVerificacion || "--"
                         )}</p></div>
                         <div style="text-align:center;">${sigHtml}<div style="border-top:1px solid #333;width:180px;margin:0 auto;padding-top:4px;font-size:8pt;font-weight:700;">${_esc(
@@ -7754,7 +7754,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                       docData.email ? "<br/>" + _esc(docData.email) : ""
                     }</div></div>
                       </div>
-                      <div class="consent">El suscrito MÃ©dico Especialista certifica la evaluaciÃ³n realizada. Res. 1843/2025 Â· Ley 1581/2012 Â· Ley 23/1981.</div>
+                      <div class="consent">El suscrito Médico Especialista certifica la evaluación realizada. Res. 1843/2025 · Ley 1581/2012 · Ley 23/1981.</div>
                     </div>`;
 
                     // â”€â”€ 2. CERTIFICADO DE INCAPACIDAD â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -7777,21 +7777,21 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                       <div class="hdr">
                         <div class="hdr-left">
                           <div class="doc-name">${_esc(
-                            docData.nombre || "MÃ‰DICO OCUPACIONAL"
+                            docData.nombre || "MÉDICO OCUPACIONAL"
                           )}</div>
-                          <p>${_esc(docData.titulo || "")} Â· Lic: ${_esc(
+                          <p>${_esc(docData.titulo || "")} · Lic: ${_esc(
                       docData.licencia || ""
                     )}</p>
-                          <p>Tel: ${_esc(docData.celular || "")} Â· ${_esc(
+                          <p>Tel: ${_esc(docData.celular || "")} · ${_esc(
                       docData.ciudad || ""
                     )}</p>
                         </div>
                         <div class="hdr-right">
-                          <div class="doc-title" style="color:#dc2626;">Certificado de Incapacidad MÃ©dica</div>
-                          <p>ExpediciÃ³n: ${new Date().toLocaleDateString(
+                          <div class="doc-title" style="color:#dc2626;">Certificado de Incapacidad Médica</div>
+                          <p>Expedición: ${new Date().toLocaleDateString(
                             "es-CO"
                           )}</p>
-                          <p style="font-size:7.5pt;color:#888;">Res. 1995/1999 Â· Ley 100/1993 Art. 227 Â· Dec. 2943/2013</p>
+                          <p style="font-size:7.5pt;color:#888;">Res. 1995/1999 · Ley 100/1993 Art. 227 · Dec. 2943/2013</p>
                         </div>
                       </div>
                       <table>
@@ -7802,10 +7802,10 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                     )} ${_esc(data.docNumero)}</td></tr>
                         <tr><th style="background:#fee2e2;">EPS / Aseguradora</th><td>${_esc(
                           data.eps || "--"
-                        )}</td><th style="background:#fee2e2;">GÃ©nero</th><td>${_esc(
+                        )}</td><th style="background:#fee2e2;">Género</th><td>${_esc(
                       data.genero || "--"
                     )}</td></tr>
-                        <tr><th style="background:#fee2e2;">DiagnÃ³stico (CIE-10)</th><td colspan="3">${_esc(
+                        <tr><th style="background:#fee2e2;">Diagnóstico (CIE-10)</th><td colspan="3">${_esc(
                           inc.diagnosticoCIE ||
                             inc.diagnostico ||
                             data.diagnosticoPrincipal ||
@@ -7813,7 +7813,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                         )}</td></tr>
                         <tr><th style="background:#fee2e2;">Origen</th><td>${_esc(
                           inc.origen || "Enfermedad General"
-                        )}</td><th style="background:#fee2e2;">PrÃ³rroga NÂ°</th><td>${_esc(
+                        )}</td><th style="background:#fee2e2;">Prórroga N°</th><td>${_esc(
                       inc.prorroga || "N/A"
                     )}</td></tr>
                         <tr><th style="background:#fee2e2;">Fecha inicio</th><td>${_esc(
@@ -7822,18 +7822,18 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                       inc.hasta || "--"
                     )}</td></tr>
                         <tr>
-                          <th colspan="2" style="background:#dc2626;color:white;text-align:center;font-size:13pt;padding:10px;">DÃAS DE INCAPACIDAD: ${diasInc}</th>
+                          <th colspan="2" style="background:#dc2626;color:white;text-align:center;font-size:13pt;padding:10px;">DÍAS DE INCAPACIDAD: ${diasInc}</th>
                           <th colspan="2" style="text-align:center;font-size:11pt;padding:10px;">${_esc(
-                            inc.motivo || "Incapacidad MÃ©dica"
+                            inc.motivo || "Incapacidad Médica"
                           )}</th>
                         </tr>
                         <tr><th style="background:#fee2e2;">Restricciones</th><td colspan="3">${_esc(
                           inc.restricciones ||
-                            "Reposo relativo. Evitar esfuerzo fÃ­sico intenso."
+                            "Reposo relativo. Evitar esfuerzo físico intenso."
                         )}</td></tr>
                         <tr><th style="background:#fee2e2;">Recomendaciones</th><td colspan="3">${_esc(
                           inc.recoIncapacidad ||
-                            "Consultar nuevamente si no hay mejorÃ­a."
+                            "Consultar nuevamente si no hay mejoría."
                         )}</td></tr>
                       </table>
                       <p style="font-size:7.5pt;color:#888;margin-top:8px;">Incapacidad expedida conforme Ley 100/1993 Art. 227, Decreto 2943/2013.</p>
@@ -7841,13 +7841,13 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                         <div class="sig-block"><div class="sig-line">Firma Paciente / Responsable</div></div>
                         <div class="sig-block">${sigHtml}<div class="sig-line">${_esc(
                       docData.nombre || ""
-                    )}<br/>${_esc(docData.titulo || "")} Â· Lic: ${_esc(
+                    )}<br/>${_esc(docData.titulo || "")} · Lic: ${_esc(
                       docData.licencia || ""
                     )}</div></div>
                       </div>
                     </div>`;
 
-                    // â”€â”€ 3. FÃ“RMULA MÃ‰DICA â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+                    // â”€â”€ 3. FÃ“RMULA MÉDICA â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
                     const meds = data.formulaMedicamentos || [];
                     const medRows =
                       meds.length > 0
@@ -7869,17 +7869,17 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                       <div class="hdr">
                         <div class="hdr-left">
                           <div class="doc-name">${_esc(
-                            docData.nombre || "MÃ‰DICO OCUPACIONAL"
+                            docData.nombre || "MÉDICO OCUPACIONAL"
                           )}</div>
-                          <p>${_esc(docData.titulo || "")} Â· Lic: ${_esc(
+                          <p>${_esc(docData.titulo || "")} · Lic: ${_esc(
                       docData.licencia || ""
                     )}</p>
-                          <p>Tel: ${_esc(docData.celular || "")} Â· ${_esc(
+                          <p>Tel: ${_esc(docData.celular || "")} · ${_esc(
                       docData.ciudad || ""
                     )}</p>
                         </div>
                         <div class="hdr-right">
-                          <div class="doc-title" style="color:#7c3aed;">FÃ³rmula MÃ©dica</div>
+                          <div class="doc-title" style="color:#7c3aed;">Fórmula Médica</div>
                           <p>Fecha: ${_esc(
                             data.fechaExamen ||
                               new Date().toLocaleDateString("es-CO")
@@ -7888,14 +7888,14 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                       </div>
                       <p style="margin-bottom:10px;font-size:9.5pt;">Paciente: <strong>${_esc(
                         data.nombres
-                      )}</strong> &nbsp;Â·&nbsp; ${_esc(
+                      )}</strong> &nbsp;·&nbsp; ${_esc(
                       data.docTipo || "CC"
-                    )} ${_esc(data.docNumero)} &nbsp;Â·&nbsp; ${_esc(
+                    )} ${_esc(data.docNumero)} &nbsp;·&nbsp; ${_esc(
                       String(data.edad || "--")
-                    )} aÃ±os &nbsp;Â·&nbsp; EPS: ${_esc(data.eps || "--")}</p>
+                    )} años &nbsp;·&nbsp; EPS: ${_esc(data.eps || "--")}</p>
                       <table>
                         <thead><tr style="background:#ede9fe;">
-                          <th>Medicamento</th><th>PresentaciÃ³n</th><th>Dosis</th><th>Frecuencia</th><th>DuraciÃ³n</th><th>Indicaciones</th>
+                          <th>Medicamento</th><th>Presentación</th><th>Dosis</th><th>Frecuencia</th><th>Duración</th><th>Indicaciones</th>
                         </tr></thead>
                         <tbody>${medRows}</tbody>
                       </table>
@@ -7935,17 +7935,17 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                       <div class="hdr">
                         <div class="hdr-left">
                           <div class="doc-name">${_esc(
-                            docData.nombre || "MÃ‰DICO OCUPACIONAL"
+                            docData.nombre || "MÉDICO OCUPACIONAL"
                           )}</div>
-                          <p>${_esc(docData.titulo || "")} Â· Lic: ${_esc(
+                          <p>${_esc(docData.titulo || "")} · Lic: ${_esc(
                       docData.licencia || ""
                     )}</p>
-                          <p>Tel: ${_esc(docData.celular || "")} Â· ${_esc(
+                          <p>Tel: ${_esc(docData.celular || "")} · ${_esc(
                       docData.ciudad || ""
                     )}</p>
                         </div>
                         <div class="hdr-right">
-                          <div class="doc-title">FÃ³rmula de DerivaciÃ³n / Interconsulta</div>
+                          <div class="doc-title">Fórmula de Derivación / Interconsulta</div>
                           <p>Fecha: ${_esc(
                             data.fechaExamen ||
                               new Date().toLocaleDateString("es-CO")
@@ -7956,10 +7956,10 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                         data.nombres
                       )}</strong> (${_esc(data.docTipo || "CC")} ${_esc(
                       data.docNumero
-                    )}) para valoraciÃ³n especializada:</p>
+                    )}) para valoración especializada:</p>
                       <table>
                         <thead><tr style="background:#d1fae5;">
-                          <th>Especialidad / Servicio</th><th>Motivo de consulta / Hallazgo clÃ­nico</th><th>Prioridad</th>
+                          <th>Especialidad / Servicio</th><th>Motivo de consulta / Hallazgo clínico</th><th>Prioridad</th>
                         </tr></thead>
                         <tbody>${derivRows}</tbody>
                       </table>
@@ -7988,13 +7988,13 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                     );
                     if (!w) {
                       showAlert(
-                        "El navegador bloqueÃ³ la ventana emergente. Permita los popups e intente de nuevo."
+                        "El navegador bloqueó la ventana emergente. Permita los popups e intente de nuevo."
                       );
                       return;
                     }
                     w.document
                       .write(`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"/>
-                    <title>Documentos - ${_esc(data.nombres)} Â· ${_esc(
+                    <title>Documentos - ${_esc(data.nombres)} · ${_esc(
                       data.fechaExamen || ""
                     )}</title>
                     <style>${sharedCss}</style>
@@ -8002,7 +8002,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                     <div class="dl-bar">
                       <span class="title">ðŸ“„ 4 documentos - ${_esc(
                         data.nombres
-                      )} Â· ${_esc(data.fechaExamen || "")}</span>
+                      )} · ${_esc(data.fechaExamen || "")}</span>
                       <button class="btn-print" onclick="window.print()">ðŸ“¥ Guardar / Imprimir PDF</button>
                       <button class="btn-close" onclick="window.close()">âœ• Cerrar</button>
                     </div>
@@ -8012,7 +8012,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                     w.focus();
                   }}
                   className="bg-cyan-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1 no-print hover:bg-cyan-800"
-                  title="Descargar todos los documentos: certificado + incapacidad + fÃ³rmula + derivaciones"
+                  title="Descargar todos los documentos: certificado + incapacidad + fórmula + derivaciones"
                 >
                   <Download className="w-3 h-3" /> Todo
                 </button>
@@ -8066,9 +8066,9 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                       }
                     }}
                     className="bg-purple-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1 no-print hover:bg-purple-800"
-                    title="Preservar HC (Res.1995/1999 - 20 aÃ±os)"
+                    title="Preservar HC (Res.1995/1999 - 20 años)"
                   >
-                    <HardDrive className="w-3 h-3" /> 20 aÃ±os
+                    <HardDrive className="w-3 h-3" /> 20 años
                   </button>
                 )}
               <button
@@ -8081,7 +8081,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
               >
                 ðŸ“² Notificar
               </button>
-              {/* FASE 2: Indicador HC de otro mÃ©dico (modo lectura) */}
+              {/* FASE 2: Indicador HC de otro médico (modo lectura) */}
               {currentUser?.role === "medico" &&
                 data._medicoId &&
                 data._medicoId !== currentUser?.user && (
@@ -8122,7 +8122,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
               >
                 <HardDrive className="w-3 h-3 mr-1" /> Backup
               </button>
-              {/* NORMATIVO: Res. 2275/2023 - ExportaciÃ³n RIPS JSON */}
+              {/* NORMATIVO: Res. 2275/2023 - Exportación RIPS JSON */}
               <button
                 onClick={() => {
                   try {
@@ -8143,8 +8143,8 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                       } paciente(s) con datos incompletos para RIPS:\n\n${ripsErrs
                         .slice(0, 5)
                         .join("\n")}${
-                        ripsErrs.length > 5 ? "\n...y mÃ¡s" : ""
-                      }\n\nÂ¿Generar RIPS de todas formas?`;
+                        ripsErrs.length > 5 ? "\n...y más" : ""
+                      }\n\n¿Generar RIPS de todas formas?`;
                       if (!window.confirm(msg)) return;
                     }
                     const rips = _generarRIPSJson(
@@ -8329,14 +8329,14 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
         boxSizing: "border-box",
       }}
     >
-      {/* Header: BrandLogo visible solo en impresiÃ³n (en pantalla ya aparece en la nav) */}
+      {/* Header: BrandLogo visible solo en impresión (en pantalla ya aparece en la nav) */}
       <div className="flex justify-between items-center border-b-2 border-emerald-500 pb-3 mb-3 print:border-black">
         <div className="w-1/3 hidden print:block">
           <BrandLogo data={activeDoctorData} />
         </div>
         <div className="w-1/3 text-center">
           <h1 className="text-sm font-black text-gray-800 uppercase">
-            Historia ClÃ­nica Ocupacional
+            Historia Clínica Ocupacional
           </h1>
           <p className="text-[9px] text-gray-500 font-medium">
             SEGURIDAD Y SALUD EN EL TRABAJO
@@ -8346,7 +8346,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
           <p>FOR-SST-001 v4.0</p>
           <p>Res. 1843/2025</p>
           <p className="text-[8px] text-gray-500">
-            Folio: {data.folioHC || "Auto"} Â· v{data.versionDocumento || 1}
+            Folio: {data.folioHC || "Auto"} · v{data.versionDocumento || 1}
           </p>
         </div>
       </div>
@@ -8354,11 +8354,11 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
         <div className="mb-3 bg-emerald-50 border-l-4 border-emerald-500 p-3 rounded-xl flex justify-between items-center no-print">
           <div>
             <p className="text-xs font-black text-emerald-800">
-              ðŸ“š Antecedentes cargados automÃ¡ticamente desde HC anterior
+              ðŸ“š Antecedentes cargados automáticamente desde HC anterior
             </p>
             <p className="text-[10px] text-emerald-600 mt-0.5">
-              {historyNotification} atenciÃ³n(es) previa(s) Â· Antecedentes,
-              hÃ¡bitos y riesgos prellenos Â· Puede editarlos libremente
+              {historyNotification} atención(es) previa(s) · Antecedentes,
+              hábitos y riesgos prellenos · Puede editarlos libremente
             </p>
           </div>
           <button
@@ -8369,7 +8369,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
           </button>
         </div>
       )}
-      {/* â”€â”€ B-19: Consentimiento Informado Digital - Ley 23/1981 Â· Res.8430/1993 Â· Ley 1581/2012 Â· Res.1843/2025 Art.12 â”€â”€ */}
+      {/* â”€â”€ B-19: Consentimiento Informado Digital - Ley 23/1981 · Res.8430/1993 · Ley 1581/2012 · Res.1843/2025 Art.12 â”€â”€ */}
       {showConsentModal && (
         <ConsentimientoModal
           data={data}
@@ -8402,7 +8402,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                 : "âš ï¸ Consentimiento Informado Pendiente"}
             </span>
             <span className="text-[9px] text-gray-400 font-bold">
-              Res. 1843/2025 Art.12 Â· Ley 1581/2012
+              Res. 1843/2025 Art.12 · Ley 1581/2012
             </span>
           </div>
           {!data.consentimientoInformado &&
@@ -8477,7 +8477,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
           </div>
           <div>
             <label className="block text-[10px] font-black text-emerald-800 mb-1">
-              Ã‰NFASIS
+              ÉNFASIS
             </label>
             <select
               name="enfasisExamen"
@@ -8487,9 +8487,9 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
             >
               <option value="GENERAL">General</option>
               <option value="OSTEOMUSCULAR">Osteomuscular</option>
-              <option value="CORAZON">Cardiovascular / CorazÃ³n</option>
+              <option value="CORAZON">Cardiovascular / Corazón</option>
               <option value="ALTURAS">Trabajo en Alturas</option>
-              <option value="ALIMENTOS">ManipulaciÃ³n de Alimentos</option>
+              <option value="ALIMENTOS">Manipulación de Alimentos</option>
               <option value="CONFINADOS">Espacios Confinados</option>
             </select>
           </div>
@@ -8497,10 +8497,10 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
         {/* Tipo de examen */}
         <div className="bg-gray-50 p-2 rounded-lg mb-2 border border-gray-200 print:bg-transparent print:border-gray-300">
           <label className="block text-[10px] font-black text-gray-700 mb-1 uppercase">
-            Tipo de EvaluaciÃ³n
+            Tipo de Evaluación
           </label>
           <div className="flex flex-wrap gap-3">
-            {/* NORMATIVO: Res. 1843/2025 - Tipos de evaluaciÃ³n actualizados */}
+            {/* NORMATIVO: Res. 1843/2025 - Tipos de evaluación actualizados */}
             {[
               "INGRESO",
               "PERIODICO",
@@ -8525,7 +8525,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                   <span className="text-purple-700">
                     RETORNO LABORAL{" "}
                     <span className="text-[8px] font-normal text-purple-500">
-                      (Res.1843/2025 Art.13 - Ausencia &gt;90 dÃ­as)
+                      (Res.1843/2025 Art.13 - Ausencia &gt;90 días)
                     </span>
                   </span>
                 ) : (
@@ -8550,7 +8550,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
             )}
           </div>
         </div>
-        <SectionTitle title="Datos SociodemogrÃ¡ficos y Laborales" icon={User} />
+        <SectionTitle title="Datos Sociodemográficos y Laborales" icon={User} />
         <div className="relative">
           {patientSuggestions.length > 0 && (
             <div className="absolute z-50 top-16 left-0 w-full bg-white border border-emerald-200 shadow-xl rounded-lg max-h-52 overflow-y-auto no-print">
@@ -8576,7 +8576,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
             </div>
           )}
           <div className="flex flex-wrap -mx-1.5">
-            {/* Fila 1: IdentificaciÃ³n */}
+            {/* Fila 1: Identificación */}
             <InputGroup
               label="Nombres Completos"
               name="nombres"
@@ -8627,7 +8627,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
               width="w-1/8 min-w-[70px]"
             />
             <SelectGroup
-              label="GÃ©nero"
+              label="Género"
               name="genero"
               value={data.genero}
               onChange={handleChange}
@@ -8682,8 +8682,8 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                 "Primaria Completa",
                 "Secundaria Incompleta",
                 "Secundaria Completa",
-                "TÃ©cnico",
-                "TecnÃ³logo",
+                "Técnico",
+                "Tecnólogo",
                 "Universitario",
                 "Postgrado",
                 "Ninguna",
@@ -8698,7 +8698,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
               options={[
                 "Soltero/a",
                 "Casado/a",
-                "UniÃ³n Libre",
+                "Unión Libre",
                 "Separado/a",
                 "Divorciado/a",
                 "Viudo/a",
@@ -8707,7 +8707,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
             />
             {/* Fila 3: Datos laborales */}
             <InputGroup
-              label="Dependencia / Ãrea"
+              label="Dependencia / Área"
               name="dependencia"
               value={data.dependencia}
               onChange={handleChange}
@@ -8721,12 +8721,12 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
               width="w-1/3"
             />
             <InputGroup
-              label="AntigÃ¼edad en Cargo"
+              label="Antigüedad en Cargo"
               name="antiguedadEmpresa"
               value={data.antiguedadEmpresa}
               onChange={handleChange}
               width="w-1/4"
-              placeholder="Ej: 2 aÃ±os"
+              placeholder="Ej: 2 años"
             />
             <SelectGroup
               label="Turno de Trabajo"
@@ -8743,10 +8743,10 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
               value={data.tipoContrato}
               onChange={handleChange}
               options={[
-                "TÃ©rmino Indefinido",
-                "TÃ©rmino Fijo",
+                "Término Indefinido",
+                "Término Fijo",
                 "Obra o Labor",
-                "PrestaciÃ³n de Servicios",
+                "Prestación de Servicios",
                 "Aprendizaje",
                 "Ocasional o Transitorio",
               ]}
@@ -8755,7 +8755,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
             />
             {/* Fila 4: Contacto y residencia */}
             <InputGroup
-              label="TelÃ©fono Fijo"
+              label="Teléfono Fijo"
               name="telefono"
               value={data.telefono}
               onChange={handleChange}
@@ -8777,7 +8777,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
               width="w-1/3"
             />
             <InputGroup
-              label="DirecciÃ³n Residencia"
+              label="Dirección Residencia"
               name="residencia"
               value={data.residencia}
               onChange={handleChange}
@@ -8816,7 +8816,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
               width="w-1/8 min-w-[90px]"
             />
             <InputGroup
-              label="Grupo SanguÃ­neo"
+              label="Grupo Sanguíneo"
               name="grupoSanguineo"
               value={data.grupoSanguineo}
               onChange={handleChange}
@@ -8824,14 +8824,14 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
               placeholder="Ej: O+"
             />
             <SelectGroup
-              label="Grupo Ã‰tnico"
+              label="Grupo Étnico"
               name="grupoEtnico"
               value={data.grupoEtnico}
               onChange={handleChange}
               options={[
                 "Mestizo",
                 "Afrocolombiano",
-                "IndÃ­gena",
+                "Indígena",
                 "Raizal",
                 "Palenquero",
                 "Gitano/Rrom",
@@ -8840,13 +8840,13 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
               width="w-1/4"
             />
             <SelectGroup
-              label="Identidad GÃ©nero"
+              label="Identidad Género"
               name="identidadGenero"
               value={data.identidadGenero}
               onChange={handleChange}
               options={[
-                "CisgÃ©nero",
-                "TransgÃ©nero",
+                "Cisgénero",
+                "Transgénero",
                 "No binario",
                 "Prefiere no decir",
               ]}
@@ -8857,9 +8857,9 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
               data.tipoExamen === "PERIODICO") && (
               <div className="w-full mb-1 bg-amber-50 border border-amber-300 rounded-lg p-2 text-[10px] text-amber-800 print:hidden">
                 <span className="font-black">âš ï¸ Res. 1843/2025 Art. 10:</span>{" "}
-                EstÃ¡ <strong>prohibido</strong> ordenar prueba de embarazo, VIH
-                o serologÃ­a como requisito de ingreso o permanencia laboral. Si
-                hay indicaciÃ³n clÃ­nica, documente justificaciÃ³n en el campo
+                Está <strong>prohibido</strong> ordenar prueba de embarazo, VIH
+                o serología como requisito de ingreso o permanencia laboral. Si
+                hay indicación clínica, documente justificación en el campo
                 correspondiente.
               </div>
             )}
@@ -8875,7 +8875,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
               data.tipoExamen === "RETORNO-LABORAL") && (
               <div className="flex gap-2 flex-wrap">
                 <InputGroup
-                  label="DÃ­as de Incapacidad / Ausencia"
+                  label="Días de Incapacidad / Ausencia"
                   name="diasIncapacidad"
                   value={data.diasIncapacidad}
                   onChange={handleChange}
@@ -8885,12 +8885,12 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                 />
                 {data.tipoExamen === "RETORNO-LABORAL" && (
                   <InputGroup
-                    label="DÃ­as Ausencia No MÃ©dica (Res.1843 Art.13)"
+                    label="Días Ausencia No Médica (Res.1843 Art.13)"
                     name="diasAusenciaNoMedica"
                     value={data.diasAusenciaNoMedica}
                     onChange={handleChange}
                     width="w-1/2 min-w-[200px]"
-                    placeholder="DÃ­as ausencia por causas no mÃ©dicas"
+                    placeholder="Días ausencia por causas no médicas"
                   />
                 )}
               </div>
@@ -8901,7 +8901,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                 âš•ï¸ Res. 1843/2025 - Campos obligatorios adicionales
               </div>
               <InputGroup
-                label="Plazo implem. recomend. (dÃ­as) Art.25"
+                label="Plazo implem. recomend. (días) Art.25"
                 name="plazoImplementacionRecomendaciones"
                 value={data.plazoImplementacionRecomendaciones || "20"}
                 onChange={handleChange}
@@ -9007,7 +9007,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                   />
                 </label>
                 <p className="text-[9px] text-blue-600 mt-1">
-                  JPG/PNG Â· Se comprime a 200Ã—200px Â· Se guarda en la HC
+                  JPG/PNG · Se comprime a 200Ã—200px · Se guarda en la HC
                 </p>
               </div>
             </div>
@@ -9030,7 +9030,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
               placeholder="Describa las funciones principales del cargo..."
             />
             <TextAreaGroup
-              label="Demandas FÃ­sicas del Cargo"
+              label="Demandas Físicas del Cargo"
               name="perfilCargo_demandasFisicas"
               value={data.perfilCargo_demandasFisicas}
               onChange={handleChange}
@@ -9045,31 +9045,31 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
               value={data.perfilCargo_demandasMentales}
               onChange={handleChange}
               rows={2}
-              placeholder="Ej: Alta concentraciÃ³n, atenciÃ³n al pÃºblico, turnos nocturnos..."
+              placeholder="Ej: Alta concentración, atención al público, turnos nocturnos..."
             />
             <TextAreaGroup
-              label="Factores de Riesgo EspecÃ­ficos del Cargo"
+              label="Factores de Riesgo Específicos del Cargo"
               name="perfilCargo_factoresRiesgo"
               value={data.perfilCargo_factoresRiesgo}
               onChange={handleChange}
               rows={2}
-              placeholder="Ej: Ruido >85dB, exposiciÃ³n a quÃ­micos, radiaciÃ³n..."
+              placeholder="Ej: Ruido >85dB, exposición a químicos, radiación..."
             />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
             <InputGroup
-              label="Nivel de ExposiciÃ³n"
+              label="Nivel de Exposición"
               name="perfilCargo_nivelExposicion"
               value={data.perfilCargo_nivelExposicion}
               onChange={handleChange}
               placeholder="Ej: Alto, Medio, Bajo"
             />
             <InputGroup
-              label="Tiempo Acumulado ExposiciÃ³n"
+              label="Tiempo Acumulado Exposición"
               name="perfilCargo_tiempoAcumulado"
               value={data.perfilCargo_tiempoAcumulado}
               onChange={handleChange}
-              placeholder="Ej: 8h/dÃ­a, 5 aÃ±os"
+              placeholder="Ej: 8h/día, 5 años"
             />
             <TextAreaGroup
               label="Medidas de Control Existentes"
@@ -9166,7 +9166,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                         }
                         className="mr-1 h-3 w-3"
                       />{" "}
-                      SÃ­
+                      Sí
                     </label>
                   </div>
                 </div>
@@ -9216,7 +9216,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                 className="p-1 text-[10px] border rounded w-full print:border-none"
               >
                 <option value="No">No</option>
-                <option value="Si">SÃ­</option>
+                <option value="Si">Sí</option>
                 {h.k !== "psicoactivas" && (
                   <option value="Ocasional">Ocasional</option>
                 )}
@@ -9226,7 +9226,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
         </div>
         <div className="print-section-break" />
         <SectionTitle
-          title="Signos Vitales y AntropometrÃ­a"
+          title="Signos Vitales y Antropometría"
           icon={Activity}
           color="blue"
         />
@@ -9253,7 +9253,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
               alertInfo={analyzeBP(data.ta)}
             />
             <InputGroup
-              label="Temp. (Â°C)"
+              label="Temp. (°C)"
               name="temp"
               value={data.temp}
               onChange={handleChange}
@@ -9299,7 +9299,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
           </div>
           <div className="flex gap-2 flex-wrap border-t border-blue-200 pt-2">
             <InputGroup
-              label="VisiÃ³n OD"
+              label="Visión OD"
               name="av_od"
               value={data.agudezaVisual?.lejanaOD}
               onChange={(e) =>
@@ -9314,7 +9314,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
               width="w-1/5 min-w-[90px]"
             />
             <InputGroup
-              label="VisiÃ³n OI"
+              label="Visión OI"
               name="av_oi"
               value={data.agudezaVisual?.lejanaOI}
               onChange={(e) =>
@@ -9344,13 +9344,13 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                   }
                   className="w-3 h-3"
                 />{" "}
-                Usa CorrecciÃ³n
+                Usa Corrección
               </label>
             </div>
           </div>
         </div>
         <div className="print-section-break" />
-        <SectionTitle title="Examen FÃ­sico por Sistemas" icon={Activity} />
+        <SectionTitle title="Examen Físico por Sistemas" icon={Activity} />
         <div className="bg-gray-50 p-2 rounded-lg border border-gray-200 mb-2 print:bg-transparent">
           <div className="flex justify-end mb-2 no-print">
             <button
@@ -9451,7 +9451,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                   <textarea
                     rows={2}
                     className="w-full text-[10px] p-1 border border-red-300 rounded bg-white resize-none"
-                    placeholder="Describa el hallazgo patolÃ³gico..."
+                    placeholder="Describa el hallazgo patológico..."
                     value={data.examenFisicoSistemas[sys].hallazgo}
                     onChange={(e) =>
                       setData((p) => ({
@@ -9471,20 +9471,20 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
             ))}
           </div>
         </div>
-        {/* â•â• BLOQUES Ã‰NFASIS ESPECIALIZADOS â•â• */}
-        {/* Ã‰nfasis Alturas */}
+        {/* â•â• BLOQUES ÉNFASIS ESPECIALIZADOS â•â• */}
+        {/* Énfasis Alturas */}
         {data.enfasisExamen === "ALTURAS" && (
           <div className="mt-2 border-2 border-sky-400 p-2 rounded-xl animate-fade-in mb-2">
             <h3 className="font-black text-sky-800 text-xs mb-2 uppercase text-center">
-              Ã‰nfasis: Trabajo en Alturas (Res. 4272/2021)
+              Énfasis: Trabajo en Alturas (Res. 4272/2021)
             </h3>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-xs">
               {[
                 { k: "romberg", l: "Romberg", opts: ["Normal", "Alterado"] },
-                { k: "vertigo", l: "VÃ©rtigo", opts: ["Negativo", "Positivo"] },
+                { k: "vertigo", l: "Vértigo", opts: ["Negativo", "Positivo"] },
                 {
                   k: "coordinacion",
-                  l: "CoordinaciÃ³n",
+                  l: "Coordinación",
                   opts: ["Normal", "Alterada"],
                 },
                 {
@@ -9555,11 +9555,11 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
             />
           </div>
         )}
-        {/* Ã‰nfasis Alimentos */}
+        {/* Énfasis Alimentos */}
         {data.enfasisExamen === "ALIMENTOS" && (
           <div className="mt-2 border-2 border-yellow-400 p-2 rounded-xl animate-fade-in mb-2">
             <h3 className="font-black text-yellow-800 text-xs mb-2 uppercase text-center">
-              Ã‰nfasis: ManipulaciÃ³n de Alimentos (Res. 2674/2013)
+              Énfasis: Manipulación de Alimentos (Res. 2674/2013)
             </h3>
             <div className="grid grid-cols-3 gap-2 text-xs">
               {[
@@ -9611,52 +9611,52 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
             </div>
           </div>
         )}
-        {/* Ã‰nfasis Espacios Confinados */}
+        {/* Énfasis Espacios Confinados */}
         {data.enfasisExamen === "CONFINADOS" && (
           <div className="mt-2 border-2 border-orange-400 p-2 rounded-xl animate-fade-in mb-2">
             <h3 className="font-black text-orange-800 text-xs mb-1 uppercase text-center">
-              Ã‰nfasis: Espacios Confinados (Res. 0491/2020 Â· NTC 5679)
+              Énfasis: Espacios Confinados (Res. 0491/2020 · NTC 5679)
             </h3>
             <p className="text-[9px] text-orange-600 text-center mb-2">
-              EvaluaciÃ³n mÃ©dica para ingreso y trabajo en espacios con riesgo de
-              hipoxia, explosiÃ³n o atrapamiento
+              Evaluación médica para ingreso y trabajo en espacios con riesgo de
+              hipoxia, explosión o atrapamiento
             </p>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-xs">
               {[
                 {
                   k: "cardiovascular",
                   l: "Sistema Cardiovascular",
-                  desc: "FC, PA, ritmo. Descartar arritmias, HTA no controlada, cardiopatÃ­a isquÃ©mica.",
+                  desc: "FC, PA, ritmo. Descartar arritmias, HTA no controlada, cardiopatía isquémica.",
                   opts: ["Normal", "Anormal"],
                 },
                 {
                   k: "respiratorio",
                   l: "Sistema Respiratorio",
-                  desc: "FR, SpO2, auscultaciÃ³n pulmonar. Descartar EPOC, asma, restricciÃ³n ventilatoria.",
+                  desc: "FR, SpO2, auscultación pulmonar. Descartar EPOC, asma, restricción ventilatoria.",
                   opts: ["Normal", "Anormal"],
                 },
                 {
                   k: "neurologico",
-                  l: "Sistema NeurolÃ³gico",
-                  desc: "Nivel de conciencia, equilibrio, coordinaciÃ³n. Descartar epilepsia, vÃ©rtigo crÃ³nico.",
+                  l: "Sistema Neurológico",
+                  desc: "Nivel de conciencia, equilibrio, coordinación. Descartar epilepsia, vértigo crónico.",
                   opts: ["Normal", "Anormal"],
                 },
                 {
                   k: "psicologico",
-                  l: "EvaluaciÃ³n PsicolÃ³gica",
-                  desc: "Claustrofobia, manejo del estrÃ©s, reacciones ante confinamiento.",
+                  l: "Evaluación Psicológica",
+                  desc: "Claustrofobia, manejo del estrés, reacciones ante confinamiento.",
                   opts: ["Apto", "No Apto"],
                 },
                 {
                   k: "otorrino",
-                  l: "ORL / OÃ­do",
-                  desc: "TÃ­mpanos Ã­ntegros, no sinusitis activa. PresiÃ³n en espacios cerrados.",
+                  l: "ORL / Oído",
+                  desc: "Tímpanos íntegros, no sinusitis activa. Presión en espacios cerrados.",
                   opts: ["Normal", "Anormal"],
                 },
                 {
                   k: "usoEpp",
                   l: "Capacidad uso EPP",
-                  desc: "Tolerancia a equipo de respiraciÃ³n autÃ³noma (SCBA), mÃ¡scaras de aire.",
+                  desc: "Tolerancia a equipo de respiración autónoma (SCBA), máscaras de aire.",
                   opts: ["Apto", "No Apto"],
                 },
               ].map((f) => (
@@ -9720,7 +9720,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                     }))
                   }
                   className="w-full text-xs p-1 border border-orange-200 rounded outline-none resize-none"
-                  placeholder="FC: __/min  PA: __/__mmHg  SpO2: __%  FR: __/min  AuscultaciÃ³n: ..."
+                  placeholder="FC: __/min  PA: __/__mmHg  SpO2: __%  FR: __/min  Auscultación: ..."
                 />
               </div>
               <div>
@@ -9740,20 +9740,20 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                     }))
                   }
                   className="w-full text-xs p-1 border border-orange-200 rounded outline-none resize-none"
-                  placeholder="Observaciones, restricciones especÃ­ficas..."
+                  placeholder="Observaciones, restricciones específicas..."
                 />
               </div>
             </div>
           </div>
         )}
-        {/* Ã‰nfasis Osteomuscular */}
+        {/* Énfasis Osteomuscular */}
         {data.enfasisExamen === "OSTEOMUSCULAR" && (
           <div className="mt-2 border-2 border-violet-400 p-2 rounded-xl animate-fade-in mb-2">
             <h3 className="font-black text-violet-800 text-xs mb-1 uppercase text-center">
-              Ã‰nfasis: Osteomuscular (Res. 1843/2025 Â· Res. 2404/2019)
+              Énfasis: Osteomuscular (Res. 1843/2025 · Res. 2404/2019)
             </h3>
             <p className="text-[9px] text-violet-600 text-center mb-2">
-              EvaluaciÃ³n de riesgo biomecÃ¡nico y desÃ³rdenes mÃºsculo-esquelÃ©ticos
+              Evaluación de riesgo biomecánico y desórdenes músculo-esqueléticos
               relacionados con el trabajo (DME)
             </p>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-xs mb-2">
@@ -9761,19 +9761,19 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                 {
                   k: "columna",
                   l: "Columna Vertebral",
-                  desc: "InspecciÃ³n, palpaciÃ³n, movilidad cervical/lumbar/dorsal. Escoliosis, cifosis, lordosis patolÃ³gica.",
+                  desc: "Inspección, palpación, movilidad cervical/lumbar/dorsal. Escoliosis, cifosis, lordosis patológica.",
                   opts: ["Normal", "Anormal"],
                 },
                 {
                   k: "miembrosSup",
                   l: "Miembros Superiores",
-                  desc: "Hombros, codos, muÃ±ecas, manos. Rangos de movimiento, trofismo, fuerza prensil.",
+                  desc: "Hombros, codos, muñecas, manos. Rangos de movimiento, trofismo, fuerza prensil.",
                   opts: ["Normal", "Anormal"],
                 },
                 {
                   k: "miembrosInf",
                   l: "Miembros Inferiores",
-                  desc: "Caderas, rodillas, tobillos, pies. Marcha, apoyo, alineaciÃ³n, varices.",
+                  desc: "Caderas, rodillas, tobillos, pies. Marcha, apoyo, alineación, varices.",
                   opts: ["Normal", "Anormal"],
                 },
                 {
@@ -9785,13 +9785,13 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                 {
                   k: "articular",
                   l: "Sistema Articular",
-                  desc: "TumefacciÃ³n, calor, dolor articular. Signos inflamatorios activos.",
+                  desc: "Tumefacción, calor, dolor articular. Signos inflamatorios activos.",
                   opts: ["Normal", "Anormal"],
                 },
                 {
                   k: "postural",
-                  l: "EvaluaciÃ³n Postural",
-                  desc: "Postura estÃ¡tica y dinÃ¡mica, compensaciones, dismetrÃ­as de miembros.",
+                  l: "Evaluación Postural",
+                  desc: "Postura estática y dinámica, compensaciones, dismetrías de miembros.",
                   opts: ["Normal", "Anormal"],
                 },
               ].map((f) => (
@@ -9843,7 +9843,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                 {
                   k: "phalen",
                   l: "Phalen",
-                  desc: "STC muÃ±eca",
+                  desc: "STC muñeca",
                   pos: "Positivo",
                 },
                 {
@@ -9866,8 +9866,8 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                 },
                 {
                   k: "lasegue",
-                  l: "LasÃ¨gue",
-                  desc: "CiÃ¡tica L4-S1",
+                  l: "Lasègue",
+                  desc: "Ciática L4-S1",
                   pos: "Positivo",
                 },
                 {
@@ -9951,7 +9951,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                     }))
                   }
                   className="w-full text-xs p-1 border border-violet-200 rounded outline-none resize-none"
-                  placeholder="Describir hallazgos patolÃ³gicos, localizaciÃ³n, intensidad..."
+                  placeholder="Describir hallazgos patológicos, localización, intensidad..."
                 />
               </div>
               <div>
@@ -9971,21 +9971,21 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                     }))
                   }
                   className="w-full text-xs p-1 border border-violet-200 rounded outline-none resize-none"
-                  placeholder="Ej: SÃ­ndrome del tÃºnel carpiano bilateral. RestricciÃ³n para vibraciÃ³n..."
+                  placeholder="Ej: Síndrome del túnel carpiano bilateral. Restricción para vibración..."
                 />
               </div>
             </div>
           </div>
         )}
-        {/* Ã‰nfasis CorazÃ³n / Cardiovascular */}
+        {/* Énfasis Corazón / Cardiovascular */}
         {data.enfasisExamen === "CORAZON" && (
           <div className="mt-2 border-2 border-rose-400 p-2 rounded-xl animate-fade-in mb-2">
             <h3 className="font-black text-rose-800 text-xs mb-1 uppercase text-center">
-              Ã‰nfasis: Cardiovascular (Res. 1843/2025 Â· Res. 1843/2025)
+              Énfasis: Cardiovascular (Res. 1843/2025 · Res. 1843/2025)
             </h3>
             <p className="text-[9px] text-rose-600 text-center mb-2">
-              EvaluaciÃ³n cardiovascular y metabÃ³lica para puestos de trabajo con
-              demanda fÃ­sica o riesgo cardiovascular
+              Evaluación cardiovascular y metabólica para puestos de trabajo con
+              demanda física o riesgo cardiovascular
             </p>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-xs mb-2">
               {[
@@ -9997,32 +9997,32 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                 },
                 {
                   k: "presionArterial",
-                  l: "PresiÃ³n Arterial",
-                  desc: "PA sistÃ³lica/diastÃ³lica. Normal: <130/80. HTA grado I/II/III (JNC-8).",
+                  l: "Presión Arterial",
+                  desc: "PA sistólica/diastólica. Normal: <130/80. HTA grado I/II/III (JNC-8).",
                   opts: ["Normal", "Anormal"],
                 },
                 {
                   k: "ritmoyTonos",
                   l: "Ritmo y Tonos Cardiacos",
-                  desc: "Ruidos cardiacos, soplos, S3, S4, frotes pericÃ¡rdicos, thrill.",
+                  desc: "Ruidos cardiacos, soplos, S3, S4, frotes pericárdicos, thrill.",
                   opts: ["Normal", "Anormal"],
                 },
                 {
                   k: "pulsos",
-                  l: "Pulsos PerifÃ©ricos",
-                  desc: "Pulsos carotÃ­deos, radiales, femorales, poplÃ­teos, pedios. SimetrÃ­a y amplitud.",
+                  l: "Pulsos Periféricos",
+                  desc: "Pulsos carotídeos, radiales, femorales, poplíteos, pedios. Simetría y amplitud.",
                   opts: ["Normal", "Anormal"],
                 },
                 {
                   k: "edemas",
-                  l: "Edemas / IngurgitaciÃ³n",
-                  desc: "Edema de miembros, ingurgitaciÃ³n yugular, reflujo hepatoyugular.",
+                  l: "Edemas / Ingurgitación",
+                  desc: "Edema de miembros, ingurgitación yugular, reflujo hepatoyugular.",
                   opts: ["Ausente", "Presente"],
                 },
                 {
                   k: "perfusionPeriferica",
-                  l: "PerfusiÃ³n PerifÃ©rica",
-                  desc: "Llenado capilar <2seg, temperatura distal, coloraciÃ³n, pulso capilar.",
+                  l: "Perfusión Periférica",
+                  desc: "Llenado capilar <2seg, temperatura distal, coloración, pulso capilar.",
                   opts: ["Normal", "Anormal"],
                 },
               ].map((f) => (
@@ -10082,12 +10082,12 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                     }))
                   }
                   className="w-full text-[10px] p-1 border border-rose-200 rounded outline-none"
-                  placeholder="FC:__ PA:__/__ SpO2:__% FR:__ T:__Â°C"
+                  placeholder="FC:__ PA:__/__ SpO2:__% FR:__ T:__°C"
                 />
               </div>
               <div className="bg-white p-2 rounded border border-rose-100">
                 <p className="font-bold text-[10px] mb-1">
-                  Ãndice de Masa Corporal
+                  Índice de Masa Corporal
                 </p>
                 <input
                   value={data.examenCorazon?.imc || ""}
@@ -10132,7 +10132,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
             <div className="grid grid-cols-2 gap-2">
               <div>
                 <p className="text-[9px] font-black text-rose-700 mb-1">
-                  HALLAZGOS / SÃNTOMAS CARDIOVASCULARES
+                  HALLAZGOS / SÍNTOMAS CARDIOVASCULARES
                 </p>
                 <textarea
                   rows={2}
@@ -10147,7 +10147,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                     }))
                   }
                   className="w-full text-xs p-1 border border-rose-200 rounded outline-none resize-none"
-                  placeholder="Ej: HTA grado I. Soplo sistÃ³lico I/VI en foco mitral. ECG: RS sin alteraciones..."
+                  placeholder="Ej: HTA grado I. Soplo sistólico I/VI en foco mitral. ECG: RS sin alteraciones..."
                 />
               </div>
               <div>
@@ -10167,7 +10167,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                     }))
                   }
                   className="w-full text-xs p-1 border border-rose-200 rounded outline-none resize-none"
-                  placeholder="Ej: No esfuerzo fÃ­sico mayor >6 METs. Control cardiolÃ³gico en 3 meses..."
+                  placeholder="Ej: No esfuerzo físico mayor >6 METs. Control cardiológico en 3 meses..."
                 />
               </div>
             </div>
@@ -10176,7 +10176,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
         {/* Concepto y Recomendaciones */}
         <div className="print-section-break" />
         <SectionTitle
-          title="Concepto MÃ©dico y Recomendaciones"
+          title="Concepto Médico y Recomendaciones"
           icon={FileCheck}
         />
         <div className="bg-gradient-to-r from-emerald-50 to-white p-2 rounded-xl border border-emerald-200 shadow-sm">
@@ -10192,7 +10192,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
               ) : (
                 <Sparkles className="w-3.5 h-3.5" />
               )}{" "}
-              AnÃ¡lisis IA Completo
+              Análisis IA Completo
             </button>
             <button
               onClick={() => {
@@ -10236,11 +10236,11 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
               Restricciones
             </button>
           </div>
-          {/* NORMATIVO: CIE-10 activo + CIE-11 en transiciÃ³n - Res. 1442/2024 */}
+          {/* NORMATIVO: CIE-10 activo + CIE-11 en transición - Res. 1442/2024 */}
           <div className="mb-2">
             <div className="flex items-center justify-between mb-1">
               <label className="block text-[10px] font-black text-gray-700 uppercase">
-                DiagnÃ³sticos CIE-10 - Escriba cÃ³digo o nombre para buscar
+                Diagnósticos CIE-10 - Escriba código o nombre para buscar
               </label>
               <span
                 style={{
@@ -10253,7 +10253,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                   fontWeight: "700",
                 }}
               >
-                CIE-11 en transiciÃ³n Â· Res. 1442/2024
+                CIE-11 en transición · Res. 1442/2024
               </span>
             </div>
             <div className="grid grid-cols-3 gap-2">
@@ -10267,10 +10267,10 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                   onChange={(v) =>
                     setData((p) => ({ ...p, diagnosticoPrincipal: v }))
                   }
-                  placeholder="Buscar: Z10.0, lumbalgia, tÃºnel carpo..."
+                  placeholder="Buscar: Z10.0, lumbalgia, túnel carpo..."
                   className="w-full p-1.5 border-2 border-emerald-300 rounded-lg text-xs focus:ring-2 focus:ring-emerald-400 outline-none bg-emerald-50"
                 />
-                {/* CIE-11 equivalencia automÃ¡tica - Res. 1442/2024 */}
+                {/* CIE-11 equivalencia automática - Res. 1442/2024 */}
                 <CIE11Badge cie10value={data.diagnosticoPrincipal} />
               </div>
               <div>
@@ -10283,7 +10283,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                   onChange={(v) =>
                     setData((p) => ({ ...p, diagnosticoSecundario1: v }))
                   }
-                  placeholder="Buscar diagnÃ³stico secundario..."
+                  placeholder="Buscar diagnóstico secundario..."
                   className="w-full p-1.5 border border-blue-200 rounded-lg text-xs focus:ring-2 focus:ring-blue-400 outline-none"
                 />
               </div>
@@ -10297,7 +10297,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                   onChange={(v) =>
                     setData((p) => ({ ...p, diagnosticoSecundario2: v }))
                   }
-                  placeholder="Buscar diagnÃ³stico secundario..."
+                  placeholder="Buscar diagnóstico secundario..."
                   className="w-full p-1.5 border border-purple-200 rounded-lg text-xs focus:ring-2 focus:ring-purple-400 outline-none"
                 />
               </div>
@@ -10309,16 +10309,16 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
             value={data.conceptoAptitud}
             onChange={handleChange}
             options={[
-              "Sin restricciones de salud para que el trabajador continÃºe desempeÃ±ando la labor.",
-              "Hallazgos clÃ­nicos que no interfieren para que el trabajador continÃºe desempeÃ±ando la labor.",
-              "Con recomendaciones mÃ©dico-laborales para que el trabajador continÃºe desempeÃ±ando la labor.",
-              "Con restricciones laborales para que el trabajador continÃºe desempeÃ±ando la labor.",
-              "Requiere reubicaciÃ³n laboral.",
+              "Sin restricciones de salud para que el trabajador continúe desempeñando la labor.",
+              "Hallazgos clínicos que no interfieren para que el trabajador continúe desempeñando la labor.",
+              "Con recomendaciones médico-laborales para que el trabajador continúe desempeñando la labor.",
+              "Con restricciones laborales para que el trabajador continúe desempeñando la labor.",
+              "Requiere reubicación laboral.",
               "Aplazado",
               "Egreso satisfactorio",
               "Egreso con hallazgos",
-              "PeriÃ³dico satisfactorio",
-              "PeriÃ³dico con hallazgos",
+              "Periódico satisfactorio",
+              "Periódico con hallazgos",
             ]}
             required
           />
@@ -10331,51 +10331,51 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
               rows={4}
             />
             <TextAreaGroup
-              label="Restricciones MÃ©dico-Laborales"
+              label="Restricciones Médico-Laborales"
               name="analisisRestricciones"
               value={data.analisisRestricciones}
               onChange={handleChange}
               rows={4}
             />
           </div>
-          {/* â”€â”€ ANÃLISIS CLÃNICO IA (campo independiente - Punto 10) â”€â”€ */}
+          {/* â”€â”€ ANÁLISIS CLÍNICO IA (campo independiente - Punto 10) â”€â”€ */}
           {data.analisisIA && (
             <div className="mt-3">
               <label className="block text-[10px] font-black text-indigo-700 uppercase mb-1">
-                ðŸ§  AnÃ¡lisis ClÃ­nico <span className="ai-label-print-hide">(generado por IA â€” campo independiente)</span>
+                ðŸ§  Análisis Clínico <span className="ai-label-print-hide">(generado por IA â€” campo independiente)</span>
               </label>
               <textarea
                 value={data.analisisIA || ""}
                 onChange={(e) => setData(p => ({ ...p, analisisIA: e.target.value }))}
                 rows={6}
                 className="w-full p-3 border-2 border-indigo-200 rounded-xl text-xs bg-indigo-50/50 focus:border-indigo-400 focus:outline-none"
-                placeholder="El anÃ¡lisis clÃ­nico se genera automÃ¡ticamente al usar la IA. Puede editarlo manualmente."
+                placeholder="El análisis clínico se genera automáticamente al usar la IA. Puede editarlo manualmente."
                 style={{ resize: "vertical" }}
               />
               <p className="text-[9px] text-indigo-400 mt-1">
-                Este campo es independiente de Recomendaciones y Restricciones. Redactado con lenguaje tÃ©cnico-formal de medicina laboral.
+                Este campo es independiente de Recomendaciones y Restricciones. Redactado con lenguaje técnico-formal de medicina laboral.
               </p>
             </div>
           )}
           {!data.analisisIA && (
             <div className="mt-3">
               <label className="block text-[10px] font-black text-gray-500 uppercase mb-1">
-                ðŸ§  AnÃ¡lisis ClÃ­nico
+                ðŸ§  Análisis Clínico
               </label>
               <textarea
                 value={data.analisisIA || ""}
                 onChange={(e) => setData(p => ({ ...p, analisisIA: e.target.value }))}
                 rows={3}
                 className="w-full p-2 border border-gray-200 rounded-xl text-xs focus:border-indigo-400 focus:outline-none"
-                placeholder="Se generarÃ¡ automÃ¡ticamente con el anÃ¡lisis de IA, o puede escribirlo manualmente."
+                placeholder="Se generará automáticamente con el análisis de IA, o puede escribirlo manualmente."
                 style={{ resize: "vertical" }}
               />
             </div>
           )}
-          {/* â”€â”€ SVE - Sistema de Vigilancia EpidemiolÃ³gica (Punto 9) â”€â”€ */}
+          {/* â”€â”€ SVE - Sistema de Vigilancia Epidemiológica (Punto 9) â”€â”€ */}
           <div className="mt-3 bg-amber-50 border border-amber-200 rounded-xl p-3">
             <label className="block text-[10px] font-black text-amber-800 uppercase mb-2">
-              ðŸ›¡ï¸ Sistema de Vigilancia EpidemiolÃ³gica (SVE) <span className="ai-label-print-hide">â€” Sugerido por IA</span>
+              ðŸ›¡ï¸ Sistema de Vigilancia Epidemiológica (SVE) <span className="ai-label-print-hide">â€” Sugerido por IA</span>
             </label>
             {(data.sveRecomendado || []).length > 0 ? (
               <div className="space-y-1.5">
@@ -10388,7 +10388,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                 ))}
               </div>
             ) : (
-              <p className="text-xs text-amber-600 italic">Sin SVE sugerido. Se generarÃ¡ al ejecutar el anÃ¡lisis con IA.</p>
+              <p className="text-xs text-amber-600 italic">Sin SVE sugerido. Se generará al ejecutar el análisis con IA.</p>
             )}
             <div className="flex gap-2 mt-2">
               <select
@@ -10398,14 +10398,14 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
               >
                 <option value="" disabled>Agregar SVE manualmente...</option>
                 <option>SVE Osteomuscular (Res. 2844/2007 â€” GATISO DME)</option>
-                <option>SVE DermatolÃ³gico</option>
-                <option>SVE NeurolÃ³gico (riesgo por ruido â€” hipoacusia)</option>
-                <option>SVE Psicosocial (Res. 2764/2022 â€” BaterÃ­a riesgo psicosocial)</option>
+                <option>SVE Dermatológico</option>
+                <option>SVE Neurológico (riesgo por ruido â€” hipoacusia)</option>
+                <option>SVE Psicosocial (Res. 2764/2022 â€” Batería riesgo psicosocial)</option>
                 <option>SVE Visual</option>
                 <option>SVE Respiratorio</option>
                 <option>SVE Cardiovascular</option>
-                <option>SVE BiolÃ³gico</option>
-                <option>SVE QuÃ­mico</option>
+                <option>SVE Biológico</option>
+                <option>SVE Químico</option>
               </select>
               <button
                 onClick={() => {
@@ -10428,10 +10428,10 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
             onChange={handleChange}
             width="w-1/3"
             required={true}
-            placeholder="Ej: 1 aÃ±o, 6 meses"
+            placeholder="Ej: 1 año, 6 meses"
           />
         </div>
-        {/* Firma impresiÃ³n */}
+        {/* Firma impresión */}
         <div className="hidden print:flex mt-8 justify-between items-end px-4">
           <div className="text-center w-1/3">
             <div className="border-t border-gray-800 pt-1 text-[10px] font-bold">
@@ -10495,7 +10495,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
             .slice(0, 8)
         : [];
     const loadGenPatient = (p) => {
-      // Memoria de antecedentes: carga datos clÃ­nicos previos del paciente
+      // Memoria de antecedentes: carga datos clínicos previos del paciente
       const prevHCs = patientsList
         .filter((h) => h.docNumero === p.docNumero && h.fechaExamen)
         .sort(
@@ -10519,7 +10519,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
         afp: p.afp || "",
         grupoSanguineo: p.grupoSanguineo || "",
         foto: p.foto || "",
-        // ANTECEDENTES POR MEMORIA (desde HC mÃ¡s reciente)
+        // ANTECEDENTES POR MEMORIA (desde HC más reciente)
         antecedentes: latest.antecedentes
           ? { ...latest.antecedentes }
           : prev.antecedentes,
@@ -10567,7 +10567,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                 >
                   <p className="text-xs font-bold text-blue-900">{p.nombres}</p>
                   <p className="text-[10px] text-gray-500">
-                    {p.docNumero} Â· {p.eps || "Sin EPS"} Â· {p.edad || "?"} aÃ±os
+                    {p.docNumero} · {p.eps || "Sin EPS"} · {p.edad || "?"} años
                   </p>
                 </button>
               ))}
@@ -10579,7 +10579,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
             <BrandLogo data={activeDoctorData} />
             {activeDoctorData?.licencia && (
               <p className="text-[8px] text-gray-400 mt-0.5 no-print">
-                Reg. MÃ©dico:{" "}
+                Reg. Médico:{" "}
                 <span className="font-bold text-gray-600">
                   {activeDoctorData.licencia}
                 </span>
@@ -10588,9 +10588,9 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
           </div>
           <div className="w-1/3 text-center">
             <h1 className="text-sm font-black text-gray-800 uppercase">
-              Historia ClÃ­nica -- Medicina General
+              Historia Clínica -- Medicina General
             </h1>
-            <p className="text-[9px] text-gray-500">ResoluciÃ³n 1995 de 1999</p>
+            <p className="text-[9px] text-gray-500">Resolución 1995 de 1999</p>
           </div>
           <div className="w-1/3 text-right text-[9px] font-bold text-gray-400">
             <p>FOR-MG-001 v1.0</p>
@@ -10601,7 +10601,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
           disabled={data.estadoHistoria === "Cerrada"}
           className="disabled:opacity-75"
         >
-          {/* Datos bÃ¡sicos */}
+          {/* Datos básicos */}
           <SectionTitle title="Datos del Paciente" icon={User} color="blue" />
           <div className="flex flex-wrap -mx-1.5">
             <InputGroup
@@ -10643,7 +10643,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
               width="w-1/8 min-w-[80px]"
             />
             <SelectGroup
-              label="GÃ©nero"
+              label="Género"
               name="genero"
               value={data.genero}
               onChange={handleChange}
@@ -10667,14 +10667,14 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
               list="eps-list"
             />
             <InputGroup
-              label="TelÃ©fono"
+              label="Teléfono"
               name="telefono"
               value={data.telefono}
               onChange={handleChange}
               width="w-1/4"
             />
             <InputGroup
-              label="Grupo SanguÃ­neo"
+              label="Grupo Sanguíneo"
               name="grupoSanguineo"
               value={data.grupoSanguineo}
               onChange={handleChange}
@@ -10709,7 +10709,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
             rows={2}
           />
           <TextAreaGroup
-            label="Enfermedad Actual (CronologÃ­a, localizaciÃ³n, intensidad, factores modificadores)"
+            label="Enfermedad Actual (Cronología, localización, intensidad, factores modificadores)"
             name="enfermedadActual"
             value={data.enfermedadActual}
             onChange={handleChange}
@@ -10719,13 +10719,13 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
           <SectionTitle title="Antecedentes" icon={History} color="blue" />
           <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mb-2">
             {[
-              { k: "personales", l: "PatolÃ³gicos" },
+              { k: "personales", l: "Patológicos" },
               { k: "familiares", l: "Familiares" },
-              { k: "quirurgicos", l: "QuirÃºrgicos" },
-              { k: "traumaticos", l: "TraumÃ¡ticos" },
-              { k: "farmacologicos", l: "FarmacolÃ³gicos" },
-              { k: "alergicos", l: "AlÃ©rgicos" },
-              { k: "ginecologicos", l: "Gineco-ObstÃ©tricos" },
+              { k: "quirurgicos", l: "Quirúrgicos" },
+              { k: "traumaticos", l: "Traumáticos" },
+              { k: "farmacologicos", l: "Farmacológicos" },
+              { k: "alergicos", l: "Alérgicos" },
+              { k: "ginecologicos", l: "Gineco-Obstétricos" },
             ].map((a) => {
               const val = data.antecedentes?.[a.k];
               const hasContent =
@@ -10745,7 +10745,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                     <span className="font-bold uppercase text-gray-700">
                       {a.l}
                     </span>
-                    {/* Pantalla: radios No / SÃ­ */}
+                    {/* Pantalla: radios No / Sí */}
                     <div className="flex gap-2 no-print">
                       <label className="cursor-pointer flex items-center gap-0.5">
                         <input
@@ -10776,10 +10776,10 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                           }
                           className="w-3 h-3"
                         />
-                        <span>SÃ­</span>
+                        <span>Sí</span>
                       </label>
                     </div>
-                    {/* ImpresiÃ³n: solo el estado seleccionado */}
+                    {/* Impresión: solo el estado seleccionado */}
                     <span
                       className={`hidden print:inline text-[8.5pt] font-bold ${
                         hasContent ? "text-red-600" : "text-gray-400"
@@ -10805,7 +10805,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                       className="w-full p-0.5 border-b border-red-300 bg-transparent outline-none text-[9px] resize-none"
                     />
                   )}
-                  {/* ImpresiÃ³n: antecedente negativo â†’ mostrar "Niega" en texto */}
+                  {/* Impresión: antecedente negativo â†’ mostrar "Niega" en texto */}
                   {!hasContent && (
                     <p className="hidden print:block text-[8pt] text-gray-400 italic leading-tight">
                       Niega
@@ -10817,7 +10817,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
           </div>
           <div className="print-section-break" />
           <SectionTitle
-            title="RevisiÃ³n por Sistemas"
+            title="Revisión por Sistemas"
             icon={Activity}
             color="blue"
           />
@@ -10827,7 +10827,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                 k: "general",
                 l: "General",
                 normal:
-                  "Sin sÃ­ntomas constitucionales. Niega pÃ©rdida de peso, fiebre ni astenia.",
+                  "Sin síntomas constitucionales. Niega pérdida de peso, fiebre ni astenia.",
               },
               {
                 k: "cardiovascular",
@@ -10838,13 +10838,13 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
               {
                 k: "respiratorio",
                 l: "Respiratorio",
-                normal: "Niega tos, disnea, expectoraciÃ³n ni hemoptisis.",
+                normal: "Niega tos, disnea, expectoración ni hemoptisis.",
               },
               {
                 k: "digestivo",
                 l: "Digestivo",
                 normal:
-                  "Niega dolor abdominal, nÃ¡useas, vÃ³mito, diarrea ni rectorragia.",
+                  "Niega dolor abdominal, náuseas, vómito, diarrea ni rectorragia.",
               },
               {
                 k: "genitourinario",
@@ -10853,27 +10853,27 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
               },
               {
                 k: "musculoesqueletico",
-                l: "MusculoesquelÃ©tico",
+                l: "Musculoesquelético",
                 normal:
-                  "Niega artralgias, mialgias, rigidez ni limitaciÃ³n funcional.",
+                  "Niega artralgias, mialgias, rigidez ni limitación funcional.",
               },
               {
                 k: "neurologico",
-                l: "NeurolÃ³gico",
+                l: "Neurológico",
                 normal:
                   "Niega cefalea, mareos, convulsiones, alteraciones visuales ni parestesias.",
               },
               {
                 k: "dermatologico",
-                l: "DermatolÃ³gico",
+                l: "Dermatológico",
                 normal:
-                  "Niega lesiones cutÃ¡neas, prurito, cambios de coloraciÃ³n ni rash.",
+                  "Niega lesiones cutáneas, prurito, cambios de coloración ni rash.",
               },
               {
                 k: "endocrinologico",
-                l: "EndocrinolÃ³gico",
+                l: "Endocrinológico",
                 normal:
-                  "Niega poliuria, polidipsia, intolerancia al calor/frÃ­o ni cambios de peso.",
+                  "Niega poliuria, polidipsia, intolerancia al calor/frío ni cambios de peso.",
               },
             ].map((s) => {
               const val = data.revisionSistemas?.[s.k] || "";
@@ -10881,7 +10881,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                 val &&
                 val.trim() !== "" &&
                 val.trim().toLowerCase() !== "niega" &&
-                !val.toLowerCase().includes("sin sÃ­ntomas") &&
+                !val.toLowerCase().includes("sin síntomas") &&
                 !val.toLowerCase().includes("niega");
               return (
                 <div
@@ -10933,7 +10933,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                         <span className="text-red-600 font-bold">Anormal</span>
                       </label>
                     </div>
-                    {/* ImpresiÃ³n: solo el estado seleccionado */}
+                    {/* Impresión: solo el estado seleccionado */}
                     <span
                       className={`hidden print:inline text-[8.5pt] font-bold ${
                         isAbnormal ? "text-red-600" : "text-emerald-700"
@@ -10955,7 +10955,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                           },
                         }))
                       }
-                      placeholder="Describa sÃ­ntomas..."
+                      placeholder="Describa síntomas..."
                       className="w-full text-[10px] p-1 border border-red-300 rounded bg-white resize-none"
                     />
                   ) : (
@@ -10968,7 +10968,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
             })}
           </div>
           <div className="print-section-break" />
-          <SectionTitle title="Examen FÃ­sico" icon={Activity} color="blue" />
+          <SectionTitle title="Examen Físico" icon={Activity} color="blue" />
           <div className="bg-blue-50 p-2 rounded-lg border border-blue-100 mb-2 print:bg-transparent">
             <div className="grid grid-cols-4 gap-1 mb-2">
               <InputGroup
@@ -11006,7 +11006,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                 }
               />
               <InputGroup
-                label="Temp (Â°C)"
+                label="Temp (°C)"
                 name="exFTemp"
                 value={data.examenFisico?.temp || ""}
                 onChange={(e) =>
@@ -11176,7 +11176,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                         <span className="text-red-600 font-bold">Anormal</span>
                       </label>
                     </div>
-                    {/* ImpresiÃ³n: solo el estado seleccionado */}
+                    {/* Impresión: solo el estado seleccionado */}
                     <span
                       className={`hidden print:inline text-[8.5pt] font-bold ${
                         data.sistemasPorExamen[sys].estado === "Anormal"
@@ -11189,7 +11189,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                         : "âœ“ Normal"}
                     </span>
                   </div>
-                  {/* Pantalla: descripciÃ³n normal en gris */}
+                  {/* Pantalla: descripción normal en gris */}
                   <p
                     className={`text-[9px] leading-relaxed print:hidden ${
                       data.sistemasPorExamen[sys].estado === "Anormal"
@@ -11203,7 +11203,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                     <textarea
                       rows={2}
                       className="w-full text-[10px] p-1 border border-red-300 rounded bg-white resize-none"
-                      placeholder="Describa el hallazgo patolÃ³gico..."
+                      placeholder="Describa el hallazgo patológico..."
                       value={data.sistemasPorExamen[sys].hallazgo}
                       onChange={(e) =>
                         setData((p) => ({
@@ -11225,7 +11225,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
           </div>
           <div className="print-section-break" />
           <SectionTitle
-            title="ImpresiÃ³n DiagnÃ³stica y Plan de Manejo"
+            title="Impresión Diagnóstica y Plan de Manejo"
             icon={FileCheck}
             color="blue"
           />
@@ -11241,12 +11241,12 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                 ) : (
                   <Sparkles className="w-3.5 h-3.5" />
                 )}{" "}
-                AnÃ¡lisis IA
+                Análisis IA
               </button>
             </div>
             <div className="mb-2">
               <label className="block text-[10px] font-bold text-gray-600 mb-1 uppercase">
-                DiagnÃ³sticos (CIE-10)
+                Diagnósticos (CIE-10)
               </label>
               {(data.diagnosticos || []).map((diag, i) => (
                 <div key={i} className="flex gap-2 mb-1">
@@ -11261,7 +11261,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                       }
                       onChange={(v) => {
                         const d = [...data.diagnosticos];
-                        // Detectar si seleccionÃ³ un item completo "CÃ“DIGO - descripciÃ³n"
+                        // Detectar si seleccionó un item completo "CÃ“DIGO - descripción"
                         const match = v.match(
                           /^([A-Z][0-9]{2}[\.0-9]*)\s+-\s+(.+)$/
                         );
@@ -11276,7 +11276,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                         }
                         setData((p) => ({ ...p, diagnosticos: d }));
                       }}
-                      placeholder="Buscar CIE-10 - cÃ³digo o descripciÃ³n..."
+                      placeholder="Buscar CIE-10 - código o descripción..."
                       className="w-full p-1 border rounded text-xs focus:ring-2 focus:ring-blue-400 outline-none"
                     />
                   </div>
@@ -11322,7 +11322,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                 }
                 className="text-blue-600 text-[11px] font-bold flex items-center gap-1 hover:underline mt-1"
               >
-                <Plus className="w-3 h-3" /> Agregar diagnÃ³stico
+                <Plus className="w-3 h-3" /> Agregar diagnóstico
               </button>
             </div>
             <div className="grid grid-cols-2 gap-2">
@@ -11350,7 +11350,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
               />
             </div>
           </div>
-          {/* â”€â”€ Firma y VerificaciÃ³n â”€â”€ */}
+          {/* â”€â”€ Firma y Verificación â”€â”€ */}
           <div
             className={`mt-6 px-4 print-break-avoid transition-all ${
               data.estadoHistoria === "Cerrada" ? "block" : "hidden print:block"
@@ -11369,7 +11369,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                   </div>
                 </div>
                 <div className="text-center w-1/3">
-                  {/* Firma Digital movida al Ã¡rea inferior del certificado */}
+                  {/* Firma Digital movida al área inferior del certificado */}
                 </div>
                 <div className="text-center w-1/3">
                   <DoctorSignature
@@ -11413,7 +11413,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
           Certificado de Aptitud Laboral
         </h2>
         <p className="text-xs font-medium text-gray-500">
-          ResoluciÃ³n 1843 de 2025 (vigente) - Deroga Res. 2346 de 2007
+          Resolución 1843 de 2025 (vigente) - Deroga Res. 2346 de 2007
         </p>
       </div>
       <div className="bg-gray-50 p-4 rounded-xl border border-gray-200 mb-5 print:bg-transparent print:border-gray-400">
@@ -11437,7 +11437,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
               Edad
             </span>
             <span className="font-semibold text-gray-800">
-              {data.edad || "--"} aÃ±os
+              {data.edad || "--"} años
             </span>
           </div>
           <div className="flex gap-2 items-baseline">
@@ -11474,7 +11474,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
           </div>
           <div className="flex gap-2 items-baseline">
             <span className="text-[10px] font-black uppercase text-gray-400 w-24 flex-shrink-0">
-              Ã‰nfasis
+              Énfasis
             </span>
             <span className="font-semibold text-gray-800">
               {data.enfasisExamen || "--"}
@@ -11482,7 +11482,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
           </div>
           <div className="flex gap-2 items-baseline">
             <span className="text-[10px] font-black uppercase text-gray-400 w-24 flex-shrink-0">
-              Tipo EvaluaciÃ³n
+              Tipo Evaluación
             </span>
             <span className="font-semibold text-gray-800">
               {data.tipoExamen || "--"}
@@ -11498,7 +11498,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
           </div>
           <div className="flex gap-2 items-baseline">
             <span className="text-[10px] font-black uppercase text-gray-400 w-24 flex-shrink-0">
-              MÃ©dico Evaluador
+              Médico Evaluador
             </span>
             <span className="font-semibold text-gray-800">
               {activeDoctorData?.nombre || data.medicoNombre || "--"}
@@ -11506,10 +11506,10 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
           </div>
           <div className="col-span-2 flex gap-2 items-baseline mt-1 border-t border-gray-200 pt-1">
             <span className="text-[10px] font-black uppercase text-gray-400 w-24 flex-shrink-0">
-              DiagnÃ³stico Ppal.
+              Diagnóstico Ppal.
             </span>
             <span className="font-semibold text-gray-800">
-              {"Z10.0 - EXAMEN MÃ‰DICO OCUPACIONAL"}
+              {"Z10.0 - EXAMEN MÉDICO OCUPACIONAL"}
             </span>
           </div>
           {(data.diagnosticoSecundario1 || data.diagnosticoSecundario2) && (
@@ -11529,7 +11529,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
           )}
         </div>
       </div>
-      {/* â”€â”€ RESULTADOS Ã‰NFASIS ESPECIALIZADO en certificado â”€â”€ */}
+      {/* â”€â”€ RESULTADOS ÉNFASIS ESPECIALIZADO en certificado â”€â”€ */}
       {data.enfasisExamen &&
         data.enfasisExamen !== "GENERAL" &&
         (() => {
@@ -11554,11 +11554,11 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                     : "bg-rose-100 text-rose-800")
                 }
               >
-                Hallazgos Examen Ã‰nfasis:{" "}
+                Hallazgos Examen Énfasis:{" "}
                 {enf === "ALTURAS"
                   ? "Trabajo en Alturas (Res. 4272/2021)"
                   : enf === "ALIMENTOS"
-                  ? "ManipulaciÃ³n de Alimentos (Res. 2674/2013)"
+                  ? "Manipulación de Alimentos (Res. 2674/2013)"
                   : enf === "CONFINADOS"
                   ? "Espacios Confinados (Res. 0491/2020)"
                   : enf === "OSTEOMUSCULAR"
@@ -11575,7 +11575,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                       </span>
                     </div>
                     <div className={rowCls}>
-                      <span className="text-gray-500">VÃ©rtigo</span>
+                      <span className="text-gray-500">Vértigo</span>
                       <span
                         className={badNorm(
                           data.examenAlturas?.vertigo,
@@ -11586,7 +11586,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                       </span>
                     </div>
                     <div className={rowCls}>
-                      <span className="text-gray-500">CoordinaciÃ³n</span>
+                      <span className="text-gray-500">Coordinación</span>
                       <span
                         className={badNorm(data.examenAlturas?.coordinacion)}
                       >
@@ -11684,7 +11684,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                       </span>
                     </div>
                     <div className={rowCls}>
-                      <span className="text-gray-500">NeurolÃ³gico</span>
+                      <span className="text-gray-500">Neurológico</span>
                       <span
                         className={badNorm(data.examenConfinados?.neurologico)}
                       >
@@ -11692,7 +11692,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                       </span>
                     </div>
                     <div className={rowCls}>
-                      <span className="text-gray-500">PsicolÃ³gico</span>
+                      <span className="text-gray-500">Psicológico</span>
                       <span
                         className={badNorm(
                           data.examenConfinados?.psicologico,
@@ -11703,7 +11703,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                       </span>
                     </div>
                     <div className={rowCls}>
-                      <span className="text-gray-500">ORL / OÃ­do</span>
+                      <span className="text-gray-500">ORL / Oído</span>
                       <span
                         className={badNorm(data.examenConfinados?.otorrino)}
                       >
@@ -11782,7 +11782,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                       </span>
                     </div>
                     <div className={rowCls}>
-                      <span className="text-gray-500">EvaluaciÃ³n Postural</span>
+                      <span className="text-gray-500">Evaluación Postural</span>
                       <span
                         className={badNorm(data.examenOsteomuscular?.postural)}
                       >
@@ -11833,7 +11833,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                       </span>
                     </div>
                     <div className={rowCls}>
-                      <span className="text-gray-500">PresiÃ³n Arterial</span>
+                      <span className="text-gray-500">Presión Arterial</span>
                       <span
                         className={badNorm(data.examenCorazon?.presionArterial)}
                       >
@@ -11849,7 +11849,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                       </span>
                     </div>
                     <div className={rowCls}>
-                      <span className="text-gray-500">Pulsos PerifÃ©ricos</span>
+                      <span className="text-gray-500">Pulsos Periféricos</span>
                       <span className={badNorm(data.examenCorazon?.pulsos)}>
                         {data.examenCorazon?.pulsos || "--"}
                       </span>
@@ -11867,7 +11867,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                     </div>
                     <div className={rowCls}>
                       <span className="text-gray-500">
-                        PerfusiÃ³n PerifÃ©rica
+                        Perfusión Periférica
                       </span>
                       <span
                         className={badNorm(
@@ -11885,7 +11885,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                     )}
                     {data.examenCorazon?.imc && (
                       <div className="col-span-2 text-gray-700">
-                        <span className="font-bold">AntropometrÃ­a: </span>
+                        <span className="font-bold">Antropometría: </span>
                         {data.examenCorazon.imc}
                       </div>
                     )}
@@ -11962,10 +11962,10 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
           </div>
           <div>
             <p className="text-xs font-black text-emerald-800">
-              Historia ClÃ­nica Firmada y Cerrada
+              Historia Clínica Firmada y Cerrada
             </p>
             <p className="text-[10px] text-emerald-600">
-              CÃ³digo de verificaciÃ³n:{" "}
+              Código de verificación:{" "}
               <span className="font-mono font-bold">
                 {data.codigoVerificacion || "--"}
               </span>
@@ -12010,7 +12010,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
               </div>
             </div>
           )}
-          {/* â•â• B-13: BotÃ³n descarga RDA - Res. 1888/2025 â•â• */}
+          {/* â•â• B-13: Botón descarga RDA - Res. 1888/2025 â•â• */}
           {data.estadoHistoria === "Cerrada" && data.codigoVerificacion && (
             <button
               onClick={() => {
@@ -12021,7 +12021,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                 );
                 if (ok)
                   showAlert(
-                    "âœ… RDA descargado.\nRes. 1888/2025 - Para transmisiÃ³n IHCE se requiere firma electrÃ³nica."
+                    "âœ… RDA descargado.\nRes. 1888/2025 - Para transmisión IHCE se requiere firma electrónica."
                   );
                 else showAlert("âŒ No se pudo generar el RDA.");
               }}
@@ -12030,7 +12030,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
               <FileText className="w-3 h-3" /> Descargar RDA - Res. 1888/2025
             </button>
           )}
-          {/* CÃ³digo de verificaciÃ³n integrado en la firma del certificado */}
+          {/* Código de verificación integrado en la firma del certificado */}
         </div>
         <div className="text-center w-1/3">
           <DoctorSignature
@@ -12041,23 +12041,23 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
         </div>
       </div>
       {/* â”€â”€ NORMATIVO: Res. 1843/2025 Art. 25 - Registro entrega certificado â”€â”€ */}
-      {/* Evoluciones clÃ­nicas: se gestionan desde la HC, no aparecen en el certificado */}
-      {/* â•â• B-F1-05: CarnÃ© manipulaciÃ³n alimentos â•â• */}
+      {/* Evoluciones clínicas: se gestionan desde la HC, no aparecen en el certificado */}
+      {/* â•â• B-F1-05: Carné manipulación alimentos â•â• */}
       {data.enfasisExamen === "ALIMENTOS" && (
         <div className="no-print my-3 bg-green-50 border border-green-300 rounded-xl p-3 flex items-center justify-between">
           <div>
             <p className="text-xs font-black text-green-800">
-              ðŸ½ï¸ CarnÃ© de ManipulaciÃ³n de Alimentos
+              ðŸ½ï¸ Carné de Manipulación de Alimentos
             </p>
             <p className="text-[10px] text-green-600">
-              CarnÃ© imprimible 8.5Ã—5.5 cm con foto y datos del trabajador
+              Carné imprimible 8.5Ã—5.5 cm con foto y datos del trabajador
             </p>
           </div>
           <button
             onClick={() => openCarnetAlimentos(data, activeDoctorData)}
             className="px-4 py-2 bg-green-700 hover:bg-green-800 text-white text-xs font-black rounded-lg"
           >
-            ðŸ–¨ï¸ Imprimir CarnÃ©
+            ðŸ–¨ï¸ Imprimir Carné
           </button>
         </div>
       )}
@@ -12121,10 +12121,10 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
             </div>
             <div className="flex flex-col gap-0.5">
               <label className="text-[9px] font-bold text-gray-500 uppercase">
-                MÃ©todo de entrega
+                Método de entrega
               </label>
               <select
-                value={data.metodoEntregaCertificado || "FÃ­sica"}
+                value={data.metodoEntregaCertificado || "Física"}
                 onChange={(e) =>
                   setData((p) => ({
                     ...p,
@@ -12134,7 +12134,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                 disabled={data.estadoHistoria === "Cerrada"}
                 className="p-1 border border-emerald-300 rounded text-xs bg-white"
               >
-                <option>FÃ­sica</option>
+                <option>Física</option>
                 <option>Email</option>
                 <option>WhatsApp</option>
               </select>
@@ -12159,19 +12159,19 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
     />
   );
   // â”€â”€â”€ RENDER: PACIENTES â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-  // â•â• B-12: Helper de periodicidad - Res. 1843/2025 Art. 4 (max 3 aÃ±os entre evaluaciones) â•â•
+  // â•â• B-12: Helper de periodicidad - Res. 1843/2025 Art. 4 (max 3 años entre evaluaciones) â•â•
   const _getPeriodicidadStatus = (p) => {
-    // Obtener la fecha del examen mÃ¡s reciente del paciente
+    // Obtener la fecha del examen más reciente del paciente
     const todasHC = patientsList.filter(
       (h) => h.docNumero === p.docNumero && h.fechaExamen
     );
     if (!todasHC.length)
-      return { nivel: "sin_eval", label: "âš ï¸ Sin evaluaciÃ³n", color: "red" };
+      return { nivel: "sin_eval", label: "âš ï¸ Sin evaluación", color: "red" };
     const fechas = todasHC
       .map((h) => new Date(h.fechaExamen))
       .filter((d) => !isNaN(d));
     if (!fechas.length)
-      return { nivel: "sin_eval", label: "âš ï¸ Sin evaluaciÃ³n", color: "red" };
+      return { nivel: "sin_eval", label: "âš ï¸ Sin evaluación", color: "red" };
     const ultima = new Date(Math.max(...fechas));
     const hoy = new Date();
     const diasDesde = Math.floor((hoy - ultima) / (1000 * 60 * 60 * 24));
@@ -12235,7 +12235,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
         <div className="max-w-6xl mx-auto bg-white shadow-lg rounded-2xl p-6">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-black text-teal-900 flex items-center gap-2">
-              <Users className="w-5 h-5" /> GestiÃ³n de Pacientes ({list.length})
+              <Users className="w-5 h-5" /> Gestión de Pacientes ({list.length})
             </h2>
             <button
               onClick={() => goBack()}
@@ -12311,9 +12311,9 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                             handleOpenHistoryModal(p.docNumero, true)
                           }
                           className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-violet-50 text-violet-600 hover:bg-violet-100 border border-violet-200"
-                          title="Consultar certificados de todos los mÃ©dicos"
+                          title="Consultar certificados de todos los médicos"
                         >
-                          ðŸ” Todos mÃ©dicos
+                          ðŸ” Todos médicos
                         </button>
                       </div>
                     </td>
@@ -12383,7 +12383,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
               <div className="flex justify-between items-center mb-4 border-b pb-2">
                 <h3 className="text-lg font-black text-gray-800 flex items-center gap-2">
                   <History className="w-5 h-5 text-blue-600" /> Historial
-                  ClÃ­nico
+                  Clínico
                 </h3>
                 <button onClick={() => setShowHistoryModal(false)}>
                   <X className="w-5 h-5 text-gray-400 hover:text-red-500" />
@@ -12529,8 +12529,8 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
     />
   );
   // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-  // B-24: PORTAL DEL TRABAJADOR - Solo lectura con cÃ³digo de verificaciÃ³n
-  // Res. 2346/2007 Art. 14 Â· Ley 1581/2012 - Acceso del titular a su HC
+  // B-24: PORTAL DEL TRABAJADOR - Solo lectura con código de verificación
+  // Res. 2346/2007 Art. 14 · Ley 1581/2012 - Acceso del titular a su HC
   // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   // [EXTRACTED â†’ pages/PortalTrabajadorPage.jsx]
   const renderPortalTrabajador = () => (
@@ -12547,7 +12547,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
   // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   // B-31: SVE
   // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-  // B-31: SVE - Sistema Vigilancia EpidemiolÃ³gica - Res. 2346/2007 Â· Res. 1843/2025
+  // B-31: SVE - Sistema Vigilancia Epidemiológica - Res. 2346/2007 · Res. 1843/2025
   // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   const renderSVE = () => {
     // â”€â”€ PLAN GATE: SVE requiere plan STARTER o superior â”€â”€
@@ -12572,7 +12572,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
           </div>
         </div>
       );
-    // â”€â”€ SECRETARIA GATE: "Sistema de Vigilancia EpidemiolÃ³gica (SVE)" requiere autorizaciÃ³n del admin â”€â”€
+    // â”€â”€ SECRETARIA GATE: "Sistema de Vigilancia Epidemiológica (SVE)" requiere autorización del admin â”€â”€
     if (
       currentUser?.role === "secretaria" &&
       !_secretariaPuede("sve", currentUser, usersList)
@@ -12584,16 +12584,16 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
             <div className="bg-amber-50 border-2 border-amber-300 rounded-2xl p-8 space-y-3">
               <div className="text-5xl">ðŸ”</div>
               <p className="font-black text-amber-800 text-xl">
-                MÃ³dulo restringido
+                Módulo restringido
               </p>
               <p className="text-amber-700 text-sm font-bold">
-                Sistema de Vigilancia EpidemiolÃ³gica (SVE)
+                Sistema de Vigilancia Epidemiológica (SVE)
               </p>
               <p className="text-amber-600 text-xs leading-relaxed">
-                Este mÃ³dulo requiere autorizaciÃ³n explÃ­cita del administrador.
+                Este módulo requiere autorización explícita del administrador.
                 <br />
                 Solicita que habilite el permiso{" "}
-                <strong>"Sistema de Vigilancia EpidemiolÃ³gica (SVE)"</strong> en
+                <strong>"Sistema de Vigilancia Epidemiológica (SVE)"</strong> en
                 tu perfil.
                 <br />
                 (Usuarios â†’ tu nombre â†’ ðŸ” Permisos de secretaria)
@@ -12613,8 +12613,8 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
     const PROGRAMAS_ALL = [
       {
         id: "DME",
-        label: "DME (DesÃ³rdenes MÃºsculo-EsquelÃ©ticos)",
-        riesgo: "ErgonÃ³mico",
+        label: "DME (Desórdenes Músculo-Esqueléticos)",
+        riesgo: "Ergonómico",
         cie: "M00-M99",
       },
       {
@@ -12626,13 +12626,13 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
       {
         id: "RESP",
         label: "Resp. Ocupacional",
-        riesgo: "InhalaciÃ³n",
+        riesgo: "Inhalación",
         cie: "J00-J99",
       },
       {
         id: "DER",
         label: "Dermatosis Ocupacional",
-        riesgo: "QuÃ­mico/FÃ­sico",
+        riesgo: "Químico/Físico",
         cie: "L00-L99",
       },
       {
@@ -12644,13 +12644,13 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
       {
         id: "RUI",
         label: "HNIR (Ruido)",
-        riesgo: "FÃ­sico-Ruido",
+        riesgo: "Físico-Ruido",
         cie: "H60-H95",
       },
       {
         id: "QUIM",
-        label: "ExposiciÃ³n a sustancias quÃ­micas",
-        riesgo: "QuÃ­mico",
+        label: "Exposición a sustancias químicas",
+        riesgo: "Químico",
         cie: "T36-T65",
       },
     ];
@@ -12659,13 +12659,13 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
       maxProgramas < 7 ? PROGRAMAS_ALL.slice(0, maxProgramas) : PROGRAMAS_ALL;
     const prog = PROGRAMAS.find((p) => p.id === svePrograma) || PROGRAMAS[0];
     const SVE_RISK_MAP = {
-      DME: ["musculoesquelÃ©tico", "ergon", "lumbar", "columna"],
-      PREC: ["cardiovascular", "hipertensiÃ³n", "colesterol"],
+      DME: ["musculoesquelético", "ergon", "lumbar", "columna"],
+      PREC: ["cardiovascular", "hipertensión", "colesterol"],
       RESP: ["respiratorio", "pulmonar", "asma", "silicosis"],
       DER: ["dermatitis", "piel"],
-      PSICO: ["psicosocial", "estrÃ©s", "burnout"],
+      PSICO: ["psicosocial", "estrés", "burnout"],
       RUI: ["auditivo", "ruido", "hipoacusia"],
-      QUIM: ["quÃ­mico", "solvente", "plomo", "mercurio"],
+      QUIM: ["químico", "solvente", "plomo", "mercurio"],
     };
     const keywords = SVE_RISK_MAP[svePrograma] || [];
     const allPats = patientsList.filter(
@@ -12691,7 +12691,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
     const exportarSVE = () => {
       const header = [
         "Nombre",
-        "CÃ©dula",
+        "Cédula",
         "Empresa",
         "Cargo",
         "Fecha examen",
@@ -12737,10 +12737,10 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
             </button>
             <div>
               <h1 className="font-black text-gray-800 text-lg">
-                Sistema de Vigilancia EpidemiolÃ³gica
+                Sistema de Vigilancia Epidemiológica
               </h1>
               <p className="text-xs text-gray-400">
-                SVE Â· Res. 2346/2007 Â· Res. 1843/2025 Â· IdentificaciÃ³n de
+                SVE · Res. 2346/2007 · Res. 1843/2025 · Identificación de
                 trabajadores en riesgo
               </p>
             </div>
@@ -12786,22 +12786,22 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
               <div className="bg-teal-50 border border-teal-100 rounded-xl p-3 text-xs">
                 <p className="font-black text-teal-700">{prog.label}</p>
                 <p className="text-teal-600">
-                  Riesgo: {prog.riesgo} Â· CIE-10: {prog.cie}
+                  Riesgo: {prog.riesgo} · CIE-10: {prog.cie}
                 </p>
               </div>
             </div>
           </div>
-          {/* â”€â”€ IA SVE: AnÃ¡lisis por empresa â”€â”€ */}
+          {/* â”€â”€ IA SVE: Análisis por empresa â”€â”€ */}
           <div className="bg-white rounded-2xl shadow-sm border border-violet-100 p-5">
             <div className="flex items-center justify-between mb-3">
               <div>
                 <p className="text-sm font-black text-violet-800 flex items-center gap-2">
-                  <BrainCircuit className="w-4 h-4" /> AnÃ¡lisis IA por Empresa -
+                  <BrainCircuit className="w-4 h-4" /> Análisis IA por Empresa -
                   SVE
                 </p>
                 <p className="text-[10px] text-violet-500">
-                  ClasificaciÃ³n automÃ¡tica de trabajadores por factor de riesgo,
-                  diagnÃ³stico, recomendaciones y fecha de control
+                  Clasificación automática de trabajadores por factor de riesgo,
+                  diagnóstico, recomendaciones y fecha de control
                 </p>
               </div>
             </div>
@@ -12828,7 +12828,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                 onClick={async () => {
                   if (!_canUse("ia_analisis", currentUser)) {
                     showAlert(
-                      "ðŸ”’ El anÃ¡lisis IA requiere plan â­ Pro ($79.000/mes).\n\nMenÃº â†’ â­ Ver Planes"
+                      "ðŸ”’ El análisis IA requiere plan â­ Pro ($79.000/mes).\n\nMenú â†’ â­ Ver Planes"
                     );
                     return;
                   }
@@ -12846,7 +12846,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                   );
                   if (!patsToAnalyze.length) {
                     showAlert(
-                      "Sin pacientes cerrados para analizar.\nVerifique que las HCs estÃ©n cerradas y firmadas."
+                      "Sin pacientes cerrados para analizar.\nVerifique que las HCs estén cerradas y firmadas."
                     );
                     return;
                   }
@@ -12872,7 +12872,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                         .map(([k]) => k)
                         .join(",")
                         .slice(0, 60),
-                      // â”€â”€ FIX: campo dx (diagnÃ³sticos) â€” antes ausente â”€â”€
+                      // â”€â”€ FIX: campo dx (diagnósticos) â€” antes ausente â”€â”€
                       dx:
                         (p.diagnosticos || [])
                           .map((d) =>
@@ -12896,28 +12896,28 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                       ).slice(0, 80),
                       f: String(p.fechaExamen || "").slice(0, 12),
                     }));
-                    const prompt = `Eres mÃ©dico especialista en Medicina del Trabajo y SVE (Vigilancia EpidemiolÃ³gica) en Colombia (Res. 2346/2007 Â· Res. 1843/2025). Analiza ${
+                    const prompt = `Eres médico especialista en Medicina del Trabajo y SVE (Vigilancia Epidemiológica) en Colombia (Res. 2346/2007 · Res. 1843/2025). Analiza ${
                       patsToAnalyze.length
                     } trabajadores${
                       sveAIFiltroEmpresa
                         ? ` de "${empresaNombreAI}"`
                         : " de varias empresas"
-                    } y clasifÃ­calos en programas SVE.
+                    } y clasifícalos en programas SVE.
 
-DATOS TRABAJADORES (n=nombre, d=doc, c=cargo, e=empresa, nit=NIT empresa, r=riesgos exposiciÃ³n, dx=diagnÃ³sticos CIE-10, co=concepto aptitud, rs=restricciones, rc=recomendaciones, f=fechaExamen):
+DATOS TRABAJADORES (n=nombre, d=doc, c=cargo, e=empresa, nit=NIT empresa, r=riesgos exposición, dx=diagnósticos CIE-10, co=concepto aptitud, rs=restricciones, rc=recomendaciones, f=fechaExamen):
 ${JSON.stringify(resumen)}
 
 INSTRUCCIONES:
 1. AGRUPA los resultados POR EMPRESA (campo "e")
-2. Clasifica cada trabajador: DME (mÃºsculo-esquelÃ©tico/ergonÃ³mico) | PREC (cardiovascular/hipertensiÃ³n) | RESP (respiratorio/pulmonar) | DER (dermatolÃ³gico) | PSICO (psicosocial/estrÃ©s) | RUI (ruido/hipoacusia) | QUIM (sustancias quÃ­micas) | NINGUNO
-3. Basa la clasificaciÃ³n en: diagnÃ³sticos dx, riesgos r, restricciones rs y recomendaciones rc
-4. Factor de riesgo: describe el principal hallazgo clÃ­nico/ocupacional
-5. AcciÃ³n recomendada: concreta y aplicable (ingreso a programa, evaluaciÃ³n, examen especÃ­fico)
-6. Meses control: tiempo hasta prÃ³xima evaluaciÃ³n (1-12)
-7. Prioridad: alta (sÃ­ntomas activos/riesgo inminente) | media (hallazgos a seguir) | baja (preventivo/rutina)
-8. Para cada empresa: perfil epidemiolÃ³gico en 2-3 frases (riesgos predominantes, % en SVE)
+2. Clasifica cada trabajador: DME (músculo-esquelético/ergonómico) | PREC (cardiovascular/hipertensión) | RESP (respiratorio/pulmonar) | DER (dermatológico) | PSICO (psicosocial/estrés) | RUI (ruido/hipoacusia) | QUIM (sustancias químicas) | NINGUNO
+3. Basa la clasificación en: diagnósticos dx, riesgos r, restricciones rs y recomendaciones rc
+4. Factor de riesgo: describe el principal hallazgo clínico/ocupacional
+5. Acción recomendada: concreta y aplicable (ingreso a programa, evaluación, examen específico)
+6. Meses control: tiempo hasta próxima evaluación (1-12)
+7. Prioridad: alta (síntomas activos/riesgo inminente) | media (hallazgos a seguir) | baja (preventivo/rutina)
+8. Para cada empresa: perfil epidemiológico en 2-3 frases (riesgos predominantes, % en SVE)
 
-RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
+RESPONDE ÚNICAMENTE JSON VÁLIDO sin texto previo ni bloques markdown:
 {"resumenGeneral":"texto resumen global todos los trabajadores analizados","totalAnalizados":${
                       patsToAnalyze.length
                     },"totalEnSVE":N,"empresas":[{"nombre":"nombre empresa","nit":"NIT","totalTrabajadores":N,"trabajadoresEnSVE":N,"perfilEpidemiologico":"texto 2-3 frases","trabajadores":[{"nombre":"nombre completo","doc":"cedula","cargo":"cargo","programaSVE":"DME","factorRiesgo":"descripcion concreta","accionRecomendada":"accion concreta","mesesControl":6,"prioridad":"media"}]}],"programas":{"DME":0,"PREC":0,"RESP":0,"DER":0,"PSICO":0,"RUI":0,"QUIM":0,"NINGUNO":0}}`;
@@ -12931,7 +12931,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
                       clean = clean.slice(jStart, jEnd + 1);
                     else if (!clean.startsWith("{")) clean = "{}";
                     const parsed = JSON.parse(clean);
-                    // Compatibilidad hacia atrÃ¡s: si la IA devuelve esquema viejo (trabajadores flat)
+                    // Compatibilidad hacia atrás: si la IA devuelve esquema viejo (trabajadores flat)
                     // convertir al nuevo esquema por empresa
                     if (
                       !parsed.empresas &&
@@ -12979,9 +12979,9 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
                     });
                   } catch (e) {
                     showAlert(
-                      "Error en anÃ¡lisis IA SVE:\n" +
+                      "Error en análisis IA SVE:\n" +
                         (e.message || "Error desconocido") +
-                        "\n\nVerifique su API Key en âš™ï¸ ConfiguraciÃ³n â†’ IA"
+                        "\n\nVerifique su API Key en âš™ï¸ Configuración â†’ IA"
                     );
                   } finally {
                     setSveAIAnalisisCargando(false);
@@ -13018,7 +13018,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
                       {sveAIAnalisis.totalEnSVE || 0}
                     </p>
                     <p className="text-[10px] font-black text-teal-500 uppercase">
-                      En algÃºn SVE
+                      En algún SVE
                     </p>
                   </div>
                   <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 text-center">
@@ -13049,17 +13049,17 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
                 {sveAIAnalisis.resumenGeneral && (
                   <div className="bg-violet-50 border border-violet-200 rounded-xl p-4">
                     <p className="text-xs font-black text-violet-800 mb-1">
-                      ðŸ“Š Resumen EpidemiolÃ³gico General
+                      ðŸ“Š Resumen Epidemiológico General
                     </p>
                     <p className="text-xs text-violet-700 leading-relaxed">
                       {sveAIAnalisis.resumenGeneral}
                     </p>
                     <p className="text-[10px] text-violet-400 mt-1">
-                      AnÃ¡lisis IA Â· {sveAIAnalisis.fecha}
+                      Análisis IA · {sveAIAnalisis.fecha}
                     </p>
                   </div>
                 )}
-                {/* â”€â”€ DistribuciÃ³n por programa â”€â”€ */}
+                {/* â”€â”€ Distribución por programa â”€â”€ */}
                 <div className="grid grid-cols-4 gap-2">
                   {Object.entries(sveAIAnalisis.programas || {})
                     .filter(([, v]) => Number(v) > 0)
@@ -13122,7 +13122,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
                               "Cargo",
                               "Programa SVE",
                               "Factor de Riesgo",
-                              "AcciÃ³n Recomendada",
+                              "Acción Recomendada",
                               "Control",
                               "Prioridad",
                             ].map((h) => (
@@ -13216,7 +13216,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
                         "Cargo",
                         "Programa SVE",
                         "Factor Riesgo",
-                        "AcciÃ³n Recomendada",
+                        "Acción Recomendada",
                         "Meses Control",
                         "Prioridad",
                       ];
@@ -13295,8 +13295,8 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
                   Sin trabajadores identificados en este programa
                 </p>
                 <p className="text-xs mt-1">
-                  Los trabajadores aparecen automÃ¡ticamente cuando tienen
-                  diagnÃ³sticos o riesgos asociados al programa
+                  Los trabajadores aparecen automáticamente cuando tienen
+                  diagnósticos o riesgos asociados al programa
                 </p>
               </div>
             ) : (
@@ -13369,7 +13369,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
   };
 
   // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-  // B-26: ARL - Reporte AT/EL - Decreto 1072/2015 Â· Res. 0312/2019
+  // B-26: ARL - Reporte AT/EL - Decreto 1072/2015 · Res. 0312/2019
   // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   const renderARL = () => {
     // â”€â”€ PLAN GATE: ARL requiere plan PRO â”€â”€
@@ -13396,7 +13396,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
       );
     const camposAT = [
       { k: "trabajador", l: "Nombre del trabajador", r: true },
-      { k: "docNum", l: "NÃºmero de cÃ©dula", r: true },
+      { k: "docNum", l: "Número de cédula", r: true },
       { k: "empresa", l: "Empresa", r: true },
       { k: "cargo", l: "Cargo", r: true },
       {
@@ -13406,7 +13406,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
         opts: [
           "Sura",
           "Positiva",
-          "BolÃ­var",
+          "Bolívar",
           "Colmena",
           "Liberty",
           "Equidad",
@@ -13423,21 +13423,21 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
       { k: "lugarAT", l: "Lugar del accidente", r: true },
       {
         k: "descripcion",
-        l: "DescripciÃ³n detallada del accidente",
+        l: "Descripción detallada del accidente",
         t: "textarea",
         r: true,
       },
       {
         k: "lesion",
-        l: "Tipo de lesiÃ³n",
+        l: "Tipo de lesión",
         opts: [
           "Herida",
           "Fractura",
-          "LuxaciÃ³n",
+          "Luxación",
           "Quemadura",
-          "ContusiÃ³n",
-          "AmputaciÃ³n",
-          "IntoxicaciÃ³n",
+          "Contusión",
+          "Amputación",
+          "Intoxicación",
           "Otra",
         ],
       },
@@ -13445,43 +13445,43 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
       { k: "testigos", l: "Testigos (nombre y cargo)" },
       { k: "primerosAuxilios", l: "Primeros auxilios prestados" },
       { k: "ips", l: "IPS donde fue atendido" },
-      { k: "causaInmediata", l: "Causa inmediata (acto/condiciÃ³n insegura)" },
-      { k: "causaBasica", l: "Causa bÃ¡sica" },
-      { k: "medicoReporta", l: "MÃ©dico que reporta" },
+      { k: "causaInmediata", l: "Causa inmediata (acto/condición insegura)" },
+      { k: "causaBasica", l: "Causa básica" },
+      { k: "medicoReporta", l: "Médico que reporta" },
       { k: "fechaReporte", l: "Fecha del reporte", t: "date", r: true },
     ];
     const camposEL = [
       { k: "trabajador", l: "Nombre del trabajador", r: true },
-      { k: "docNum", l: "NÃºmero de cÃ©dula", r: true },
+      { k: "docNum", l: "Número de cédula", r: true },
       { k: "empresa", l: "Empresa", r: true },
       { k: "cargo", l: "Cargo", r: true },
-      { k: "tiempoExpuesto", l: "Tiempo de exposiciÃ³n al riesgo" },
+      { k: "tiempoExpuesto", l: "Tiempo de exposición al riesgo" },
       { k: "arl", l: "ARL", r: true },
       {
         k: "diagnosticoEL",
-        l: "DiagnÃ³stico de enfermedad laboral (CIE-10)",
+        l: "Diagnóstico de enfermedad laboral (CIE-10)",
         r: true,
       },
       {
         k: "factorRiesgo",
         l: "Factor de riesgo asociado",
         opts: [
-          "FÃ­sico",
-          "QuÃ­mico",
-          "BiolÃ³gico",
-          "ErgonÃ³mico",
+          "Físico",
+          "Químico",
+          "Biológico",
+          "Ergonómico",
           "Psicosocial",
-          "MecÃ¡nico",
+          "Mecánico",
         ],
       },
       {
         k: "descripcionEL",
-        l: "DescripciÃ³n de la exposiciÃ³n",
+        l: "Descripción de la exposición",
         t: "textarea",
         r: true,
       },
-      { k: "recomendaciones", l: "Recomendaciones mÃ©dicas", t: "textarea" },
-      { k: "medicoReporta", l: "MÃ©dico que reporta", r: true },
+      { k: "recomendaciones", l: "Recomendaciones médicas", t: "textarea" },
+      { k: "medicoReporta", l: "Médico que reporta", r: true },
       { k: "fechaReporte", l: "Fecha del reporte", t: "date", r: true },
     ];
     const campos = arlTab === "at" ? camposAT : camposEL;
@@ -13510,7 +13510,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
       _sbSet(`siso_arl_${currentUser?.user || "shared"}`, lista);
       setArlForm({});
       showAlert(
-        "âœ… Reporte guardado. Notifique a la ARL dentro de las 48 horas segÃºn Decreto 1072/2015 Art. 2.2.4.2.1.17"
+        "âœ… Reporte guardado. Notifique a la ARL dentro de las 48 horas según Decreto 1072/2015 Art. 2.2.4.2.1.17"
       );
     };
     const handleImprimir = (rep) => {
@@ -13544,7 +13544,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
       <div class="doc-header">
         ${_arlLeftHtml}
         <div class="doc-title"><h1>${titulo}</h1>
-        <p style="font-size:8pt;color:#555;">Normativo: Decreto 1072/2015 Â· Res. 0312/2019 Â· Reporte a ARL en mÃ¡x. 48 h</p>
+        <p style="font-size:8pt;color:#555;">Normativo: Decreto 1072/2015 · Res. 0312/2019 · Reporte a ARL en máx. 48 h</p>
         <p><span class="badge">${arlTab.toUpperCase()}</span> &nbsp; Fecha reporte: <b>${
         d.fechaReporte || "--"
       }</b></p></div>
@@ -13563,9 +13563,9 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
       </div>
       <div class="firma">
         <div class="sig">Trabajador accidentado / afectado</div>
-        <div class="sig">MÃ©dico tratante<br/><small>${_sanitize(
+        <div class="sig">Médico tratante<br/><small>${_sanitize(
           activeDoctorData?.nombre || ""
-        )} Â· Lic: ${_sanitize(activeDoctorData?.licencia || "")}</small></div>
+        )} · Lic: ${_sanitize(activeDoctorData?.licencia || "")}</small></div>
         <div class="sig">Representante empresa</div>
       </div></body></html>`);
       w.document.close();
@@ -13587,9 +13587,9 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
               <span className="text-gray-600 text-sm">â†</span>
             </button>
             <div>
-              <h1 className="font-black text-gray-800 text-lg">MÃ³dulo ARL</h1>
+              <h1 className="font-black text-gray-800 text-lg">Módulo ARL</h1>
               <p className="text-xs text-gray-400">
-                Reportes AT/EL Â· Decreto 1072/2015 Â· Res. 0312/2019 Â· Notificar
+                Reportes AT/EL · Decreto 1072/2015 · Res. 0312/2019 · Notificar
                 a ARL en 48 h
               </p>
             </div>
@@ -13726,7 +13726,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
                           {rep.trabajador || "sin nombre"}
                         </span>
                         <span className="text-[10px] text-gray-400 ml-2">
-                          {rep.empresa || ""} Â·{" "}
+                          {rep.empresa || ""} ·{" "}
                           {(rep.fechaCreacion || "").substring(0, 10)}
                         </span>
                       </div>
@@ -13748,8 +13748,8 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
   };
 
   // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-  // B-22: HABEAS DATA - MÃ³dulo de Derechos del Titular
-  // Ley 1581 de 2012 Â· Decreto 1078 de 2015 (DUR MinTIC) Â· Res. SIC 2023
+  // B-22: HABEAS DATA - Módulo de Derechos del Titular
+  // Ley 1581 de 2012 · Decreto 1078 de 2015 (DUR MinTIC) · Res. SIC 2023
   // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   // [EXTRACTED â†’ pages/HabeasDataPage.jsx]
   const renderHabeasData = () => (
@@ -13767,7 +13767,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
   // Videoconsulta integrada con consentimiento digital, sin costo por minuto
   // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   const renderTelemedicina = () => {
-    // â”€â”€ SECRETARIA GATE: "Telemedicina" requiere autorizaciÃ³n del admin â”€â”€
+    // â”€â”€ SECRETARIA GATE: "Telemedicina" requiere autorización del admin â”€â”€
     if (
       currentUser?.role === "secretaria" &&
       !_secretariaPuede("telemedicina", currentUser, usersList)
@@ -13779,11 +13779,11 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
             <div className="bg-amber-50 border-2 border-amber-300 rounded-2xl p-8 space-y-3">
               <div className="text-5xl">ðŸ”</div>
               <p className="font-black text-amber-800 text-xl">
-                MÃ³dulo restringido
+                Módulo restringido
               </p>
               <p className="text-amber-700 text-sm font-bold">Telemedicina</p>
               <p className="text-amber-600 text-xs leading-relaxed">
-                Este mÃ³dulo requiere autorizaciÃ³n explÃ­cita del administrador.
+                Este módulo requiere autorización explícita del administrador.
                 <br />
                 Solicita que habilite el permiso <strong>
                   "Telemedicina"
@@ -13818,7 +13818,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
         return;
       }
       if (!teleForm.documento.trim()) {
-        showAlert("âš ï¸ Ingrese el nÃºmero de documento del paciente.");
+        showAlert("âš ï¸ Ingrese el número de documento del paciente.");
         return;
       }
       if (!teleForm.hora.trim()) {
@@ -13927,7 +13927,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
       ? `https://meet.jit.si/${
           teleSalaActiva.roomName
         }#userInfo.displayName="${encodeURIComponent(
-          currentUser?.name || "Dr. CucalÃ³n"
+          currentUser?.name || "Dr. Cucalón"
         )}"&config.startWithVideoMuted=false&config.prejoinPageEnabled=false`
       : null;
 
@@ -13950,7 +13950,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
                     ðŸ©º Telemedicina Ocupacional
                   </h2>
                   <p className="text-blue-200 text-xs mt-0.5">
-                    Res. 2654/2019 Â· Jitsi Meet Â· Sin costo por videollamada
+                    Res. 2654/2019 · Jitsi Meet · Sin costo por videollamada
                   </p>
                 </div>
               </div>
@@ -13989,7 +13989,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
             <div className="bg-white rounded-2xl shadow-lg overflow-hidden border-2 border-blue-500">
               <div className="bg-blue-600 px-4 py-2 flex items-center justify-between">
                 <div className="text-white text-xs font-bold flex items-center gap-2">
-                  {"ðŸ”´ CONSULTA EN CURSO - " + teleSalaActiva.paciente + " Â· " + teleSalaActiva.fecha + " " + teleSalaActiva.hora}
+                  {"ðŸ”´ CONSULTA EN CURSO - " + teleSalaActiva.paciente + " · " + teleSalaActiva.fecha + " " + teleSalaActiva.hora}
                   {teleEspera.length > 0 && (
                     <span className="bg-red-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full animate-pulse">
                       {"ðŸ”´ " + teleEspera.length + " paciente" + (teleEspera.length !== 1 ? "s" : "") + " esperando"}
@@ -14012,7 +14012,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
                     Sala lista para iniciar
                   </p>
                   <p className="text-xs text-gray-500 mt-1">
-                    La videollamada se abre en una nueva pestaÃ±a del navegador
+                    La videollamada se abre en una nueva pestaña del navegador
                   </p>
                 </div>
                 <div className="flex flex-col items-center gap-3 w-full max-w-xs">
@@ -14028,7 +14028,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
                     onClick={() => {
                       navigator.clipboard?.writeText(jitsiUrl);
                       showAlert(
-                        "ðŸ”— Enlace copiado al portapapeles. EnvÃ­elo al paciente."
+                        "ðŸ”— Enlace copiado al portapapeles. Envíelo al paciente."
                       );
                     }}
                     className="w-full bg-white border border-blue-200 text-blue-700 font-bold py-2 px-4 rounded-xl text-xs flex items-center justify-center gap-2"
@@ -14055,9 +14055,9 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
                   </p>
                 </div>
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-[10px] text-blue-700 max-w-sm">
-                  <p className="font-black">â„¹ï¸ CÃ³mo funciona</p>
+                  <p className="font-black">â„¹ï¸ Cómo funciona</p>
                   <p className="mt-0.5">
-                    1. Presione "Abrir videollamada" - se abre en nueva pestaÃ±a
+                    1. Presione "Abrir videollamada" - se abre en nueva pestaña
                   </p>
                   <p>
                     2. Comparta el enlace con el paciente por WhatsApp o Email
@@ -14069,9 +14069,9 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
                 </div>
               </div>
               <div className="px-4 py-2 bg-blue-50 text-[10px] text-blue-700 font-bold">
-                ðŸ”’ Sala privada: {teleSalaActiva.roomName} Â· La videollamada
-                ocurre en servidores de Jitsi Meet (meet.jit.si) Â· NingÃºn dato
-                clÃ­nico se transmite al proveedor de video
+                ðŸ”’ Sala privada: {teleSalaActiva.roomName} · La videollamada
+                ocurre en servidores de Jitsi Meet (meet.jit.si) · Ningún dato
+                clínico se transmite al proveedor de video
               </div>
             </div>
           )}
@@ -14158,7 +14158,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
                       setTeleForm((p) => ({ ...p, motivo: e.target.value }))
                     }
                     className="w-full p-2 border rounded-lg text-sm"
-                    placeholder="Ej: EvaluaciÃ³n periÃ³dica, seguimiento recomendaciÃ³n..."
+                    placeholder="Ej: Evaluación periódica, seguimiento recomendación..."
                   />
                 </div>
               </div>
@@ -14176,20 +14176,20 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
                 </p>
                 <div className="text-[11px] text-gray-600 space-y-1 mb-3">
                   <p>
-                    â€¢ La consulta se realizarÃ¡ por videollamada a travÃ©s de
-                    Jitsi Meet, una plataforma de comunicaciÃ³n cifrada.
+                    • La consulta se realizará por videollamada a través de
+                    Jitsi Meet, una plataforma de comunicación cifrada.
                   </p>
                   <p>
-                    â€¢ El mÃ©dico puede tomar notas clÃ­nicas durante la sesiÃ³n,
-                    las cuales formarÃ¡n parte de la Historia ClÃ­nica.
+                    • El médico puede tomar notas clínicas durante la sesión,
+                    las cuales formarán parte de la Historia Clínica.
                   </p>
                   <p>
-                    â€¢ Esta modalidad no reemplaza la evaluaciÃ³n fÃ­sica cuando la
-                    condiciÃ³n clÃ­nica lo requiera.
+                    • Esta modalidad no reemplaza la evaluación física cuando la
+                    condición clínica lo requiera.
                   </p>
                   <p>
-                    â€¢ Tiene derecho a interrumpir la consulta en cualquier
-                    momento sin afectar su atenciÃ³n posterior.
+                    • Tiene derecho a interrumpir la consulta en cualquier
+                    momento sin afectar su atención posterior.
                   </p>
                 </div>
                 <label className="flex items-center gap-2 cursor-pointer">
@@ -14206,7 +14206,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
                   />
                   <span className="text-xs font-bold text-gray-700">
                     El paciente <strong>{teleForm.paciente || "---"}</strong> ha
-                    leÃ­do y aceptado este consentimiento de telemedicina
+                    leído y aceptado este consentimiento de telemedicina
                   </span>
                 </label>
               </div>
@@ -14240,10 +14240,10 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
                     <div key={t.id} className="flex items-center justify-between p-4 hover:bg-amber-50">
                       <div>
                         <p className="text-xs font-bold text-gray-800">
-                          {t.paciente + " Â· " + t.documento}
+                          {t.paciente + " · " + t.documento}
                         </p>
                         <p className="text-[10px] text-gray-500 mt-0.5">
-                          {"ðŸ“… " + t.fecha + " " + t.hora + " Â· " + (t.motivo || "Sin motivo")}
+                          {"ðŸ“… " + t.fecha + " " + t.hora + " · " + (t.motivo || "Sin motivo")}
                         </p>
                       </div>
                       <button
@@ -14296,11 +14296,11 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
                           <p className="text-xs font-bold text-gray-800">
                             {t.paciente + " "}
                             <span className="font-normal text-gray-400">
-                              {" Â· " + t.documento}
+                              {" · " + t.documento}
                             </span>
                           </p>
                           <p className="text-[10px] text-gray-500 mt-0.5">
-                            {"ðŸ“… " + t.fecha + " " + t.hora + " Â· " + (t.motivo || "Sin motivo registrado")}
+                            {"ðŸ“… " + t.fecha + " " + t.hora + " · " + (t.motivo || "Sin motivo registrado")}
                           </p>
                           <div className="flex items-center gap-2 mt-0.5">
                             <p className="text-[10px] text-gray-400">
@@ -14308,7 +14308,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
                             </p>
                             {duracionStr && (
                               <p className="text-[10px] text-blue-600 font-bold">
-                                {"â± DuraciÃ³n: " + duracionStr}
+                                {"â± Duración: " + duracionStr}
                               </p>
                             )}
                             {t.horaInicio && (
@@ -14353,13 +14353,13 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
               ðŸ“‹ Marco normativo: Res. 2654 de 2019
             </p>
             <p className="text-[10px] text-blue-700">
-              La telemedicina en Colombia estÃ¡ regulada por la ResoluciÃ³n 2654
+              La telemedicina en Colombia está regulada por la Resolución 2654
               de 2019. Para prestar este servicio como IPS habilitada se
               requiere: (1) inscribir la modalidad en el REPS, (2) tener
               consentimiento informado firmado por el paciente, (3) garantizar
-              la confidencialidad de la comunicaciÃ³n, y (4) registrar la
-              atenciÃ³n en la HC. Jitsi Meet utiliza cifrado end-to-end
-              (SRTP/DTLS). NingÃºn dato clÃ­nico se almacena en sus servidores.
+              la confidencialidad de la comunicación, y (4) registrar la
+              atención en la HC. Jitsi Meet utiliza cifrado end-to-end
+              (SRTP/DTLS). Ningún dato clínico se almacena en sus servidores.
             </p>
           </div>
         </div>
@@ -14368,18 +14368,18 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
   };
 
   // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-  // B-16: ADJUNTOS DE PARACLÃNICOS - Supabase Storage
-  // Res. 1843/2025 Art.12 - EspirometrÃ­a, AudiometrÃ­a, RX, Laboratorios
+  // B-16: ADJUNTOS DE PARACLÍNICOS - Supabase Storage
+  // Res. 1843/2025 Art.12 - Espirometría, Audiometría, RX, Laboratorios
   // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   const renderTabAdjuntos = () => {
     const TIPOS_ADJUNTO = [
-      { valor: "espirometria", etiqueta: "ðŸ« EspirometrÃ­a" },
-      { valor: "audiometria", etiqueta: "ðŸ‘‚ AudiometrÃ­a" },
-      { valor: "rayos_x", etiqueta: "ðŸ©» Rayos X / ImÃ¡genes" },
+      { valor: "espirometria", etiqueta: "ðŸ« Espirometría" },
+      { valor: "audiometria", etiqueta: "ðŸ‘‚ Audiometría" },
+      { valor: "rayos_x", etiqueta: "ðŸ©» Rayos X / Imágenes" },
       { valor: "laboratorio", etiqueta: "ðŸ§ª Laboratorio" },
-      { valor: "optometria", etiqueta: "ðŸ‘ OptometrÃ­a" },
+      { valor: "optometria", etiqueta: "ðŸ‘ Optometría" },
       { valor: "ecg", etiqueta: "â¤ï¸ ECG / Holter" },
-      { valor: "vacunacion", etiqueta: "ðŸ’‰ Carnet VacunaciÃ³n" },
+      { valor: "vacunacion", etiqueta: "ðŸ’‰ Carnet Vacunación" },
       { valor: "otro", etiqueta: "ðŸ“„ Otro documento" },
     ];
     const adjuntos = data.adjuntos || [];
@@ -14401,7 +14401,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
         return;
       }
       if (file.size > MAX_BYTES) {
-        showAlert(`âš ï¸ El archivo supera el lÃ­mite de ${MAX_MB} MB.`);
+        showAlert(`âš ï¸ El archivo supera el límite de ${MAX_MB} MB.`);
         return;
       }
 
@@ -14426,7 +14426,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
         showAlert(
           `âŒ Error al subir: ${
             result.error ||
-            "Verifica que el bucket siso-adjuntos estÃ© habilitado en Supabase."
+            "Verifica que el bucket siso-adjuntos esté habilitado en Supabase."
           }`
         );
         return;
@@ -14457,7 +14457,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
         window.open(url, "_blank");
       } else {
         showAlert(
-          "âš ï¸ No se pudo obtener el enlace. Verifica la conexiÃ³n con Supabase."
+          "âš ï¸ No se pudo obtener el enlace. Verifica la conexión con Supabase."
         );
       }
     };
@@ -14469,7 +14469,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
       }
       const ok = await new Promise((res) =>
         setConfirmConfig({
-          msg: `Â¿Eliminar "${adj.nombre}"? Esta acciÃ³n no se puede deshacer.`,
+          msg: `¿Eliminar "${adj.nombre}"? Esta acción no se puede deshacer.`,
           onConfirm: () => res(true),
           onCancel: () => res(false),
         })
@@ -14491,10 +14491,10 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
         {/* Header */}
         <div className="flex items-center gap-2 px-4 py-3 border-b border-gray-100 bg-teal-50">
           <span className="text-sm font-black text-teal-800">
-            ðŸ“Ž Adjuntos de ParaclÃ­nicos
+            ðŸ“Ž Adjuntos de Paraclínicos
           </span>
           <span className="text-[10px] text-teal-600 bg-teal-100 px-2 py-0.5 rounded-full">
-            Res. 1843/2025 Â· Supabase Storage
+            Res. 1843/2025 · Supabase Storage
           </span>
           <span className="ml-auto text-[10px] text-gray-400">
             {adjuntos.length} archivo{adjuntos.length !== 1 ? "s" : ""}
@@ -14536,7 +14536,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
                 </label>
               </div>
               <p className="text-[10px] text-gray-400">
-                Formatos: PDF, PNG, JPG, TIFF, WebP Â· MÃ¡x. {MAX_MB} MB Â· Se
+                Formatos: PDF, PNG, JPG, TIFF, WebP · Máx. {MAX_MB} MB · Se
                 almacena en Supabase Storage
               </p>
             </div>
@@ -14548,8 +14548,8 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
               <p className="text-3xl mb-2">ðŸ“‚</p>
               <p className="text-sm font-bold">Sin adjuntos</p>
               <p className="text-xs mt-1">
-                Suba espirometrÃ­as, audiometrÃ­as, resultados de laboratorio u
-                otros documentos clÃ­nicos
+                Suba espirometrías, audiometrías, resultados de laboratorio u
+                otros documentos clínicos
               </p>
             </div>
           ) : (
@@ -14568,8 +14568,8 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
                         {adj.nombre}
                       </p>
                       <p className="text-[10px] text-gray-400 mt-0.5">
-                        {formatBytes(adj.tamano)} Â·{" "}
-                        {new Date(adj.fecha).toLocaleDateString("es-CO")} Â·{" "}
+                        {formatBytes(adj.tamano)} ·{" "}
+                        {new Date(adj.fecha).toLocaleDateString("es-CO")} ·{" "}
                         {adj.subidoPor}
                       </p>
                     </div>
@@ -14601,11 +14601,11 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
               ðŸ“‹ Normativa aplicable
             </p>
             <p className="text-[10px] text-amber-700 mt-0.5">
-              Los resultados de paraclÃ­nicos forman parte integral de la
-              Historia ClÃ­nica Ocupacional segÃºn la Res. 1843/2025 Art. 12 y la
-              Res. 1995/1999 (retenciÃ³n 20 aÃ±os). Los archivos se almacenan en
+              Los resultados de paraclínicos forman parte integral de la
+              Historia Clínica Ocupacional según la Res. 1843/2025 Art. 12 y la
+              Res. 1995/1999 (retención 20 años). Los archivos se almacenan en
               Supabase Storage con acceso restringido por credenciales del
-              mÃ©dico.
+              médico.
             </p>
           </div>
         </div>
@@ -14666,7 +14666,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
           </div>
         </div>
       );
-    // â”€â”€ SECRETARIA GATE: "Propuestas EconÃ³micas" requiere autorizaciÃ³n del admin â”€â”€
+    // â”€â”€ SECRETARIA GATE: "Propuestas Económicas" requiere autorización del admin â”€â”€
     if (
       currentUser?.role === "secretaria" &&
       !_secretariaPuede("propuestas", currentUser, usersList)
@@ -14678,16 +14678,16 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
             <div className="bg-amber-50 border-2 border-amber-300 rounded-2xl p-8 space-y-3">
               <div className="text-5xl">ðŸ”</div>
               <p className="font-black text-amber-800 text-xl">
-                MÃ³dulo restringido
+                Módulo restringido
               </p>
               <p className="text-amber-700 text-sm font-bold">
-                Propuestas EconÃ³micas
+                Propuestas Económicas
               </p>
               <p className="text-amber-600 text-xs leading-relaxed">
-                Este mÃ³dulo requiere autorizaciÃ³n explÃ­cita del administrador.
+                Este módulo requiere autorización explícita del administrador.
                 <br />
                 Solicita que habilite el permiso{" "}
-                <strong>"Propuestas EconÃ³micas"</strong> en tu perfil.
+                <strong>"Propuestas Económicas"</strong> en tu perfil.
                 <br />
                 (Usuarios â†’ tu nombre â†’ ðŸ” Permisos de secretaria)
               </p>
@@ -14709,44 +14709,44 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
     const SERVICIOS_CATALOGO = [
       {
         id: "s1",
-        nombre: "Examen MÃ©dico Ocupacional de Ingreso",
+        nombre: "Examen Médico Ocupacional de Ingreso",
         unidad: "Por trabajador",
         precioBase: parseInt(_billDocData.tarifaExamenOcup || 90000),
       },
       {
         id: "s2",
-        nombre: "Examen MÃ©dico Ocupacional PeriÃ³dico",
+        nombre: "Examen Médico Ocupacional Periódico",
         unidad: "Por trabajador",
         precioBase: parseInt(_billDocData.tarifaExamenOcup || 90000),
       },
       {
         id: "s3",
-        nombre: "Examen MÃ©dico Ocupacional de Egreso",
+        nombre: "Examen Médico Ocupacional de Egreso",
         unidad: "Por trabajador",
         precioBase: parseInt(_billDocData.tarifaExamenOcup || 90000),
       },
       {
         id: "s4",
-        nombre: "Informe Ejecutivo de Salud y Perfil EpidemiolÃ³gico",
+        nombre: "Informe Ejecutivo de Salud y Perfil Epidemiológico",
         unidad: "Por empresa",
         precioBase: parseInt(_billDocData.tarifaInforme || 250000),
       },
       {
         id: "s5",
-        nombre: "Programa de Vigilancia EpidemiolÃ³gica (PVE)",
-        unidad: "Por dÃ­a",
+        nombre: "Programa de Vigilancia Epidemiológica (PVE)",
+        unidad: "Por día",
         precioBase: parseInt(_billDocData.tarifaDiaPVE || 350000),
       },
       {
         id: "s6",
-        nombre: "AsesorÃ­a en Sistema de GestiÃ³n SST",
+        nombre: "Asesoría en Sistema de Gestión SST",
         unidad: "Por hora",
         precioBase: parseInt(_billDocData.tarifaHora || 120000),
       },
       {
         id: "s7",
-        nombre: "CapacitaciÃ³n en SST (grupos hasta 30 personas)",
-        unidad: "Por sesiÃ³n",
+        nombre: "Capacitación en SST (grupos hasta 30 personas)",
+        unidad: "Por sesión",
         precioBase: 280000,
       },
       {
@@ -14757,13 +14757,13 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
       },
       {
         id: "s9",
-        nombre: "AnÃ¡lisis de Puesto de Trabajo",
+        nombre: "Análisis de Puesto de Trabajo",
         unidad: "Por cargo",
         precioBase: 180000,
       },
       {
         id: "s10",
-        nombre: "Restricciones y Recomendaciones MÃ©dico-Laborales",
+        nombre: "Restricciones y Recomendaciones Médico-Laborales",
         unidad: "Por trabajador",
         precioBase: 60000,
       },
@@ -14798,7 +14798,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
     return (
       <div className="min-h-screen bg-gray-50 font-sans p-8 print:bg-white print:p-0">
         <div className="max-w-4xl mx-auto">
-          {/* â”€â”€ TAB SELECTOR: Propuesta EconÃ³mica â†” CotizaciÃ³n RÃ¡pida â†” Historial â”€â”€ */}
+          {/* â”€â”€ TAB SELECTOR: Propuesta Económica â†” Cotización Rápida â†” Historial â”€â”€ */}
           <div className="flex gap-2 mb-4 no-print border-b border-gray-200 pb-3 flex-wrap">
             <button
               onClick={() => setPropModulo("propuesta")}
@@ -14808,7 +14808,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
                   : "bg-gray-100 text-gray-600 hover:bg-teal-50 hover:text-teal-700"
               }`}
             >
-              ðŸ“„ Propuesta EconÃ³mica
+              ðŸ“„ Propuesta Económica
             </button>
             <button
               onClick={() => setPropModulo("cotizacion")}
@@ -14818,7 +14818,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
                   : "bg-gray-100 text-gray-600 hover:bg-indigo-50 hover:text-indigo-700"
               }`}
             >
-              ðŸ§¾ CotizaciÃ³n RÃ¡pida
+              ðŸ§¾ Cotización Rápida
             </button>
             <button
               onClick={() => setPropModulo("historial")}
@@ -14849,7 +14849,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
                 {propsSaved.length === 0 ? (
                   <div className="text-center py-12 text-gray-400">
                     <FileText className="w-10 h-10 mx-auto mb-3 opacity-30" />
-                    <p className="text-sm font-medium">No hay propuestas guardadas aÃºn.</p>
+                    <p className="text-sm font-medium">No hay propuestas guardadas aún.</p>
                     <p className="text-xs mt-1">Cree una propuesta y presione Guardar.</p>
                   </div>
                 ) : (
@@ -14857,7 +14857,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
                     <table className="w-full text-sm">
                       <thead>
                         <tr className="bg-amber-50 text-amber-800 text-xs font-black">
-                          <th className="px-3 py-2 text-left rounded-tl-lg">N.Â°</th>
+                          <th className="px-3 py-2 text-left rounded-tl-lg">N.°</th>
                           <th className="px-3 py-2 text-left">Empresa</th>
                           <th className="px-3 py-2 text-left">NIT</th>
                           <th className="px-3 py-2 text-left">Fecha</th>
@@ -14897,7 +14897,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
                                     Abrir
                                   </button>
                                   <button
-                                    onClick={() => showConfirm("Â¿Eliminar esta propuesta del historial?", () => {
+                                    onClick={() => showConfirm("¿Eliminar esta propuesta del historial?", () => {
                                       const upd = savedReports.filter(r => r.id !== prop.id);
                                       setSavedReports(upd);
                                       _sync("siso_saved_reports", JSON.stringify(upd));
@@ -14927,7 +14927,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
             <div className="bg-white shadow rounded-2xl p-6 mb-6 no-print">
               <div className="flex justify-between items-center mb-5">
                 <h2 className="text-xl font-black text-teal-800 flex items-center gap-2">
-                  <FileText className="w-5 h-5" /> Propuestas EconÃ³micas y
+                  <FileText className="w-5 h-5" /> Propuestas Económicas y
                   Cotizaciones
                 </h2>
                 <div className="flex gap-2">
@@ -14991,7 +14991,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
                   return (
                     <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 mb-4">
                       <p className="text-xs font-black text-blue-800 mb-2">
-                        ðŸ‘¨â€âš•ï¸ MÃ©dico que firma la propuesta
+                        ðŸ‘¨â€âš•ï¸ Médico que firma la propuesta
                       </p>
                       <select
                         className="w-full p-2 border border-blue-200 rounded-lg text-sm bg-white"
@@ -15026,7 +15026,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
                     }
                     placeholder={_nextPropNumCalc}
                     className="w-full p-2 border rounded-lg text-sm font-mono"
-                    title={`PrÃ³ximo consecutivo sugerido: ${_nextPropNumCalc}`}
+                    title={`Próximo consecutivo sugerido: ${_nextPropNumCalc}`}
                   />
                 </div>
                 <div>
@@ -15044,7 +15044,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-gray-600 mb-1">
-                    Validez (dÃ­as)
+                    Validez (días)
                   </label>
                   <input
                     type="number"
@@ -15138,7 +15138,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-gray-600 mb-1">
-                    Ciudad de AtenciÃ³n
+                    Ciudad de Atención
                   </label>
                   <input
                     value={
@@ -15151,7 +15151,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
                       }))
                     }
                     className="w-full p-2 border rounded-lg text-sm"
-                    placeholder="PopayÃ¡n - Cauca"
+                    placeholder="Popayán - Cauca"
                   />
                 </div>
               </div>
@@ -15328,16 +15328,16 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
                       suppressContentEditableWarning
                       className="text-xl font-black text-gray-900 uppercase tracking-wide outline-none"
                     >
-                      SERVICIOS MÃ‰DICOS OCUPACIONALES
+                      SERVICIOS MÉDICOS OCUPACIONALES
                     </h1>
                     <p
                       contentEditable
                       suppressContentEditableWarning
                       className="text-[9px] text-gray-500 mt-1 uppercase tracking-wide outline-none"
                     >
-                      No. {propForm.numero || _nextPropNumCalc} Â· Fecha:{" "}
-                      {propForm.fecha} Â· Validez: {propForm.validez || "30"}{" "}
-                      dÃ­as
+                      No. {propForm.numero || _nextPropNumCalc} · Fecha:{" "}
+                      {propForm.fecha} · Validez: {propForm.validez || "30"}{" "}
+                      días
                     </p>
                   </div>
                 </div>
@@ -15362,7 +15362,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
                     suppressContentEditableWarning
                     className="text-xs text-gray-600 mt-1 border-b border-gray-200 pb-1 mb-1 outline-none"
                   >
-                    NIT / CC: {propForm.nit || "---"} Â· Trabajadores:{" "}
+                    NIT / CC: {propForm.nit || "---"} · Trabajadores:{" "}
                     {propForm.numTrabajadores || "---"}
                   </p>
                   {propForm.contacto && (
@@ -15371,9 +15371,9 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
                       suppressContentEditableWarning
                       className="text-[9px] text-gray-600 mt-1 outline-none"
                     >
-                      AtenciÃ³n: {propForm.contacto}
+                      Atención: {propForm.contacto}
                       {propForm.cargoPropuesta
-                        ? " Â· " + propForm.cargoPropuesta
+                        ? " · " + propForm.cargoPropuesta
                         : ""}
                     </p>
                   )}
@@ -15395,8 +15395,8 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
                     suppressContentEditableWarning
                     className="text-[9pt] text-gray-700 leading-relaxed pl-5 outline-none"
                   >
-                    Establecer las condiciones para la realizaciÃ³n de
-                    evaluaciones mÃ©dicas ocupacionales (EMO) orientadas a
+                    Establecer las condiciones para la realización de
+                    evaluaciones médicas ocupacionales (EMO) orientadas a
                     determinar el estado de salud de los trabajadores, en
                     cumplimiento de la normativa vigente colombiana.
                   </p>
@@ -15419,20 +15419,20 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
                     className="pl-5 space-y-1 outline-none text-[9px] text-gray-700"
                   >
                     <p>
-                      âœ“ <strong>ResoluciÃ³n 1843 de 2025:</strong> Norma que
-                      establece los lineamientos para la realizaciÃ³n y custodia
-                      de las historias clÃ­nicas ocupacionales.
+                      âœ“ <strong>Resolución 1843 de 2025:</strong> Norma que
+                      establece los lineamientos para la realización y custodia
+                      de las historias clínicas ocupacionales.
                     </p>
                     <p>
-                      âœ“ <strong>ResoluciÃ³n 2346 de 2007:</strong> RegulaciÃ³n de
-                      la prÃ¡ctica de evaluaciones mÃ©dicas ocupacionales.
+                      âœ“ <strong>Resolución 2346 de 2007:</strong> Regulación de
+                      la práctica de evaluaciones médicas ocupacionales.
                     </p>
                     <p>
-                      âœ“ <strong>ResoluciÃ³n 0312 de 2019:</strong> EstÃ¡ndares
-                      mÃ­nimos del SG-SST.
+                      âœ“ <strong>Resolución 0312 de 2019:</strong> Estándares
+                      mínimos del SG-SST.
                     </p>
                     <p>
-                      âœ“ <strong>Decreto 1072 de 2015:</strong> Decreto Ãšnico
+                      âœ“ <strong>Decreto 1072 de 2015:</strong> Decreto Único
                       Reglamentario del Sector Trabajo.
                     </p>
                   </div>
@@ -15456,23 +15456,23 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
                   >
                     <p className="mb-1">
                       âœ“ <strong>Certificado de Aptitud Laboral:</strong> Para el
-                      archivo de la empresa (segÃºn MinTrabajo).
+                      archivo de la empresa (según MinTrabajo).
                     </p>
                     <p className="mb-1">
-                      âœ“ <strong>Remisiones mÃ©dicas:</strong> Cuando se requiera
-                      para trÃ¡mite a la entidad correspondiente.
+                      âœ“ <strong>Remisiones médicas:</strong> Cuando se requiera
+                      para trámite a la entidad correspondiente.
                     </p>
                     <p className="mb-1">
                       âœ“ <strong>Informe de Condiciones de Salud:</strong> Perfil
-                      epidemiolÃ³gico consolidado de la poblaciÃ³n evaluada.
+                      epidemiológico consolidado de la población evaluada.
                     </p>
                     <p className="mb-1">
-                      âœ“ <strong>Historia ClÃ­nica:</strong> Custodiada bajo
+                      âœ“ <strong>Historia Clínica:</strong> Custodiada bajo
                       reserva legal (Res. 1995/1999).
                     </p>
                   </div>
                 </div>
-                {/* â”€â”€ 4. METODOLOGÃA â”€â”€ */}
+                {/* â”€â”€ 4. METODOLOGÍA â”€â”€ */}
                 <div className="mb-3">
                   <h3
                     contentEditable
@@ -15482,18 +15482,18 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
                     <span className="w-4 h-4 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[8px] font-black flex-shrink-0 no-edit">
                       4
                     </span>
-                    METODOLOGÃA
+                    METODOLOGÍA
                   </h3>
                   <p
                     contentEditable
                     suppressContentEditableWarning
                     className="text-[9pt] text-gray-700 leading-relaxed pl-5 outline-none"
                   >
-                    Las evaluaciones mÃ©dicas se realizarÃ¡n en las instalaciones
-                    acordadas, con historia clÃ­nica digital, examen fÃ­sico
-                    completo y los paraclÃ­nicos indicados segÃºn el cargo. Se
+                    Las evaluaciones médicas se realizarán en las instalaciones
+                    acordadas, con historia clínica digital, examen físico
+                    completo y los paraclínicos indicados según el cargo. Se
                     emite concepto de aptitud laboral de conformidad con la
-                    ResoluciÃ³n 1843 de 2025.
+                    Resolución 1843 de 2025.
                   </p>
                 </div>
                 {/* â”€â”€ 5. PROPUESTA ECONÃ“MICA â”€â”€ */}
@@ -15518,7 +15518,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
                         suppressContentEditableWarning
                         className="px-3 py-2 outline-none"
                       >
-                        Ãtem / Servicio Profesional
+                        Ítem / Servicio Profesional
                       </div>
                       <div
                         contentEditable
@@ -15570,7 +15570,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
                         suppressContentEditableWarning
                         className="px-3 py-4 text-center text-gray-400 text-[9px] italic outline-none"
                       >
-                        -- Agregue servicios desde el panel de configuraciÃ³n --
+                        -- Agregue servicios desde el panel de configuración --
                       </div>
                     )}
                     {propForm.servicios.length > 1 && (
@@ -15619,17 +15619,17 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
                     >
                       <div className="px-3 py-1.5">Forma de Pago</div>
                       <div className="px-3 py-1.5">Vigencia</div>
-                      <div className="px-3 py-1.5">FacturaciÃ³n</div>
+                      <div className="px-3 py-1.5">Facturación</div>
                     </div>
                     <div
                       className="grid text-[9pt] text-gray-700 bg-white print:bg-transparent"
                       style={{ gridTemplateColumns: "1fr 1fr 1fr" }}
                     >
-                      <div className="px-3 py-2">30 dÃ­as factura vencida.</div>
+                      <div className="px-3 py-2">30 días factura vencida.</div>
                       <div className="px-3 py-2">
-                        {propForm.validez || "30"} dÃ­as calendario.
+                        {propForm.validez || "30"} días calendario.
                       </div>
-                      <div className="px-3 py-2">Factura electrÃ³nica.</div>
+                      <div className="px-3 py-2">Factura electrónica.</div>
                     </div>
                   </div>
                   {propForm.observaciones && (
@@ -15680,7 +15680,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
       </div>
     );
   };
-  // â”€â”€â”€ RENDER: TAB SOLICITUD EXÃMENES â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // â”€â”€â”€ RENDER: TAB SOLICITUD EXÁMENES â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const renderTabSolicitudExamenes = () => {
     // FIX: definir _billDocData/_billDocSig en scope de renderTabSolicitudExamenes
     const _examDocUser2 =
@@ -15690,70 +15690,70 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
     const _billDocData = _examDocUser2?.doctorData || activeDoctorData;
     const _billDocSig = _examDocUser2?.doctorData?.firma || activeSignature;
     const EXAMENES_DB = [
-      // â•â•â• LABORATORIO CLÃNICO â€” GENERALES/BÃSICOS â•â•â•
+      // â•â•â• LABORATORIO CLÍNICO â€” GENERALES/BÁSICOS â•â•â•
       "Hemograma completo (CBC) [CUPS: 902210]",
-      "Cuadro hemÃ¡tico [CUPS: 902210]",
+      "Cuadro hemático [CUPS: 902210]",
       "Hemograma con diferencial [CUPS: 902218]",
       "Hematocrito y hemoglobina [CUPS: 902209]",
       "Glicemia en ayunas [CUPS: 903841]",
       "Glicemia posprandial [CUPS: 903842]",
       "Hemoglobina glicosilada (HbA1c) [CUPS: 903427]",
-      "Glucosa sÃ©rica [CUPS: 903841]",
-      "Creatinina sÃ©rica [CUPS: 903895]",
-      "BUN (nitrÃ³geno ureico) [CUPS: 903856]",
-      "Ãcido Ãºrico [CUPS: 903868]",
+      "Glucosa sérica [CUPS: 903841]",
+      "Creatinina sérica [CUPS: 903895]",
+      "BUN (nitrógeno ureico) [CUPS: 903856]",
+      "Ácido úrico [CUPS: 903868]",
       "Urea [CUPS: 903856]",
-      "Perfil lipÃ­dico completo [CUPS: 903818]",
+      "Perfil lipídico completo [CUPS: 903818]",
       "Colesterol total [CUPS: 903818]",
       "Colesterol HDL [CUPS: 903815]",
       "Colesterol LDL [CUPS: 903816]",
-      "TriglicÃ©ridos [CUPS: 903868]",
+      "Triglicéridos [CUPS: 903868]",
       "VLDL [CUPS: 903817]",
-      "Pruebas de funciÃ³n hepÃ¡tica [CUPS: 903866]",
+      "Pruebas de función hepática [CUPS: 903866]",
       "ALT (TGP) [CUPS: 903866]",
       "AST (TGO) [CUPS: 903867]",
       "Fosfatasa alcalina [CUPS: 903835]",
       "GGT (gamma glutamil transferasa) [CUPS: 903849]",
       "Bilirrubinas totales y fraccionadas [CUPS: 903809]",
-      "ProteÃ­nas totales y fraccionadas [CUPS: 903861]",
-      "AlbÃºmina sÃ©rica [CUPS: 903801]",
+      "Proteínas totales y fraccionadas [CUPS: 903861]",
+      "Albúmina sérica [CUPS: 903801]",
       "LDH (lactato deshidrogenasa) [CUPS: 903829]",
       "CPK total [CUPS: 903825]",
       "CPK-MB [CUPS: 903826]",
       "Troponina I [CUPS: 903870]",
       "Troponina T ultrasensible [CUPS: 903871]",
       "BNP / NT-proBNP [CUPS: 903807]",
-      "Parcial de orina (uroanÃ¡lisis) [CUPS: 907106]",
+      "Parcial de orina (uroanálisis) [CUPS: 907106]",
       "Urocultivo [CUPS: 901235]",
       "Coprocultivo [CUPS: 901221]",
-      "CoproscÃ³pico [CUPS: 907002]",
+      "Coproscópico [CUPS: 907002]",
       "Sangre oculta en heces [CUPS: 907003]",
       // â•â•â• ELECTROLITOS â•â•â•
-      "Sodio sÃ©rico [CUPS: 903862]",
-      "Potasio sÃ©rico [CUPS: 903859]",
-      "Cloro sÃ©rico [CUPS: 903822]",
-      "Calcio sÃ©rico [CUPS: 903811]",
-      "Calcio iÃ³nico [CUPS: 903812]",
-      "Magnesio sÃ©rico [CUPS: 903851]",
-      "FÃ³sforo sÃ©rico [CUPS: 903837]",
+      "Sodio sérico [CUPS: 903862]",
+      "Potasio sérico [CUPS: 903859]",
+      "Cloro sérico [CUPS: 903822]",
+      "Calcio sérico [CUPS: 903811]",
+      "Calcio iónico [CUPS: 903812]",
+      "Magnesio sérico [CUPS: 903851]",
+      "Fósforo sérico [CUPS: 903837]",
       "Bicarbonato (CO2 total) [CUPS: 903831]",
       // â•â•â• CARDIOVASCULARES â•â•â•
       "Electrocardiograma (ECG) de 12 derivaciones [CUPS: 895101]",
       "Electrocardiograma en reposo [CUPS: 895101]",
-      "Ecocardiograma transtorÃ¡cico [CUPS: 881202]",
+      "Ecocardiograma transtorácico [CUPS: 881202]",
       "Ecocardiograma con Doppler [CUPS: 881203]",
       "Ecocardiograma con Doppler color [CUPS: 881204]",
-      "Ecocardiograma transesofÃ¡gico [CUPS: 881205]",
-      "Prueba de esfuerzo (ergometrÃ­a) [CUPS: 895301]",
+      "Ecocardiograma transesofágico [CUPS: 881205]",
+      "Prueba de esfuerzo (ergometría) [CUPS: 895301]",
       "Holter de ritmo 24 horas [CUPS: 895201]",
-      "Holter de presiÃ³n arterial (MAPA) [CUPS: 895202]",
-      "ValoraciÃ³n de riesgo cardiovascular (Framingham)",
-      "Ãndice tobillo-brazo (ITB)",
-      "Eco Doppler carotÃ­deo [CUPS: 882302]",
+      "Holter de presión arterial (MAPA) [CUPS: 895202]",
+      "Valoración de riesgo cardiovascular (Framingham)",
+      "Índice tobillo-brazo (ITB)",
+      "Eco Doppler carotídeo [CUPS: 882302]",
       "Eco Doppler de vasos de cuello [CUPS: 882301]",
-      "AngiografÃ­a coronaria [CUPS: 877101]",
-      "AngiotomografÃ­a coronaria (Angio-TAC) [CUPS: 879201]",
-      "Cateterismo cardÃ­aco [CUPS: 377101]",
+      "Angiografía coronaria [CUPS: 877101]",
+      "Angiotomografía coronaria (Angio-TAC) [CUPS: 879201]",
+      "Cateterismo cardíaco [CUPS: 377101]",
       // â•â•â• CONTROL METABÃ“LICO / PESO â•â•â•
       "TSH (hormona estimulante de tiroides) [CUPS: 904902]",
       "T3 libre [CUPS: 904903]",
@@ -15762,86 +15762,86 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
       "T4 total [CUPS: 904906]",
       "Perfil tiroideo [CUPS: 904902]",
       "Insulina en ayunas [CUPS: 904218]",
-      "Ãndice HOMA-IR",
-      "PÃ©ptido C [CUPS: 904219]",
+      "Índice HOMA-IR",
+      "Péptido C [CUPS: 904219]",
       "Curva de tolerancia a glucosa (PTOG 75g) [CUPS: 903845]",
       "Microalbuminuria [CUPS: 907107]",
-      "RelaciÃ³n albÃºmina/creatinina en orina [CUPS: 907108]",
-      "Ãcidos grasos libres",
-      "Leptina sÃ©rica",
-      "Cortisol sÃ©rico (8am) [CUPS: 904210]",
+      "Relación albúmina/creatinina en orina [CUPS: 907108]",
+      "Ácidos grasos libres",
+      "Leptina sérica",
+      "Cortisol sérico (8am) [CUPS: 904210]",
       "Cortisol en orina 24h [CUPS: 904211]",
-      // â•â•â• PREQUIRÃšRGICOS â•â•â•
-      "Hemograma prequirÃºrgico [CUPS: 902210]",
-      "Grupo sanguÃ­neo y Rh [CUPS: 902004]",
-      "Tiempos de coagulaciÃ³n (PT/INR, PTT) [CUPS: 902050]",
+      // â•â•â• PREQUIRÚRGICOS â•â•â•
+      "Hemograma prequirúrgico [CUPS: 902210]",
+      "Grupo sanguíneo y Rh [CUPS: 902004]",
+      "Tiempos de coagulación (PT/INR, PTT) [CUPS: 902050]",
       "Tiempo de protrombina (TP) [CUPS: 902049]",
       "Tiempo de tromboplastina (PTT) [CUPS: 902048]",
       "INR [CUPS: 902050]",
-      "Tiempo de sangrÃ­a [CUPS: 902046]",
-      "Glicemia prequirÃºrgica [CUPS: 903841]",
-      "BUN prequirÃºrgico [CUPS: 903856]",
-      "Creatinina prequirÃºrgica [CUPS: 903895]",
-      "Electrolitos prequirÃºrgicos (Na, K, Cl) [CUPS: 903862]",
-      "EKG prequirÃºrgico [CUPS: 895101]",
-      "RadiografÃ­a de tÃ³rax prequirÃºrgica [CUPS: 871121]",
-      "ValoraciÃ³n preanestÃ©sica [CUPS: 890205]",
-      "Pruebas cruzadas (compatibilidad sanguÃ­nea) [CUPS: 902005]",
+      "Tiempo de sangría [CUPS: 902046]",
+      "Glicemia prequirúrgica [CUPS: 903841]",
+      "BUN prequirúrgico [CUPS: 903856]",
+      "Creatinina prequirúrgica [CUPS: 903895]",
+      "Electrolitos prequirúrgicos (Na, K, Cl) [CUPS: 903862]",
+      "EKG prequirúrgico [CUPS: 895101]",
+      "Radiografía de tórax prequirúrgica [CUPS: 871121]",
+      "Valoración preanestésica [CUPS: 890205]",
+      "Pruebas cruzadas (compatibilidad sanguínea) [CUPS: 902005]",
       "Recuento de plaquetas [CUPS: 902230]",
-      "FibrinÃ³geno [CUPS: 902041]",
-      // â•â•â• POSTQUIRÃšRGICOS â•â•â•
-      "Hemograma de control postquirÃºrgico [CUPS: 902210]",
-      "PCR postquirÃºrgica [CUPS: 903860]",
-      "VSG (velocidad de sedimentaciÃ³n globular) [CUPS: 902205]",
-      "ProteÃ­na C reactiva (PCR) [CUPS: 903860]",
+      "Fibrinógeno [CUPS: 902041]",
+      // â•â•â• POSTQUIRÚRGICOS â•â•â•
+      "Hemograma de control postquirúrgico [CUPS: 902210]",
+      "PCR postquirúrgica [CUPS: 903860]",
+      "VSG (velocidad de sedimentación globular) [CUPS: 902205]",
+      "Proteína C reactiva (PCR) [CUPS: 903860]",
       "PCR ultrasensible [CUPS: 903860]",
-      "Perfil metabÃ³lico postquirÃºrgico",
+      "Perfil metabólico postquirúrgico",
       "Gases arteriales [CUPS: 903602]",
-      "DÃ­mero D [CUPS: 902038]",
+      "Dímero D [CUPS: 902038]",
       "Procalcitonina [CUPS: 906847]",
       "Hemocultivos [CUPS: 901210]",
-      // â•â•â• INFECCIOSAS / SEROLOGÃA â•â•â•
+      // â•â•â• INFECCIOSAS / SEROLOGÍA â•â•â•
       "VDRL [CUPS: 906919]",
       "FTA-ABS [CUPS: 906920]",
       "Prueba de VIH (ELISA) [CUPS: 906249]",
       "Western Blot VIH [CUPS: 906250]",
       "Carga viral VIH [CUPS: 906251]",
-      "AntÃ­geno de superficie hepatitis B (HBsAg) [CUPS: 906221]",
+      "Antígeno de superficie hepatitis B (HBsAg) [CUPS: 906221]",
       "Anti-HBs [CUPS: 906223]",
       "Anti-HBc total [CUPS: 906222]",
       "Anti-VHC [CUPS: 906224]",
       "PCR para hepatitis C [CUPS: 906225]",
       "IgM para hepatitis A [CUPS: 906220]",
-      "SerologÃ­a completa",
+      "Serología completa",
       "Hemocultivos [CUPS: 901210]",
       "Prueba de tuberculina (PPD) [CUPS: 860205]",
       "IGRA (QuantiFERON TB Gold) [CUPS: 906841]",
       "BK seriado (baciloscopia) [CUPS: 901101]",
       "Gota gruesa (malaria) [CUPS: 901301]",
-      // â•â•â• HEMATOLOGÃA ESPECIAL â•â•â•
+      // â•â•â• HEMATOLOGÍA ESPECIAL â•â•â•
       "Ferritina [CUPS: 903833]",
-      "Hierro sÃ©rico [CUPS: 903850]",
+      "Hierro sérico [CUPS: 903850]",
       "Transferrina [CUPS: 903869]",
-      "SaturaciÃ³n de transferrina [CUPS: 903869]",
+      "Saturación de transferrina [CUPS: 903869]",
       "Vitamina B12 [CUPS: 903878]",
-      "Ãcido fÃ³lico [CUPS: 903800]",
+      "Ácido fólico [CUPS: 903800]",
       "Vitamina D (25-OH) [CUPS: 903879]",
       "Reticulocitos [CUPS: 902237]",
-      "Frotis de sangre perifÃ©rica [CUPS: 902201]",
+      "Frotis de sangre periférica [CUPS: 902201]",
       "Electroforesis de hemoglobina [CUPS: 902216]",
       "Coombs directo [CUPS: 902008]",
       "Coombs indirecto [CUPS: 902009]",
       // â•â•â• COAGULACIÃ“N â•â•â•
       "Antitrombina III [CUPS: 902032]",
-      "ProteÃ­na C funcional [CUPS: 902033]",
-      "ProteÃ­na S funcional [CUPS: 902034]",
-      "Anticoagulante lÃºpico [CUPS: 902031]",
+      "Proteína C funcional [CUPS: 902033]",
+      "Proteína S funcional [CUPS: 902034]",
+      "Anticoagulante lúpico [CUPS: 902031]",
       "Anticuerpos anticardiolipina [CUPS: 906102]",
-      "Anti-Beta 2 glicoproteÃ­na I [CUPS: 906103]",
+      "Anti-Beta 2 glicoproteína I [CUPS: 906103]",
       // â•â•â• MARCADORES TUMORALES â•â•â•
-      "PSA (antÃ­geno prostÃ¡tico) [CUPS: 906313]",
+      "PSA (antígeno prostático) [CUPS: 906313]",
       "PSA libre [CUPS: 906314]",
-      "AFP (alfa fetoproteÃ­na) [CUPS: 906302]",
+      "AFP (alfa fetoproteína) [CUPS: 906302]",
       "CEA [CUPS: 906304]",
       "CA 19-9 [CUPS: 906303]",
       "CA 125 [CUPS: 906305]",
@@ -15860,112 +15860,112 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
       "17-OH progesterona [CUPS: 904201]",
       "Espermograma [CUPS: 907501]",
       // â•â•â• FUNCIÃ“N RENAL â•â•â•
-      "DepuraciÃ³n de creatinina [CUPS: 903896]",
-      "ProteÃ­na en orina 24h [CUPS: 907109]",
+      "Depuración de creatinina [CUPS: 903896]",
+      "Proteína en orina 24h [CUPS: 907109]",
       "Creatinuria en orina 24h [CUPS: 907110]",
       "Cistatina C [CUPS: 903897]",
       "Electrolitos en orina 24h [CUPS: 907111]",
-      // â•â•â• INMUNOLOGÃA / AUTOINMUNIDAD â•â•â•
+      // â•â•â• INMUNOLOGÍA / AUTOINMUNIDAD â•â•â•
       "ANA (anticuerpos antinucleares) [CUPS: 906104]",
       "Anti-DNA doble cadena [CUPS: 906105]",
       "Factor reumatoideo [CUPS: 906110]",
-      "Anti-CCP (anti pÃ©ptido citrulinado) [CUPS: 906106]",
+      "Anti-CCP (anti péptido citrulinado) [CUPS: 906106]",
       "ANCA (c-ANCA, p-ANCA) [CUPS: 906101]",
       "Complemento C3 y C4 [CUPS: 906107]",
       "Inmunoglobulinas (IgA, IgG, IgM, IgE) [CUPS: 906108]",
       "HLA-B27 [CUPS: 906109]",
-      // â•â•â• TOXICOLOGÃA OCUPACIONAL â•â•â•
+      // â•â•â• TOXICOLOGÍA OCUPACIONAL â•â•â•
       "Plomo en sangre (plombemia) [CUPS: 903609]",
       "Protoporfirina zinc (ZPP) [CUPS: 903610]",
-      "Ãcido delta aminolevulÃ­nico en orina [CUPS: 903601]",
+      "Ácido delta aminolevulínico en orina [CUPS: 903601]",
       "Mercurio en orina [CUPS: 903607]",
       "Cadmio en sangre [CUPS: 903603]",
-      "ArsÃ©nico en orina [CUPS: 903602]",
-      "Colinesterasa sÃ©rica [CUPS: 903823]",
+      "Arsénico en orina [CUPS: 903602]",
+      "Colinesterasa sérica [CUPS: 903823]",
       "Colinesterasa eritrocitaria [CUPS: 903824]",
-      "Ãcido hipÃºrico en orina (tolueno) [CUPS: 903604]",
-      "Ãcido mandÃ©lico en orina (estireno) [CUPS: 903605]",
-      "Ãcido trans-mucÃ³nico (benceno) [CUPS: 903606]",
+      "Ácido hipúrico en orina (tolueno) [CUPS: 903604]",
+      "Ácido mandélico en orina (estireno) [CUPS: 903605]",
+      "Ácido trans-mucónico (benceno) [CUPS: 903606]",
       "Fenol en orina [CUPS: 903608]",
       "Carboxihemoglobina [CUPS: 902215]",
       "Metemoglobina [CUPS: 902225]",
       "Cromo en orina [CUPS: 903611]",
-      "NÃ­quel en orina [CUPS: 903612]",
+      "Níquel en orina [CUPS: 903612]",
       "Manganeso en sangre [CUPS: 903613]",
       "Prueba de drogas de abuso en orina (panel 5/10) [CUPS: 903614]",
       "Cotinina en orina (nicotina) [CUPS: 903615]",
       "Alcohol en sangre (alcoholemia) [CUPS: 903616]",
-      // â•â•â• IMAGENOLOGÃA â•â•â•
-      "RadiografÃ­a de tÃ³rax PA y lateral [CUPS: 871121]",
-      "RadiografÃ­a columna lumbosacra AP y lateral [CUPS: 871040]",
-      "RadiografÃ­a columna cervical AP y lateral [CUPS: 871010]",
-      "RadiografÃ­a columna dorsal AP y lateral [CUPS: 871020]",
-      "RadiografÃ­a de manos AP bilateral [CUPS: 873320]",
-      "RadiografÃ­a de pelvis AP [CUPS: 872200]",
-      "RadiografÃ­a de rodilla AP y lateral [CUPS: 873430]",
-      "RadiografÃ­a de pies bilateral [CUPS: 873510]",
-      "RadiografÃ­a de crÃ¡neo [CUPS: 870100]",
-      "RadiografÃ­a de senos paranasales [CUPS: 870300]",
-      "RadiografÃ­a de hombro AP [CUPS: 873110]",
-      "RadiografÃ­a de cadera AP [CUPS: 872210]",
-      "RadiografÃ­a de muÃ±eca AP y lateral [CUPS: 873310]",
-      "EcografÃ­a abdominal total [CUPS: 881302]",
-      "EcografÃ­a pÃ©lvica transabdominal [CUPS: 881401]",
-      "EcografÃ­a pÃ©lvica transvaginal [CUPS: 881402]",
-      "EcografÃ­a de tiroides [CUPS: 881101]",
-      "EcografÃ­a de mama bilateral [CUPS: 881501]",
-      "EcografÃ­a de partes blandas [CUPS: 881601]",
-      "EcografÃ­a renal y vÃ­as urinarias [CUPS: 881303]",
-      "EcografÃ­a Doppler venoso miembros inferiores [CUPS: 882301]",
-      "EcografÃ­a Doppler arterial miembros inferiores [CUPS: 882302]",
-      "EcografÃ­a de cuello [CUPS: 881102]",
-      "EcografÃ­a testicular [CUPS: 881602]",
-      "EcografÃ­a de hombro [CUPS: 881603]",
-      "TAC de crÃ¡neo simple [CUPS: 879101]",
-      "TAC de crÃ¡neo con contraste [CUPS: 879102]",
-      "TAC de tÃ³rax simple [CUPS: 879201]",
-      "TAC de tÃ³rax con contraste [CUPS: 879202]",
+      // â•â•â• IMAGENOLOGÍA â•â•â•
+      "Radiografía de tórax PA y lateral [CUPS: 871121]",
+      "Radiografía columna lumbosacra AP y lateral [CUPS: 871040]",
+      "Radiografía columna cervical AP y lateral [CUPS: 871010]",
+      "Radiografía columna dorsal AP y lateral [CUPS: 871020]",
+      "Radiografía de manos AP bilateral [CUPS: 873320]",
+      "Radiografía de pelvis AP [CUPS: 872200]",
+      "Radiografía de rodilla AP y lateral [CUPS: 873430]",
+      "Radiografía de pies bilateral [CUPS: 873510]",
+      "Radiografía de cráneo [CUPS: 870100]",
+      "Radiografía de senos paranasales [CUPS: 870300]",
+      "Radiografía de hombro AP [CUPS: 873110]",
+      "Radiografía de cadera AP [CUPS: 872210]",
+      "Radiografía de muñeca AP y lateral [CUPS: 873310]",
+      "Ecografía abdominal total [CUPS: 881302]",
+      "Ecografía pélvica transabdominal [CUPS: 881401]",
+      "Ecografía pélvica transvaginal [CUPS: 881402]",
+      "Ecografía de tiroides [CUPS: 881101]",
+      "Ecografía de mama bilateral [CUPS: 881501]",
+      "Ecografía de partes blandas [CUPS: 881601]",
+      "Ecografía renal y vías urinarias [CUPS: 881303]",
+      "Ecografía Doppler venoso miembros inferiores [CUPS: 882301]",
+      "Ecografía Doppler arterial miembros inferiores [CUPS: 882302]",
+      "Ecografía de cuello [CUPS: 881102]",
+      "Ecografía testicular [CUPS: 881602]",
+      "Ecografía de hombro [CUPS: 881603]",
+      "TAC de cráneo simple [CUPS: 879101]",
+      "TAC de cráneo con contraste [CUPS: 879102]",
+      "TAC de tórax simple [CUPS: 879201]",
+      "TAC de tórax con contraste [CUPS: 879202]",
       "TAC de abdomen y pelvis con contraste [CUPS: 879302]",
       "TAC de columna lumbosacra [CUPS: 879401]",
       "TAC de columna cervical [CUPS: 879402]",
       "TAC de huesos y articulaciones [CUPS: 879501]",
-      "Resonancia magnÃ©tica de crÃ¡neo [CUPS: 883101]",
-      "Resonancia magnÃ©tica de columna lumbar [CUPS: 883201]",
-      "Resonancia magnÃ©tica de columna cervical [CUPS: 883202]",
-      "Resonancia magnÃ©tica de columna dorsal [CUPS: 883203]",
-      "Resonancia magnÃ©tica de rodilla [CUPS: 883301]",
-      "Resonancia magnÃ©tica de hombro [CUPS: 883302]",
-      "Resonancia magnÃ©tica de cadera [CUPS: 883303]",
-      "Resonancia magnÃ©tica de muÃ±eca [CUPS: 883304]",
-      "Resonancia magnÃ©tica de tobillo [CUPS: 883305]",
-      "GamagrafÃ­a Ã³sea [CUPS: 886101]",
-      "GamagrafÃ­a tiroidea [CUPS: 886201]",
-      "DensitometrÃ­a Ã³sea (DXA) [CUPS: 886301]",
-      "MamografÃ­a bilateral [CUPS: 874101]",
-      "MamografÃ­a digital bilateral [CUPS: 874102]",
-      "PET-CT (TomografÃ­a por emisiÃ³n de positrones) [CUPS: 886401]",
-      // â•â•â• FISIOLOGÃA / MEDICINA OCUPACIONAL â•â•â•
-      "EspirometrÃ­a simple [CUPS: 893801]",
-      "EspirometrÃ­a con broncodilatador [CUPS: 893802]",
-      "EspirometrÃ­a ocupacional [CUPS: 893801]",
-      "AudiometrÃ­a [CUPS: 892201]",
-      "AudiometrÃ­a tonal [CUPS: 892201]",
-      "AudiometrÃ­a de palabras [CUPS: 892202]",
-      "AudiometrÃ­a ocupacional [CUPS: 892201]",
-      "ImpedanciometrÃ­a [CUPS: 892203]",
-      "LogoaudiometrÃ­a [CUPS: 892204]",
+      "Resonancia magnética de cráneo [CUPS: 883101]",
+      "Resonancia magnética de columna lumbar [CUPS: 883201]",
+      "Resonancia magnética de columna cervical [CUPS: 883202]",
+      "Resonancia magnética de columna dorsal [CUPS: 883203]",
+      "Resonancia magnética de rodilla [CUPS: 883301]",
+      "Resonancia magnética de hombro [CUPS: 883302]",
+      "Resonancia magnética de cadera [CUPS: 883303]",
+      "Resonancia magnética de muñeca [CUPS: 883304]",
+      "Resonancia magnética de tobillo [CUPS: 883305]",
+      "Gamagrafía ósea [CUPS: 886101]",
+      "Gamagrafía tiroidea [CUPS: 886201]",
+      "Densitometría ósea (DXA) [CUPS: 886301]",
+      "Mamografía bilateral [CUPS: 874101]",
+      "Mamografía digital bilateral [CUPS: 874102]",
+      "PET-CT (Tomografía por emisión de positrones) [CUPS: 886401]",
+      // â•â•â• FISIOLOGÍA / MEDICINA OCUPACIONAL â•â•â•
+      "Espirometría simple [CUPS: 893801]",
+      "Espirometría con broncodilatador [CUPS: 893802]",
+      "Espirometría ocupacional [CUPS: 893801]",
+      "Audiometría [CUPS: 892201]",
+      "Audiometría tonal [CUPS: 892201]",
+      "Audiometría de palabras [CUPS: 892202]",
+      "Audiometría ocupacional [CUPS: 892201]",
+      "Impedanciometría [CUPS: 892203]",
+      "Logoaudiometría [CUPS: 892204]",
       "Potenciales evocados auditivos (BERA) [CUPS: 892205]",
-      "Emisiones otoacÃºsticas [CUPS: 892206]",
-      "OptometrÃ­a [CUPS: 890203]",
-      "OptometrÃ­a ocupacional [CUPS: 890203]",
-      "VisiometrÃ­a [CUPS: 890203]",
-      "Examen de optometrÃ­a y visiometrÃ­a [CUPS: 890203]",
+      "Emisiones otoacústicas [CUPS: 892206]",
+      "Optometría [CUPS: 890203]",
+      "Optometría ocupacional [CUPS: 890203]",
+      "Visiometría [CUPS: 890203]",
+      "Examen de optometría y visiometría [CUPS: 890203]",
       "Agudeza visual [CUPS: 890203]",
-      "TonometrÃ­a ocular [CUPS: 890901]",
-      "CampimetrÃ­a [CUPS: 890902]",
+      "Tonometría ocular [CUPS: 890901]",
+      "Campimetría [CUPS: 890902]",
       "Fondo de ojo [CUPS: 890903]",
-      "Test de Ishihara (visiÃ³n cromÃ¡tica) [CUPS: 890904]",
-      "EvaluaciÃ³n osteomuscular [CUPS: 890401]",
+      "Test de Ishihara (visión cromática) [CUPS: 890904]",
+      "Evaluación osteomuscular [CUPS: 890401]",
       "Perfil de columna ocupacional",
       "Test de Wells",
       "Test de Phalen",
@@ -15975,44 +15975,44 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
       "Test de Hawkins",
       "Test de Jobe",
       "Test de Spurling",
-      "Test de LasÃ¨gue",
+      "Test de Lasègue",
       "Test de Adams (escoliosis)",
       "Test de Romberg",
-      "DinamometrÃ­a de mano [CUPS: 890402]",
+      "Dinamometría de mano [CUPS: 890402]",
       "Glicemia en ayunas (preocupacional) [CUPS: 903841]",
-      "Perfil lipÃ­dico (preocupacional) [CUPS: 903818]",
+      "Perfil lipídico (preocupacional) [CUPS: 903818]",
       "Hemograma (preocupacional) [CUPS: 902210]",
-      "Cuadro hemÃ¡tico (preocupacional) [CUPS: 902210]",
-      "Hepatitis B antÃ­geno (HBsAg) [CUPS: 906221]",
+      "Cuadro hemático (preocupacional) [CUPS: 902210]",
+      "Hepatitis B antígeno (HBsAg) [CUPS: 906221]",
       "Tamizaje VIH [CUPS: 906249]",
       "Pleuroscopia [CUPS: 342201]",
       "Electroencefalograma (EEG) [CUPS: 895601]",
-      "ElectromiografÃ­a (EMG) [CUPS: 895701]",
-      "Velocidad de conducciÃ³n nerviosa [CUPS: 895702]",
+      "Electromiografía (EMG) [CUPS: 895701]",
+      "Velocidad de conducción nerviosa [CUPS: 895702]",
       // â•â•â• SALUD MENTAL â•â•â•
-      "Escala de ansiedad y depresiÃ³n de Goldberg (EADG) [CUPS: 890801]",
-      "Cuestionario de depresiÃ³n PHQ-9 [CUPS: 890802]",
+      "Escala de ansiedad y depresión de Goldberg (EADG) [CUPS: 890801]",
+      "Cuestionario de depresión PHQ-9 [CUPS: 890802]",
       "Cuestionario de ansiedad GAD-7 [CUPS: 890803]",
       "Test AUDIT (uso de alcohol) [CUPS: 890804]",
       "Cuestionario CAGE (alcoholismo)",
       "Inventario de Burnout de Maslach (MBI) [CUPS: 890805]",
-      "Escala de estrÃ©s percibido (PSS-14)",
-      "Cuestionario de riesgo psicosocial (BaterÃ­a Min. Salud Res. 2764/2022) [CUPS: 890806]",
-      "EvaluaciÃ³n neuropsicolÃ³gica [CUPS: 890807]",
-      "EvaluaciÃ³n psicolÃ³gica forense [CUPS: 890808]",
-      "ValoraciÃ³n psiquiÃ¡trica [CUPS: 890201]",
-      "ValoraciÃ³n psicolÃ³gica [CUPS: 890208]",
+      "Escala de estrés percibido (PSS-14)",
+      "Cuestionario de riesgo psicosocial (Batería Min. Salud Res. 2764/2022) [CUPS: 890806]",
+      "Evaluación neuropsicológica [CUPS: 890807]",
+      "Evaluación psicológica forense [CUPS: 890808]",
+      "Valoración psiquiátrica [CUPS: 890201]",
+      "Valoración psicológica [CUPS: 890208]",
       "Test de Minnesota (MMPI) [CUPS: 890809]",
       "Test de Bender [CUPS: 890810]",
       "Test de matrices de Raven [CUPS: 890811]",
       "Test de personalidad [CUPS: 890812]",
-      "EvaluaciÃ³n de aptitudes laborales [CUPS: 890813]",
-      "EvaluaciÃ³n de estrÃ©s laboral (Bonn) [CUPS: 890814]",
-      "EvaluaciÃ³n del riesgo psicosocial [CUPS: 890815]",
-      "Escala de Hamilton (depresiÃ³n) [CUPS: 890816]",
-      "Escala de Beck (depresiÃ³n) [CUPS: 890817]",
+      "Evaluación de aptitudes laborales [CUPS: 890813]",
+      "Evaluación de estrés laboral (Bonn) [CUPS: 890814]",
+      "Evaluación del riesgo psicosocial [CUPS: 890815]",
+      "Escala de Hamilton (depresión) [CUPS: 890816]",
+      "Escala de Beck (depresión) [CUPS: 890817]",
       "Escala de Columbia (riesgo suicida) [CUPS: 890818]",
-      "MoCA (evaluaciÃ³n cognitiva Montreal) [CUPS: 890819]",
+      "MoCA (evaluación cognitiva Montreal) [CUPS: 890819]",
       "Mini Mental State Examination (MMSE) [CUPS: 890820]",
       // â•â•â• PROCEDIMIENTOS â•â•â•
       "Endoscopia digestiva alta [CUPS: 441101]",
@@ -16020,42 +16020,42 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
       "Colonoscopia con toma de biopsia [CUPS: 452102]",
       "Gastroscopia [CUPS: 441102]",
       "Rectosigmoidoscopia [CUPS: 452001]",
-      "CPRE (colangiopancreatografÃ­a retrÃ³grada) [CUPS: 512101]",
+      "CPRE (colangiopancreatografía retrógrada) [CUPS: 512101]",
       "Biopsia de piel [CUPS: 861201]",
       "Biopsia de ganglio [CUPS: 861301]",
-      "Biopsia de prÃ³stata guiada por ecografÃ­a [CUPS: 861401]",
+      "Biopsia de próstata guiada por ecografía [CUPS: 861401]",
       "Biopsia de mama guiada [CUPS: 861501]",
-      "PunciÃ³n lumbar [CUPS: 030301]",
-      "PunciÃ³n aspiraciÃ³n con aguja fina (PAAF) tiroides [CUPS: 861601]",
+      "Punción lumbar [CUPS: 030301]",
+      "Punción aspiración con aguja fina (PAAF) tiroides [CUPS: 861601]",
       "Drenaje de absceso [CUPS: 860101]",
-      "CuraciÃ³n de herida [CUPS: 860201]",
-      "CitologÃ­a cervicouterina (PAP) [CUPS: 892301]",
+      "Curación de herida [CUPS: 860201]",
+      "Citología cervicouterina (PAP) [CUPS: 892301]",
       "Colposcopia [CUPS: 692101]",
       "Histeroscopia [CUPS: 692201]",
-      "Laparoscopia diagnÃ³stica [CUPS: 541001]",
+      "Laparoscopia diagnóstica [CUPS: 541001]",
       "Cistoscopia [CUPS: 571101]",
       "Broncoscopia [CUPS: 331101]",
-      // â•â•â• VALORACIONES MÃ‰DICAS â•â•â•
+      // â•â•â• VALORACIONES MÉDICAS â•â•â•
       "Consulta de medicina general [CUPS: 890101]",
       "Consulta de medicina especializada [CUPS: 890201]",
       "Consulta de medicina del trabajo [CUPS: 890202]",
       "Consulta de control o seguimiento [CUPS: 890301]",
-      "ValoraciÃ³n por fisioterapia [CUPS: 890501]",
-      "ValoraciÃ³n por terapia ocupacional [CUPS: 890502]",
-      "ValoraciÃ³n por fonoaudiologÃ­a [CUPS: 890503]",
-      "ValoraciÃ³n por nutriciÃ³n [CUPS: 890504]",
-      "ValoraciÃ³n por psicologÃ­a [CUPS: 890208]",
-      "ValoraciÃ³n por trabajo social [CUPS: 890505]",
+      "Valoración por fisioterapia [CUPS: 890501]",
+      "Valoración por terapia ocupacional [CUPS: 890502]",
+      "Valoración por fonoaudiología [CUPS: 890503]",
+      "Valoración por nutrición [CUPS: 890504]",
+      "Valoración por psicología [CUPS: 890208]",
+      "Valoración por trabajo social [CUPS: 890505]",
       "Consulta de urgencias [CUPS: 890601]",
-      // â•â•â• CONTROL GENERAL SEGÃšN PATOLOGÃA â•â•â•
-      "Control de HTA: perfil lipÃ­dico + creatinina + electrolitos + EKG",
-      "Control de diabetes: HbA1c + perfil lipÃ­dico + creatinina + microalbuminuria + fondo de ojo",
+      // â•â•â• CONTROL GENERAL SEGÚN PATOLOGÍA â•â•â•
+      "Control de HTA: perfil lipídico + creatinina + electrolitos + EKG",
+      "Control de diabetes: HbA1c + perfil lipídico + creatinina + microalbuminuria + fondo de ojo",
       "Control de hipotiroidismo: TSH + T4L",
-      "Control de dislipidemia: perfil lipÃ­dico completo",
+      "Control de dislipidemia: perfil lipídico completo",
       "Control de enfermedad renal: creatinina + BUN + electrolitos + parcial de orina",
-      "Control de EPOC: espirometrÃ­a + radiografÃ­a de tÃ³rax + gases arteriales",
-      "Control de asma ocupacional: espirometrÃ­a seriada + PEF",
-      "Control de hipoacusia: audiometrÃ­a de control",
+      "Control de EPOC: espirometría + radiografía de tórax + gases arteriales",
+      "Control de asma ocupacional: espirometría seriada + PEF",
+      "Control de hipoacusia: audiometría de control",
     ];
     // States moved to component level (no hooks in conditionals - React rule)
     const showSuggs = showExamSuggs;
@@ -16095,13 +16095,13 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
       {
         terminos: [
           "serologia",
-          "serolÃ³gico",
+          "serológico",
           "vdrl",
           "rpr",
           "sifilis",
           "treponema",
         ],
-        nombre: "Prueba serolÃ³gica (sÃ­filis/treponema)",
+        nombre: "Prueba serológica (sífilis/treponema)",
       },
     ];
     const _esPruebaProhibida = (nombre) => {
@@ -16118,11 +16118,11 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
         tipoExActual
       );
       if (prohibida && esEvalOcupacional) {
-        // Mostrar advertencia - el mÃ©dico PUEDE agregarla con justificaciÃ³n clÃ­nica
+        // Mostrar advertencia - el médico PUEDE agregarla con justificación clínica
         showPrompt(
-          `âš ï¸ Res. 1843/2025 Art. 10 - PRUEBA RESTRINGIDA\n\n"${prohibida.nombre}" estÃ¡ prohibida como requisito de ingreso o permanencia laboral.\n\nSi hay indicaciÃ³n CLÃNICA justificada, escriba la justificaciÃ³n aquÃ­. De lo contrario, cancele.\n\nJustificaciÃ³n clÃ­nica (requerida):`,
+          `âš ï¸ Res. 1843/2025 Art. 10 - PRUEBA RESTRINGIDA\n\n"${prohibida.nombre}" está prohibida como requisito de ingreso o permanencia laboral.\n\nSi hay indicación CLÍNICA justificada, escriba la justificación aquí. De lo contrario, cancele.\n\nJustificación clínica (requerida):`,
           (justificacion) => {
-            if (!justificacion || !justificacion.trim()) return; // cancelÃ³
+            if (!justificacion || !justificacion.trim()) return; // canceló
             const nuevo = {
               nombre,
               fecha: new Date().toISOString().split("T")[0],
@@ -16144,9 +16144,9 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
             setShowExamSuggs(false);
           }
         );
-        return; // espera confirmaciÃ³n del mÃ©dico
+        return; // espera confirmación del médico
       }
-      // â”€â”€ Examen sin restricciÃ³n - agregar normalmente â”€â”€
+      // â”€â”€ Examen sin restricción - agregar normalmente â”€â”€
       const nuevo = {
         nombre,
         fecha: new Date().toISOString().split("T")[0],
@@ -16175,7 +16175,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
         solicitudExamenesJust: justExamen,
       }));
     };
-    // Paquetes de exÃ¡menes por grupo/frecuencia
+    // Paquetes de exámenes por grupo/frecuencia
     const EXAM_PACKAGES = [
       {
         id: "ocup_ingreso",
@@ -16184,28 +16184,28 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
         examenes: [
           "Hemograma completo (CBC)",
           "Glicemia en ayunas",
-          "Perfil lipÃ­dico completo",
-          "Creatinina sÃ©rica",
-          "Parcial de orina (uroanÃ¡lisis)",
-          "RadiografÃ­a de tÃ³rax PA y lateral",
+          "Perfil lipídico completo",
+          "Creatinina sérica",
+          "Parcial de orina (uroanálisis)",
+          "Radiografía de tórax PA y lateral",
           "Electrocardiograma (ECG) de 12 derivaciones",
-          "AudiometrÃ­a ocupacional",
-          "OptometrÃ­a ocupacional",
-          "VisiometrÃ­a",
+          "Audiometría ocupacional",
+          "Optometría ocupacional",
+          "Visiometría",
         ],
       },
       {
         id: "ocup_periodico",
-        nombre: "ðŸ”„ PeriÃ³dico Ocupacional",
+        nombre: "ðŸ”„ Periódico Ocupacional",
         frecuencia: "Anual",
         examenes: [
           "Hemograma completo (CBC)",
           "Glicemia en ayunas",
-          "Perfil lipÃ­dico completo",
-          "Creatinina sÃ©rica",
-          "Parcial de orina (uroanÃ¡lisis)",
-          "AudiometrÃ­a ocupacional",
-          "OptometrÃ­a ocupacional",
+          "Perfil lipídico completo",
+          "Creatinina sérica",
+          "Parcial de orina (uroanálisis)",
+          "Audiometría ocupacional",
+          "Optometría ocupacional",
         ],
       },
       {
@@ -16214,25 +16214,25 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
         frecuencia: "Anual",
         examenes: [
           "Electrocardiograma (ECG) de 12 derivaciones",
-          "EspirometrÃ­a simple",
-          "AudiometrÃ­a ocupacional",
-          "OptometrÃ­a ocupacional",
-          "Glucosa sÃ©rica",
+          "Espirometría simple",
+          "Audiometría ocupacional",
+          "Optometría ocupacional",
+          "Glucosa sérica",
           "Hemograma completo (CBC)",
-          "RadiografÃ­a de tÃ³rax PA y lateral",
+          "Radiografía de tórax PA y lateral",
         ],
       },
       {
         id: "alimentos",
-        nombre: "ðŸ½ï¸ ManipulaciÃ³n Alimentos (Res. 2674/2013)",
+        nombre: "ðŸ½ï¸ Manipulación Alimentos (Res. 2674/2013)",
         frecuencia: "Anual",
         examenes: [
-          "CoproscÃ³pico",
+          "Coproscópico",
           "Coprocultivo",
           "VDRL",
-          "Parcial de orina (uroanÃ¡lisis)",
+          "Parcial de orina (uroanálisis)",
           "Hemograma completo (CBC)",
-          "CitologÃ­a cervicouterina (PAP)",
+          "Citología cervicouterina (PAP)",
         ],
       },
       {
@@ -16240,12 +16240,12 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
         nombre: "â¤ï¸ Riesgo Cardiovascular",
         frecuencia: "Semestral",
         examenes: [
-          "Perfil lipÃ­dico completo",
+          "Perfil lipídico completo",
           "Glicemia en ayunas",
           "Hemoglobina glicosilada (HbA1c)",
           "Electrocardiograma (ECG) de 12 derivaciones",
-          "ProteÃ­na C reactiva (PCR) ultrasensible",
-          "Creatinina sÃ©rica",
+          "Proteína C reactiva (PCR) ultrasensible",
+          "Creatinina sérica",
         ],
       },
       {
@@ -16253,9 +16253,9 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
         nombre: "ðŸ« Riesgo Respiratorio (SVE)",
         frecuencia: "Anual",
         examenes: [
-          "EspirometrÃ­a simple",
-          "EspirometrÃ­a con broncodilatador",
-          "RadiografÃ­a de tÃ³rax PA y lateral",
+          "Espirometría simple",
+          "Espirometría con broncodilatador",
+          "Radiografía de tórax PA y lateral",
           "Hemograma completo (CBC)",
         ],
       },
@@ -16264,33 +16264,33 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
         nombre: "ðŸ¦´ Riesgo Osteomuscular (SVE)",
         frecuencia: "Anual",
         examenes: [
-          "RadiografÃ­a columna lumbosacra AP y lateral",
-          "RadiografÃ­a columna cervical AP y lateral",
-          "RadiografÃ­a de manos AP bilateral",
-          "ElectromiografÃ­a (EMG)",
+          "Radiografía columna lumbosacra AP y lateral",
+          "Radiografía columna cervical AP y lateral",
+          "Radiografía de manos AP bilateral",
+          "Electromiografía (EMG)",
         ],
       },
       {
         id: "ruido",
-        nombre: "ðŸ”Š ExposiciÃ³n a Ruido (SVE)",
+        nombre: "ðŸ”Š Exposición a Ruido (SVE)",
         frecuencia: "Anual",
         examenes: [
-          "AudiometrÃ­a ocupacional",
-          "AudiometrÃ­a tonal",
-          "AudiometrÃ­a de palabras",
-          "ImpedanciometrÃ­a",
+          "Audiometría ocupacional",
+          "Audiometría tonal",
+          "Audiometría de palabras",
+          "Impedanciometría",
         ],
       },
       {
         id: "quimico",
-        nombre: "âš—ï¸ Riesgo QuÃ­mico",
+        nombre: "âš—ï¸ Riesgo Químico",
         frecuencia: "Anual",
         examenes: [
           "Hemograma completo (CBC)",
-          "Pruebas de funciÃ³n hepÃ¡tica",
-          "Creatinina sÃ©rica",
-          "Parcial de orina (uroanÃ¡lisis)",
-          "Plomo en sangre (si exposiciÃ³n)",
+          "Pruebas de función hepática",
+          "Creatinina sérica",
+          "Parcial de orina (uroanálisis)",
+          "Plomo en sangre (si exposición)",
         ],
       },
       {
@@ -16298,11 +16298,11 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
         nombre: "ðŸ‘ï¸ Riesgo Visual",
         frecuencia: "Anual",
         examenes: [
-          "OptometrÃ­a ocupacional",
+          "Optometría ocupacional",
           "Agudeza visual",
-          "TonometrÃ­a ocular",
-          "CampimetrÃ­a",
-          "VisiometrÃ­a",
+          "Tonometría ocular",
+          "Campimetría",
+          "Visiometría",
         ],
       },
     ];
@@ -16329,14 +16329,14 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
         {/* Encabezado */}
         <div className="bg-white rounded-2xl shadow-sm border border-teal-100 p-5">
           <h3 className="text-base font-black text-teal-800 flex items-center gap-2 mb-1">
-            ðŸ”¬ Solicitud de ExÃ¡menes y Procedimientos
+            ðŸ”¬ Solicitud de Exámenes y Procedimientos
           </h3>
           <p className="text-xs text-gray-400">
-            Busque el examen o escrÃ­balo libremente Â· Se imprimirÃ¡ con los datos
+            Busque el examen o escríbalo libremente · Se imprimirá con los datos
             del paciente
           </p>
         </div>
-        {/* â”€â”€ PAQUETES DE EXÃMENES â”€â”€ */}
+        {/* â”€â”€ PAQUETES DE EXÁMENES â”€â”€ */}
         <div className="bg-white rounded-2xl shadow-sm border border-indigo-100 p-5">
           <div className="flex items-center justify-between mb-3">
             <p className="text-xs font-black text-indigo-800 uppercase">
@@ -16369,7 +16369,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
                   >
                     <p className="font-black text-gray-800">{pkg.nombre}</p>
                     <p className="text-[10px] text-gray-400 mt-0.5">
-                      ðŸ” {pkg.frecuencia} Â· {pkg.examenes.length} exÃ¡menes
+                      ðŸ” {pkg.frecuencia} · {pkg.examenes.length} exámenes
                     </p>
                   </button>
                 ))}
@@ -16382,7 +16382,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
                   return (
                     <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-3">
                       <p className="text-xs font-black text-indigo-800 mb-2">
-                        {pkg.nombre} - Seleccione los exÃ¡menes a agregar:
+                        {pkg.nombre} - Seleccione los exámenes a agregar:
                       </p>
                       <div className="grid grid-cols-2 gap-1 max-h-48 overflow-y-auto mb-3">
                         {pkg.examenes.map((ex) => (
@@ -16431,12 +16431,12 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
         {/* Buscador */}
         <div className="bg-white rounded-2xl shadow-sm border border-teal-200 p-5">
           <label className="block text-xs font-black text-teal-700 uppercase mb-2">
-            Buscar o aÃ±adir examen / procedimiento
+            Buscar o añadir examen / procedimiento
           </label>
           <div className="relative">
             <div className="flex gap-2">
               <div className="flex-1 relative">
-                {/* Buscador CUPS integrado + bÃºsqueda libre */}
+                {/* Buscador CUPS integrado + búsqueda libre */}
                 <input
                   value={examSearch}
                   onChange={(e) => {
@@ -16444,7 +16444,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
                     setShowExamSuggs(true);
                   }}
                   onFocus={() => setShowSuggs(true)}
-                  placeholder="Buscar CUPS o examen - Ej: 903001 hemograma, 912701 espirometrÃ­a, audiometrÃ­a..."
+                  placeholder="Buscar CUPS o examen - Ej: 903001 hemograma, 912701 espirometría, audiometría..."
                   className="w-full p-2.5 border-2 border-teal-200 rounded-xl text-sm focus:border-teal-500 outline-none"
                 />
                 {showSuggs && suggestions.length > 0 && (
@@ -16524,11 +16524,11 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
               </button>
             </div>
           </div>
-          {/* Lista de exÃ¡menes agregados */}
+          {/* Lista de exámenes agregados */}
           {examList.length > 0 && (
             <div className="mt-4 space-y-2">
               <p className="text-xs font-bold text-gray-500 uppercase">
-                ExÃ¡menes solicitados ({examList.length})
+                Exámenes solicitados ({examList.length})
               </p>
               {examList.map((ex, i) => (
                 <div
@@ -16540,7 +16540,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
                     {ex.nombre}
                     {ex.alertaRes1843 && (
                       <span className="ml-1 text-[9px] bg-amber-100 text-amber-800 border border-amber-300 px-1 rounded font-black">
-                        âš ï¸ Justif. clÃ­nica - Res.1843 Art.10
+                        âš ï¸ Justif. clínica - Res.1843 Art.10
                       </span>
                     )}
                   </span>
@@ -16583,11 +16583,11 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
             </div>
           )}
         </div>
-        {/* DiagnÃ³stico y justificaciÃ³n */}
+        {/* Diagnóstico y justificación */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-5 space-y-3">
           <div>
             <label className="block text-xs font-black text-gray-600 uppercase mb-1">
-              DiagnÃ³stico / ImpresiÃ³n DiagnÃ³stica
+              Diagnóstico / Impresión Diagnóstica
             </label>
             <input
               value={diagExamen}
@@ -16598,13 +16598,13 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
                   solicitudExamenesDiag: e.target.value,
                 }));
               }}
-              placeholder="Ej: HipertensiÃ³n arterial esencial (I10), Diabetes tipo 2 (E11)..."
+              placeholder="Ej: Hipertensión arterial esencial (I10), Diabetes tipo 2 (E11)..."
               className="w-full p-2.5 border-2 border-gray-200 rounded-xl text-sm focus:border-blue-400 outline-none"
             />
           </div>
           <div>
             <label className="block text-xs font-black text-gray-600 uppercase mb-1">
-              JustificaciÃ³n / Motivo del examen
+              Justificación / Motivo del examen
             </label>
             <textarea
               rows={3}
@@ -16616,7 +16616,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
                   solicitudExamenesJust: e.target.value,
                 }));
               }}
-              placeholder="Explique el motivo clÃ­nico por el cual se solicitan los exÃ¡menes..."
+              placeholder="Explique el motivo clínico por el cual se solicitan los exámenes..."
               className="w-full p-2.5 border-2 border-gray-200 rounded-xl text-sm resize-none focus:border-blue-400 outline-none"
             />
           </div>
@@ -16624,7 +16624,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
             <button
               onClick={() => {
                 saveLocal();
-                showAlert("âœ… Solicitud de exÃ¡menes guardada correctamente.");
+                showAlert("âœ… Solicitud de exámenes guardada correctamente.");
               }}
               className="bg-teal-600 text-white px-5 py-2 rounded-xl text-xs font-bold hover:bg-teal-700 flex items-center gap-2"
             >
@@ -16632,7 +16632,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
             </button>
           </div>
         </div>
-        {/* Preview de impresiÃ³n */}
+        {/* Preview de impresión */}
         {examList.length > 0 && (
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
             <div className="flex items-center justify-between mb-3">
@@ -16665,23 +16665,23 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
                       null
                     : null;
                   w.document.write(
-                    `<!DOCTYPE html><html><head><meta charset="UTF-8"/><title>Solicitud de ExÃ¡menes</title><style>@page{size:letter portrait;margin:1.2cm 1.5cm;}body{font-family:Arial,sans-serif;font-size:9pt;color:#222;}h2{margin:0;font-size:13pt;color:#0d9488;text-transform:uppercase;}table{width:100%;border-collapse:collapse;margin-top:8px;}th{background:#0d9488;color:white;padding:7px 10px;font-size:8.5pt;text-align:left;}td{border-bottom:1px solid #e5e7eb;}p{margin:3px 0;font-size:9pt;}.sig{margin-top:40px;display:flex;justify-content:space-between;}.sig-line{border-top:1.5px solid #222;width:200px;text-align:center;padding-top:4px;font-size:8pt;font-weight:bold;}</style></head><body><div style="display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #0d9488;padding-bottom:10px;margin-bottom:14px;">${_ipsDocLeftHtml(
+                    `<!DOCTYPE html><html><head><meta charset="UTF-8"/><title>Solicitud de Exámenes</title><style>@page{size:letter portrait;margin:1.2cm 1.5cm;}body{font-family:Arial,sans-serif;font-size:9pt;color:#222;}h2{margin:0;font-size:13pt;color:#0d9488;text-transform:uppercase;}table{width:100%;border-collapse:collapse;margin-top:8px;}th{background:#0d9488;color:white;padding:7px 10px;font-size:8.5pt;text-align:left;}td{border-bottom:1px solid #e5e7eb;}p{margin:3px 0;font-size:9pt;}.sig{margin-top:40px;display:flex;justify-content:space-between;}.sig-line{border-top:1.5px solid #222;width:200px;text-align:center;padding-top:4px;font-size:8pt;font-weight:bold;}</style></head><body><div style="display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #0d9488;padding-bottom:10px;margin-bottom:14px;">${_ipsDocLeftHtml(
                       _miIPSExam,
                       _billDocData,
                       "#0d9488"
-                    )}<div style="text-align:right;"><h2>Solicitud de ExÃ¡menes</h2><p>Fecha: ${fd}</p></div></div><div style="background:#f0fdfa;border:1px solid #99f6e4;border-radius:4px;padding:10px;margin-bottom:10px;"><p><b>Paciente:</b> ${
+                    )}<div style="text-align:right;"><h2>Solicitud de Exámenes</h2><p>Fecha: ${fd}</p></div></div><div style="background:#f0fdfa;border:1px solid #99f6e4;border-radius:4px;padding:10px;margin-bottom:10px;"><p><b>Paciente:</b> ${
                       data.nombres || ""
                     } &nbsp; <b>Doc:</b> ${data.docTipo || "CC"} ${
                       data.docNumero || ""
                     } &nbsp; <b>Edad:</b> ${
                       data.edad || "--"
-                    } aÃ±os &nbsp; <b>EPS:</b> ${data.eps || "--"}</p>${
+                    } años &nbsp; <b>EPS:</b> ${data.eps || "--"}</p>${
                       diagExamen
-                        ? `<p style="margin-top:4px;"><b>DiagnÃ³stico:</b> ${diagExamen}</p>`
+                        ? `<p style="margin-top:4px;"><b>Diagnóstico:</b> ${diagExamen}</p>`
                         : ""
                     }</div><table><thead><tr><th>Examen / Procedimiento Solicitado</th></tr></thead><tbody>${exHtml}</tbody></table>${
                       justExamen
-                        ? `<div style="margin-top:12px;background:#fffbeb;border:1px solid #fde68a;border-radius:4px;padding:8px;"><p style="font-weight:bold;font-size:8.5pt;color:#92400e;text-transform:uppercase;margin-bottom:4px;">JustificaciÃ³n clÃ­nica:</p><p style="white-space:pre-wrap;">${justExamen}</p></div>`
+                        ? `<div style="margin-top:12px;background:#fffbeb;border:1px solid #fde68a;border-radius:4px;padding:8px;"><p style="font-weight:bold;font-size:8.5pt;color:#92400e;text-transform:uppercase;margin-bottom:4px;">Justificación clínica:</p><p style="white-space:pre-wrap;">${justExamen}</p></div>`
                         : ""
                     }<div class="sig"><div class="sig-line">Firma Paciente / Responsable</div><div style="text-align:center;"><img src="${
                       _billDocSig || ""
@@ -16705,7 +16705,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
             </div>
             <div className="border border-gray-200 rounded-xl overflow-hidden">
               <div className="bg-teal-700 text-white px-4 py-2 text-xs font-bold uppercase">
-                ExÃ¡menes Solicitados - {data.nombres || "Paciente"}
+                Exámenes Solicitados - {data.nombres || "Paciente"}
               </div>
               {examList.map((ex, i) => (
                 <div
@@ -16751,11 +16751,11 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
       const headerHtml = `<div style="display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #dc2626;padding-bottom:10px;margin-bottom:14px;">
     ${_ipsDocLeftHtml(_miIPSIncap, doc, "#dc2626")}
     <div style="text-align:right;">
-      <h2 style="margin:0;font-size:13pt;font-weight:900;color:#dc2626;text-transform:uppercase;">Certificado de Incapacidad MÃ©dica</h2>
-      <p style="font-size:8.5pt;color:#555;">Fecha de expediciÃ³n: ${_sanitize(
+      <h2 style="margin:0;font-size:13pt;font-weight:900;color:#dc2626;text-transform:uppercase;">Certificado de Incapacidad Médica</h2>
+      <p style="font-size:8.5pt;color:#555;">Fecha de expedición: ${_sanitize(
         data.fechaConsulta || new Date().toLocaleDateString("es-CO")
       )}</p>
-      <p style="font-size:7.5pt;color:#888;">Res. 1995/1999 Â· Ley 100/1993 Art. 227 Â· Dec. 2943/2013</p>
+      <p style="font-size:7.5pt;color:#888;">Res. 1995/1999 · Ley 100/1993 Art. 227 · Dec. 2943/2013</p>
     </div>
   </div>`;
       const bodyHtml = `
@@ -16766,18 +16766,18 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
       )}: ${_sanitize(data.docNumero || "")}</td></tr>
     <tr><th>Edad</th><td>${_sanitize(
       String(data.edad || "--")
-    )} aÃ±os</td><th>Fecha de nacimiento</th><td>${_sanitize(
+    )} años</td><th>Fecha de nacimiento</th><td>${_sanitize(
         data.fechaNacimiento || "--"
       )}</td></tr>
     <tr><th>EPS / Aseguradora</th><td>${_sanitize(
       data.eps || "--"
-    )}</td><th>GÃ©nero</th><td>${_sanitize(data.genero || "--")}</td></tr>
-    <tr><th>DiagnÃ³stico (CIE-10)</th><td colspan="3">${_sanitize(
+    )}</td><th>Género</th><td>${_sanitize(data.genero || "--")}</td></tr>
+    <tr><th>Diagnóstico (CIE-10)</th><td colspan="3">${_sanitize(
       data.incapacidad?.diagnosticoCIE || data.incapacidad?.diagnostico || "--"
     )}</td></tr>
     <tr><th>Origen de la incapacidad</th><td>${_sanitize(
       data.incapacidad?.origen || "Enfermedad General"
-    )}</td><th>PrÃ³rroga NÂ°</th><td>${_sanitize(
+    )}</td><th>Prórroga N°</th><td>${_sanitize(
         data.incapacidad?.prorroga || "N/A"
       )}</td></tr>
     <tr><th>Fecha de inicio</th><td>${_sanitize(
@@ -16785,17 +16785,17 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
     )}</td><th>Fecha de fin</th><td>${_sanitize(
         data.incapacidad?.hasta || "--"
       )}</td></tr>
-    <tr><th colspan="2" style="background:#dc2626;color:white;text-align:center;font-size:12pt;">DÃAS DE INCAPACIDAD: ${dias}</th>
+    <tr><th colspan="2" style="background:#dc2626;color:white;text-align:center;font-size:12pt;">DÍAS DE INCAPACIDAD: ${dias}</th>
         <th colspan="2" style="text-align:center;font-size:11pt;">${_sanitize(
           numeroALetras(dias)
-        )} (${dias}) DÃAS</th></tr>
+        )} (${dias}) DÍAS</th></tr>
     <tr><th>Restricciones durante la incapacidad</th><td colspan="3">${_sanitize(
       data.incapacidad?.restricciones ||
-        "Reposo relativo en casa. Evitar esfuerzo fÃ­sico intenso."
+        "Reposo relativo en casa. Evitar esfuerzo físico intenso."
     )}</td></tr>
     <tr><th>Recomendaciones al paciente</th><td colspan="3">${_sanitize(
       data.incapacidad?.recoIncapacidad ||
-        "Consultar nuevamente si no hay mejorÃ­a o si los sÃ­ntomas empeoran."
+        "Consultar nuevamente si no hay mejoría o si los síntomas empeoran."
     )}</td></tr>
     </table>
     <p class="legal">La presente incapacidad es expedida conforme a la Ley 100/1993 Art. 227, Decreto 2943/2013, y la normatividad vigente del SGSSS. Para incapacidades por accidente de trabajo o enfermedad laboral aplica el Decreto 1295/1994.</p>
@@ -16809,7 +16809,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
         }
         <div class="sig-line">${_sanitize(doc.nombre || "")}<br/>${_sanitize(
         doc.titulo || ""
-      )} Â· Lic: ${_sanitize(doc.licencia || "")}</div>
+      )} · Lic: ${_sanitize(doc.licencia || "")}</div>
       </div>
     </div>`;
       w.document
@@ -16849,17 +16849,17 @@ th{background:#fee2e2;font-weight:900;text-align:left;color:#7f1d1d;}
 </body></html>`);
       w.document.close();
       w.focus();
-      // No auto-print - el mÃ©dico edita y luego hace clic en "Imprimir certificado"
+      // No auto-print - el médico edita y luego hace clic en "Imprimir certificado"
     };
     return (
       <div className="max-w-4xl mx-auto space-y-4">
         {/* Header */}
         <div className="bg-white rounded-2xl shadow-sm border border-red-100 p-5">
           <h3 className="text-base font-black text-red-800 flex items-center gap-2 mb-1">
-            ðŸ¥ Certificado de Incapacidad MÃ©dica
+            ðŸ¥ Certificado de Incapacidad Médica
           </h3>
           <p className="text-xs text-gray-400">
-            Ley 100/1993 Art. 227 Â· Decreto 2943/2013 Â· Res. 1995/1999 Â· Decreto
+            Ley 100/1993 Art. 227 · Decreto 2943/2013 · Res. 1995/1999 · Decreto
             1295/1994
           </p>
         </div>
@@ -16875,10 +16875,10 @@ th{background:#fee2e2;font-weight:900;text-align:left;color:#7f1d1d;}
                 "Documento",
                 `${data.docTipo || "CC"}: ${data.docNumero || "--"}`,
               ],
-              ["Edad", `${data.edad || "--"} aÃ±os`],
+              ["Edad", `${data.edad || "--"} años`],
               ["Fecha Nac.", data.fechaNacimiento || "--"],
               ["EPS", data.eps || "--"],
-              ["GÃ©nero", data.genero || "--"],
+              ["Género", data.genero || "--"],
             ].map(([k, v]) => (
               <div key={k} className="bg-gray-50 rounded-lg p-2">
                 <p className="text-[10px] font-bold text-gray-400 uppercase">
@@ -16897,7 +16897,7 @@ th{background:#fee2e2;font-weight:900;text-align:left;color:#7f1d1d;}
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-bold text-gray-600 mb-1 uppercase">
-                DiagnÃ³stico Principal (CIE-10)
+                Diagnóstico Principal (CIE-10)
               </label>
               <CIE10Input
                 value={
@@ -16914,7 +16914,7 @@ th{background:#fee2e2;font-weight:900;text-align:left;color:#7f1d1d;}
                     incapacidad: { ...p.incapacidad, diagnosticoCIE: v },
                   }))
                 }
-                placeholder="Buscar CIE-10 - J06.9, lumbalgia, tÃºnel carpo..."
+                placeholder="Buscar CIE-10 - J06.9, lumbalgia, túnel carpo..."
                 className="w-full p-2 border-2 border-gray-200 rounded-xl text-xs focus:border-red-400 outline-none"
               />
             </div>
@@ -16936,8 +16936,8 @@ th{background:#fee2e2;font-weight:900;text-align:left;color:#7f1d1d;}
                 <option>Accidente de Trabajo</option>
                 <option>Enfermedad Laboral</option>
                 <option>Maternidad</option>
-                <option>Accidente de TrÃ¡nsito</option>
-                <option>LesiÃ³n ComÃºn</option>
+                <option>Accidente de Tránsito</option>
+                <option>Lesión Común</option>
               </select>
             </div>
             <div>
@@ -17000,7 +17000,7 @@ th{background:#fee2e2;font-weight:900;text-align:left;color:#7f1d1d;}
             </div>
             <div>
               <label className="block text-xs font-bold text-gray-600 mb-1 uppercase">
-                Prorroga NÂ°
+                Prorroga N°
               </label>
               <input
                 value={data.incapacidad?.prorroga || ""}
@@ -17016,13 +17016,13 @@ th{background:#fee2e2;font-weight:900;text-align:left;color:#7f1d1d;}
             </div>
             <div className="flex flex-col justify-center items-center bg-red-50 border-2 border-red-200 rounded-xl p-4">
               <p className="text-[10px] font-black text-red-600 uppercase">
-                DÃ­as de Incapacidad
+                Días de Incapacidad
               </p>
               <p className="text-5xl font-black text-red-900">
                 {data.incapacidad?.dias || diasCalc}
               </p>
               <p className="text-[10px] text-red-700 font-bold text-center">
-                {numeroALetras(data.incapacidad?.dias || diasCalc)} DÃAS
+                {numeroALetras(data.incapacidad?.dias || diasCalc)} DÍAS
               </p>
             </div>
           </div>
@@ -17034,7 +17034,7 @@ th{background:#fee2e2;font-weight:900;text-align:left;color:#7f1d1d;}
               rows={2}
               value={
                 data.incapacidad?.restricciones ||
-                "Reposo relativo en casa. Evitar esfuerzo fÃ­sico y exposiciÃ³n al frÃ­o."
+                "Reposo relativo en casa. Evitar esfuerzo físico y exposición al frío."
               }
               onChange={(e) =>
                 setData((p) => ({
@@ -17056,7 +17056,7 @@ th{background:#fee2e2;font-weight:900;text-align:left;color:#7f1d1d;}
               rows={2}
               value={
                 data.incapacidad?.recoIncapacidad ||
-                "Consultar nuevamente si no hay mejorÃ­a o si presenta sÃ­ntomas de alarma."
+                "Consultar nuevamente si no hay mejoría o si presenta síntomas de alarma."
               }
               onChange={(e) =>
                 setData((p) => ({
@@ -17072,7 +17072,7 @@ th{background:#fee2e2;font-weight:900;text-align:left;color:#7f1d1d;}
           </div>
           <div className="flex justify-between items-center pt-2 border-t border-gray-100">
             <p className="text-[10px] text-gray-400 italic">
-              Ley 100/1993 Art. 227 Â· Decreto 2943/2013 Â· Decreto 1295/1994 (AT)
+              Ley 100/1993 Art. 227 · Decreto 2943/2013 · Decreto 1295/1994 (AT)
             </p>
             <div className="flex gap-2">
               <button
@@ -17144,7 +17144,7 @@ th{background:#fee2e2;font-weight:900;text-align:left;color:#7f1d1d;}
         return;
       }
       if (cotizacionForm.items.length === 0) {
-        showAlert("Agregue al menos un Ã­tem.");
+        showAlert("Agregue al menos un ítem.");
         return;
       }
       const cot = {
@@ -17169,7 +17169,7 @@ th{background:#fee2e2;font-weight:900;text-align:left;color:#7f1d1d;}
         validez: 30,
         fecha: new Date().toISOString().split("T")[0],
       });
-      showAlert("âœ… CotizaciÃ³n guardada.");
+      showAlert("âœ… Cotización guardada.");
     };
     const changeEstado = (id, est) => {
       const upd = cotizaciones.map((c) =>
@@ -17178,7 +17178,7 @@ th{background:#fee2e2;font-weight:900;text-align:left;color:#7f1d1d;}
       saveCotizaciones(upd);
     };
     const deleteCotiz = (id) => {
-      if (!window.confirm("Â¿Eliminar esta cotizaciÃ³n?")) return;
+      if (!window.confirm("¿Eliminar esta cotización?")) return;
       saveCotizaciones(cotizaciones.filter((c) => c.id !== id));
     };
     return (
@@ -17187,13 +17187,13 @@ th{background:#fee2e2;font-weight:900;text-align:left;color:#7f1d1d;}
           <div>
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-black text-gray-800">
-                ðŸ§¾ Cotizaciones RÃ¡pidas
+                ðŸ§¾ Cotizaciones Rápidas
               </h2>
               <button
                 onClick={() => setCotizacionView("nueva")}
                 className="px-4 py-2 bg-indigo-700 hover:bg-indigo-800 text-white text-xs font-black rounded-lg"
               >
-                âž• Nueva CotizaciÃ³n
+                âž• Nueva Cotización
               </button>
             </div>
             <div className="grid grid-cols-3 gap-3 mb-4">
@@ -17229,7 +17229,7 @@ th{background:#fee2e2;font-weight:900;text-align:left;color:#7f1d1d;}
                 <thead className="bg-gray-800 text-white">
                   <tr>
                     {[
-                      "NÂ°",
+                      "N°",
                       "Fecha",
                       "Cliente",
                       "Empresa",
@@ -17315,7 +17315,7 @@ th{background:#fee2e2;font-weight:900;text-align:left;color:#7f1d1d;}
             {cotizSel && (
               <div className="mt-4 bg-indigo-50 border border-indigo-200 rounded-xl p-4 text-xs">
                 <p className="font-black text-indigo-800 mb-2">
-                  ðŸ“‹ CotizaciÃ³n #{cotizSel.numero} - {cotizSel.clienteNombre}
+                  ðŸ“‹ Cotización #{cotizSel.numero} - {cotizSel.clienteNombre}
                 </p>
                 <table className="w-full mb-2">
                   <thead className="bg-indigo-700 text-white">
@@ -17356,7 +17356,7 @@ th{background:#fee2e2;font-weight:900;text-align:left;color:#7f1d1d;}
           <div>
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-black text-gray-800">
-                âž• Nueva CotizaciÃ³n
+                âž• Nueva Cotización
               </h2>
               <button
                 onClick={() => setCotizacionView("list")}
@@ -17411,7 +17411,7 @@ th{background:#fee2e2;font-weight:900;text-align:left;color:#7f1d1d;}
                 />
               </div>
               <div>
-                <label className="block text-xs font-bold mb-1">TelÃ©fono</label>
+                <label className="block text-xs font-bold mb-1">Teléfono</label>
                 <input
                   value={cotizacionForm.clienteTel}
                   onChange={(e) =>
@@ -17437,7 +17437,7 @@ th{background:#fee2e2;font-weight:900;text-align:left;color:#7f1d1d;}
               </div>
               <div>
                 <label className="block text-xs font-bold mb-1">
-                  Validez (dÃ­as)
+                  Validez (días)
                 </label>
                 <input
                   type="number"
@@ -17453,7 +17453,7 @@ th{background:#fee2e2;font-weight:900;text-align:left;color:#7f1d1d;}
               </div>
             </div>
             <div className="mb-3">
-              <p className="text-xs font-black uppercase mb-2">Ãtems</p>
+              <p className="text-xs font-black uppercase mb-2">Ítems</p>
               {cotizacionForm.items.map((it, idx) => (
                 <div
                   key={idx}
@@ -17467,7 +17467,7 @@ th{background:#fee2e2;font-weight:900;text-align:left;color:#7f1d1d;}
                       setCotizacionForm((p) => ({ ...p, items: itms }));
                     }}
                     className="col-span-2 p-1.5 border rounded text-xs"
-                    placeholder="DescripciÃ³n del servicio"
+                    placeholder="Descripción del servicio"
                   />
                   <input
                     type="number"
@@ -17505,7 +17505,7 @@ th{background:#fee2e2;font-weight:900;text-align:left;color:#7f1d1d;}
                 onClick={handleNewItem}
                 className="mt-1 text-xs font-bold text-blue-700 hover:underline"
               >
-                + Agregar Ã­tem
+                + Agregar ítem
               </button>
               <p className="text-right font-black text-emerald-700 mt-2">
                 Subtotal: $ {subtotal.toLocaleString("es-CO")}
@@ -17528,7 +17528,7 @@ th{background:#fee2e2;font-weight:900;text-align:left;color:#7f1d1d;}
                 onClick={() => saveCotiz("Pendiente")}
                 className="flex-1 py-2 bg-indigo-700 hover:bg-indigo-800 text-white text-sm font-black rounded-lg"
               >
-                ðŸ’¾ Guardar cotizaciÃ³n
+                ðŸ’¾ Guardar cotización
               </button>
               <button
                 onClick={() => saveCotiz("Aprobada")}
@@ -17567,7 +17567,7 @@ th{background:#fee2e2;font-weight:900;text-align:left;color:#7f1d1d;}
         return;
       }
       if (cotizacionForm.items.length === 0) {
-        showAlert("Agregue al menos un Ã­tem.");
+        showAlert("Agregue al menos un ítem.");
         return;
       }
       const cot = {
@@ -17593,7 +17593,7 @@ th{background:#fee2e2;font-weight:900;text-align:left;color:#7f1d1d;}
         fecha: new Date().toISOString().split("T")[0],
         estado: "Pendiente",
       });
-      showAlert("âœ… CotizaciÃ³n guardada exitosamente");
+      showAlert("âœ… Cotización guardada exitosamente");
     };
     const openPrintCotiz = (cot) => {
       const doc = activeDoctorData;
@@ -17602,7 +17602,7 @@ th{background:#fee2e2;font-weight:900;text-align:left;color:#7f1d1d;}
         : null;
       const _cotizLeftHtml = _ipsDocLeftHtml(_miIPSCotiz, doc, "#1a4f8a");
       const html = `<!DOCTYPE html><html><head><meta charset="utf-8">
-<title>CotizaciÃ³n ${cot.numero}</title>
+<title>Cotización ${cot.numero}</title>
 <style>
   body{font-family:Arial,sans-serif;margin:0;padding:24px;font-size:11px;color:#111}
   .header{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #1a4f8a;padding-bottom:12px;margin-bottom:16px}
@@ -17630,7 +17630,7 @@ th{background:#fee2e2;font-weight:900;text-align:left;color:#7f1d1d;}
     <h2>COTIZACIÃ“N</h2>
     <p>No. ${cot.numero}</p>
     <p>Fecha: ${cot.fecha}</p>
-    <p>VÃ¡lida por: ${cot.validezDias} dÃ­as</p>
+    <p>Válida por: ${cot.validezDias} días</p>
     <span class="estado-badge">${cot.estado}</span>
   </div>
 </div>
@@ -17647,7 +17647,7 @@ th{background:#fee2e2;font-weight:900;text-align:left;color:#7f1d1d;}
   ${cot.clienteTel ? `<p><strong>TEL:</strong> ${cot.clienteTel}</p>` : ""}
 </div>
 <table>
-  <thead><tr><th>#</th><th>DescripciÃ³n</th><th>Cant.</th><th>Precio Unitario</th><th>Total</th></tr></thead>
+  <thead><tr><th>#</th><th>Descripción</th><th>Cant.</th><th>Precio Unitario</th><th>Total</th></tr></thead>
   <tbody>
     ${cot.items
       .map(
@@ -17672,9 +17672,9 @@ ${
     ? `<div class="notas"><strong>Notas:</strong> ${cot.notas}</div>`
     : ""
 }
-<div class="validez">Esta cotizaciÃ³n es vÃ¡lida por ${
+<div class="validez">Esta cotización es válida por ${
         cot.validezDias
-      } dÃ­as a partir de la fecha de emisiÃ³n.</div>
+      } días a partir de la fecha de emisión.</div>
 <div class="firma">
   <div class="firma-line">${doc?.nombre || ""}<br/>${
         doc?.titulo || ""
@@ -17697,7 +17697,7 @@ ${
       );
     };
     const deleteCotiz = (id) => {
-      showConfirm("Â¿Eliminar esta cotizaciÃ³n?", () => {
+      showConfirm("¿Eliminar esta cotización?", () => {
         saveCotizaciones(cotizaciones.filter((c) => c.id !== id));
         if (cotizacionSelId === id) setCotizacionSelId(null);
       });
@@ -17718,7 +17718,7 @@ ${
                     onClick={() => setCotizacionView("nueva")}
                     className="px-4 py-2 bg-blue-700 hover:bg-blue-800 text-white text-xs font-black rounded-lg"
                   >
-                    âž• Nueva CotizaciÃ³n
+                    âž• Nueva Cotización
                   </button>
                   <button
                     onClick={() => goTo("dashboard")}
@@ -17763,7 +17763,7 @@ ${
                   <thead className="bg-gray-800 text-white">
                     <tr>
                       {[
-                        "NÂ°",
+                        "N°",
                         "Fecha",
                         "Cliente",
                         "Empresa",
@@ -17785,7 +17785,7 @@ ${
                           className="text-center py-8 text-gray-400"
                         >
                           Sin cotizaciones. Cree la primera con "Nueva
-                          CotizaciÃ³n".
+                          Cotización".
                         </td>
                       </tr>
                     ) : (
@@ -17850,7 +17850,7 @@ ${
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-lg font-black text-gray-800">
-                  âž• Nueva CotizaciÃ³n
+                  âž• Nueva Cotización
                 </h2>
                 <button
                   onClick={() => setCotizacionView("list")}
@@ -17868,8 +17868,8 @@ ${
                   {[
                     {
                       f: "clienteNombre",
-                      l: "Nombre / RazÃ³n social *",
-                      placeholder: "Dr. Juan PÃ©rez / Empresa S.A.S",
+                      l: "Nombre / Razón social *",
+                      placeholder: "Dr. Juan Pérez / Empresa S.A.S",
                     },
                     {
                       f: "clienteEmpresa",
@@ -17883,7 +17883,7 @@ ${
                     },
                     {
                       f: "clienteTel",
-                      l: "TelÃ©fono",
+                      l: "Teléfono",
                       placeholder: "310 000 0000",
                     },
                   ].map(({ f, l, placeholder }) => (
@@ -17922,7 +17922,7 @@ ${
                   </div>
                   <div>
                     <label className="text-[10px] font-black text-gray-600 uppercase block mb-1">
-                      VÃ¡lida por (dÃ­as)
+                      Válida por (días)
                     </label>
                     <input
                       type="number"
@@ -17939,29 +17939,29 @@ ${
                   </div>
                 </div>
               </div>
-              {/* Ãtems */}
+              {/* Ítems */}
               <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 mb-4">
                 <div className="flex justify-between items-center mb-3">
                   <p className="text-xs font-black text-emerald-800 uppercase">
-                    ðŸ“‹ Ãtems / Servicios
+                    ðŸ“‹ Ítems / Servicios
                   </p>
                   <button
                     onClick={handleNewItem}
                     className="px-3 py-1 bg-emerald-700 hover:bg-emerald-800 text-white text-[10px] font-black rounded-lg"
                   >
-                    âž• Agregar Ã­tem
+                    âž• Agregar ítem
                   </button>
                 </div>
                 {cotizacionForm.items.length === 0 ? (
                   <p className="text-xs text-gray-400 text-center py-4">
-                    Sin Ã­tems. Pulse "Agregar Ã­tem" para comenzar.
+                    Sin ítems. Pulse "Agregar ítem" para comenzar.
                   </p>
                 ) : (
                   cotizacionForm.items.map((it, idx) => (
                     <div key={idx} className="flex gap-2 mb-2 items-end">
                       <div className="flex-1">
                         <label className="text-[10px] font-black text-gray-600 block mb-1">
-                          DescripciÃ³n *
+                          Descripción *
                         </label>
                         <input
                           value={it.desc}
@@ -18054,7 +18054,7 @@ ${
                   }
                   className="w-full p-2 border border-gray-300 rounded-lg text-xs resize-none"
                   rows={2}
-                  placeholder="Condiciones de pago, vigencia, tÃ©rminos especiales..."
+                  placeholder="Condiciones de pago, vigencia, términos especiales..."
                 />
               </div>
               <div className="flex gap-3">
@@ -18062,7 +18062,7 @@ ${
                   onClick={() => saveCotiz("Pendiente")}
                   className="flex-1 py-2 bg-blue-700 hover:bg-blue-800 text-white text-sm font-black rounded-lg"
                 >
-                  ðŸ’¾ Guardar cotizaciÃ³n
+                  ðŸ’¾ Guardar cotización
                 </button>
                 <button
                   onClick={() => saveCotiz("Aprobada")}
@@ -18159,12 +18159,12 @@ ${
       const cartEmpArr = Object.entries(cartEmp).sort(
         (a, b) => b[1].total - a[1].total
       );
-      // Por mÃ©dico
+      // Por médico
       const ingXMedico = {};
       movsPeriodo
         .filter((m) => m.tipo === "ingreso")
         .forEach((m) => {
-          const k = m.medicoNombre || m.medicoId || "Sin mÃ©dico";
+          const k = m.medicoNombre || m.medicoId || "Sin médico";
           ingXMedico[k] = (ingXMedico[k] || 0) + Number(m.monto || 0);
         });
       // CSV exports
@@ -18199,7 +18199,7 @@ ${
                     ðŸ“Š Contabilidad
                   </h1>
                   <p className="text-sm text-gray-500">
-                    GestiÃ³n financiera Â· Marco colombiano
+                    Gestión financiera · Marco colombiano
                   </p>
                 </div>
               </div>
@@ -18214,7 +18214,7 @@ ${
                         : "bg-white border border-gray-200 text-gray-600 hover:bg-gray-50"
                     }`}
                   >
-                    {p === "mes" ? "Este mes" : "Este aÃ±o"}
+                    {p === "mes" ? "Este mes" : "Este año"}
                   </button>
                 ))}
               </div>
@@ -18352,7 +18352,7 @@ ${
                           "Tipo",
                           "Tarifa",
                           "Estado",
-                          "CÃ³digo",
+                          "Código",
                         ].map((h) => (
                           <th
                             key={h}
@@ -18412,7 +18412,7 @@ ${
                   </table>
                   {movsPeriodo.filter((m) => m._autoGenerated).length === 0 && (
                     <div className="p-8 text-center text-gray-400 text-sm">
-                      No hay movimientos automÃ¡ticos en este periodo.
+                      No hay movimientos automáticos en este periodo.
                     </div>
                   )}
                 </div>
@@ -18497,10 +18497,10 @@ ${
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="bg-blue-50 border border-blue-200 rounded-xl p-5">
                   <p className="text-xs font-black text-blue-700 uppercase mb-1">
-                    DSO (DÃ­as promedio cobro)
+                    DSO (Días promedio cobro)
                   </p>
                   <p className="text-2xl font-black text-blue-900">
-                    {dso} dÃ­as
+                    {dso} días
                   </p>
                   <p className="text-xs text-gray-500 mt-2">
                     Days Sales Outstanding. Menor = mejor. Objetivo &lt; 30d.
@@ -18514,7 +18514,7 @@ ${
                     {tasaGlosa}%
                   </p>
                   <p className="text-xs text-gray-500 mt-2">
-                    % del valor total aÃºn pendiente de cobro.
+                    % del valor total aún pendiente de cobro.
                   </p>
                 </div>
                 <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-5">
@@ -18525,7 +18525,7 @@ ${
                     $ {Number(ingXPaciente || 0).toLocaleString("es-CO")}
                   </p>
                   <p className="text-xs text-gray-500 mt-2">
-                    Ticket promedio por atenciÃ³n.
+                    Ticket promedio por atención.
                   </p>
                 </div>
                 <div className="bg-purple-50 border border-purple-200 rounded-xl p-5">
@@ -18572,12 +18572,12 @@ ${
                     {cartEmpArr.length}
                   </p>
                   <p className="text-xs text-gray-500 mt-2">
-                    Empresas con al menos 1 atenciÃ³n en el periodo.
+                    Empresas con al menos 1 atención en el periodo.
                   </p>
                 </div>
                 <div className="md:col-span-2 bg-white rounded-xl border border-gray-100 p-4">
                   <h4 className="font-black text-gray-800 mb-3">
-                    ðŸ‘¨â€âš•ï¸ Ingresos por MÃ©dico
+                    ðŸ‘¨â€âš•ï¸ Ingresos por Médico
                   </h4>
                   {Object.entries(ingXMedico)
                     .sort((a, b) => b[1] - a[1])
@@ -18604,9 +18604,9 @@ ${
                     âš ï¸ Nota legal
                   </p>
                   <p className="text-xs text-amber-700">
-                    Estos cÃ¡lculos son{" "}
+                    Estos cálculos son{" "}
                     <strong>orientativos e informativos</strong>. No reemplazan
-                    la asesorÃ­a de un contador. Consulte siempre a su
+                    la asesoría de un contador. Consulte siempre a su
                     profesional tributario. El uso de estos datos es
                     responsabilidad del usuario.
                   </p>
@@ -18614,7 +18614,7 @@ ${
                 <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-4">
                   <h3 className="font-black text-gray-800">
                     Estimados Fiscales â€”{" "}
-                    {contabPeriodo === "mes" ? "Este Mes" : "Este AÃ±o"}
+                    {contabPeriodo === "mes" ? "Este Mes" : "Este Año"}
                   </h3>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="bg-gray-50 rounded-xl p-4">
@@ -18623,13 +18623,13 @@ ${
                       </p>
                       <p className="text-sm font-black text-gray-900">
                         {esIPS
-                          ? "IPS (Persona JurÃ­dica)"
+                          ? "IPS (Persona Jurídica)"
                           : "Independiente (Persona Natural)"}
                       </p>
                       <p className="text-xs text-gray-500 mt-1">
                         {esIPS
-                          ? "NIIF Grupo 2 Â· PYMES"
-                          : "NIIF Grupo 3 Â· Simplificado"}
+                          ? "NIIF Grupo 2 · PYMES"
+                          : "NIIF Grupo 3 · Simplificado"}
                       </p>
                     </div>
                     <div className="bg-gray-50 rounded-xl p-4">
@@ -18640,12 +18640,12 @@ ${
                         $ {ingresosTotal.toLocaleString("es-CO")}
                       </p>
                       <p className="text-xs text-gray-500 mt-1">
-                        IVA: Excluido (Art. 476 E.T.) â€” Servicios mÃ©dicos
+                        IVA: Excluido (Art. 476 E.T.) â€” Servicios médicos
                       </p>
                     </div>
                     <div className="bg-blue-50 rounded-xl p-4">
                       <p className="text-xs font-black text-blue-700 uppercase mb-1">
-                        RetenciÃ³n en la Fuente
+                        Retención en la Fuente
                       </p>
                       <p className="text-xl font-black text-blue-900">
                         $ {retencionEstimada.toLocaleString("es-CO")}
@@ -18654,7 +18654,7 @@ ${
                         {retencionPct}% â€” retiene{" "}
                         {esIPS
                           ? "empresa pagadora (servicios IPS)"
-                          : "empresa pagadora (honorarios mÃ©dico)"}
+                          : "empresa pagadora (honorarios médico)"}
                       </p>
                     </div>
                     <div className="bg-emerald-50 rounded-xl p-4">
@@ -18677,23 +18677,23 @@ ${
                       Marco normativo aplicado:
                     </p>
                     <p>
-                      â€¢ <strong>IVA:</strong> Servicios mÃ©dicos excluidos (Art.
-                      476 E.T.) Â· Capacitaciones SST: 19% IVA
+                      • <strong>IVA:</strong> Servicios médicos excluidos (Art.
+                      476 E.T.) · Capacitaciones SST: 19% IVA
                     </p>
                     <p>
-                      â€¢ <strong>RetenciÃ³n fuente:</strong>{" "}
+                      • <strong>Retención fuente:</strong>{" "}
                       {esIPS
                         ? "4% servicios IPS (Art. 392 E.T.)"
                         : "10-11% honorarios profesionales (Art. 392 E.T.)"}
                     </p>
                     {esIPS && (
                       <p>
-                        â€¢ <strong>FEV + RIPS:</strong> Obligatorio para IPS
-                        (Res. 2275/2023) â€” facturaciÃ³n electrÃ³nica con RIPS JSON
+                        • <strong>FEV + RIPS:</strong> Obligatorio para IPS
+                        (Res. 2275/2023) â€” facturación electrónica con RIPS JSON
                       </p>
                     )}
                     <p>
-                      â€¢ <strong>ICA:</strong> SegÃºn tarifa del municipio
+                      • <strong>ICA:</strong> Según tarifa del municipio
                       (consulte su contador)
                     </p>
                   </div>
@@ -18718,7 +18718,7 @@ ${
                             "Monto",
                             "Forma Pago",
                             "Estado",
-                            "MÃ©dico",
+                            "Médico",
                             "Empresa",
                           ],
                           ...movsPeriodo.map((m) => [
@@ -18749,7 +18749,7 @@ ${
                             "Tipo",
                             "Tarifa",
                             "Estado",
-                            "CÃ³digo QR",
+                            "Código QR",
                           ],
                           ...movsPeriodo
                             .filter((m) => m._autoGenerated)
@@ -18888,7 +18888,7 @@ ${
 
   // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   // FASE 2 â€” PANEL GLOBAL SUPER ADMIN
-  // GestiÃ³n de todas las organizaciones. Solo visible para rol super_admin.
+  // Gestión de todas las organizaciones. Solo visible para rol super_admin.
   // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   const renderSuperAdmin = () => {
     if (currentUser?.role !== "super_admin") {
@@ -18913,7 +18913,7 @@ ${
     const crearOrganizacion = async () => {
       if (!newOrgForm.orgName.trim() || !newOrgForm.adminUser.trim()) {
         showAlert(
-          "âš ï¸ Nombre de la organizaciÃ³n y usuario administrador son obligatorios."
+          "âš ï¸ Nombre de la organización y usuario administrador son obligatorios."
         );
         return;
       }
@@ -18964,15 +18964,15 @@ ${
         plan: "pro",
       });
       showAlert(
-        `âœ… OrganizaciÃ³n "${newOrg.orgName}" creada.\n\n` +
+        `âœ… Organización "${newOrg.orgName}" creada.\n\n` +
           `Org ID: ${orgId}\n` +
           `Usuario admin: ${newAdmin.user}\n` +
-          `ContraseÃ±a temporal: ${adminPass}\n\n` +
-          `âš ï¸ Anote la contraseÃ±a â€” no se mostrarÃ¡ de nuevo.`
+          `Contraseña temporal: ${adminPass}\n\n` +
+          `âš ï¸ Anote la contraseña â€” no se mostrará de nuevo.`
       );
     };
 
-    // EstadÃ­sticas por org
+    // Estadísticas por org
     const statsOrg = (orgId) => ({
       usuarios: usersList.filter((u) => u.orgId === orgId).length,
       pacientes: patientsList.filter(
@@ -18992,9 +18992,9 @@ ${
                 â­ Panel Global â€” Super Admin
               </h2>
               <p className="text-sm text-purple-600 mt-1">
-                {orgsList.length} organizaciÃ³n
+                {orgsList.length} organización
                 {orgsList.length !== 1 ? "es" : ""} registrada
-                {orgsList.length !== 1 ? "s" : ""}Â· {usersList.length} usuarios
+                {orgsList.length !== 1 ? "s" : ""}· {usersList.length} usuarios
                 totales
               </p>
             </div>
@@ -19094,7 +19094,7 @@ ${
                         Creada: {org.createdAt}
                       </span>
                     </div>
-                    {/* FASE 2: Empresas de esta org con multi-mÃ©dico */}
+                    {/* FASE 2: Empresas de esta org con multi-médico */}
                     {(() => {
                       const orgsEmpresas = companies.filter(
                         (c) => (c.orgId || ORG_DEFAULT_ID) === org.orgId
@@ -19122,7 +19122,7 @@ ${
                                       </p>
                                       <p className="text-[10px] text-gray-500">
                                         NIT: {emp.nit}
-                                        {emp.ciudad && ` Â· ${emp.ciudad}`}
+                                        {emp.ciudad && ` · ${emp.ciudad}`}
                                       </p>
                                     </div>
                                     <div className="flex gap-1 flex-wrap justify-end">
@@ -19155,7 +19155,7 @@ ${
                                       })}
                                       {emMedicos.length > 3 && (
                                         <span className="text-[10px] text-gray-400">
-                                          +{emMedicos.length - 3} mÃ¡s
+                                          +{emMedicos.length - 3} más
                                         </span>
                                       )}
                                     </div>
@@ -19165,20 +19165,20 @@ ${
                             })}
                             {orgsEmpresas.length > 5 && (
                               <p className="text-[10px] text-gray-400 text-center">
-                                +{orgsEmpresas.length - 5} empresas mÃ¡s
+                                +{orgsEmpresas.length - 5} empresas más
                               </p>
                             )}
                           </div>
                         </div>
                       );
                     })()}
-                    {/* AuditorÃ­a: log acceso super_admin a org ajena */}
+                    {/* Auditoría: log acceso super_admin a org ajena */}
                     {!isDefault && (
                       <button
                         onClick={() => {
                           logAccess("SuperAdmin-AccesoOrg", org.orgId, "admin");
                           showAlert(
-                            `ðŸ” Accediendo a datos de "${org.orgName}". AcciÃ³n registrada en auditorÃ­a.`
+                            `ðŸ” Accediendo a datos de "${org.orgName}". Acción registrada en auditoría.`
                           );
                         }}
                         className="mt-3 w-full text-xs bg-purple-50 text-purple-700 py-1.5 rounded-lg font-bold hover:bg-purple-100"
@@ -19192,26 +19192,26 @@ ${
             </div>
           )}
 
-          {/* TAB: Nueva OrganizaciÃ³n */}
+          {/* TAB: Nueva Organización */}
           {superAdminTab === "nueva" && (
             <div className="bg-white rounded-2xl p-6 shadow-sm border border-purple-100 max-w-xl">
               <h3 className="font-black text-purple-800 text-lg mb-4">
-                âž• Crear Nueva OrganizaciÃ³n
+                âž• Crear Nueva Organización
               </h3>
               <p className="text-xs text-gray-500 mb-4">
-                Se generarÃ¡ automÃ¡ticamente un <code>org_id</code> Ãºnico y un
-                usuario administrador con contraseÃ±a temporal.
+                Se generará automáticamente un <code>org_id</code> único y un
+                usuario administrador con contraseña temporal.
               </p>
               <div className="space-y-3">
                 {[
                   {
                     field: "orgName",
-                    label: "Nombre de la organizaciÃ³n *",
-                    placeholder: "Ej: ClÃ­nica San JosÃ© Pasto",
+                    label: "Nombre de la organización *",
+                    placeholder: "Ej: Clínica San José Pasto",
                   },
                   {
                     field: "orgNit",
-                    label: "NIT de la organizaciÃ³n",
+                    label: "NIT de la organización",
                     placeholder: "Ej: 900123456-1",
                   },
                   {
@@ -19222,7 +19222,7 @@ ${
                   {
                     field: "adminName",
                     label: "Nombre completo del admin",
-                    placeholder: "Ej: Dr. Juan GarcÃ­a",
+                    placeholder: "Ej: Dr. Juan García",
                   },
                   {
                     field: "adminEmail",
@@ -19269,7 +19269,7 @@ ${
                   onClick={crearOrganizacion}
                   className="w-full bg-purple-600 text-white py-3 rounded-xl font-black text-sm hover:bg-purple-700 mt-2"
                 >
-                  âœ… Crear organizaciÃ³n
+                  âœ… Crear organización
                 </button>
               </div>
             </div>
@@ -19280,12 +19280,12 @@ ${
             <div className="space-y-4">
               <div className="bg-teal-50 border border-teal-200 rounded-xl p-4 mb-4">
                 <p className="font-black text-teal-800 text-sm">
-                  ðŸ¥ GestiÃ³n de IPS / Empresas
+                  ðŸ¥ Gestión de IPS / Empresas
                 </p>
                 <p className="text-xs text-teal-600 mt-1">
                   Cree credenciales de acceso para que las empresas (IPS)
                   ingresen al sistema desde el login principal. El admin de cada
-                  empresa podrÃ¡ crear mÃ©dicos y secretarias vinculados a ella.
+                  empresa podrá crear médicos y secretarias vinculados a ella.
                 </p>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -19310,7 +19310,7 @@ ${
                           {emp.nombre}
                         </h4>
                         <p className="text-xs text-gray-400">
-                          NIT: {emp.nit} Â· {emp.ciudad || ""}
+                          NIT: {emp.nit} · {emp.ciudad || ""}
                         </p>
                       </div>
                       {/* Estado actual */}
@@ -19324,7 +19324,7 @@ ${
                           </p>
                           <div className="flex gap-2 mt-1 flex-wrap">
                             <span className="text-[10px] bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded font-bold">
-                              ðŸ‘¨â€âš•ï¸ {medicosEmp.length} mÃ©dico
+                              ðŸ‘¨â€âš•ï¸ {medicosEmp.length} médico
                               {medicosEmp.length !== 1 ? "s" : ""}
                             </span>
                             <span className="text-[10px] bg-purple-50 text-purple-600 px-1.5 py-0.5 rounded font-bold">
@@ -19377,7 +19377,7 @@ ${
                               }))
                             }
                             className="w-full p-2 border rounded-lg text-xs"
-                            placeholder="ContraseÃ±a (mÃ­n. 8 caracteres)"
+                            placeholder="Contraseña (mín. 8 caracteres)"
                           />
                           <div className="flex gap-2">
                             <button
@@ -19388,13 +19388,13 @@ ${
                                   !ipsCredForm.pass.trim()
                                 ) {
                                   showAlert(
-                                    "âš ï¸ Complete nombre, usuario y contraseÃ±a."
+                                    "âš ï¸ Complete nombre, usuario y contraseña."
                                   );
                                   return;
                                 }
                                 if (ipsCredForm.pass.length < 8) {
                                   showAlert(
-                                    "âš ï¸ La contraseÃ±a debe tener mÃ­nimo 8 caracteres."
+                                    "âš ï¸ La contraseña debe tener mínimo 8 caracteres."
                                   );
                                   return;
                                 }
@@ -19457,8 +19457,8 @@ ${
                                 showAlert(
                                   `âœ… Credenciales IPS creadas para "${emp.nombre}".\n\n` +
                                     `Usuario: ${ipsCredForm.user.trim()}\n` +
-                                    `ContraseÃ±a: ${ipsCredForm.pass}\n\n` +
-                                    `âš ï¸ Anote la contraseÃ±a â€” se pedirÃ¡ cambiarla en el primer login.`
+                                    `Contraseña: ${ipsCredForm.pass}\n\n` +
+                                    `âš ï¸ Anote la contraseña â€” se pedirá cambiarla en el primer login.`
                                 );
                               }}
                               className="flex-1 py-2 bg-teal-600 text-white text-xs font-black rounded-lg hover:bg-teal-700"
@@ -19520,7 +19520,7 @@ ${
                       "Usuario",
                       "Nombre",
                       "Rol",
-                      "OrganizaciÃ³n",
+                      "Organización",
                       "Plan",
                       "Activo",
                     ].map((h) => (
@@ -19567,7 +19567,7 @@ ${
                               ? "Admin"
                               : u.role === "secretaria"
                               ? "Secretaria"
-                              : "MÃ©dico"}
+                              : "Médico"}
                           </span>
                         </td>
                         <td className="p-3 text-xs text-gray-600">
@@ -19614,7 +19614,7 @@ ${
 
     const buscarEmpresa = () => {
       if (!codigoEmpresa.trim()) {
-        showAlert("Ingrese el NIT o cÃ³digo de acceso de su empresa.");
+        showAlert("Ingrese el NIT o código de acceso de su empresa.");
         return;
       }
       setBuscando(true);
@@ -19629,14 +19629,14 @@ ${
       );
       if (!emp) {
         showAlert(
-          "No se encontrÃ³ empresa con ese cÃ³digo. Contacte al mÃ©dico para obtener el cÃ³digo de acceso."
+          "No se encontró empresa con ese código. Contacte al médico para obtener el código de acceso."
         );
         setBuscando(false);
         return;
       }
       if (!emp.portalActivo) {
         showAlert(
-          "El portal cliente no estÃ¡ habilitado para esta empresa. Contacte al mÃ©dico para activarlo."
+          "El portal cliente no está habilitado para esta empresa. Contacte al médico para activarlo."
         );
         setBuscando(false);
         return;
@@ -19707,14 +19707,14 @@ ${
                 Acceso Portal Empresa
               </h2>
               <p className="text-xs text-gray-500 mb-6">
-                Ingrese el NIT de su empresa o el cÃ³digo de acceso proporcionado
-                por su mÃ©dico ocupacional.
+                Ingrese el NIT de su empresa o el código de acceso proporcionado
+                por su médico ocupacional.
               </p>
               <input
                 value={codigoEmpresa}
                 onChange={(e) => setCodigoEmpresa(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && buscarEmpresa()}
-                placeholder="NIT o cÃ³digo de acceso..."
+                placeholder="NIT o código de acceso..."
                 className="w-full p-3 border-2 border-blue-200 rounded-xl text-sm mb-4 focus:border-blue-500 focus:outline-none"
               />
               <button
@@ -19725,7 +19725,7 @@ ${
                 {buscando ? "â³ Buscando..." : "ðŸ” Acceder al portal"}
               </button>
               <p className="text-[10px] text-gray-400 mt-4">
-                âš ï¸ Los diagnÃ³sticos clÃ­nicos son confidenciales y NO estÃ¡n
+                âš ï¸ Los diagnósticos clínicos son confidenciales y NO están
                 disponibles en este portal (Art. 16 Res. 1843/2025)
               </p>
               {/* FASE 2: Login Admin de Empresa */}
@@ -19768,12 +19768,12 @@ ${
                           setPortalEmpresaAdmin(empAdmin);
                           setPortalAdminTab("medicos");
                         } else {
-                          showAlert("ContraseÃ±a incorrecta.");
+                          showAlert("Contraseña incorrecta.");
                         }
                       });
                     }
                   }}
-                  placeholder="ContraseÃ±a"
+                  placeholder="Contraseña"
                   className="w-full p-2.5 border border-purple-200 rounded-xl text-sm mb-3 focus:border-purple-500 focus:outline-none"
                 />
                 <button
@@ -19802,7 +19802,7 @@ ${
                         setPortalEmpresaAdmin(empAdmin);
                         setPortalAdminTab("medicos");
                       } else {
-                        showAlert("ContraseÃ±a incorrecta.");
+                        showAlert("Contraseña incorrecta.");
                       }
                     });
                   }}
@@ -19822,7 +19822,7 @@ ${
                     {empresaEncontrada.nombre}
                   </p>
                   <p className="text-purple-200 text-xs">
-                    ðŸ” Panel de AdministraciÃ³n Â· NIT: {empresaEncontrada.nit}
+                    ðŸ” Panel de Administración · NIT: {empresaEncontrada.nit}
                   </p>
                 </div>
                 <button
@@ -19835,13 +19835,13 @@ ${
                   }}
                   className="px-3 py-1.5 bg-white/20 text-white text-xs font-black rounded-lg hover:bg-white/30"
                 >
-                  ðŸšª Cerrar sesiÃ³n
+                  ðŸšª Cerrar sesión
                 </button>
               </div>
               {/* Tabs admin */}
               <div className="flex gap-1 bg-white rounded-xl p-1 shadow-sm border border-purple-100 overflow-x-auto">
                 {[
-                  { k: "medicos", l: "ðŸ‘¨â€âš•ï¸ Mis MÃ©dicos" },
+                  { k: "medicos", l: "ðŸ‘¨â€âš•ï¸ Mis Médicos" },
                   { k: "secretarias", l: "ðŸ—‚ï¸ Secretarias" },
                   { k: "trabajadores", l: "ðŸ“‹ Trabajadores" },
                   { k: "cuentas", l: "ðŸ“„ Cuentas" },
@@ -19860,15 +19860,15 @@ ${
                   </button>
                 ))}
               </div>
-              {/* Tab: MÃ©dicos */}
+              {/* Tab: Médicos */}
               {portalAdminTab === "medicos" && (
                 <div className="bg-white rounded-2xl p-4 shadow-sm">
                   <div className="flex justify-between items-center mb-3">
                     <p className="font-black text-gray-800">
-                      ðŸ‘¨â€âš•ï¸ MÃ©dicos de {empresaEncontrada.nombre}
+                      ðŸ‘¨â€âš•ï¸ Médicos de {empresaEncontrada.nombre}
                     </p>
                   </div>
-                  {/* Lista mÃ©dicos existentes */}
+                  {/* Lista médicos existentes */}
                   <div className="space-y-2 mb-4">
                     {usersList
                       .filter(
@@ -19889,14 +19889,14 @@ ${
                               {m.name || m.user}
                             </p>
                             <p className="text-[10px] text-gray-500">
-                              @{m.user} Â·{" "}
+                              @{m.user} ·{" "}
                               {m.empresaId === empresaEncontrada.id
-                                ? "MÃ©dico exclusivo"
-                                : "MÃ©dico asignado"}
+                                ? "Médico exclusivo"
+                                : "Médico asignado"}
                             </p>
                           </div>
                           <span className="text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-bold">
-                            MÃ©dico
+                            Médico
                           </span>
                         </div>
                       ))}
@@ -19907,14 +19907,14 @@ ${
                           (empresaEncontrada.medicoIds || []).includes(u.user))
                     ).length === 0 && (
                       <p className="text-sm text-gray-400 text-center py-4">
-                        Sin mÃ©dicos asignados aÃºn.
+                        Sin médicos asignados aún.
                       </p>
                     )}
                   </div>
-                  {/* Formulario nuevo mÃ©dico */}
+                  {/* Formulario nuevo médico */}
                   <div className="border-t border-gray-100 pt-3">
                     <p className="text-xs font-black text-purple-700 mb-2">
-                      âž• Crear nuevo mÃ©dico para esta empresa
+                      âž• Crear nuevo médico para esta empresa
                     </p>
                     <div className="grid grid-cols-2 gap-2 mb-2">
                       <input
@@ -19948,7 +19948,7 @@ ${
                             pass: e.target.value,
                           }))
                         }
-                        placeholder="ContraseÃ±a temporal"
+                        placeholder="Contraseña temporal"
                         className="border rounded-lg p-2 text-xs"
                       />
                       <select
@@ -19961,7 +19961,7 @@ ${
                         }
                         className="border rounded-lg p-2 text-xs"
                       >
-                        <option value="medico">MÃ©dico</option>
+                        <option value="medico">Médico</option>
                         <option value="secretaria">Secretaria</option>
                       </select>
                     </div>
@@ -19972,7 +19972,7 @@ ${
                           !nuevoMedicoEmpForm.user ||
                           !nuevoMedicoEmpForm.pass
                         ) {
-                          showAlert("Complete nombre, usuario y contraseÃ±a.");
+                          showAlert("Complete nombre, usuario y contraseña.");
                           return;
                         }
                         if (
@@ -20031,11 +20031,11 @@ ${
                         showAlert(
                           `âœ… ${
                             nuevoMedicoEmpForm.rol === "medico"
-                              ? "MÃ©dico"
+                              ? "Médico"
                               : "Secretaria"
                           } "${
                             nuevoMedicoEmpForm.nombre
-                          }" creado. Debe cambiar contraseÃ±a en primer acceso.`
+                          }" creado. Debe cambiar contraseña en primer acceso.`
                         );
                       }}
                       className="w-full bg-purple-700 text-white py-2 rounded-xl text-xs font-black hover:bg-purple-800"
@@ -20045,7 +20045,7 @@ ${
                   </div>
                 </div>
               )}
-              {/* Tab: Secretarias â€” misma lÃ³gica que mÃ©dicos pero filtro por rol */}
+              {/* Tab: Secretarias â€” misma lógica que médicos pero filtro por rol */}
               {portalAdminTab === "secretarias" && (
                 <div className="bg-white rounded-2xl p-4 shadow-sm">
                   <p className="font-black text-gray-800 mb-3">
@@ -20122,7 +20122,7 @@ ${
                             pass: e.target.value,
                           }))
                         }
-                        placeholder="ContraseÃ±a temporal"
+                        placeholder="Contraseña temporal"
                         className="border rounded-lg p-2 text-xs col-span-2"
                       />
                     </div>
@@ -20197,10 +20197,10 @@ ${
                       <tr className="bg-gray-50">
                         {[
                           "Nombre",
-                          "CÃ©dula",
+                          "Cédula",
                           "Cargo",
                           "Concepto",
-                          "MÃ©dico",
+                          "Médico",
                         ].map((h) => (
                           <th
                             key={h}
@@ -20304,7 +20304,7 @@ ${
                   {(empresaEncontrada.sedes || []).length === 0 && (
                     <p className="text-gray-400 text-sm text-center py-4">
                       Sin sedes registradas. El administrador principal puede
-                      agregar sedes desde el mÃ³dulo de empresas.
+                      agregar sedes desde el módulo de empresas.
                     </p>
                   )}
                   <div className="grid gap-3">
@@ -20316,7 +20316,7 @@ ${
                         <p className="font-black text-blue-800">{s.nombre}</p>
                         <p className="text-xs text-blue-600">
                           {s.ciudad}
-                          {s.direccion && ` Â· ${s.direccion}`}
+                          {s.direccion && ` · ${s.direccion}`}
                         </p>
                       </div>
                     ))}
@@ -20336,7 +20336,7 @@ ${
                     NIT: {empresaEncontrada.nit}
                     {empresaEncontrada.dv
                       ? `-${empresaEncontrada.dv}`
-                      : ""} Â· {empresaEncontrada.ciudad}
+                      : ""} · {empresaEncontrada.ciudad}
                   </p>
                 </div>
                 <div className="text-right">
@@ -20382,7 +20382,7 @@ ${
                             .includes("restriccion") ||
                           p.conceptoAptitud
                             ?.toLowerCase()
-                            .includes("restricciÃ³n")
+                            .includes("restricción")
                       ).length
                     }
                   </p>
@@ -20418,15 +20418,15 @@ ${
                       Trabajadores evaluados - Certificados de aptitud
                     </p>
                     <p className="text-[10px] text-gray-400">
-                      Los diagnÃ³sticos clÃ­nicos no se muestran en cumplimiento
+                      Los diagnósticos clínicos no se muestran en cumplimiento
                       de la Res. 1843/2025 Art. 16
                     </p>
-                    {/* Filtro por cÃ©dula / nombre */}
+                    {/* Filtro por cédula / nombre */}
                     <div className="mt-2 flex gap-2">
                       <input
                         value={portalEmpresaFiltroDoc}
                         onChange={(e) => setPortalEmpresaFiltroDoc(e.target.value)}
-                        placeholder="ðŸ” Filtrar por cÃ©dula o nombre del trabajador..."
+                        placeholder="ðŸ” Filtrar por cédula o nombre del trabajador..."
                         className="flex-1 px-3 py-1.5 border border-blue-200 rounded-lg text-xs focus:border-blue-500 focus:outline-none"
                         maxLength={30}
                       />
@@ -20454,7 +20454,7 @@ ${
                       <tr>
                         {[
                           "Nombre",
-                          "CÃ©dula",
+                          "Cédula",
                           "Cargo",
                           "Fecha Examen",
                           "Tipo",
@@ -20557,7 +20557,7 @@ ${
                     <table className="w-full text-xs">
                       <thead className="bg-gray-800 text-white">
                         <tr>
-                          {["Fecha", "DescripciÃ³n", "Monto", "Estado"].map(
+                          {["Fecha", "Descripción", "Monto", "Estado"].map(
                             (h) => (
                               <th key={h} className="p-2 text-left font-black">
                                 {h}
@@ -20578,7 +20578,7 @@ ${
                             <td className="p-2">
                               {b.description ||
                                 b.concepto ||
-                                "Servicio mÃ©dico ocupacional"}
+                                "Servicio médico ocupacional"}
                             </td>
                             <td className="p-2 font-black">
                               $ {Number(b.amount || 0).toLocaleString("es-CO")}
@@ -20618,7 +20618,7 @@ ${
                       !p.conceptoAptitud.toUpperCase().includes("APTO SIN")
                   ).length === 0 ? (
                     <p className="p-8 text-center text-emerald-600 font-bold text-sm">
-                      âœ… Todos los trabajadores evaluados estÃ¡n aptos sin
+                      âœ… Todos los trabajadores evaluados están aptos sin
                       restricciones.
                     </p>
                   ) : (
@@ -20678,13 +20678,13 @@ ${
           )}
         </div>
         <div className="text-center py-4 text-blue-300 text-[10px]">
-          SISO OcupaSalud Â· Portal confidencial Â· Art. 16 Res. 1843/2025
+          SISO OcupaSalud · Portal confidencial · Art. 16 Res. 1843/2025
         </div>
       </div>
     );
   };
 
-  // â”€â”€â”€ RENDER: EVOLUCIONES CLÃNICAS MODAL (B-F2-05 EXPANDIDO) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // â”€â”€â”€ RENDER: EVOLUCIONES CLÍNICAS MODAL (B-F2-05 EXPANDIDO) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const renderEvolucionModal = () => {
     if (!showEvolucionModal) return null;
     const evoluciones = data.evoluciones || [];
@@ -20698,7 +20698,7 @@ ${
 
     const guardarEvolucion = () => {
       if (!evolucionForm.texto.trim() && !evolucionForm.motivoConsulta.trim()) {
-        showAlert("Ingrese al menos la nota clÃ­nica o el motivo de consulta.");
+        showAlert("Ingrese al menos la nota clínica o el motivo de consulta.");
         return;
       }
       const nuevaEv = {
@@ -20745,7 +20745,7 @@ ${
         incapacidad: {
           aplica: false,
           dias: 0,
-          origen: "ComÃºn",
+          origen: "Común",
           diagnostico: "",
           desde: "",
           hasta: "",
@@ -20758,7 +20758,7 @@ ${
         activeEvTab: "nota",
       }));
       showAlert(
-        `âœ… EvoluciÃ³n ${nuevaEv.codigoEvolucion} guardada correctamente.`
+        `âœ… Evolución ${nuevaEv.codigoEvolucion} guardada correctamente.`
       );
     };
 
@@ -20769,17 +20769,17 @@ ${
           <div className="bg-gradient-to-r from-purple-700 to-indigo-700 p-4 flex justify-between items-start flex-shrink-0">
             <div>
               <h2 className="text-white font-black text-base flex items-center gap-2">
-                <ClipboardList className="w-4 h-4" /> EvoluciÃ³n ClÃ­nica
+                <ClipboardList className="w-4 h-4" /> Evolución Clínica
               </h2>
               <p className="text-purple-200 text-xs mt-0.5">
-                {data.nombres} Â· HC:{" "}
+                {data.nombres} · HC:{" "}
                 <strong className="text-white">
                   {data.codigoVerificacion || "â€”"}
                 </strong>
                 {evolucionForm.codigoEvolucion && (
                   <>
                     {" "}
-                    Â· Nuevo cÃ³digo:{" "}
+                    · Nuevo código:{" "}
                     <strong className="text-yellow-300">
                       {evolucionForm.codigoEvolucion}
                     </strong>
@@ -20837,7 +20837,7 @@ ${
                       )}
                       {ev.incapacidad?.aplica && (
                         <p className="text-[9px] text-red-600 mt-0.5">
-                          ðŸ¥ Incapacidad: {ev.incapacidad.dias} dÃ­as
+                          ðŸ¥ Incapacidad: {ev.incapacidad.dias} días
                         </p>
                       )}
                     </div>
@@ -20846,16 +20846,16 @@ ${
             </div>
           )}
 
-          {/* Tabs navegaciÃ³n */}
+          {/* Tabs navegación */}
           <div className="flex gap-1 px-4 pt-3 pb-1 flex-shrink-0 flex-wrap">
             {[
-              { id: "nota", label: "ðŸ“ Nota ClÃ­nica" },
-              { id: "dx", label: "ðŸ©º DiagnÃ³sticos" },
+              { id: "nota", label: "ðŸ“ Nota Clínica" },
+              { id: "dx", label: "ðŸ©º Diagnósticos" },
               { id: "plan", label: "ðŸ“‹ Plan" },
-              { id: "formula", label: "ðŸ’Š FÃ³rmula" },
-              { id: "examenes_ev", label: "ðŸ”¬ ExÃ¡menes" },
+              { id: "formula", label: "ðŸ’Š Fórmula" },
+              { id: "examenes_ev", label: "ðŸ”¬ Exámenes" },
               { id: "incapacidad", label: "ðŸ¥ Incapacidad" },
-                          { id: "concepto", label: "ðŸ“„ Concepto MÃ©dico" },
+                          { id: "concepto", label: "ðŸ“„ Concepto Médico" },
             ].map((t) => (
               <button
                 key={t.id}
@@ -20871,7 +20871,7 @@ ${
 
           {/* Contenido scrollable */}
           <div className="flex-1 overflow-y-auto px-4 pb-4 pt-2">
-            {/* TAB: Nota ClÃ­nica */}
+            {/* TAB: Nota Clínica */}
             {evTab === "nota" && (
               <div className="space-y-3">
                 <div className="grid grid-cols-2 gap-3">
@@ -20912,7 +20912,7 @@ ${
                         "NO APTO TEMPORAL",
                         "NO APTO DEFINITIVO",
                         "EN SEGUIMIENTO",
-                        "PENDIENTE EXÃMENES",
+                        "PENDIENTE EXÁMENES",
                       ].map((o) => (
                         <option key={o}>{o}</option>
                       ))}
@@ -20921,7 +20921,7 @@ ${
                 </div>
                 <div>
                   <label className="text-[10px] font-black text-gray-600 uppercase block mb-1">
-                    Motivo de Consulta / EvoluciÃ³n
+                    Motivo de Consulta / Evolución
                   </label>
                   <textarea
                     value={evolucionForm.motivoConsulta}
@@ -20932,13 +20932,13 @@ ${
                       }))
                     }
                     rows={2}
-                    placeholder="RazÃ³n de la consulta o seguimiento..."
+                    placeholder="Razón de la consulta o seguimiento..."
                     className="w-full p-2 border border-purple-200 rounded-lg text-xs resize-none"
                   />
                 </div>
                 <div>
                   <label className="text-[10px] font-black text-gray-600 uppercase block mb-1">
-                    Nota ClÃ­nica / Hallazgos *
+                    Nota Clínica / Hallazgos *
                   </label>
                   <textarea
                     value={evolucionForm.texto}
@@ -20946,18 +20946,18 @@ ${
                       setEvolucionForm((p) => ({ ...p, texto: e.target.value }))
                     }
                     rows={5}
-                    placeholder="DescripciÃ³n clÃ­nica, hallazgos, seguimiento, cambios observados..."
+                    placeholder="Descripción clínica, hallazgos, seguimiento, cambios observados..."
                     className="w-full p-2 border border-purple-200 rounded-lg text-xs resize-none"
                   />
                 </div>
               </div>
             )}
 
-            {/* TAB: DiagnÃ³sticos */}
+            {/* TAB: Diagnósticos */}
             {evTab === "dx" && (
               <div className="space-y-2">
                 <p className="text-[10px] font-black text-gray-500 uppercase">
-                  DiagnÃ³sticos CIE-10
+                  Diagnósticos CIE-10
                 </p>
                 {(evolucionForm.diagnosticos || []).map((diag, i) => (
                   <div key={i} className="flex gap-2 items-center">
@@ -20979,7 +20979,7 @@ ${
                         setEvolucionForm((p) => ({ ...p, diagnosticos: d }));
                       }}
                       className="flex-1 p-1.5 border rounded text-xs"
-                      placeholder="DescripciÃ³n diagnÃ³stico..."
+                      placeholder="Descripción diagnóstico..."
                     />
                     <select
                       value={diag.tipo}
@@ -21023,7 +21023,7 @@ ${
                   }
                   className="text-purple-600 text-[11px] font-bold flex items-center gap-1 hover:underline"
                 >
-                  <Plus className="w-3 h-3" /> Agregar diagnÃ³stico
+                  <Plus className="w-3 h-3" /> Agregar diagnóstico
                 </button>
               </div>
             )}
@@ -21044,7 +21044,7 @@ ${
                       }))
                     }
                     rows={4}
-                    placeholder="Tratamiento, conducta mÃ©dica, decisiones clÃ­nicas..."
+                    placeholder="Tratamiento, conducta médica, decisiones clínicas..."
                     className="w-full p-2 border border-purple-200 rounded-lg text-xs resize-none"
                   />
                 </div>
@@ -21061,7 +21061,7 @@ ${
                       }))
                     }
                     rows={3}
-                    placeholder="Indicaciones, cuidados, prÃ³xima cita..."
+                    placeholder="Indicaciones, cuidados, próxima cita..."
                     className="w-full p-2 border border-purple-200 rounded-lg text-xs resize-none"
                   />
                 </div>
@@ -21144,7 +21144,7 @@ ${
               </div>
             )}
 
-            {/* TAB: FÃ³rmula MÃ©dica */}
+            {/* TAB: Fórmula Médica */}
             {evTab === "formula" && (
               <div className="space-y-2">
                 <div className="flex justify-between items-center mb-2">
@@ -21176,7 +21176,7 @@ ${
                 </div>
                 {(evolucionForm.formulaMedicamentos || []).length === 0 && (
                   <p className="text-center text-gray-400 text-xs py-6 border border-dashed rounded-xl">
-                    Sin medicamentos. Use el botÃ³n + para agregar.
+                    Sin medicamentos. Use el botón + para agregar.
                   </p>
                 )}
                 {(evolucionForm.formulaMedicamentos || []).map((med, i) => (
@@ -21227,7 +21227,7 @@ ${
                           }));
                         }}
                         className="p-1.5 border rounded text-xs"
-                        placeholder="PresentaciÃ³n (mg, ml...)"
+                        placeholder="Presentación (mg, ml...)"
                       />
                       <select
                         value={med.via || ""}
@@ -21241,18 +21241,18 @@ ${
                         }}
                         className="p-1.5 border rounded text-xs"
                       >
-                        <option value="">VÃ­a...</option>
+                        <option value="">Vía...</option>
                         <option>Oral</option>
                         <option>Sublingual</option>
                         <option>Intramuscular (IM)</option>
                         <option>Intravenosa (IV)</option>
-                        <option>SubcutÃ¡nea (SC)</option>
-                        <option>TÃ³pica</option>
-                        <option>OftÃ¡lmica</option>
+                        <option>Subcutánea (SC)</option>
+                        <option>Tópica</option>
+                        <option>Oftálmica</option>
                         <option>Ã“tica</option>
                         <option>Inhalatoria</option>
                         <option>Rectal</option>
-                        <option>TransdÃ©rmica</option>
+                        <option>Transdérmica</option>
                         <option>Nasal</option>
                       </select>
                       <input
@@ -21292,7 +21292,7 @@ ${
                           }));
                         }}
                         className="p-1.5 border rounded text-xs"
-                        placeholder="DuraciÃ³n (5 dÃ­as...)"
+                        placeholder="Duración (5 días...)"
                       />
                       <input
                         value={med.indicaciones}
@@ -21317,7 +21317,7 @@ ${
             {evTab === "examenes_ev" && (
               <div className="space-y-3">
                 <p className="text-[10px] font-black text-gray-500 uppercase">
-                  ExÃ¡menes y Procedimientos Solicitados
+                  Exámenes y Procedimientos Solicitados
                 </p>
                 <div className="flex gap-2">
                   <input
@@ -21343,7 +21343,7 @@ ${
                 </div>
                 {(evolucionForm.examenesSolicitados || []).length === 0 && (
                   <p className="text-center text-gray-400 text-xs py-6 border border-dashed rounded-xl">
-                    Sin exÃ¡menes solicitados. Escriba y agregue.
+                    Sin exámenes solicitados. Escriba y agregue.
                   </p>
                 )}
                 {(evolucionForm.examenesSolicitados || []).map((ex, i) => (
@@ -21394,14 +21394,14 @@ ${
                     htmlFor="evIncapCheck"
                     className="text-sm font-black text-red-700 cursor-pointer"
                   >
-                    Aplica incapacidad mÃ©dica
+                    Aplica incapacidad médica
                   </label>
                 </div>
                 {evolucionForm.incapacidad?.aplica && (
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <label className="text-[10px] font-black text-gray-600 uppercase block mb-1">
-                        DÃ­as de incapacidad
+                        Días de incapacidad
                       </label>
                       <input
                         type="number"
@@ -21426,7 +21426,7 @@ ${
                         Origen
                       </label>
                       <select
-                        value={evolucionForm.incapacidad?.origen || "ComÃºn"}
+                        value={evolucionForm.incapacidad?.origen || "Común"}
                         onChange={(e) =>
                           setEvolucionForm((p) => ({
                             ...p,
@@ -21438,7 +21438,7 @@ ${
                         }
                         className="w-full p-2 border border-red-200 rounded-lg text-xs"
                       >
-                        <option>ComÃºn</option>
+                        <option>Común</option>
                         <option>Laboral</option>
                         <option>Accidente de Trabajo</option>
                         <option>Enfermedad Profesional</option>
@@ -21484,7 +21484,7 @@ ${
                     </div>
                     <div className="col-span-2">
                       <label className="text-[10px] font-black text-gray-600 uppercase block mb-1">
-                        DiagnÃ³stico (CIE-10)
+                        Diagnóstico (CIE-10)
                       </label>
                       <input
                         value={evolucionForm.incapacidad?.diagnostico || ""}
@@ -21498,7 +21498,7 @@ ${
                           }))
                         }
                         className="w-full p-2 border rounded-lg text-xs"
-                        placeholder="CÃ³digo CIE-10 y descripciÃ³n..."
+                        placeholder="Código CIE-10 y descripción..."
                       />
                     </div>
                   </div>
@@ -21506,11 +21506,11 @@ ${
               </div>
             )}
           </div>
-                    {/* TAB: Concepto MÃ©dico + Certificado */}
+                    {/* TAB: Concepto Médico + Certificado */}
           {evTab === "concepto" && (
             <div className="space-y-3">
               <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3">
-                <h4 className="text-xs font-bold text-emerald-800 mb-2">ðŸ“„ Concepto MÃ©dico Ocupacional</h4>
+                <h4 className="text-xs font-bold text-emerald-800 mb-2">ðŸ“„ Concepto Médico Ocupacional</h4>
                 <div className="space-y-2">
                   <div>
                     <label className="text-[10px] font-black text-gray-600 block mb-1">Concepto de Aptitud</label>
@@ -21524,7 +21524,7 @@ ${
                       <option value="APTO CON RESTRICCIONES">APTO CON RESTRICCIONES</option>
                       <option value="NO APTO">NO APTO</option>
                       <option value="APTO CON LIMITACIONES">APTO CON LIMITACIONES</option>
-                      <option value="PENDIENTE">PENDIENTE - Requiere evaluaciÃ³n adicional</option>
+                      <option value="PENDIENTE">PENDIENTE - Requiere evaluación adicional</option>
                     </select>
                   </div>
                   <div>
@@ -21544,7 +21544,7 @@ ${
                       value={evolucionForm.texto || ""}
                       onChange={(e) => setEvolucionForm((p) => ({ ...p, texto: e.target.value }))}
                       className="w-full p-2 border border-emerald-300 rounded text-xs"
-                      placeholder="Observaciones del mÃ©dico..."
+                      placeholder="Observaciones del médico..."
                     />
                   </div>
                 </div>
@@ -21563,7 +21563,7 @@ ${
                       _codigoHCOriginal: data.codigoVerificacion || "",
                       _esEvolucion: true,
                     };
-                    // Guardar evoluciÃ³n con nuevo cÃ³digo
+                    // Guardar evolución con nuevo código
                     const nuevaEv = {
                       id: Date.now(),
                       codigoEvolucion: newCode,
@@ -21581,11 +21581,11 @@ ${
                     const html = _generarCertificadoHTMLNormalizado(certData, activeDoctorData || {}, activeSignature, companies.find((c) => c.id === currentUser?.empresaId) || {});
                     const win = window.open("", "_blank");
                     if (win) { win.document.write(html); win.document.close(); win.print(); }
-                    showAlert(`âœ… Certificado de evoluciÃ³n generado.\nNuevo cÃ³digo: ${newCode}\nVinculado a HC original: ${data.codigoVerificacion || "â€”"}`);
+                    showAlert(`âœ… Certificado de evolución generado.\nNuevo código: ${newCode}\nVinculado a HC original: ${data.codigoVerificacion || "â€”"}`);
                   }}
                   className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded-lg text-xs flex items-center justify-center gap-2"
                 >
-                  ðŸ“„ Expedir Nuevo Certificado (con nuevo cÃ³digo)
+                  ðŸ“„ Expedir Nuevo Certificado (con nuevo código)
                 </button>
               )}
             </div>
@@ -21594,7 +21594,7 @@ ${
           {/* Footer: guardar */}
           <div className="border-t border-gray-100 px-4 py-3 flex justify-between items-center flex-shrink-0 bg-gray-50 rounded-b-2xl">
             <div className="text-[10px] text-gray-400">
-              MÃ©dico:{" "}
+              Médico:{" "}
               <span className="font-bold text-gray-600">
                 {activeDoctorData?.nombre || currentUser?.name}
               </span>
@@ -21615,7 +21615,7 @@ ${
                 onClick={guardarEvolucion}
                 className="px-5 py-2 bg-purple-700 hover:bg-purple-800 text-white text-xs font-black rounded-xl flex items-center gap-1.5"
               >
-                <Save className="w-3.5 h-3.5" /> Guardar EvoluciÃ³n
+                <Save className="w-3.5 h-3.5" /> Guardar Evolución
               </button>
             </div>
           </div>
@@ -21624,12 +21624,12 @@ ${
     );
   };
 
-  // â”€â”€â”€ RENDER: MENSAJERÃA INTERNA â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // â”€â”€â”€ RENDER: MENSAJERÍA INTERNA â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   // Called inline as overlay + floating panel - not a full-page view
   const renderMensajesOverlay = () => {
     if (!showMensajePanel) return null;
     const esMensajeAdmin = _isAdmin(currentUser?.role);
-    // Mensajes que me corresponden (como destinatario) o que yo enviÃ©
+    // Mensajes que me corresponden (como destinatario) o que yo envié
     const misMensajes = mensajes
       .filter(
         (m) =>
@@ -21835,7 +21835,7 @@ ${
                   <div className="flex justify-between items-start gap-2 mb-1">
                     <p className="text-[10px] font-black text-gray-600">
                       {esMio
-                        ? `ðŸ“¤ TÃº â†’ ${
+                        ? `ðŸ“¤ Tú â†’ ${
                             msg.destinatarios?.length > 1
                               ? "Varios"
                               : usersList.find(
@@ -21867,7 +21867,7 @@ ${
                       </p>
                     </div>
                   )}
-                  {/* Form responder (si es para mÃ­ y no ha sido respondido) */}
+                  {/* Form responder (si es para mí y no ha sido respondido) */}
                   {esParaMi && !msg.respondido && (
                     <div className="mt-2 space-y-1.5">
                       <textarea
@@ -21988,7 +21988,7 @@ ${
               ? `<div style="font-size:9px;color:#555;">${_sanitize(
                   _miIPSComp.direccion
                 )}${
-                  _miIPSComp.ciudad ? " Â· " + _sanitize(_miIPSComp.ciudad) : ""
+                  _miIPSComp.ciudad ? " · " + _sanitize(_miIPSComp.ciudad) : ""
                 }</div>`
               : ""
           }
@@ -22009,7 +22009,7 @@ ${
           )}</div>
           <div style="font-size:9px;color:#555;">Lic: ${_sanitize(
             doc?.licencia || ""
-          )} Â· ${_sanitize(doc?.ciudad || "")}</div>
+          )} · ${_sanitize(doc?.ciudad || "")}</div>
         </div>`;
     const html = `<!DOCTYPE html><html><head><meta charset="utf-8">
 <title>${tipoLabel}</title>
@@ -22031,7 +22031,7 @@ td{padding:5px 8px;border-bottom:1px solid #ddd;font-size:11px}
 ${_compLeftHtml}
 <div>
 <div class="title">${tipoLabel}</div>
-<div class="sub">No. ${num} Â· Fecha: ${fecha}</div>
+<div class="sub">No. ${num} · Fecha: ${fecha}</div>
 </div>
 </div>
 <table>
@@ -22057,7 +22057,7 @@ ${_compLeftHtml}
       w.document.close();
     }
   };
-  // â”€â”€ B-F1-05: CarnÃ© manipulaciÃ³n alimentos â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // â”€â”€ B-F1-05: Carné manipulación alimentos â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const openCarnetAlimentos = (paciente, docData) => {
     const doc = docData || activeDoctorData;
     const p = paciente || {};
@@ -22067,9 +22067,9 @@ ${_compLeftHtml}
           new Date(p.fechaConsulta || Date.now()).getTime() +
             parseInt(p.vigencia) * 24 * 60 * 60 * 1000
         ).toLocaleDateString("es-CO")
-      : "Ver concepto mÃ©dico";
+      : "Ver concepto médico";
     const html = `<!DOCTYPE html><html><head><meta charset="utf-8">
-<title>CarnÃ© ManipulaciÃ³n de Alimentos</title>
+<title>Carné Manipulación de Alimentos</title>
 <style>
 @media print{body{margin:0}@page{size:8.5cm 5.5cm;margin:0}}
 body{font-family:Arial,sans-serif;margin:0;background:#f5f5f5}
@@ -22093,7 +22093,7 @@ body{font-family:Arial,sans-serif;margin:0;background:#f5f5f5}
 @media print{.no-print{display:none}}
 </style></head><body>
 <div class="carne">
-<div class="hdr"><h1>ðŸ½ï¸ CarnÃ© MÃ©dico - ManipulaciÃ³n de Alimentos</h1></div>
+<div class="hdr"><h1>ðŸ½ï¸ Carné Médico - Manipulación de Alimentos</h1></div>
 <div class="body">
 <div class="foto">${
       p.fotoPaciente ? `<img src="${p.fotoPaciente}" alt="Foto"/>` : "ðŸ“·"
@@ -22112,10 +22112,10 @@ body{font-family:Arial,sans-serif;margin:0;background:#f5f5f5}
 <div class="firma">${doc?.nombre || ""}<br/>${doc?.titulo || ""}<br/>Lic: ${
       doc?.licencia || ""
     }</div>
-<div class="valid">âœ… VÃLIDO<br/>Hasta: ${fechaVig}</div>
+<div class="valid">âœ… VÁLIDO<br/>Hasta: ${fechaVig}</div>
 </div></div>
 <div class="no-print">
-<button onclick="window.print()" style="background:#1a6b2f;color:#fff;border:none;padding:8px 20px;border-radius:6px;font-weight:900;cursor:pointer">ðŸ–¨ï¸ Imprimir CarnÃ©</button>
+<button onclick="window.print()" style="background:#1a6b2f;color:#fff;border:none;padding:8px 20px;border-radius:6px;font-weight:900;cursor:pointer">ðŸ–¨ï¸ Imprimir Carné</button>
 <button onclick="window.close()" style="background:#666;color:#fff;border:none;padding:8px 20px;border-radius:6px;font-weight:900;cursor:pointer">âœ• Cerrar</button>
 </div></body></html>`;
     const w = window.open("", "_blank", "width=380,height=320");
@@ -22142,12 +22142,12 @@ body{font-family:Arial,sans-serif;margin:0;background:#f5f5f5}
               <div className="mt-4 flex justify-center">
                 <Loader2 className="w-6 h-6 text-emerald-600 animate-spin" />
               </div>
-              <p className="text-[10px] text-gray-400 mt-3">Si tarda mÃ¡s de 10 segundos, verifique su conexiÃ³n a internet.</p>
+              <p className="text-[10px] text-gray-400 mt-3">Si tarda más de 10 segundos, verifique su conexión a internet.</p>
             </div>
           </div>
         );
       }
-      // B-18: IntercepciÃ³n 2FA - mostrar pantalla de verificaciÃ³n TOTP
+      // B-18: Intercepción 2FA - mostrar pantalla de verificación TOTP
       if (twoFAStep)
         return (
           <div className="min-h-screen bg-gradient-to-br from-emerald-900 via-teal-800 to-cyan-900 flex items-center justify-center font-sans p-4">
@@ -22157,18 +22157,18 @@ body{font-family:Arial,sans-serif;margin:0;background:#f5f5f5}
                   <Lock className="w-10 h-10 text-white" />
                 </div>
                 <h1 className="text-xl font-black text-white tracking-tight">
-                  VerificaciÃ³n 2FA
+                  Verificación 2FA
                 </h1>
                 <p className="text-indigo-200 text-sm mt-1">
-                  AutenticaciÃ³n de dos factores activa
+                  Autenticación de dos factores activa
                 </p>
               </div>
               <div className="p-6 space-y-4">
                 <p className="text-sm text-gray-600 text-center">
-                  Ingrese el cÃ³digo de 6 dÃ­gitos de su aplicaciÃ³n autenticadora
+                  Ingrese el código de 6 dígitos de su aplicación autenticadora
                 </p>
                 <p className="text-xs text-center text-gray-400">
-                  (Google Authenticator Â· Authy Â· Microsoft Authenticator)
+                  (Google Authenticator · Authy · Microsoft Authenticator)
                 </p>
                 <input
                   type="text"
@@ -22196,7 +22196,7 @@ body{font-family:Arial,sans-serif;margin:0;background:#f5f5f5}
                   disabled={twoFAToken.length !== 6}
                   className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed text-white font-black text-sm rounded-xl transition shadow-lg"
                 >
-                  âœ… Verificar cÃ³digo
+                  âœ… Verificar código
                 </button>
                 <button
                   onClick={() => {
@@ -22206,7 +22206,7 @@ body{font-family:Arial,sans-serif;margin:0;background:#f5f5f5}
                   }}
                   className="w-full py-2 text-gray-500 text-xs hover:text-gray-700"
                 >
-                  â† Volver al inicio de sesiÃ³n
+                  â† Volver al inicio de sesión
                 </button>
               </div>
             </div>
@@ -22226,7 +22226,7 @@ body{font-family:Arial,sans-serif;margin:0;background:#f5f5f5}
     if (view === "agenda") return renderAgenda();
     if (view === "asistencia") return renderAsistenciaAgenda();
     if (view === "patients") return renderPatients();
-    // â•â• B-07: Pantalla cambio de contraseÃ±a obligatorio (primer login o forzado) â•â•
+    // â•â• B-07: Pantalla cambio de contraseña obligatorio (primer login o forzado) â•â•
     if (view === "changePassword")
       return (
         <ChangePasswordForm
@@ -22256,7 +22256,7 @@ body{font-family:Arial,sans-serif;margin:0;background:#f5f5f5}
     }
     if (view === "propuestas") return renderPropuestas();
     if (view === "historia") {
-      // FIX: _billDocData necesario para incapacidad, fÃ³rmula, derivaciÃ³n
+      // FIX: _billDocData necesario para incapacidad, fórmula, derivación
       const _billDocUser = billData.billDoctorId
         ? usersList.find((u) => u.user === billData.billDoctorId)
         : null;
@@ -22273,9 +22273,9 @@ body{font-family:Arial,sans-serif;margin:0;background:#f5f5f5}
             <div className="fixed top-4 left-1/2 -translate-x-1/2 bg-red-600 text-white px-6 py-3 rounded-xl shadow-2xl z-[9998] flex items-center gap-3 no-print">
               <AlertTriangle className="w-5 h-5 flex-shrink-0" />
               <div>
-                <p className="font-black text-sm">â±ï¸ SesiÃ³n por expirar</p>
+                <p className="font-black text-sm">â±ï¸ Sesión por expirar</p>
                 <p className="text-xs">
-                  Cierre automÃ¡tico en{" "}
+                  Cierre automático en{" "}
                   <span className="font-black">{inactivityCountdown}s</span> por
                   inactividad
                 </p>
@@ -22322,7 +22322,7 @@ body{font-family:Arial,sans-serif;margin:0;background:#f5f5f5}
                 <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                   <div className="flex items-center gap-2 px-4 py-3 border-b border-gray-100 bg-teal-50">
                     <span className="text-sm font-black text-teal-800">
-                      ðŸ”¬ Solicitud de ExÃ¡menes ParaclÃ­nicos
+                      ðŸ”¬ Solicitud de Exámenes Paraclínicos
                     </span>
                     <span className="text-[10px] text-teal-600 bg-teal-100 px-2 py-0.5 rounded-full">
                       HC Ocupacional
@@ -22334,7 +22334,7 @@ body{font-family:Arial,sans-serif;margin:0;background:#f5f5f5}
             {dataType === "ocupacional" && activeTab === "adjuntos" && (
               <div>{renderTabAdjuntos()}</div>
             )}
-            {/* B-F1-05: CARNÃ‰ MANIPULACIÃ“N ALIMENTOS */}
+            {/* B-F1-05: CARNÉ MANIPULACIÃ“N ALIMENTOS */}
             {dataType === "ocupacional" &&
               activeTab === "carnetAlimentos" &&
               (() => {
@@ -22375,7 +22375,7 @@ body{font-family:Arial,sans-serif;margin:0;background:#f5f5f5}
                         }
                       </div>`
                     : "";
-                  const html = `<!DOCTYPE html><html><head><title>CarnÃ© - ${
+                  const html = `<!DOCTYPE html><html><head><title>Carné - ${
                     data.nombres || "Paciente"
                   }</title>
                 <style>
@@ -22401,7 +22401,7 @@ body{font-family:Arial,sans-serif;margin:0;background:#f5f5f5}
                         : '<div class="photo" style="font-size:22px;display:flex;align-items:center;justify-content:center">ðŸ‘¤</div>'
                     }
                     <div style="flex:1">
-                      <div class="badge">ðŸ½ï¸ ManipulaciÃ³n de Alimentos</div>
+                      <div class="badge">ðŸ½ï¸ Manipulación de Alimentos</div>
                       <p style="margin:3px 0;font-size:13px;font-weight:bold">${
                         data.nombres || ""
                       }</p>
@@ -22419,7 +22419,7 @@ body{font-family:Arial,sans-serif;margin:0;background:#f5f5f5}
                       "Particular"
                     }</strong></div>
                     <div><span style="color:#9ca3af">Concepto:</span><br><strong style="color:#15803d">âœ… APTO</strong></div>
-                    <div><span style="color:#9ca3af">Fecha evaluaciÃ³n:</span><br><strong>${
+                    <div><span style="color:#9ca3af">Fecha evaluación:</span><br><strong>${
                       data.fechaExamen || data.fechaConsulta || ""
                     }</strong></div>
                     <div><span style="color:#9ca3af">Vigente hasta:</span><br><strong style="color:#dc2626">${vigencia}</strong></div>
@@ -22449,18 +22449,18 @@ body{font-family:Arial,sans-serif;margin:0;background:#f5f5f5}
                   <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
                     <div className="flex items-center justify-between mb-5">
                       <h3 className="font-black text-gray-800 text-lg flex items-center gap-2">
-                        ðŸ½ï¸ CarnÃ© de Aptitud - ManipulaciÃ³n de Alimentos
+                        ðŸ½ï¸ Carné de Aptitud - Manipulación de Alimentos
                       </h3>
                       <button
                         onClick={printCarnet}
                         className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-black rounded-xl text-sm"
                       >
-                        ðŸ–¨ï¸ Imprimir CarnÃ©
+                        ðŸ–¨ï¸ Imprimir Carné
                       </button>
                     </div>
                     <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 mb-4">
                       <p className="text-xs text-emerald-800 font-bold mb-2">
-                        Vista previa del carnÃ© (8.56 Ã— 5.4 cm)
+                        Vista previa del carné (8.56 Ã— 5.4 cm)
                       </p>
                       <div className="bg-white rounded-xl p-3 shadow border-t-4 border-emerald-500 max-w-xs">
                         <div className="flex items-center gap-3 pb-2 border-b border-gray-100 mb-2">
@@ -22476,7 +22476,7 @@ body{font-family:Arial,sans-serif;margin:0;background:#f5f5f5}
                           )}
                           <div>
                             <span className="text-[9px] bg-emerald-100 text-emerald-700 font-black px-2 py-0.5 rounded-full">
-                              ðŸ½ï¸ ManipulaciÃ³n de Alimentos
+                              ðŸ½ï¸ Manipulación de Alimentos
                             </span>
                             <p className="font-black text-gray-800 text-sm">
                               {data.nombres || "-"}
@@ -22503,7 +22503,7 @@ body{font-family:Arial,sans-serif;margin:0;background:#f5f5f5}
                             </strong>
                           </div>
                           <div>
-                            <span className="text-gray-400">EvaluaciÃ³n:</span>
+                            <span className="text-gray-400">Evaluación:</span>
                             <br />
                             <strong>
                               {data.fechaExamen || data.fechaConsulta || "-"}
@@ -22512,7 +22512,7 @@ body{font-family:Arial,sans-serif;margin:0;background:#f5f5f5}
                           <div>
                             <span className="text-gray-400">Vigencia:</span>
                             <br />
-                            <strong className="text-red-600">1 aÃ±o</strong>
+                            <strong className="text-red-600">1 año</strong>
                           </div>
                         </div>
                         <div className="text-right border-t border-gray-100 pt-1">
@@ -22527,8 +22527,8 @@ body{font-family:Arial,sans-serif;margin:0;background:#f5f5f5}
                     </div>
                     {!data.fotoPaciente && (
                       <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs text-amber-800">
-                        ðŸ’¡ Tip: Agrega la foto del paciente en la secciÃ³n "Datos
-                        SociodemogrÃ¡ficos" para que aparezca en el carnÃ©.
+                        ðŸ’¡ Tip: Agrega la foto del paciente en la sección "Datos
+                        Sociodemográficos" para que aparezca en el carné.
                       </div>
                     )}
                   </div>
@@ -22549,7 +22549,7 @@ body{font-family:Arial,sans-serif;margin:0;background:#f5f5f5}
                     <BrandLogo data={_billDocData} />
                   </div>
                   <h2 className="text-2xl font-black uppercase mt-2">
-                    Certificado de Incapacidad MÃ©dica
+                    Certificado de Incapacidad Médica
                   </h2>
                 </div>
                 <div className="bg-gray-50 p-4 rounded-xl border border-gray-200 mb-6 text-xs">
@@ -22604,13 +22604,13 @@ body{font-family:Arial,sans-serif;margin:0;background:#f5f5f5}
                 <div className="grid grid-cols-2 gap-4 mb-6">
                   <div className="bg-emerald-50 p-4 rounded-xl border border-emerald-200 text-center">
                     <p className="text-xs font-bold text-emerald-700 uppercase mb-1">
-                      DÃ­as
+                      Días
                     </p>
                     <p className="text-4xl font-black text-emerald-900">
                       {data.incapacidad?.dias || 0}
                     </p>
                     <p className="text-[10px] text-emerald-700 font-bold">
-                      {numeroALetras(data.incapacidad?.dias || 0)} DÃAS
+                      {numeroALetras(data.incapacidad?.dias || 0)} DÍAS
                     </p>
                   </div>
                   <div className="space-y-3">
@@ -22649,7 +22649,7 @@ body{font-family:Arial,sans-serif;margin:0;background:#f5f5f5}
                           },
                         }))
                       }
-                      placeholder="DiagnÃ³stico (CIE-10)..."
+                      placeholder="Diagnóstico (CIE-10)..."
                       className="w-full p-2 border rounded text-xs resize-none"
                     />
                   </div>
@@ -22665,11 +22665,11 @@ body{font-family:Arial,sans-serif;margin:0;background:#f5f5f5}
                 </div>
               </div>
             )}
-            {/* â•â• TAB: SOLICITUD DE EXÃMENES â•â• */}
+            {/* â•â• TAB: SOLICITUD DE EXÁMENES â•â• */}
             {dataType === "general" &&
               activeTab === "solicitudExamenes" &&
               renderTabSolicitudExamenes()}
-            {/* â•â• TAB: INCAPACIDAD MÃ‰DICA (HC GENERAL) â•â• */}
+            {/* â•â• TAB: INCAPACIDAD MÉDICA (HC GENERAL) â•â• */}
             {dataType === "general" &&
               activeTab === "incapacidadGeneral" &&
               renderTabIncapacidadGeneral()}
@@ -22699,13 +22699,13 @@ body{font-family:Arial,sans-serif;margin:0;background:#f5f5f5}
                     <p style="font-size:13pt;font-weight:900;color:${accentSafe};text-transform:uppercase;margin:2px 0;">${_sanitize(
                     titleDoc
                   )}</p>
-                    <p style="font-size:7pt;color:#888;margin:2px 0;">Res. 1995&#x2F;1999 Â· Cons. Gral.</p>
+                    <p style="font-size:7pt;color:#888;margin:2px 0;">Res. 1995&#x2F;1999 · Cons. Gral.</p>
                     <p style="font-size:8pt;font-weight:700;color:#333;margin:5px 0 2px 0;">Fecha: ${fd}</p>
                   </div>
                   <div style="width:32%;text-align:right;padding-left:8px;">
                     <p style="font-size:10.5pt;font-weight:900;color:${accentSafe};text-transform:uppercase;margin:0 0 3px 0;">${pNom}</p>
-                    <p style="font-size:7.5pt;color:#444;margin:1px 0;">${pDTipo}: <b>${pDNum}</b> Â· Edad: <b>${pEdad} aÃ±os</b></p>
-                    <p style="font-size:7.5pt;color:#444;margin:1px 0;">Sexo: ${pSexo} Â· EPS: <b>${pEps}</b></p>
+                    <p style="font-size:7.5pt;color:#444;margin:1px 0;">${pDTipo}: <b>${pDNum}</b> · Edad: <b>${pEdad} años</b></p>
+                    <p style="font-size:7.5pt;color:#444;margin:1px 0;">Sexo: ${pSexo} · EPS: <b>${pEps}</b></p>
                     <p style="font-size:7.5pt;color:#444;margin:1px 0;">Motivo: ${pMotivo}</p>
                   </div>
                 </div>`;
@@ -22741,9 +22741,9 @@ body{font-family:Arial,sans-serif;margin:0;background:#f5f5f5}
                                   m.presentacion || ""
                                 }</span></p><p style="font-size:8.5pt;color:#374151;margin:1px 0;"><b>Dosis:</b> ${
                                   m.dosis || "--"
-                                } Â· <b>Frec.:</b> ${
+                                } · <b>Frec.:</b> ${
                                   m.frecuencia || "--"
-                                } Â· <b>DuraciÃ³n:</b> ${m.duracion || "--"}</p>${
+                                } · <b>Duración:</b> ${m.duracion || "--"}</p>${
                                   m.indicaciones
                                     ? `<p style="font-size:8pt;color:#92400e;font-style:italic;margin:2px 0;">&#9888; ${m.indicaciones}</p>`
                                     : ""
@@ -22759,7 +22759,7 @@ body{font-family:Arial,sans-serif;margin:0;background:#f5f5f5}
                       (data.diagnosticos || [])[0]?.descripcion ||
                       data.diagnosticoPrincipal ||
                       "--";
-                    bodyHtml = `<div style="background:#ecfdf5;border:1px solid #a7f3d0;border-radius:4px;padding:10px 12px;margin-bottom:12px;"><p class="sec-title" style="color:#065f46;">&#128138; PrescripciÃ³n MÃ©dica</p>${medsHtml}${planMeds}<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;border-top:1px solid #a7f3d0;padding-top:8px;"><p style="font-size:8.5pt;"><b>DiagnÃ³stico:</b> ${dx}</p><p style="font-size:8.5pt;"><b>Control en:</b> ${
+                    bodyHtml = `<div style="background:#ecfdf5;border:1px solid #a7f3d0;border-radius:4px;padding:10px 12px;margin-bottom:12px;"><p class="sec-title" style="color:#065f46;">&#128138; Prescripción Médica</p>${medsHtml}${planMeds}<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;border-top:1px solid #a7f3d0;padding-top:8px;"><p style="font-size:8.5pt;"><b>Diagnóstico:</b> ${dx}</p><p style="font-size:8.5pt;"><b>Control en:</b> ${
                       data.plan?.controlEn || "--"
                     }</p></div></div>${sigBlock}`;
                   } else if (sectionId === "gn-examenes") {
@@ -22777,7 +22777,7 @@ body{font-family:Arial,sans-serif;margin:0;background:#f5f5f5}
                       )
                       .join("");
                     const paracl = data.plan?.paraclinicosSolicitados
-                      ? `<div class="block-avoid" style="margin-top:10px;"><p class="sec-title" style="color:#0d9488;">&#128300; ParaclÃ­nicos / ExÃ¡menes Solicitados</p><p style="font-size:8.5pt;white-space:pre-wrap;line-height:1.5;">${data.plan.paraclinicosSolicitados}</p></div>`
+                      ? `<div class="block-avoid" style="margin-top:10px;"><p class="sec-title" style="color:#0d9488;">&#128300; Paraclínicos / Exámenes Solicitados</p><p style="font-size:8.5pt;white-space:pre-wrap;line-height:1.5;">${data.plan.paraclinicosSolicitados}</p></div>`
                       : "";
                     const remis = data.plan?.remisiones
                       ? `<div class="block-avoid" style="margin-top:10px;"><p class="sec-title" style="color:#0d9488;">&#128279; Remisiones / Interconsultas</p><p style="font-size:8.5pt;white-space:pre-wrap;">${data.plan.remisiones}</p></div>`
@@ -22786,13 +22786,13 @@ body{font-family:Arial,sans-serif;margin:0;background:#f5f5f5}
                       ? `<div class="block-avoid" style="margin-top:10px;"><p class="sec-title" style="color:#0d9488;">&#9989; Recomendaciones</p><p style="font-size:8.5pt;white-space:pre-wrap;line-height:1.6;">${data.plan.recomendaciones}</p></div>`
                       : "";
                     const conducta = data.plan?.conducta
-                      ? `<div class="block-avoid" style="margin-top:10px;"><p class="sec-title" style="color:#0d9488;">&#128203; Conducta MÃ©dica</p><p style="font-size:8.5pt;white-space:pre-wrap;">${data.plan.conducta}</p></div>`
+                      ? `<div class="block-avoid" style="margin-top:10px;"><p class="sec-title" style="color:#0d9488;">&#128203; Conducta Médica</p><p style="font-size:8.5pt;white-space:pre-wrap;">${data.plan.conducta}</p></div>`
                       : "";
                     bodyHtml = `<div style="background:#f0fdfa;border:1px solid #99f6e4;border-radius:4px;padding:10px 12px;margin-bottom:12px;">${
                       dxs
-                        ? `<div style="margin-bottom:8px;"><p class="sec-title" style="color:#0d9488;">&#128203; DiagnÃ³sticos</p>${dxs}</div>`
+                        ? `<div style="margin-bottom:8px;"><p class="sec-title" style="color:#0d9488;">&#128203; Diagnósticos</p>${dxs}</div>`
                         : ""
-                    }${conducta}${remis}</div>${recos ? `<div style="margin-top:8px;">${recos}</div>` : ""}${paracl ? `<div style="page-break-before:always;"><p style="font-size:7pt;color:#bbb;margin-bottom:8px;">â€” Hoja de ParaclÃ­nicos y ExÃ¡menes Solicitados â€”</p>${paracl}</div>` : ""}${sigBlock}`;
+                    }${conducta}${remis}</div>${recos ? `<div style="margin-top:8px;">${recos}</div>` : ""}${paracl ? `<div style="page-break-before:always;"><p style="font-size:7pt;color:#bbb;margin-bottom:8px;">â€” Hoja de Paraclínicos y Exámenes Solicitados â€”</p>${paracl}</div>` : ""}${sigBlock}`;
                   } else if (sectionId === "gn-derivaciones") {
                     accent = "#7c3aed";
                     const derivList = data.derivaciones || [];
@@ -22828,19 +22828,19 @@ body{font-family:Arial,sans-serif;margin:0;background:#f5f5f5}
                       data.docNumero || "--"
                     }</p><p><b>Edad:</b> ${
                       data.edad || "--"
-                    } aÃ±os</p><p><b>EPS:</b> ${
+                    } años</p><p><b>EPS:</b> ${
                       data.eps || "--"
-                    }</p></div><div style="text-align:center;background:#fee2e2;border-radius:4px;padding:8px;"><p style="font-size:8pt;font-weight:900;color:#dc2626;text-transform:uppercase;margin:0 0 4px 0;">DÃ­as de Incapacidad</p><p style="font-size:28pt;font-weight:900;color:#dc2626;line-height:1;margin:0;">${
+                    }</p></div><div style="text-align:center;background:#fee2e2;border-radius:4px;padding:8px;"><p style="font-size:8pt;font-weight:900;color:#dc2626;text-transform:uppercase;margin:0 0 4px 0;">Días de Incapacidad</p><p style="font-size:28pt;font-weight:900;color:#dc2626;line-height:1;margin:0;">${
                       data.incapacidad?.dias || 0
                     }</p><p style="font-size:8pt;color:#dc2626;font-weight:700;">${numeroALetras(
                       data.incapacidad?.dias || 0
-                    )} DÃAS</p></div></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:8.5pt;"><p><b>Origen:</b> ${
+                    )} DÍAS</p></div></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:8.5pt;"><p><b>Origen:</b> ${
                       data.incapacidad?.origen || "--"
                     }</p><p><b>Fecha inicio:</b> ${
                       data.incapacidad?.desde || "--"
                     }</p><p><b>Fecha fin:</b> ${
                       data.incapacidad?.hasta || "--"
-                    }</p><p><b>DiagnÃ³stico:</b> ${
+                    }</p><p><b>Diagnóstico:</b> ${
                       data.incapacidad?.diagnostico || "--"
                     }</p></div></div>${sigBlock}`;
                   }
@@ -22874,12 +22874,12 @@ body{padding-top:52px;}
                   w.focus();
                   // No auto-print - usuario edita y hace clic en Imprimir
                 };
-                // â”€â”€ ImpresiÃ³n individual de receta (HC General) â”€â”€
+                // â”€â”€ Impresión individual de receta (HC General) â”€â”€
                 const openSingleMedWindow = (med, mIdx) => {
                   const w = window.open("", "_blank", "width=600,height=700");
                   if (!w) return;
                   const accent = "#059669";
-                  const hdr = buildGnHeader("Receta MÃ©dica", accent);
+                  const hdr = buildGnHeader("Receta Médica", accent);
                   const docSig = _billDocSig || null;
                   const singleHtml = `
                   <div class="med-card" style="display:flex;gap:10px;align-items:flex-start;margin-bottom:10px;">
@@ -22892,9 +22892,9 @@ body{padding-top:52px;}
                   )})</span></p>
                       <p style="font-size:9.5pt;color:#374151;margin:2px 0;"><b>Dosis:</b> ${_sanitize(
                         med.dosis || "--"
-                      )} &nbsp;Â·&nbsp; <b>Frecuencia:</b> ${_sanitize(
+                      )} &nbsp;·&nbsp; <b>Frecuencia:</b> ${_sanitize(
                     med.frecuencia || "--"
-                  )} &nbsp;Â·&nbsp; <b>DuraciÃ³n:</b> ${_sanitize(
+                  )} &nbsp;·&nbsp; <b>Duración:</b> ${_sanitize(
                     med.duracion || "--"
                   )}</p>
                       ${
@@ -22907,7 +22907,7 @@ body{padding-top:52px;}
                     </div>
                   </div>
                   <div style="background:#ecfdf5;border:1px solid #a7f3d0;border-radius:4px;padding:8px 12px;margin-top:8px;">
-                    <p style="font-size:8.5pt;"><b>DiagnÃ³stico:</b> ${_sanitize(
+                    <p style="font-size:8.5pt;"><b>Diagnóstico:</b> ${_sanitize(
                       (data.diagnosticos || [])[0]?.descripcion || "--"
                     )}</p>
                     <p style="font-size:8.5pt;"><b>Control en:</b> ${_sanitize(
@@ -23003,7 +23003,7 @@ body{padding-top:52px;}
                           }}
                           className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition"
                         >
-                          ðŸ’Š PrescripciÃ³n MÃ©dica
+                          ðŸ’Š Prescripción Médica
                         </button>
                         <button
                           onClick={() => {
@@ -23016,7 +23016,7 @@ body{padding-top:52px;}
                           }}
                           className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-teal-50 text-teal-700 border border-teal-200 hover:bg-teal-100 transition"
                         >
-                          ðŸ”¬ ExÃ¡menes y Recomendaciones
+                          ðŸ”¬ Exámenes y Recomendaciones
                         </button>
                         <button
                           onClick={() => {
@@ -23053,7 +23053,7 @@ body{padding-top:52px;}
                             onClick={() =>
                               printSection(
                                 "gn-prescripcion",
-                                "PrescripciÃ³n MÃ©dica"
+                                "Prescripción Médica"
                               )
                             }
                             className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-emerald-600 text-white hover:bg-emerald-700 transition"
@@ -23064,12 +23064,12 @@ body{padding-top:52px;}
                             onClick={() =>
                               printSection(
                                 "gn-examenes",
-                                "ExÃ¡menes y Recomendaciones"
+                                "Exámenes y Recomendaciones"
                               )
                             }
                             className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-teal-600 text-white hover:bg-teal-700 transition"
                           >
-                            <Printer className="w-3 h-3" /> ExÃ¡m.
+                            <Printer className="w-3 h-3" /> Exám.
                           </button>
                           <button
                             onClick={() =>
@@ -23107,16 +23107,16 @@ body{padding-top:52px;}
                         </div>
                         <div className="w-1/3 text-center">
                           <h2 className="text-sm font-black uppercase text-gray-800">
-                            PrescripciÃ³n MÃ©dica
+                            Prescripción Médica
                           </h2>
                           <p className="text-[9px] text-gray-500">
-                            FÃ³rmula MÃ©dica -- Res. 1995/1999
+                            Fórmula Médica -- Res. 1995/1999
                           </p>
                         </div>
                         <div className="w-1/3 text-right text-[9px] text-gray-500">
                           <p className="font-bold">{data.nombres}</p>
                           <p>
-                            CC: {data.docNumero} Â· {data.edad} aÃ±os
+                            CC: {data.docNumero} · {data.edad} años
                           </p>
                           <p>{data.fechaConsulta}</p>
                         </div>
@@ -23141,10 +23141,10 @@ body{padding-top:52px;}
                         </div>
                         <div>
                           <p className="text-[8px] font-black text-emerald-600 uppercase">
-                            Edad / GÃ©nero
+                            Edad / Género
                           </p>
                           <p className="text-[10px] font-semibold text-gray-800">
-                            {data.edad || "--"} aÃ±os Â· {data.genero || "--"}
+                            {data.edad || "--"} años · {data.genero || "--"}
                           </p>
                         </div>
                         <div>
@@ -23183,8 +23183,8 @@ body{padding-top:52px;}
                                   </span>
                                 </p>
                                 <p className="text-xs text-gray-700">
-                                  <b>Dosis:</b> {med.dosis} Â· <b>Cada:</b>{" "}
-                                  {med.frecuencia} Â· <b>Por:</b> {med.duracion}
+                                  <b>Dosis:</b> {med.dosis} · <b>Cada:</b>{" "}
+                                  {med.frecuencia} · <b>Por:</b> {med.duracion}
                                 </p>
                                 {med.indicaciones && (
                                   <p className="text-[10px] italic text-amber-700">
@@ -23205,7 +23205,7 @@ body{padding-top:52px;}
                       ) : data.plan?.medicamentos ? (
                         <div className="mb-4">
                           <h4 className="font-bold text-xs uppercase border-b border-gray-200 mb-2 text-gray-600">
-                            PrescripciÃ³n
+                            Prescripción
                           </h4>
                           <p className="text-xs whitespace-pre-wrap leading-relaxed">
                             {data.plan.medicamentos}
@@ -23218,7 +23218,7 @@ body{padding-top:52px;}
                       )}
                       <div className="grid grid-cols-2 gap-2 mb-4 text-xs">
                         <p>
-                          <b>DiagnÃ³stico:</b>{" "}
+                          <b>Diagnóstico:</b>{" "}
                           {(data.diagnosticos || [])[0]?.descripcion ||
                             data.diagnosticoPrincipal ||
                             "--"}
@@ -23245,7 +23245,7 @@ body{padding-top:52px;}
                         </div>
                       </div>
                     </div>
-                    {/* â•â• SECCIÃ“N: EXÃMENES Y RECOMENDACIONES â•â• */}
+                    {/* â•â• SECCIÃ“N: EXÁMENES Y RECOMENDACIONES â•â• */}
                     <div
                       id="gn-examenes"
                       className="bg-white mx-auto shadow-xl print:shadow-none carta-visual print-page-break"
@@ -23261,10 +23261,10 @@ body{padding-top:52px;}
                         </div>
                         <div className="w-1/3 text-center">
                           <h2 className="text-sm font-black uppercase text-gray-800">
-                            ExÃ¡menes y Recomendaciones
+                            Exámenes y Recomendaciones
                           </h2>
                           <p className="text-[9px] text-gray-500">
-                            Orden MÃ©dica -- Res. 1995/1999
+                            Orden Médica -- Res. 1995/1999
                           </p>
                         </div>
                         <div className="w-1/3 text-right text-[9px] text-gray-500">
@@ -23293,10 +23293,10 @@ body{padding-top:52px;}
                         </div>
                         <div>
                           <p className="text-[8px] font-black text-teal-600 uppercase">
-                            Edad / GÃ©nero
+                            Edad / Género
                           </p>
                           <p className="text-[10px] font-semibold text-gray-800">
-                            {data.edad || "--"} aÃ±os Â· {data.genero || "--"}
+                            {data.edad || "--"} años · {data.genero || "--"}
                           </p>
                         </div>
                         <div>
@@ -23319,7 +23319,7 @@ body{padding-top:52px;}
                       {data.diagnosticos?.length > 0 && (
                         <div className="mb-3 print-break-avoid">
                           <h4 className="font-bold text-xs uppercase border-b border-gray-300 mb-2 text-gray-600">
-                            DiagnÃ³sticos
+                            Diagnósticos
                           </h4>
                           {data.diagnosticos.map((d, i) => (
                             <p key={i} className="text-xs mb-1">
@@ -23332,7 +23332,7 @@ body{padding-top:52px;}
                       {data.plan?.paraclinicosSolicitados && (
                         <div className="mb-3 print-break-avoid">
                           <h4 className="font-bold text-xs uppercase border-b border-gray-300 mb-2 text-gray-600">
-                            ParaclÃ­nicos / ExÃ¡menes Solicitados
+                            Paraclínicos / Exámenes Solicitados
                           </h4>
                           <p className="text-xs whitespace-pre-wrap leading-relaxed">
                             {data.plan.paraclinicosSolicitados}
@@ -23362,7 +23362,7 @@ body{padding-top:52px;}
                       {data.plan?.conducta && (
                         <div className="mb-3 print-break-avoid">
                           <h4 className="font-bold text-xs uppercase border-b border-gray-300 mb-2 text-gray-600">
-                            Conducta MÃ©dica
+                            Conducta Médica
                           </h4>
                           <p className="text-xs whitespace-pre-wrap">
                             {data.plan.conducta}
@@ -23403,7 +23403,7 @@ body{padding-top:52px;}
                             Derivaciones / Interconsultas
                           </h2>
                           <p className="text-[9px] text-gray-500">
-                            Orden MÃ©dica - Res. 1995/1999
+                            Orden Médica - Res. 1995/1999
                           </p>
                         </div>
                         <div className="w-1/3 text-right text-[9px] text-gray-500">
@@ -23430,10 +23430,10 @@ body{padding-top:52px;}
                         </div>
                         <div>
                           <p className="text-[8px] font-black text-purple-600 uppercase">
-                            Edad / GÃ©nero
+                            Edad / Género
                           </p>
                           <p className="text-[10px] font-semibold text-gray-800">
-                            {data.edad || "--"} aÃ±os Â· {data.genero || "--"}
+                            {data.edad || "--"} años · {data.genero || "--"}
                           </p>
                         </div>
                         <div>
@@ -23453,11 +23453,11 @@ body{padding-top:52px;}
                           </p>
                         </div>
                       </div>
-                      {/* DiagnÃ³stico de referencia */}
+                      {/* Diagnóstico de referencia */}
                       {(data.diagnosticos || []).length > 0 && (
                         <div className="mb-3 print-break-avoid">
                           <h4 className="font-bold text-xs uppercase border-b border-purple-200 mb-2 text-purple-700">
-                            DiagnÃ³stico de Referencia
+                            Diagnóstico de Referencia
                           </h4>
                           {data.diagnosticos.map((d, i) => (
                             <p key={i} className="text-xs mb-1">
@@ -23559,7 +23559,7 @@ body{padding-top:52px;}
                           </div>
                           <div className="w-1/3 text-center">
                             <h2 className="text-sm font-black uppercase text-gray-800">
-                              Certificado de Incapacidad MÃ©dica
+                              Certificado de Incapacidad Médica
                             </h2>
                             <p className="text-[9px] text-gray-500">
                               Formulario -- Res. 1995/1999
@@ -23579,7 +23579,7 @@ body{padding-top:52px;}
                               <b>CC:</b> {data.docNumero}
                             </p>
                             <p>
-                              <b>Edad:</b> {data.edad} aÃ±os
+                              <b>Edad:</b> {data.edad} años
                             </p>
                             <p>
                               <b>EPS:</b> {data.eps}
@@ -23587,13 +23587,13 @@ body{padding-top:52px;}
                           </div>
                           <div className="bg-red-50 p-3 rounded-lg text-center print:bg-transparent print:border print:border-gray-300">
                             <p className="text-[10px] font-bold text-red-700 uppercase">
-                              DÃ­as de Incapacidad
+                              Días de Incapacidad
                             </p>
                             <p className="text-5xl font-black text-red-900">
                               {data.incapacidad?.dias || 0}
                             </p>
                             <p className="text-[10px] text-red-700 font-bold">
-                              {numeroALetras(data.incapacidad?.dias || 0)} DÃAS
+                              {numeroALetras(data.incapacidad?.dias || 0)} DÍAS
                             </p>
                           </div>
                         </div>
@@ -23610,7 +23610,7 @@ body{padding-top:52px;}
                             <b>Fecha fin:</b> {data.incapacidad?.hasta || "--"}
                           </p>
                           <p>
-                            <b>DiagnÃ³stico:</b>{" "}
+                            <b>Diagnóstico:</b>{" "}
                             {data.incapacidad?.diagnostico ||
                               data.diagnosticoPrincipal ||
                               "--"}
@@ -23699,10 +23699,10 @@ body{padding-top:52px;}
             <div className="px-4 py-3 bg-amber-50 border-b border-amber-200">
               <p className="text-[11px] text-amber-800 font-bold">
                 âš ï¸ Para radicar ante MinSalud se requiere firma digital DIAN
-                certificada (CerticÃ¡mara/GSE).
+                certificada (Certicámara/GSE).
               </p>
               <p className="text-[10px] text-amber-600 mt-0.5">
-                Copie el JSON o descÃ¡rguelo. Este archivo cumple la estructura
+                Copie el JSON o descárguelo. Este archivo cumple la estructura
                 Res. 2275/2023.
               </p>
             </div>
@@ -23719,7 +23719,7 @@ body{padding-top:52px;}
                     ?.writeText(ripsModalData.json)
                     .then(() => showAlert("âœ… JSON copiado al portapapeles"))
                     .catch(() =>
-                      showAlert("Use Ctrl+A / Ctrl+C en el Ã¡rea de texto")
+                      showAlert("Use Ctrl+A / Ctrl+C en el área de texto")
                     );
                 }}
                 className="flex-1 bg-orange-600 text-white font-bold text-xs py-2 rounded-xl hover:bg-orange-700 flex items-center justify-center gap-1"
@@ -23740,7 +23740,7 @@ body{padding-top:52px;}
                     document.body.removeChild(a);
                   } catch (e) {
                     showAlert(
-                      "Use el botÃ³n Copiar y guarde en un archivo .json"
+                      "Use el botón Copiar y guarde en un archivo .json"
                     );
                   }
                 }}
@@ -23758,7 +23758,7 @@ body{padding-top:52px;}
           </div>
         </div>
       )}
-      {/* Modal Backup - mismo patrÃ³n que RIPS */}
+      {/* Modal Backup - mismo patrón que RIPS */}
       {backupModalData && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-[300] p-4">
           <div
@@ -23799,7 +23799,7 @@ body{padding-top:52px;}
                     ?.writeText(backupModalData.json)
                     .then(() => showAlert("âœ… Backup copiado al portapapeles"))
                     .catch(() =>
-                      showAlert("Use Ctrl+A / Ctrl+C en el Ã¡rea de texto")
+                      showAlert("Use Ctrl+A / Ctrl+C en el área de texto")
                     );
                 }}
                 className="flex-1 bg-emerald-600 text-white font-bold text-xs py-2 rounded-xl hover:bg-emerald-700"
@@ -23820,7 +23820,7 @@ body{padding-top:52px;}
                     document.body.removeChild(a);
                   } catch (e) {
                     showAlert(
-                      "Use el botÃ³n Copiar y guarde en un archivo .json"
+                      "Use el botón Copiar y guarde en un archivo .json"
                     );
                   }
                 }}
@@ -23900,9 +23900,9 @@ body{padding-top:52px;}
             <div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-3">
               <AlertTriangle className="w-6 h-6 text-amber-500" />
             </div>
-            <h3 className="text-gray-800 font-black text-base mb-1">Â¿Guardar antes de salir?</h3>
+            <h3 className="text-gray-800 font-black text-base mb-1">¿Guardar antes de salir?</h3>
             <p className="text-gray-500 text-xs mb-5">
-              Tiene cambios sin guardar en esta Historia ClÃ­nica.
+              Tiene cambios sin guardar en esta Historia Clínica.
             </p>
             <div className="flex flex-col gap-2">
               <button
@@ -23937,12 +23937,12 @@ body{padding-top:52px;}
           </div>
         </div>
       )}
-      {/* â”€â”€ Modal elecciÃ³n tipo HC desde Agenda â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* â”€â”€ Modal elección tipo HC desde Agenda â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       {hcChoiceAgenda && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-[210] p-4">
           <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden">
             <div className="bg-gradient-to-r from-blue-600 to-teal-600 px-6 py-4 text-white">
-              <h3 className="text-lg font-black">Iniciar AtenciÃ³n MÃ©dica</h3>
+              <h3 className="text-lg font-black">Iniciar Atención Médica</h3>
               <p className="text-blue-100 text-xs mt-0.5">
                 Paciente:{" "}
                 <span className="font-bold text-white">
@@ -23952,7 +23952,7 @@ body{padding-top:52px;}
             </div>
             <div className="p-6">
               <p className="text-sm text-gray-600 mb-5 text-center font-medium">
-                Seleccione el tipo de Historia ClÃ­nica a abrir:
+                Seleccione el tipo de Historia Clínica a abrir:
               </p>
               <div className="grid grid-cols-2 gap-4">
                 <button
@@ -23969,7 +23969,7 @@ body{padding-top:52px;}
                       HC Ocupacional
                     </p>
                     <p className="text-[10px] text-emerald-600 mt-0.5">
-                      Examen mÃ©dico laboral Â· Aptitud
+                      Examen médico laboral · Aptitud
                     </p>
                   </div>
                 </button>
@@ -23985,7 +23985,7 @@ body{padding-top:52px;}
                       HC General
                     </p>
                     <p className="text-[10px] text-blue-600 mt-0.5">
-                      Consulta mÃ©dica Â· FÃ³rmula
+                      Consulta médica · Fórmula
                     </p>
                   </div>
                 </button>
@@ -24000,7 +24000,7 @@ body{padding-top:52px;}
           </div>
         </div>
       )}
-      {/* Modal EvoluciÃ³n ClÃ­nica - GLOBAL (visible desde cualquier tab) */}
+      {/* Modal Evolución Clínica - GLOBAL (visible desde cualquier tab) */}
       {renderEvolucionModal()}
       {/* Modal Prompt */}
       {promptConfig && (
@@ -24049,7 +24049,7 @@ body{padding-top:52px;}
             <div className="bg-gradient-to-r from-blue-700 to-indigo-700 px-6 py-4 text-white flex items-center justify-between">
               <div>
                 <h2 className="font-black text-base">ðŸ‘¤ Datos del Paciente</h2>
-                <p className="text-blue-100 text-xs mt-0.5">Vista secretarÃ­a â€” Solo datos administrativos</p>
+                <p className="text-blue-100 text-xs mt-0.5">Vista secretaría â€” Solo datos administrativos</p>
               </div>
               <button onClick={() => setShowSecretariaPatientModal(null)} className="text-white/80 hover:text-white text-xl font-black">âœ•</button>
             </div>
@@ -24057,7 +24057,7 @@ body{padding-top:52px;}
               <div className="bg-gray-50 border border-gray-200 rounded-xl p-4">
                 <p className="text-[10px] font-black text-gray-500 uppercase tracking-wide mb-2">Datos Personales</p>
                 <div className="grid grid-cols-2 gap-2">
-                  {[["Nombres completos", showSecretariaPatientModal.nombres],["Documento", (showSecretariaPatientModal.docTipo||"CC")+" "+showSecretariaPatientModal.docNumero],["Edad", showSecretariaPatientModal.edad ? showSecretariaPatientModal.edad+" aÃ±os" : "â€”"],["GÃ©nero", showSecretariaPatientModal.genero],["Estado Civil", showSecretariaPatientModal.estadoCivil],["Grupo SanguÃ­neo", showSecretariaPatientModal.grupoSanguineo]].map(([label, value]) => (
+                  {[["Nombres completos", showSecretariaPatientModal.nombres],["Documento", (showSecretariaPatientModal.docTipo||"CC")+" "+showSecretariaPatientModal.docNumero],["Edad", showSecretariaPatientModal.edad ? showSecretariaPatientModal.edad+" años" : "â€”"],["Género", showSecretariaPatientModal.genero],["Estado Civil", showSecretariaPatientModal.estadoCivil],["Grupo Sanguíneo", showSecretariaPatientModal.grupoSanguineo]].map(([label, value]) => (
                     <div key={label} className="min-w-0">
                       <p className="text-[9px] font-black text-gray-400 uppercase">{label}</p>
                       <p className="text-xs font-bold text-gray-800 truncate">{value || "â€”"}</p>
@@ -24079,7 +24079,7 @@ body{padding-top:52px;}
               <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-4">
                 <p className="text-[10px] font-black text-indigo-600 uppercase tracking-wide mb-2">Datos Laborales</p>
                 <div className="grid grid-cols-2 gap-2">
-                  {[["Empresa", showSecretariaPatientModal.empresaNombre||showSecretariaPatientModal.empresa],["Cargo", showSecretariaPatientModal.cargo],["ARL", showSecretariaPatientModal.arl],["Tipo Examen", showSecretariaPatientModal.tipoExamen],["Fecha Examen", showSecretariaPatientModal.fechaExamen],["MÃ©dico", usersList.find(u => u.user === showSecretariaPatientModal._medicoId)?.name || showSecretariaPatientModal._medicoId]].map(([label, value]) => (
+                  {[["Empresa", showSecretariaPatientModal.empresaNombre||showSecretariaPatientModal.empresa],["Cargo", showSecretariaPatientModal.cargo],["ARL", showSecretariaPatientModal.arl],["Tipo Examen", showSecretariaPatientModal.tipoExamen],["Fecha Examen", showSecretariaPatientModal.fechaExamen],["Médico", usersList.find(u => u.user === showSecretariaPatientModal._medicoId)?.name || showSecretariaPatientModal._medicoId]].map(([label, value]) => (
                     <div key={label} className="min-w-0">
                       <p className="text-[9px] font-black text-indigo-400 uppercase">{label}</p>
                       <p className="text-xs font-bold text-gray-800 truncate">{value || "â€”"}</p>
@@ -24091,12 +24091,12 @@ body{padding-top:52px;}
                 <div className={`border-2 rounded-xl p-3 text-center ${showSecretariaPatientModal.conceptoAptitud.toLowerCase().includes("no apto") ? "bg-red-50 border-red-300" : "bg-emerald-50 border-emerald-300"}`}>
                   <p className="text-[9px] font-black text-gray-400 uppercase mb-1">Concepto de Aptitud</p>
                   <p className="text-xs font-black text-emerald-700">{showSecretariaPatientModal.conceptoAptitud}</p>
-                  <p className="text-[9px] text-gray-400 mt-1">CÃ³digo: {showSecretariaPatientModal.codigoVerificacion || "â€”"}</p>
+                  <p className="text-[9px] text-gray-400 mt-1">Código: {showSecretariaPatientModal.codigoVerificacion || "â€”"}</p>
                 </div>
               )}
               <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 flex items-start gap-2">
                 <span className="text-base flex-shrink-0">ðŸ”’</span>
-                <p className="text-xs text-amber-700 leading-relaxed"><strong>Ficha clÃ­nica restringida.</strong> Solo el mÃ©dico tratante puede abrir el contenido clÃ­nico.</p>
+                <p className="text-xs text-amber-700 leading-relaxed"><strong>Ficha clínica restringida.</strong> Solo el médico tratante puede abrir el contenido clínico.</p>
               </div>
               <button onClick={() => { const p = showSecretariaPatientModal; setShowSecretariaPatientModal(null); setAgendaForm(prev => ({...prev, nombre: p.nombres||"", docTipo: p.docTipo||"CC", docNumero: p.docNumero||"", celular: p.celular||p.telefono||"", empresa: p.empresaNombre||p.empresa||"", cargo: p.cargo||"", medicoId: p._medicoId||prev.medicoId||"", eps: p.eps||"", _busquedaQuery: p.nombres||""})); goTo("agenda"); }} className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-black flex items-center justify-center gap-2 transition">
                 ðŸ“… Agendar este paciente
@@ -24145,7 +24145,7 @@ body{padding-top:52px;}
                 <X className="w-5 h-5" />
               </button>
             </div>
-            {/* Resumen numÃ©rico */}
+            {/* Resumen numérico */}
             <div className="grid grid-cols-3 gap-2 mb-4">
               {[
                 {
@@ -24191,10 +24191,10 @@ body{padding-top:52px;}
                 </div>
               ))}
             </div>
-            {/* Detalle por colecciÃ³n */}
+            {/* Detalle por colección */}
             <div className="space-y-1.5 mb-4">
               <p className="text-xs font-black text-gray-600 uppercase tracking-wider mb-2">
-                Detalle de sincronizaciÃ³n
+                Detalle de sincronización
               </p>
               {Object.entries(syncReport.results).map(([label, ok]) => (
                 <div
@@ -24243,7 +24243,7 @@ body{padding-top:52px;}
             <div className="bg-violet-50 border border-violet-100 rounded-xl p-3 text-xs text-violet-800 font-semibold text-center mb-3">
               {Object.values(syncReport.results).every(Boolean)
                 ? "â˜ï¸ Todo guardado correctamente en Supabase. Puede acceder desde cualquier dispositivo."
-                : "âš ï¸ Algunos elementos fallaron. EstÃ¡n guardados localmente y se sincronizarÃ¡n automÃ¡ticamente."}
+                : "âš ï¸ Algunos elementos fallaron. Están guardados localmente y se sincronizarán automáticamente."}
             </div>
             <button
               onClick={() => setShowSyncReport(false)}
