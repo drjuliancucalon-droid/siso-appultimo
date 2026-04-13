@@ -17238,7 +17238,6 @@ Esta historia clínica debe conservarse mínimo 20 años.
     ARL_LIST,
     CONTRATO_LIST,
     EPS_LIST,
-    TABS,
     _isAdmin,
     _patKey,
     _sync,
