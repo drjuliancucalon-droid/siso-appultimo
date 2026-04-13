@@ -1,5 +1,6 @@
 // src/shared/ui/SelectGroup.jsx
 import React from 'react';
+import { ChevronDown } from 'lucide-react';
 
 const SelectGroup = ({
   label,
@@ -36,6 +37,7 @@ const SelectGroup = ({
       <ChevronDown className="pointer-events-none absolute right-2 top-2 h-3 w-3 text-gray-400 no-print" />
     </div>
   </div>
-);
+);
+
 
 export default SelectGroup;
