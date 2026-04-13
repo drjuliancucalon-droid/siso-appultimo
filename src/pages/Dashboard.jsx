@@ -17,6 +17,19 @@ const DashboardPage = (props) => {
     activeDoctorData, savedBillsList, orgsList,
     cajaMovimientos, setCajaTab,
     renderNavbar, goTo, showAlert,
+    medicoTurnoActivo, setMedicoTurnoActivo,
+    handleNewOccupHistory, handleNewGeneralHistory,
+    openPatient, canViewPatient,
+    patientSuggestions, patientSearchTerm, setPatientSearchTerm,
+    selectPatientSuggestion,
+    handleExportData, handleImportData, handleSignatureUpload,
+    handleManualCloudSave, fileInputRef, fileInputSigRef,
+    agendados, mensajes, hcChoiceAgenda, setHcChoiceAgenda,
+    auditLog, syncStatus, showMensajePanel, setShowMensajePanel,
+    showAIConfig, setShowAIConfig, aiStatus,
+    doctorSignature, activeSignature,
+    handlePrint, exportPatientTable,
+    showHistoryModal, setShowHistoryModal, historyRecords,
   } = props;
 
   return (
