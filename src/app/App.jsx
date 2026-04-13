@@ -1420,6 +1420,120 @@ export default function App() {
   }, [view, currentUser?.empresaId, companies]);
 
   // ═══════════════════════════════════════════════════════════════════════
+  // CALLBACK FUNCTIONS FOR PAGES
+  // ═══════════════════════════════════════════════════════════════════════
+
+  // Historia callbacks
+  const handleDataChange = useCallback((e) => {
+    if (e && e.target) {
+      const { name, value, type, checked } = e.target;
+      setData(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
+      _setHcDirty(true);
+    }
+  }, []);
+
+  const handleNewPatient = useCallback(() => {
+    const newState = dataType === 'general' ? { ...initialGeneralPatientState } : { ...initialOccupPatientState };
+    newState.id = Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
+    newState.fechaExamen = new Date().toISOString().split('T')[0];
+    newState.fechaRegistro = new Date().toISOString();
+    newState._medicoId = currentUser?.user;
+    setData(newState);
+    _setHcDirty(false);
+    setActiveTab('form');
+  }, [dataType, currentUser]);
+
+  const handleSelectPatient = useCallback((patient) => {
+    setData({ ...(dataType === 'general' ? initialGeneralPatientState : initialOccupPatientState), ...patient });
+    setActiveTab('form');
+    _setHcDirty(false);
+  }, [dataType]);
+
+  const handleSaveHC = useCallback(() => {
+    if (!data || !data.nombres) { setAlertMsg('Complete al menos el nombre del paciente'); return; }
+    const storageUserId = currentUser?.empresaId ? 'empresa_' + currentUser.empresaId : currentUser?.user;
+    const key = _patKey(storageUserId);
+    const existing = sp(key, []);
+    let updated;
+    if (data.id && existing.find(p => p.id === data.id)) {
+      updated = existing.map(p => p.id === data.id ? { ...data, _medicoId: currentUser?.user, _lastModified: new Date().toISOString() } : p);
+    } else {
+      const newData = { ...data, id: data.id || Date.now().toString(36) + Math.random().toString(36).substr(2,5), _medicoId: currentUser?.user, _lastModified: new Date().toISOString() };
+      updated = [newData, ...existing];
+      setData(newData);
+    }
+    _sync(key, JSON.stringify(updated));
+    setPatientsList(updated);
+    setSaveStatus('✅ Guardado');
+    _setHcDirty(false);
+    setTimeout(() => setSaveStatus(''), 2000);
+  }, [data, currentUser]);
+
+  const handlePrintHC = useCallback(() => { window.print(); }, []);
+
+  const handleShowHistory = useCallback(() => {
+    if (!data?.docNumero) return;
+    const storageUserId = currentUser?.empresaId ? 'empresa_' + currentUser.empresaId : currentUser?.user;
+    const key = _patKey(storageUserId);
+    const all = sp(key, []);
+    const records = all.filter(p => p.docNumero === data.docNumero);
+    setHistoryRecords(records);
+    setShowHistoryModal(true);
+  }, [data, currentUser]);
+
+  const handleCompanySelect = useCallback((companyId) => {
+    const comp = companies.find(c => c.id === companyId || c.nit === companyId);
+    if (comp) {
+      setData(prev => ({
+        ...prev,
+        empresaId: comp.id || comp.nit,
+        empresaNombre: comp.nombre,
+        empresaNit: comp.nit,
+        arl: comp.arl || prev.arl,
+      }));
+    }
+  }, [companies]);
+
+  const handleNameChange = useCallback((e) => {
+    const value = e.target.value;
+    setData(prev => ({ ...prev, nombres: value }));
+    _setHcDirty(true);
+    if (value.length >= 2) {
+      const storageUserId = currentUser?.empresaId ? 'empresa_' + currentUser.empresaId : currentUser?.user;
+      const key = _patKey(storageUserId);
+      const all = sp(key, []);
+      const suggs = all.filter(p =>
+        p.nombres?.toLowerCase().includes(value.toLowerCase()) ||
+        p.docNumero?.includes(value)
+      ).slice(0, 5);
+      setPatientSuggestions(suggs);
+    } else {
+      setPatientSuggestions([]);
+    }
+  }, [currentUser]);
+
+  // Users callbacks
+  const handleAddUser = useCallback(async (newUser) => {
+    const hash = await _sha256(newUser.pass);
+    const user = { ...newUser, id: Date.now(), passHash: hash, pass: undefined, activo: true };
+    const updated = [...usersList, user];
+    setUsersList(updated);
+    _sync('siso_users', JSON.stringify(updated));
+  }, [usersList]);
+
+  const handleEditUser = useCallback((userId, changes) => {
+    const updated = usersList.map(u => u.id === userId ? { ...u, ...changes } : u);
+    setUsersList(updated);
+    _sync('siso_users', JSON.stringify(updated));
+  }, [usersList]);
+
+  const handleDeleteUser = useCallback((userId) => {
+    const updated = usersList.map(u => u.id === userId ? { ...u, activo: false } : u);
+    setUsersList(updated);
+    _sync('siso_users', JSON.stringify(updated));
+  }, [usersList]);
+
+  // ═══════════════════════════════════════════════════════════════════════
   // COLLECTED PROPS — all state bundled for page components
   // ═══════════════════════════════════════════════════════════════════════
   const appState = {
@@ -1566,6 +1680,22 @@ export default function App() {
     handleLogin, handleLogout, handleManualCloudSave,
     _syncPatients, _syncCompanies, saveCajaDebounced,
     canViewPatient, isHcOwner, _resetInactivity,
+    // HC Callbacks
+    onDataChange: handleDataChange,
+    onNewPatient: handleNewPatient,
+    onSelectPatient: handleSelectPatient,
+    onSave: handleSaveHC,
+    onPrint: handlePrintHC,
+    onShowHistory: handleShowHistory,
+    handleCompanySelect,
+    handleNameChange,
+    selectPatientSuggestion: handleSelectPatient,
+    // User callbacks
+    onAddUser: handleAddUser,
+    onEditUser: handleEditUser,
+    onDeleteUser: handleDeleteUser,
+    // Computed helpers
+    canUseSGSST: !!(currentUser && typeof _canUse === 'function'),
     // Plan helpers
     _canUse, _contarHC, _isAdmin, _isAdminEmpresa, _isAdminOrEmpresa,
     _secretariaPuede, _secretariaMedicoAsignado,
