@@ -2,7 +2,7 @@
 import {
   AlertTriangle, BarChart3, Building2, Clock, Eye, FileCheck, FileSearch,
   FileText, HardDrive, Heart, Receipt, Shield, Stethoscope, Trash2,
-  UserCheck, Users,
+  UserCheck, Users, Lock,
 } from "lucide-react";
 import {
   _canUse, _isAdmin, _isAdminEmpresa, _isAdminOrEmpresa,
