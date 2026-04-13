@@ -15,7 +15,6 @@ export default defineConfig({
       output: {
         manualChunks: {
           react: ['react', 'react-dom'],
-          lucide: ['lucide-react'],
         },
       },
     },
