@@ -17,6 +17,8 @@ import {
   X,
   Shield,
 } from 'lucide-react';
+import LicenciasTab from '../components/panels/LicenciasTab';
+import { _sbSet } from '../shared/lib/supabase';
 
 export default function UsersSection({ ctx }) {
   const {

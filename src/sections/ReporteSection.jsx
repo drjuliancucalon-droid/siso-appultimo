@@ -15,11 +15,14 @@ import {
   Receipt,
   Shield,
 } from 'lucide-react';
+import { _secretariaPuede } from '../shared/data/planConfig';
+import BrandLogo from '../components/ui/BrandLogo';
 
 export default function ReporteSection({ ctx }) {
   const {
     TABS,
     _isAdmin,
+    renderNavbar,
     activeDoctorData,
     activeSignature,
     certSelected,

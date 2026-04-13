@@ -7,6 +7,15 @@ import {
   ShieldAlert,
   X,
 } from 'lucide-react';
+import InputGroup from '../components/ui/InputGroup';
+import SelectGroup from '../components/ui/SelectGroup';
+import TextAreaGroup from '../components/ui/TextAreaGroup';
+import SectionTitle from '../components/ui/SectionTitle';
+import CIE10Input from '../components/ui/CIE10Input';
+import { CIE11Badge } from '../shared/components/CIE11Badge';
+import DoctorSignature from '../components/ui/DoctorSignature';
+import BrandLogo from '../components/ui/BrandLogo';
+import ConsentimientoModal from '../components/modals/ConsentimientoModal';
 
 export default function HistoriaOcupacional({ ctx }) {
   const {

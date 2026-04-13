@@ -17368,6 +17368,7 @@ Esta historia clínica debe conservarse mínimo 20 años.
     userEditId,
     usersList,
     view,
+    AgendaFieldF,
   };
 
   // RENDER HELPERS
@@ -18383,6 +18384,9 @@ Esta historia clínica debe conservarse mínimo 20 años.
       </nav>
     );
   };
+  // Attach render helpers to ctx so sections can use them
+  ctx.renderNavbar = renderNavbar;
+
   const renderLogin = () => (
     <div className="min-h-screen bg-gradient-to-br from-emerald-900 via-teal-800 to-cyan-900 flex items-center justify-center font-sans p-4">
       <div className="bg-white rounded-2xl shadow-2xl w-96 overflow-hidden animate-fade-in">
