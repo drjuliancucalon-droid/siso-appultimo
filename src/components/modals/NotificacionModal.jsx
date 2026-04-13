@@ -1,4 +1,4 @@
-// src/components/modals/NotificacionModal.jsx
+﻿// src/components/modals/NotificacionModal.jsx
 import React from 'react';
 import { MessageSquare, X } from 'lucide-react';
 
@@ -15,26 +15,26 @@ const NotificacionModal = ({ data, onCerrar }) => {
 
   const waMsg = encodeURIComponent(
     `Estimado/a ${nombre},\n\n` +
-      `Le informamos que su evaluaci�n m�dica ocupacional ha sido registrada.\n\n` +
-      `?? *C�digo de verificaci�n:* ${codigo}\n` +
-      `?? *Fecha:* ${fecha}\n` +
-      `?? *Empresa:* ${empresa}\n` +
-      `? *Concepto:* ${concepto}\n\n` +
-      `Puede verificar su certificado en cualquier momento solicitando este c�digo al m�dico.\n\n` +
-      `Atentamente,\nServicio M�dico Ocupacional - SISO OcupaSalud v4`
+      `Le informamos que su evaluación médica ocupacional ha sido registrada.\n\n` +
+      `📋 *Código de verificación:* ${codigo}\n` +
+      `📅 *Fecha:* ${fecha}\n` +
+      `🏢 *Empresa:* ${empresa}\n` +
+      `✅ *Concepto:* ${concepto}\n\n` +
+      `Puede verificar su certificado en cualquier momento solicitando este código al médico.\n\n` +
+      `Atentamente,\nServicio Médico Ocupacional - SISO OcupaSalud v4`
   );
 
   const mailSubject = encodeURIComponent(
-    `Evaluaci�n M�dica Ocupacional - C�digo ${codigo}`
+    `Evaluación Médica Ocupacional - Código ${codigo}`
   );
   const mailBody = encodeURIComponent(
     `Estimado/a ${nombre},
 
 ` +
-      `Le informamos que su evaluaci�n m�dica ocupacional ha sido registrada.
+      `Le informamos que su evaluación médica ocupacional ha sido registrada.
 
 ` +
-      `C�digo de verificaci�n: ${codigo}
+      `Código de verificación: ${codigo}
 ` +
       `Fecha: ${fecha}
 ` +
@@ -43,11 +43,11 @@ const NotificacionModal = ({ data, onCerrar }) => {
       `Concepto de aptitud: ${concepto}
 
 ` +
-      `Puede verificar su certificado presentando este c�digo al m�dico tratante.
+      `Puede verificar su certificado presentando este código al médico tratante.
 
 ` +
       `Atentamente,
-Servicio M�dico Ocupacional - SISO OcupaSalud v4`
+Servicio Médico Ocupacional - SISO OcupaSalud v4`
   );
 
   const waUrl = `https://wa.me/${
@@ -55,7 +55,7 @@ Servicio M�dico Ocupacional - SISO OcupaSalud v4`
   }?text=${waMsg}`;
   const mailUrl = `mailto:${email}?subject=${mailSubject}&body=${mailBody}`;
   const smsUrl = `sms:${tel}?body=${encodeURIComponent(
-    `SISO OcupaSalud: Su c�digo de verificaci�n es ${codigo}. Fecha evaluaci�n: ${fecha}.`
+    `SISO OcupaSalud: Su código de verificación es ${codigo}. Fecha evaluación: ${fecha}.`
   )}`;
 
   return (
@@ -63,16 +63,16 @@ Servicio M�dico Ocupacional - SISO OcupaSalud v4`
       <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden">
         <div className="bg-gradient-to-r from-green-600 to-emerald-600 p-5 text-white flex items-center justify-between">
           <div>
-            <h2 className="font-black text-base">?? Notificar al Paciente</h2>
+            <h2 className="font-black text-base">📲 Notificar al Paciente</h2>
             <p className="text-green-100 text-xs mt-0.5">
-              Res. 1552/2013 � Comunicaci�n resultado
+              Res. 1552/2013 · Comunicación resultado
             </p>
           </div>
           <button
             onClick={onCerrar}
             className="text-white/80 hover:text-white text-2xl font-bold"
           >
-            ?
+            ✕
           </button>
         </div>
         <div className="p-5 space-y-3">
@@ -86,7 +86,7 @@ Servicio M�dico Ocupacional - SISO OcupaSalud v4`
             </p>
             <p>
               <span className="font-black text-gray-600">
-                C�digo verificaci�n:
+                Código verificación:
               </span>{" "}
               <span className="font-black text-blue-700">
                 {codigo || "(guardar HC primero)"}
@@ -99,7 +99,7 @@ Servicio M�dico Ocupacional - SISO OcupaSalud v4`
           </div>
 
           <p className="text-xs font-black text-gray-700 uppercase">
-            Canales de notificaci�n
+            Canales de notificación
           </p>
 
           {tel ? (
@@ -109,7 +109,7 @@ Servicio M�dico Ocupacional - SISO OcupaSalud v4`
               rel="noreferrer"
               className="flex items-center gap-3 p-3 bg-green-50 border border-green-200 rounded-xl hover:bg-green-100 transition"
             >
-              <span className="text-2xl">??</span>
+              <span className="text-2xl">💬</span>
               <div>
                 <p className="text-xs font-black text-green-800">WhatsApp</p>
                 <p className="text-[10px] text-green-600">
@@ -117,12 +117,12 @@ Servicio M�dico Ocupacional - SISO OcupaSalud v4`
                 </p>
               </div>
               <span className="ml-auto text-xs font-bold text-green-600">
-                Abrir ?
+                Abrir →
               </span>
             </a>
           ) : (
             <div className="p-3 bg-gray-50 border border-gray-200 rounded-xl text-xs text-gray-400">
-              ?? WhatsApp - Registre celular del paciente para habilitar
+              💬 WhatsApp - Registre celular del paciente para habilitar
             </div>
           )}
 
@@ -131,20 +131,20 @@ Servicio M�dico Ocupacional - SISO OcupaSalud v4`
               href={mailUrl}
               className="flex items-center gap-3 p-3 bg-blue-50 border border-blue-200 rounded-xl hover:bg-blue-100 transition"
             >
-              <span className="text-2xl">??</span>
+              <span className="text-2xl">📧</span>
               <div>
                 <p className="text-xs font-black text-blue-800">
-                  Correo electr�nico
+                  Correo electrónico
                 </p>
                 <p className="text-[10px] text-blue-600">{email}</p>
               </div>
               <span className="ml-auto text-xs font-bold text-blue-600">
-                Abrir ?
+                Abrir →
               </span>
             </a>
           ) : (
             <div className="p-3 bg-gray-50 border border-gray-200 rounded-xl text-xs text-gray-400">
-              ?? Email - Registre correo del paciente para habilitar
+              📧 Email - Registre correo del paciente para habilitar
             </div>
           )}
 
@@ -153,27 +153,27 @@ Servicio M�dico Ocupacional - SISO OcupaSalud v4`
               href={smsUrl}
               className="flex items-center gap-3 p-3 bg-purple-50 border border-purple-200 rounded-xl hover:bg-purple-100 transition"
             >
-              <span className="text-2xl">??</span>
+              <span className="text-2xl">💬</span>
               <div>
                 <p className="text-xs font-black text-purple-800">
-                  SMS (c�digo �nicamente)
+                  SMS (código únicamente)
                 </p>
                 <p className="text-[10px] text-purple-600">
                   +{tel.startsWith("57") ? tel : "57" + tel}
                 </p>
               </div>
               <span className="ml-auto text-xs font-bold text-purple-600">
-                Abrir ?
+                Abrir →
               </span>
             </a>
           ) : null}
 
           <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-[10px] text-amber-700">
             <p className="font-black">
-              ?? Res. 1552/2013 - Notificaci�n de resultados
+              📋 Res. 1552/2013 - Notificación de resultados
             </p>
             <p className="mt-0.5">
-              El m�dico tiene la obligaci�n de informar los resultados al
+              El médico tiene la obligación de informar los resultados al
               trabajador evaluado. Los links abren su app de WhatsApp/Email con
               el mensaje prellenado.
             </p>

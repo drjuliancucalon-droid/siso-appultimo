@@ -1,4 +1,4 @@
-// src/components/ui/BrandLogo.jsx
+﻿// src/components/ui/BrandLogo.jsx
 import React from 'react';
 
 const BrandLogo = ({ data }) => {
@@ -20,7 +20,7 @@ const BrandLogo = ({ data }) => {
       </div>
       <div className="flex flex-col justify-center">
         <p className="text-[10px] font-black text-gray-900 uppercase leading-tight whitespace-normal break-words">
-          {doc.nombre || "M�DICO"}
+          {doc.nombre || "MÉDICO"}
         </p>
         <div className="h-0.5 w-8 bg-gradient-to-r from-emerald-500 to-teal-400 my-0.5 rounded-full" />
         <p className="text-[8px] font-bold text-gray-500 uppercase whitespace-normal break-words">

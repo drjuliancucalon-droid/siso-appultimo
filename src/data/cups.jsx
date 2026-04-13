@@ -1,4 +1,4 @@
-// src/data/cups.js - CUPS Salud Ocupacional Colombia
+﻿// src/data/cups.js - CUPS Salud Ocupacional Colombia
 import React, { useState, useRef } from 'react';
 
 const CUPS_OCUPACIONAL = [
@@ -39,127 +39,127 @@ const CUPS_OCUPACIONAL = [
   },
   {
     code: "903801",
-    desc: "Evaluaci�n m�dica ocupacional de ingreso - Res. 1843/2025",
+    desc: "Evaluación médica ocupacional de ingreso - Res. 1843/2025",
     group: "Salud Ocupacional",
   },
   {
     code: "903802",
-    desc: "Evaluaci�n m�dica ocupacional peri�dica - Res. 1843/2025",
+    desc: "Evaluación médica ocupacional periódica - Res. 1843/2025",
     group: "Salud Ocupacional",
   },
   {
     code: "903803",
-    desc: "Evaluaci�n m�dica ocupacional de retiro/egreso",
+    desc: "Evaluación médica ocupacional de retiro/egreso",
     group: "Salud Ocupacional",
   },
   {
     code: "903804",
-    desc: "Evaluaci�n m�dica post-incapacidad (>=30 d�as) - Res. 1843/2025 Art.9",
+    desc: "Evaluación médica post-incapacidad (>=30 días) - Res. 1843/2025 Art.9",
     group: "Salud Ocupacional",
   },
   {
     code: "903805",
-    desc: "Evaluaci�n m�dica de retorno laboral (>90 d�as no m�dica) - Art.13",
+    desc: "Evaluación médica de retorno laboral (>90 días no médica) - Art.13",
     group: "Salud Ocupacional",
   },
   {
     code: "903806",
-    desc: "Evaluaci�n m�dica ocupacional de seguimiento",
+    desc: "Evaluación médica ocupacional de seguimiento",
     group: "Salud Ocupacional",
   },
   {
     code: "911501",
-    desc: "Audiometr�a tonal liminar v�a a�rea y �sea - hipoacusia laboral",
-    group: "Audiolog�a",
+    desc: "Audiometría tonal liminar vía aérea y ósea - hipoacusia laboral",
+    group: "Audiología",
   },
   {
     code: "911502",
-    desc: "Audiometr�a de tamizaje (screening auditivo)",
-    group: "Audiolog�a",
+    desc: "Audiometría de tamizaje (screening auditivo)",
+    group: "Audiología",
   },
   {
     code: "911503",
-    desc: "Logoaudiometr�a - discriminaci�n verbal",
-    group: "Audiolog�a",
+    desc: "Logoaudiometría - discriminación verbal",
+    group: "Audiología",
   },
   {
     code: "911504",
     desc: "Potenciales evocados auditivos del tronco cerebral (PEATC)",
-    group: "Audiolog�a",
+    group: "Audiología",
   },
   {
     code: "911601",
-    desc: "Otoscop�a - examen del conducto auditivo externo y t�mpano",
-    group: "Audiolog�a",
+    desc: "Otoscopía - examen del conducto auditivo externo y tímpano",
+    group: "Audiología",
   },
   {
     code: "921601",
-    desc: "Examen optom�trico completo - agudeza visual y refracci�n",
-    group: "Optometr�a",
+    desc: "Examen optométrico completo - agudeza visual y refracción",
+    group: "Optometría",
   },
   {
     code: "921602",
     desc: "Agudeza visual - tamizaje visual laboral",
-    group: "Optometr�a",
+    group: "Optometría",
   },
   {
     code: "921603",
-    desc: "Campimetr�a (campo visual) - trabajo en alturas, conductores",
-    group: "Optometr�a",
+    desc: "Campimetría (campo visual) - trabajo en alturas, conductores",
+    group: "Optometría",
   },
   {
     code: "921604",
-    desc: "Visi�n de colores (Ishihara) - electr�nica y seguridad",
-    group: "Optometr�a",
+    desc: "Visión de colores (Ishihara) - electrónica y seguridad",
+    group: "Optometría",
   },
   {
     code: "921701",
-    desc: "Tonometr�a ocular - detecci�n glaucoma",
-    group: "Optometr�a",
+    desc: "Tonometría ocular - detección glaucoma",
+    group: "Optometría",
   },
   {
     code: "912701",
-    desc: "Espirometr�a simple (CVF, VEF1) - exposici�n laboral a polvos",
-    group: "Neumolog�a",
+    desc: "Espirometría simple (CVF, VEF1) - exposición laboral a polvos",
+    group: "Neumología",
   },
   {
     code: "912702",
-    desc: "Espirometr�a con broncodilatador - asma ocupacional",
-    group: "Neumolog�a",
+    desc: "Espirometría con broncodilatador - asma ocupacional",
+    group: "Neumología",
   },
   {
     code: "912703",
     desc: "Flujo espiratorio pico (PEF) - monitoreo asma",
-    group: "Neumolog�a",
+    group: "Neumología",
   },
   {
     code: "912704",
-    desc: "Oximetr�a de pulso - saturaci�n O2 laboral",
-    group: "Neumolog�a",
+    desc: "Oximetría de pulso - saturación O2 laboral",
+    group: "Neumología",
   },
   {
     code: "891501",
     desc: "Electroencefalograma (EEG) - epilepsia, alturas",
-    group: "Neurolog�a",
+    group: "Neurología",
   },
   {
     code: "891502",
-    desc: "Electromiograf�a (EMG) - t�nel del carpo, neuropat�a laboral",
-    group: "Neurolog�a",
+    desc: "Electromiografía (EMG) - túnel del carpo, neuropatía laboral",
+    group: "Neurología",
   },
   {
     code: "891503",
-    desc: "Velocidades de conducci�n nerviosa (VCN) - GATISO-MMSS",
-    group: "Neurolog�a",
+    desc: "Velocidades de conducción nerviosa (VCN) - GATISO-MMSS",
+    group: "Neurología",
   },
   {
     code: "891504",
     desc: "Potenciales evocados somatosensoriales (PESS)",
-    group: "Neurolog�a",
+    group: "Neurología",
   },
   {
     code: "903001",
-    desc: "Hemograma completo con diferencial - cuadro hem�tico",
+    desc: "Hemograma completo con diferencial - cuadro hemático",
     group: "Laboratorio",
   },
   {
@@ -174,62 +174,62 @@ const CUPS_OCUPACIONAL = [
   },
   {
     code: "903004",
-    desc: "Perfil lip�dico completo - colesterol HDL, LDL, triglic�ridos",
+    desc: "Perfil lipídico completo - colesterol HDL, LDL, triglicéridos",
     group: "Laboratorio",
   },
   {
     code: "903005",
-    desc: "Parcial de orina (uroan�lisis)",
+    desc: "Parcial de orina (uroanálisis)",
     group: "Laboratorio",
   },
   {
     code: "903006",
-    desc: "Creatinina s�rica - funci�n renal",
+    desc: "Creatinina sérica - función renal",
     group: "Laboratorio",
   },
   {
     code: "903007",
-    desc: "Transaminasas ALT/AST - funci�n hep�tica, exposici�n a t�xicos",
+    desc: "Transaminasas ALT/AST - función hepática, exposición a tóxicos",
     group: "Laboratorio",
   },
   {
     code: "903008",
-    desc: "Colinesterasa s�rica - exposici�n a organofosforados",
+    desc: "Colinesterasa sérica - exposición a organofosforados",
     group: "Laboratorio",
   },
   {
     code: "903009",
-    desc: "Plombemia (plomo en sangre) - exposici�n laboral a plomo",
+    desc: "Plombemia (plomo en sangre) - exposición laboral a plomo",
     group: "Laboratorio",
   },
   {
     code: "903010",
-    desc: "Mercurio en orina 24h - exposici�n a mercurio laboral",
+    desc: "Mercurio en orina 24h - exposición a mercurio laboral",
     group: "Laboratorio",
   },
   {
     code: "903011",
-    desc: "Manganeso en sangre - exposici�n laboral",
+    desc: "Manganeso en sangre - exposición laboral",
     group: "Laboratorio",
   },
   {
     code: "903012",
-    desc: "Solventes org�nicos en orina - benceno, tolueno, xileno",
+    desc: "Solventes orgánicos en orina - benceno, tolueno, xileno",
     group: "Laboratorio",
   },
   { code: "903013", desc: "Urocultivo", group: "Laboratorio" },
   {
     code: "903014",
-    desc: "Coprosc�pico directo - par�sitos intestinales",
+    desc: "Coproscópico directo - parásitos intestinales",
     group: "Laboratorio",
   },
-  { code: "903016", desc: "Prote�na C reactiva (PCR)", group: "Laboratorio" },
+  { code: "903016", desc: "Proteína C reactiva (PCR)", group: "Laboratorio" },
   {
     code: "903017",
-    desc: "VSG (velocidad de sedimentaci�n globular)",
+    desc: "VSG (velocidad de sedimentación globular)",
     group: "Laboratorio",
   },
-  { code: "903018", desc: "�cido �rico s�rico", group: "Laboratorio" },
+  { code: "903018", desc: "Ácido úrico sérico", group: "Laboratorio" },
   {
     code: "903019",
     desc: "TSH (hormona estimulante de tiroides)",
@@ -238,175 +238,175 @@ const CUPS_OCUPACIONAL = [
   { code: "903020", desc: "Vitamina D 25-OH", group: "Laboratorio" },
   {
     code: "903021",
-    desc: "Ant�geno de superficie hepatitis B (HBsAg)",
+    desc: "Antígeno de superficie hepatitis B (HBsAg)",
     group: "Laboratorio",
   },
   {
     code: "903022",
-    desc: "Anti-HBs - verificaci�n vacuna hepatitis B",
+    desc: "Anti-HBs - verificación vacuna hepatitis B",
     group: "Laboratorio",
   },
   { code: "903023", desc: "Prueba de VIH (ELISA)", group: "Laboratorio" },
-  { code: "903024", desc: "VDRL - s�filis", group: "Laboratorio" },
+  { code: "903024", desc: "VDRL - sífilis", group: "Laboratorio" },
   {
     code: "870101",
-    desc: "Radiograf�a de columna lumbosacra AP y lateral",
-    group: "Imagenolog�a",
+    desc: "Radiografía de columna lumbosacra AP y lateral",
+    group: "Imagenología",
   },
   {
     code: "870102",
-    desc: "Radiograf�a de columna cervical AP y lateral",
-    group: "Imagenolog�a",
+    desc: "Radiografía de columna cervical AP y lateral",
+    group: "Imagenología",
   },
   {
     code: "870103",
-    desc: "Radiograf�a de columna dorsal AP y lateral",
-    group: "Imagenolog�a",
+    desc: "Radiografía de columna dorsal AP y lateral",
+    group: "Imagenología",
   },
   {
     code: "870201",
-    desc: "Radiograf�a de manos bilateral AP - t�nel del carpo",
-    group: "Imagenolog�a",
+    desc: "Radiografía de manos bilateral AP - túnel del carpo",
+    group: "Imagenología",
   },
   {
     code: "870202",
-    desc: "Radiograf�a de mu�ecas bilateral",
-    group: "Imagenolog�a",
+    desc: "Radiografía de muñecas bilateral",
+    group: "Imagenología",
   },
   {
     code: "870203",
-    desc: "Radiograf�a de hombros bilateral",
-    group: "Imagenolog�a",
+    desc: "Radiografía de hombros bilateral",
+    group: "Imagenología",
   },
   {
     code: "870204",
-    desc: "Radiograf�a de rodillas bilateral",
-    group: "Imagenolog�a",
+    desc: "Radiografía de rodillas bilateral",
+    group: "Imagenología",
   },
   {
     code: "870205",
-    desc: "Radiograf�a de tobillos y pies bilateral",
-    group: "Imagenolog�a",
+    desc: "Radiografía de tobillos y pies bilateral",
+    group: "Imagenología",
   },
   {
     code: "870301",
-    desc: "Ecograf�a de hombro - manguito rotador, tendinitis",
-    group: "Imagenolog�a",
+    desc: "Ecografía de hombro - manguito rotador, tendinitis",
+    group: "Imagenología",
   },
   {
     code: "870302",
-    desc: "Ecograf�a de columna lumbar - hernia discal",
-    group: "Imagenolog�a",
+    desc: "Ecografía de columna lumbar - hernia discal",
+    group: "Imagenología",
   },
   {
     code: "870303",
-    desc: "Ecograf�a de mu�eca - s�ndrome del t�nel del carpo",
-    group: "Imagenolog�a",
+    desc: "Ecografía de muñeca - síndrome del túnel del carpo",
+    group: "Imagenología",
   },
   {
     code: "870304",
-    desc: "Ecograf�a abdominal total - control preventivo",
-    group: "Imagenolog�a",
+    desc: "Ecografía abdominal total - control preventivo",
+    group: "Imagenología",
   },
   {
     code: "870401",
-    desc: "Resonancia magn�tica (RMN) de columna lumbosacra",
-    group: "Imagenolog�a",
+    desc: "Resonancia magnética (RMN) de columna lumbosacra",
+    group: "Imagenología",
   },
   {
     code: "870402",
-    desc: "Resonancia magn�tica de columna cervical",
-    group: "Imagenolog�a",
+    desc: "Resonancia magnética de columna cervical",
+    group: "Imagenología",
   },
   {
     code: "870403",
-    desc: "Resonancia magn�tica de hombro",
-    group: "Imagenolog�a",
+    desc: "Resonancia magnética de hombro",
+    group: "Imagenología",
   },
   {
     code: "870501",
-    desc: "Tomograf�a computarizada (TAC) de t�rax - neumoconiosis",
-    group: "Imagenolog�a",
+    desc: "Tomografía computarizada (TAC) de tórax - neumoconiosis",
+    group: "Imagenología",
   },
   {
     code: "870502",
-    desc: "Radiograf�a de t�rax PA y lateral - ILO 2011 neumoconiosis",
-    group: "Imagenolog�a",
+    desc: "Radiografía de tórax PA y lateral - ILO 2011 neumoconiosis",
+    group: "Imagenología",
   },
   {
     code: "893001",
     desc: "Electrocardiograma (ECG) 12 derivaciones - riesgo cardiovascular",
-    group: "Cardiolog�a",
+    group: "Cardiología",
   },
   {
     code: "893002",
-    desc: "Ergometr�a (prueba de esfuerzo) - alturas, conductores",
-    group: "Cardiolog�a",
+    desc: "Ergometría (prueba de esfuerzo) - alturas, conductores",
+    group: "Cardiología",
   },
   {
     code: "893003",
-    desc: "Ecocardiograma transtor�cico - cardiopat�a hipertensiva",
-    group: "Cardiolog�a",
+    desc: "Ecocardiograma transtorácico - cardiopatía hipertensiva",
+    group: "Cardiología",
   },
   {
     code: "893004",
     desc: "Holter de 24 horas (ECG ambulatorio) - arritmias",
-    group: "Cardiolog�a",
+    group: "Cardiología",
   },
   {
     code: "893005",
-    desc: "Monitoreo ambulatorio de presi�n arterial (MAPA 24h)",
-    group: "Cardiolog�a",
+    desc: "Monitoreo ambulatorio de presión arterial (MAPA 24h)",
+    group: "Cardiología",
   },
   {
     code: "950801",
-    desc: "Evaluaci�n psicol�gica de ingreso - factores psicosociales",
-    group: "Psicolog�a",
+    desc: "Evaluación psicológica de ingreso - factores psicosociales",
+    group: "Psicología",
   },
   {
     code: "950803",
-    desc: "Evaluaci�n factores de riesgo psicosocial - Bater�a MinTrabajo",
-    group: "Psicolog�a",
+    desc: "Evaluación factores de riesgo psicosocial - Batería MinTrabajo",
+    group: "Psicología",
   },
   {
     code: "950804",
-    desc: "Test de coordinaci�n visomotora - conductores, operadores maquinaria",
-    group: "Psicolog�a",
+    desc: "Test de coordinación visomotora - conductores, operadores maquinaria",
+    group: "Psicología",
   },
   {
     code: "950901",
-    desc: "Valoraci�n psiqui�trica - trastorno mental laboral",
-    group: "Psiquiatr�a",
+    desc: "Valoración psiquiátrica - trastorno mental laboral",
+    group: "Psiquiatría",
   },
   {
     code: "951001",
-    desc: "Examen toxicol�gico en orina - sustancias psicoactivas",
-    group: "Toxicolog�a",
+    desc: "Examen toxicológico en orina - sustancias psicoactivas",
+    group: "Toxicología",
   },
   {
     code: "951002",
     desc: "Alcoholemia (etanol en sangre)",
-    group: "Toxicolog�a",
+    group: "Toxicología",
   },
   {
     code: "951003",
     desc: "Metales pesados en sangre - Hg, Pb, Cd, Cr, Mn",
-    group: "Toxicolog�a",
+    group: "Toxicología",
   },
   {
     code: "960101",
-    desc: "Valoraci�n por fisioterapia - DME, ergonom�a laboral",
-    group: "Rehabilitaci�n",
+    desc: "Valoración por fisioterapia - DME, ergonomía laboral",
+    group: "Rehabilitación",
   },
   {
     code: "960102",
-    desc: "Terapia f�sica - lesiones osteomusculares laborales",
-    group: "Rehabilitaci�n",
+    desc: "Terapia física - lesiones osteomusculares laborales",
+    group: "Rehabilitación",
   },
   {
     code: "960201",
     desc: "Terapia ocupacional - reintegro laboral",
-    group: "Rehabilitaci�n",
+    group: "Rehabilitación",
   },
 ];
 const _buscarCUPS = (query, maxResults) => {
@@ -469,7 +469,7 @@ const CUPSInput = ({ value, onChange, placeholder, className }) => {
           if (sugerencias.length > 0) setAbierto(true);
         }}
         placeholder={
-          placeholder || "Buscar CUPS - c�digo o nombre del procedimiento..."
+          placeholder || "Buscar CUPS - código o nombre del procedimiento..."
         }
         className={
           className ||
@@ -562,8 +562,8 @@ const CUPSInput = ({ value, onChange, placeholder, className }) => {
               borderTop: "1px solid #e5e7eb",
             }}
           >
-            {sugerencias.length} resultado(s) � CUPS Colombia � Res. 2175/2015
-            actualizada � MinSalud
+            {sugerencias.length} resultado(s) · CUPS Colombia · Res. 2175/2015
+            actualizada · MinSalud
           </div>
         </div>
       )}

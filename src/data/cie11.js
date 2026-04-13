@@ -1,47 +1,47 @@
-// src/data/cie11.js - CIE-11 Equivalencias
+﻿// src/data/cie11.js - CIE-11 Equivalencias
 import React from 'react';
 
 const CIE11_EQUIVALENCIAS = [
   {
     cie10: "Z10.0",
     cie11: "QC00",
-    desc: "Evaluaci�n m�dica de rutina del trabajador",
+    desc: "Evaluación médica de rutina del trabajador",
   },
-  { cie10: "Z57.0", cie11: "QD84", desc: "Exposici�n ocupacional al ruido" },
-  { cie10: "Z57.2", cie11: "QD86", desc: "Exposici�n ocupacional a polvo" },
-  { cie10: "Z57.7", cie11: "QD8B", desc: "Exposici�n ocupacional a vibraci�n" },
+  { cie10: "Z57.0", cie11: "QD84", desc: "Exposición ocupacional al ruido" },
+  { cie10: "Z57.2", cie11: "QD86", desc: "Exposición ocupacional a polvo" },
+  { cie10: "Z57.7", cie11: "QD8B", desc: "Exposición ocupacional a vibración" },
   {
     cie10: "Z73.0",
     cie11: "QD85.0",
     desc: "Agotamiento profesional - Burnout",
   },
-  { cie10: "Z73.3", cie11: "QD85", desc: "Estr�s laboral" },
+  { cie10: "Z73.3", cie11: "QD85", desc: "Estrés laboral" },
   { cie10: "M54.5", cie11: "ME84.2", desc: "Lumbago no especificado" },
   { cie10: "M54.2", cie11: "ME83.1", desc: "Cervicalgia" },
-  { cie10: "M54.4", cie11: "ME84.3", desc: "Lumbago con ci�tica" },
+  { cie10: "M54.4", cie11: "ME84.3", desc: "Lumbago con ciática" },
   {
     cie10: "M51.1",
     cie11: "FA81",
-    desc: "Hernia de disco lumbar con radiculopat�a",
+    desc: "Hernia de disco lumbar con radiculopatía",
   },
   {
     cie10: "M50.1",
     cie11: "FA80",
-    desc: "Hernia de disco cervical con radiculopat�a",
+    desc: "Hernia de disco cervical con radiculopatía",
   },
   { cie10: "M51.2", cie11: "FA81.1", desc: "Desplazamiento de disco lumbar" },
   { cie10: "M50.2", cie11: "FA80.1", desc: "Desplazamiento de disco cervical" },
-  { cie10: "G56.0", cie11: "8C10.0", desc: "S�ndrome del t�nel del carpo" },
-  { cie10: "G56.2", cie11: "8C10.2", desc: "Lesi�n del nervio cubital" },
+  { cie10: "G56.0", cie11: "8C10.0", desc: "Síndrome del túnel del carpo" },
+  { cie10: "G56.2", cie11: "8C10.2", desc: "Lesión del nervio cubital" },
   {
     cie10: "G54.0",
     cie11: "8C80.0",
-    desc: "Trastornos de la ra�z nerviosa cervical",
+    desc: "Trastornos de la raíz nerviosa cervical",
   },
   {
     cie10: "G54.2",
     cie11: "8C80.2",
-    desc: "Trastornos de la ra�z nerviosa lumbosacra",
+    desc: "Trastornos de la raíz nerviosa lumbosacra",
   },
   { cie10: "M65.4", cie11: "FB52.1", desc: "Tenosinovitis de De Quervain" },
   {
@@ -49,7 +49,7 @@ const CIE11_EQUIVALENCIAS = [
     cie11: "FB52.2",
     desc: "Dedo en gatillo - tenosinovitis estenosante",
   },
-  { cie10: "M75.0", cie11: "FB52.0", desc: "S�ndrome del manguito rotador" },
+  { cie10: "M75.0", cie11: "FB52.0", desc: "Síndrome del manguito rotador" },
   {
     cie10: "M75.3",
     cie11: "FB52.3",
@@ -68,7 +68,7 @@ const CIE11_EQUIVALENCIAS = [
   {
     cie10: "M70.0",
     cie11: "FB52.6",
-    desc: "Sinovitis crepitante cr�nica de mano y mu�eca",
+    desc: "Sinovitis crepitante crónica de mano y muñeca",
   },
   {
     cie10: "H90.3",
@@ -81,34 +81,34 @@ const CIE11_EQUIVALENCIAS = [
   {
     cie10: "J60",
     cie11: "CA22.0",
-    desc: "Neumoconiosis de los mineros del carb�n",
+    desc: "Neumoconiosis de los mineros del carbón",
   },
-  { cie10: "J45.0", cie11: "CA23", desc: "Asma ocupacional al�rgica" },
+  { cie10: "J45.0", cie11: "CA23", desc: "Asma ocupacional alérgica" },
   { cie10: "J45.1", cie11: "CA23.1", desc: "Asma ocupacional irritativa" },
   {
     cie10: "F43.1",
     cie11: "6B40",
-    desc: "Trastorno de estr�s postraum�tico - TEPT",
+    desc: "Trastorno de estrés postraumático - TEPT",
   },
-  { cie10: "F43.2", cie11: "6B43", desc: "Trastorno de adaptaci�n laboral" },
+  { cie10: "F43.2", cie11: "6B43", desc: "Trastorno de adaptación laboral" },
   { cie10: "F41.1", cie11: "6B00", desc: "Trastorno de ansiedad generalizada" },
   { cie10: "F41.2", cie11: "6B01", desc: "Trastorno mixto ansioso-depresivo" },
   { cie10: "F32.0", cie11: "6A70.0", desc: "Episodio depresivo leve" },
   { cie10: "F32.1", cie11: "6A70.1", desc: "Episodio depresivo moderado" },
   { cie10: "F32.2", cie11: "6A70.2", desc: "Episodio depresivo grave" },
-  { cie10: "I10", cie11: "BA00", desc: "Hipertensi�n esencial (primaria)" },
+  { cie10: "I10", cie11: "BA00", desc: "Hipertensión esencial (primaria)" },
   {
     cie10: "I25.1",
     cie11: "BA80",
-    desc: "Cardiopat�a isqu�mica ateroscler�tica",
+    desc: "Cardiopatía isquémica aterosclerótica",
   },
   { cie10: "E11.9", cie11: "5A11", desc: "Diabetes mellitus tipo 2" },
-  { cie10: "E66.0", cie11: "5B81", desc: "Obesidad por exceso de calor�as" },
+  { cie10: "E66.0", cie11: "5B81", desc: "Obesidad por exceso de calorías" },
   { cie10: "E78.0", cie11: "5C80", desc: "Hipercolesterolemia pura" },
   {
     cie10: "L23.5",
     cie11: "EK04.3",
-    desc: "Dermatitis al�rgica de contacto por qu�micos",
+    desc: "Dermatitis alérgica de contacto por químicos",
   },
   {
     cie10: "L24.2",
@@ -116,7 +116,7 @@ const CIE11_EQUIVALENCIAS = [
     desc: "Dermatitis irritativa por disolventes",
   },
   { cie10: "C45.0", cie11: "2C26", desc: "Mesotelioma de pleura - asbestosis" },
-  { cie10: "C34.0", cie11: "2C25.0", desc: "C�ncer de pulm�n laboral" },
+  { cie10: "C34.0", cie11: "2C25.0", desc: "Cáncer de pulmón laboral" },
   {
     cie10: "C92.0",
     cie11: "2B33.0",
@@ -125,22 +125,22 @@ const CIE11_EQUIVALENCIAS = [
   {
     cie10: "T56.0",
     cie11: "NE60",
-    desc: "Intoxicaci�n por plomo - saturnismo",
+    desc: "Intoxicación por plomo - saturnismo",
   },
-  { cie10: "T56.1", cie11: "NE61", desc: "Intoxicaci�n por mercurio" },
+  { cie10: "T56.1", cie11: "NE61", desc: "Intoxicación por mercurio" },
   {
     cie10: "K21.0",
     cie11: "DA22",
-    desc: "Enfermedad por reflujo gastroesof�gico",
+    desc: "Enfermedad por reflujo gastroesofágico",
   },
   { cie10: "R51", cie11: "MG30.0", desc: "Cefalea tensional" },
   { cie10: "J00", cie11: "CA00", desc: "Rinofaringitis aguda" },
   {
     cie10: "J06.9",
     cie11: "CA0Z",
-    desc: "Infecci�n aguda v�as respiratorias superiores",
+    desc: "Infección aguda vías respiratorias superiores",
   },
-  { cie10: "N39.0", cie11: "GC08", desc: "Infecci�n de v�as urinarias" },
+  { cie10: "N39.0", cie11: "GC08", desc: "Infección de vías urinarias" },
 ];
 const _equivalenciaCIE11 = (cie10code) => {
   if (!cie10code) return null;

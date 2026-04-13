@@ -1,4 +1,4 @@
-// src/utils/totp.js - TOTP/2FA Authentication
+﻿// src/utils/totp.js - TOTP/2FA Authentication
 
 const _totpBase32Chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
 

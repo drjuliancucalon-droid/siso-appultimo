@@ -1,4 +1,4 @@
-// src/components/modals/PortalPublicoTrabajador.jsx
+﻿// src/components/modals/PortalPublicoTrabajador.jsx
 import React from 'react';
 import { Search, CheckCircle2, AlertCircle, WifiOff, X } from 'lucide-react';
 
@@ -28,30 +28,30 @@ const PortalPublicoTrabajador = ({ sbUrl, sbKey, onVolver }) => {
     if (ahora < bloqueadoHasta) {
       const restMin = Math.ceil((bloqueadoHasta - ahora) / 60000);
       setError(
-        `?? Demasiados intentos. Espere ${restMin} minuto(s) antes de intentar.`
+        `🔒 Demasiados intentos. Espere ${restMin} minuto(s) antes de intentar.`
       );
       return;
     }
     const q = busqueda.trim();
     if (!q) {
-      setError("Ingrese su c�digo de verificaci�n o n�mero de c�dula.");
+      setError("Ingrese su código de verificación o número de cédula.");
       return;
     }
     if (q.length < 4) {
-      setError("El c�digo o c�dula debe tener al menos 4 caracteres.");
+      setError("El código o cédula debe tener al menos 4 caracteres.");
       return;
     }
     setCargando(true);
     setError("");
     setResultado(null);
     try {
-      // -- Construcci�n de claves de b�squeda -----------------------------------
-      // Formatos hist�ricos coexistentes:
+      // ── Construcción de claves de búsqueda ───────────────────────────────────
+      // Formatos históricos coexistentes:
       //   ANTIGUO: CV-XXXXXXXXX  (p.ej. CV-I64CIYHE7)  - 71 HCs
       //   NUEVO:   SISO-YYYYMMDD-ID-HASH16              - desde 2026-03
       // El portal busca con el prefijo siso_portal_ en Supabase
-      // Para b�squeda por c�digo: intentar la clave exacta
-      // Para b�squeda por c�dula: intentar siso_portal_doc_CEDULA
+      // Para búsqueda por código: intentar la clave exacta
+      // Para búsqueda por cédula: intentar siso_portal_doc_CEDULA
 
       const headers = {
         apikey: sbKey,
@@ -85,29 +85,29 @@ const PortalPublicoTrabajador = ({ sbUrl, sbKey, onVolver }) => {
         } else if (r1.data) {
           pac = r1.data;
         }
-        // 2) Si el c�digo no tiene prefijo CV- ni SISO-, probar con CV- delante
+        // 2) Si el código no tiene prefijo CV- ni SISO-, probar con CV- delante
         if (!pac && !qUp.startsWith("CV-") && !qUp.startsWith("SISO-")) {
           const r2 = await fetchKey("siso_portal_CV-" + qUp);
           if (r2.ok && r2.data) pac = r2.data;
         }
-        // 3) Probar c�digo exacto sin normalizar (algunos c�digos tienen min�sculas)
+        // 3) Probar código exacto sin normalizar (algunos códigos tienen minúsculas)
         if (!pac && qUp !== q.trim()) {
           const r3 = await fetchKey("siso_portal_" + q.trim());
           if (r3.ok && r3.data) pac = r3.data;
         }
-        // 4) Buscar por c�digo directamente en siso_store (formato antiguo no-portal)
+        // 4) Buscar por código directamente en siso_store (formato antiguo no-portal)
         if (!pac) {
           const r4 = await fetchKey(qUp);
           if (r4.ok && r4.data && r4.data.codigoVerificacion) pac = r4.data;
         }
-        // 5) B�squeda por d�gito verificador flexible (sin gui�n, con gui�n)
+        // 5) Búsqueda por dígito verificador flexible (sin guión, con guión)
         if (!pac) {
           const codeNoDash = qUp.replace(/-/g, "");
           const r5 = await fetchKey("siso_portal_" + codeNoDash);
           if (r5.ok && r5.data) pac = r5.data;
         }
       } else {
-        // B�squeda por c�dula
+        // Búsqueda por cédula
         const docClean = q.replace(/\s/g, "");
         const r1 = await fetchKey("siso_portal_doc_" + docClean);
         if (!r1.ok) {
@@ -118,7 +118,7 @@ const PortalPublicoTrabajador = ({ sbUrl, sbKey, onVolver }) => {
       if (firstError && !pac) {
         if (firstError.status === 401 || firstError.status === 403) {
           setError(
-            "?? El portal requiere configuraci�n en Supabase.\nEjecute en el SQL Editor de Supabase:\nCREATE POLICY portal_public_read ON siso_store FOR SELECT USING (key LIKE 'siso_portal_%');"
+            "⚙️ El portal requiere configuración en Supabase.\nEjecute en el SQL Editor de Supabase:\nCREATE POLICY portal_public_read ON siso_store FOR SELECT USING (key LIKE 'siso_portal_%');"
           );
         } else {
           setError(`Error ${firstError.status}: ${firstError.text}`);
@@ -133,8 +133,8 @@ const PortalPublicoTrabajador = ({ sbUrl, sbKey, onVolver }) => {
       if (!pac) {
         setError(
           tipoBusqueda === "codigo"
-            ? "? C�digo no encontrado. Aceptamos formatos CV-XXXXXXX y SISO-FECHA-ID-HASH. Verifique may�sculas y que la HC est� cerrada."
-            : "? N�mero de c�dula no encontrado. Solo aparecen evaluaciones con historia cerrada."
+            ? "❌ Código no encontrado. Aceptamos formatos CV-XXXXXXX y SISO-FECHA-ID-HASH. Verifique mayúsculas y que la HC esté cerrada."
+            : "❌ Número de cédula no encontrado. Solo aparecen evaluaciones con historia cerrada."
         );
       } else {
         setResultado(pac);
@@ -142,9 +142,9 @@ const PortalPublicoTrabajador = ({ sbUrl, sbKey, onVolver }) => {
     } catch (e) {
       if (e.name === "AbortError")
         setError(
-          "?? Tiempo de espera agotado. Verifique su conexi�n a internet."
+          "⏱️ Tiempo de espera agotado. Verifique su conexión a internet."
         );
-      else setError("Error de conexi�n: " + (e.message || "desconocido"));
+      else setError("Error de conexión: " + (e.message || "desconocido"));
     } finally {
       setCargando(false);
     }
@@ -157,48 +157,48 @@ const PortalPublicoTrabajador = ({ sbUrl, sbKey, onVolver }) => {
         bg: "bg-red-50",
         text: "text-red-800",
         badge: "bg-red-100 text-red-800 border-red-300",
-        dot: "??",
+        dot: "🔴",
       };
     if (
       cl.includes("condicion") ||
-      cl.includes("condici�n") ||
+      cl.includes("condición") ||
       cl.includes("restricc")
     )
       return {
         bg: "bg-amber-50",
         text: "text-amber-800",
         badge: "bg-amber-100 text-amber-800 border-amber-300",
-        dot: "??",
+        dot: "🟡",
       };
     if (cl.includes("apto"))
       return {
         bg: "bg-emerald-50",
         text: "text-emerald-800",
         badge: "bg-emerald-100 text-emerald-800 border-emerald-300",
-        dot: "??",
+        dot: "🟢",
       };
     return {
       bg: "bg-gray-50",
       text: "text-gray-700",
       badge: "bg-gray-100 text-gray-700 border-gray-300",
-      dot: "?",
+      dot: "⚪",
     };
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-teal-50 via-white to-cyan-50 font-sans flex flex-col">
-      {/* -- Barra superior -- */}
+      {/* ── Barra superior ── */}
       <div className="bg-gradient-to-r from-teal-700 to-blue-700 px-5 py-4 flex items-center justify-between shadow-lg">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center text-xl">
-            ?????
+            🧑‍💼
           </div>
           <div>
             <h1 className="text-white font-black text-sm tracking-tight">
               Portal del Trabajador
             </h1>
             <p className="text-teal-200 text-[10px]">
-              Servicio M�dico Ocupacional � SISO OcupaSalud
+              Servicio Médico Ocupacional · SISO OcupaSalud
             </p>
           </div>
         </div>
@@ -207,35 +207,35 @@ const PortalPublicoTrabajador = ({ sbUrl, sbKey, onVolver }) => {
             onClick={onVolver}
             className="text-white/80 text-xs hover:text-white font-bold flex items-center gap-1 bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-lg transition"
           >
-            ? Volver al sistema
+            ← Volver al sistema
           </button>
         )}
       </div>
 
       <div className="flex-1 p-4 max-w-lg mx-auto w-full space-y-4 mt-2">
-        {/* -- Instrucciones -- */}
+        {/* ── Instrucciones ── */}
         <div className="bg-white rounded-2xl shadow-sm border border-teal-100 p-4">
           <div className="flex items-start gap-3">
-            <span className="text-2xl mt-0.5">??</span>
+            <span className="text-2xl mt-0.5">📋</span>
             <div>
               <h2 className="font-black text-gray-800 text-sm">
-                Consulta tu evaluaci�n m�dica
+                Consulta tu evaluación médica
               </h2>
               <p className="text-xs text-gray-500 mt-1 leading-relaxed">
-                Ingresa el c�digo entregado por el m�dico o tu n�mero de c�dula
+                Ingresa el código entregado por el médico o tu número de cédula
                 para ver el resultado de tu examen de aptitud laboral.
               </p>
             </div>
           </div>
         </div>
 
-        {/* -- Formulario -- */}
+        {/* ── Formulario ── */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 space-y-3">
-          {/* Selector tipo b�squeda */}
+          {/* Selector tipo búsqueda */}
           <div className="flex gap-2 p-1 bg-gray-100 rounded-xl">
             {[
-              { v: "codigo", label: "?? C�digo", hint: "SISO-2025-XXXX" },
-              { v: "cedula", label: "?? C�dula", hint: "1234567890" },
+              { v: "codigo", label: "🔑 Código", hint: "SISO-2025-XXXX" },
+              { v: "cedula", label: "🪪 Cédula", hint: "1234567890" },
             ].map((opt) => (
               <button
                 key={opt.v}
@@ -259,8 +259,8 @@ const PortalPublicoTrabajador = ({ sbUrl, sbKey, onVolver }) => {
           <div>
             <label className="block text-[10px] font-black text-gray-400 uppercase tracking-wider mb-1">
               {tipoBusqueda === "codigo"
-                ? "C�digo de verificaci�n"
-                : "N�mero de c�dula (sin puntos ni espacios)"}
+                ? "Código de verificación"
+                : "Número de cédula (sin puntos ni espacios)"}
             </label>
             <input
               value={busqueda}
@@ -289,7 +289,7 @@ const PortalPublicoTrabajador = ({ sbUrl, sbKey, onVolver }) => {
               <pre className="whitespace-pre-wrap font-sans">{error}</pre>
             </div>
           )}
-          {/* Bot�n buscar */}
+          {/* Botón buscar */}
           <button
             onClick={buscar}
             disabled={
@@ -299,19 +299,19 @@ const PortalPublicoTrabajador = ({ sbUrl, sbKey, onVolver }) => {
           >
             {cargando ? (
               <>
-                <span className="animate-spin">?</span> Consultando...
+                <span className="animate-spin">⏳</span> Consultando...
               </>
             ) : (
-              "?? Consultar resultado"
+              "🔍 Consultar resultado"
             )}
           </button>
           <p className="text-[9px] text-gray-400 text-center">
-            Consulta segura y confidencial � Solo ver�s tus propios datos
-            {intentos > 0 && ` � Intentos: ${intentos}/${MAX_INTENTOS}`}
+            Consulta segura y confidencial · Solo verás tus propios datos
+            {intentos > 0 && ` · Intentos: ${intentos}/${MAX_INTENTOS}`}
           </p>
         </div>
 
-        {/* -- Resultado -- */}
+        {/* ── Resultado ── */}
         {resultado &&
           (() => {
             const col = colorAptitud(resultado.conceptoAptitud);
@@ -322,7 +322,7 @@ const PortalPublicoTrabajador = ({ sbUrl, sbKey, onVolver }) => {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-[10px] font-black text-gray-400 uppercase tracking-wider">
-                        Resultado de tu evaluaci�n
+                        Resultado de tu evaluación
                       </p>
                       <p className={`font-black text-base mt-0.5 ${col.text}`}>
                         {col.dot}{" "}
@@ -340,18 +340,18 @@ const PortalPublicoTrabajador = ({ sbUrl, sbKey, onVolver }) => {
                 <div className="p-4 space-y-3">
                   <div className="grid grid-cols-2 gap-2">
                     {[
-                      ["?? Nombre", resultado.nombres],
+                      ["👤 Nombre", resultado.nombres],
                       [
-                        "?? Documento",
+                        "🪪 Documento",
                         `${resultado.docTipo || "CC"} ${resultado.docNumero}`,
                       ],
-                      ["?? Empresa", resultado.empresaNombre || "--"],
-                      ["?? Cargo", resultado.cargo || "--"],
-                      ["?? Tipo de examen", resultado.tipoExamen || "--"],
-                      ["?? Fecha evaluaci�n", resultado.fechaExamen || "--"],
-                      ["????? M�dico evaluador", resultado.medicoNombre || "--"],
+                      ["🏭 Empresa", resultado.empresaNombre || "--"],
+                      ["💼 Cargo", resultado.cargo || "--"],
+                      ["🔬 Tipo de examen", resultado.tipoExamen || "--"],
+                      ["📅 Fecha evaluación", resultado.fechaExamen || "--"],
+                      ["👨‍⚕️ Médico evaluador", resultado.medicoNombre || "--"],
                       [
-                        "?? C�digo verificaci�n",
+                        "🔑 Código verificación",
                         resultado.codigoVerificacion || "--",
                       ],
                     ].map(([k, v]) => (
@@ -371,21 +371,21 @@ const PortalPublicoTrabajador = ({ sbUrl, sbKey, onVolver }) => {
                   {resultado.restricciones && (
                     <div className="bg-amber-50 border border-amber-200 rounded-xl p-3">
                       <p className="text-[10px] font-black text-amber-700 uppercase mb-1">
-                        ?? Restricciones / Recomendaciones
+                        ⚠️ Restricciones / Recomendaciones
                       </p>
                       <p className="text-xs text-amber-800 leading-relaxed">
                         {resultado.restricciones}
                       </p>
                     </div>
                   )}
-                  {/* -- DESCARGAR CERTIFICADO PDF --------------------------- */}
+                  {/* ── DESCARGAR CERTIFICADO PDF ─────────────────────────── */}
                   <button
                     onClick={() => {
                       const docData = resultado._doctorData || {
-                        nombre: resultado.medicoNombre || "M�DICO OCUPACIONAL",
-                        titulo: "M�dico Especialista en Salud Ocupacional",
+                        nombre: resultado.medicoNombre || "MÉDICO OCUPACIONAL",
+                        titulo: "Médico Especialista en Salud Ocupacional",
                         licencia: "--",
-                        ciudad: "Popay�n",
+                        ciudad: "Popayán",
                         email: "",
                       };
                       const firma = resultado._firma || "";
@@ -407,16 +407,16 @@ const PortalPublicoTrabajador = ({ sbUrl, sbKey, onVolver }) => {
                       );
                       if (!w) {
                         alert(
-                          "El navegador bloque� la ventana emergente. Permita los popups para descargar el certificado."
+                          "El navegador bloqueó la ventana emergente. Permita los popups para descargar el certificado."
                         );
                         return;
                       }
-                      // Inyectar bot�n flotante de descarga
+                      // Inyectar botón flotante de descarga
                       const htmlConBtn = html.replace(
                         "</body>",
                         '<div class="np-dl">' +
-                          '<button onclick="window.print()">?? Guardar / Imprimir PDF</button>' +
-                          "<p>En el di�logo de impresi�n,<br/>selecciona <b>Guardar como PDF</b></p>" +
+                          '<button onclick="window.print()">📥 Guardar / Imprimir PDF</button>' +
+                          "<p>En el diálogo de impresión,<br/>selecciona <b>Guardar como PDF</b></p>" +
                           "</div></body>"
                       );
                       w.document.write(htmlConBtn);
@@ -443,12 +443,12 @@ const PortalPublicoTrabajador = ({ sbUrl, sbKey, onVolver }) => {
                   </button>
                   <div className="bg-blue-50 border border-blue-100 rounded-xl p-3 text-[10px] text-blue-700 leading-relaxed">
                     <p className="font-black mb-0.5">
-                      ?? Informaci�n confidencial - Res. 1995/1999
+                      🔒 Información confidencial - Res. 1995/1999
                     </p>
                     <p>
-                      Tu historia cl�nica completa es custodiada por el m�dico
-                      ocupacional. Para consultas sobre tu resultado, comun�cate
-                      con el servicio m�dico.
+                      Tu historia clínica completa es custodiada por el médico
+                      ocupacional. Para consultas sobre tu resultado, comunícate
+                      con el servicio médico.
                     </p>
                   </div>
                 </div>
@@ -457,7 +457,7 @@ const PortalPublicoTrabajador = ({ sbUrl, sbKey, onVolver }) => {
           })()}
       </div>
       <div className="text-center pb-4 pt-2 text-[9px] text-gray-300">
-        SISO OcupaSalud v4 � Res. 2346/2007 � Ley 1581/2012 � Res. 1843/2025
+        SISO OcupaSalud v4 · Res. 2346/2007 · Ley 1581/2012 · Res. 1843/2025
       </div>
     </div>
   );
@@ -473,10 +473,10 @@ const PrivacyModal = ({ onAccept }) => (
           </div>
           <div>
             <h2 className="font-black text-base uppercase tracking-tight">
-              Pol�tica de Privacidad y Tratamiento de Datos
+              Política de Privacidad y Tratamiento de Datos
             </h2>
             <p className="text-blue-100 text-[11px] font-medium">
-              Ley 1581 de 2012 � Decreto 1078 de 2015
+              Ley 1581 de 2012 · Decreto 1078 de 2015
             </p>
           </div>
         </div>
@@ -486,45 +486,45 @@ const PrivacyModal = ({ onAccept }) => (
           <span className="font-black text-gray-900">
             Responsable del tratamiento:
           </span>{" "}
-          El profesional m�dico registrado en esta plataforma es el responsable
+          El profesional médico registrado en esta plataforma es el responsable
           del tratamiento de los datos personales y de salud gestionados en
           OCUPASALUD.
         </p>
         <p>
           <span className="font-black text-gray-900">Datos tratados:</span>{" "}
-          Datos de identificaci�n, datos de salud (historia cl�nica,
-          diagn�sticos, resultados de ex�menes) y datos laborales de los
+          Datos de identificación, datos de salud (historia clínica,
+          diagnósticos, resultados de exámenes) y datos laborales de los
           trabajadores evaluados.
         </p>
         <p>
-          <span className="font-black text-gray-900">Finalidad:</span> Gesti�n
-          de historias cl�nicas ocupacionales, emisi�n de certificados de
-          aptitud laboral y cumplimiento del Sistema de Gesti�n de Seguridad y
+          <span className="font-black text-gray-900">Finalidad:</span> Gestión
+          de historias clínicas ocupacionales, emisión de certificados de
+          aptitud laboral y cumplimiento del Sistema de Gestión de Seguridad y
           Salud en el Trabajo (SG-SST) conforme a la Res. 1843/2025 (deroga Res.
           2346/2007).
         </p>
         <p>
           <span className="font-black text-gray-900">Base legal:</span> El
-          tratamiento de datos de salud est� autorizado por la Ley 1562/2012
-          (riesgos laborales) y la Resoluci�n 1843/2025 (evaluaciones m�dicas
+          tratamiento de datos de salud está autorizado por la Ley 1562/2012
+          (riesgos laborales) y la Resolución 1843/2025 (evaluaciones médicas
           ocupacionales - deroga Res. 2346/2007).
         </p>
         <p>
           <span className="font-black text-gray-900">Confidencialidad:</span>{" "}
-          Las historias cl�nicas son documentos privados sometidos a reserva.
-          Solo personal m�dico autorizado puede acceder a ellas (Res. 1995/1999
-          Art. 14). Se conservan por un m�nimo de 20 a�os (Res. 1995/1999 Art.
-          15 - Archivo de Gesti�n 5 a�os + Central 10 a�os + Hist�rico 5 a�os).
+          Las historias clínicas son documentos privados sometidos a reserva.
+          Solo personal médico autorizado puede acceder a ellas (Res. 1995/1999
+          Art. 14). Se conservan por un mínimo de 20 años (Res. 1995/1999 Art.
+          15 - Archivo de Gestión 5 años + Central 10 años + Histórico 5 años).
         </p>
         <p>
           <span className="font-black text-gray-900">
             Derechos del titular (Habeas Data):
           </span>{" "}
           Conocer, actualizar, rectificar y suprimir sus datos personales. Para
-          ejercer estos derechos contacte directamente al m�dico responsable.
+          ejercer estos derechos contacte directamente al médico responsable.
         </p>
         <p className="text-[10px] text-gray-400 border-t pt-2">
-          Al continuar usando esta plataforma, el profesional m�dico declara
+          Al continuar usando esta plataforma, el profesional médico declara
           conocer y cumplir las obligaciones del responsable del tratamiento
           establecidas en la Ley 1581 de 2012 y sus decretos reglamentarios.
         </p>
@@ -534,17 +534,17 @@ const PrivacyModal = ({ onAccept }) => (
           onClick={onAccept}
           className="w-full bg-gradient-to-r from-blue-700 to-blue-600 text-white py-3 rounded-xl font-black text-sm hover:opacity-90 transition shadow-lg flex items-center justify-center gap-2"
         >
-          <CheckCircle2 className="w-4 h-4" /> He le�do y acepto la Pol�tica de
+          <CheckCircle2 className="w-4 h-4" /> He leído y acepto la Política de
           Privacidad
         </button>
         <p className="text-[10px] text-center text-gray-400 mt-2">
-          Esta aceptaci�n queda registrada con fecha y hora
+          Esta aceptación queda registrada con fecha y hora
         </p>
         <button
           onClick={onAccept}
           className="mt-2 w-full text-[10px] text-blue-500 underline hover:text-blue-700"
         >
-          Ya acept� anteriormente - Continuar al sistema
+          Ya acepté anteriormente - Continuar al sistema
         </button>
       </div>
     </div>

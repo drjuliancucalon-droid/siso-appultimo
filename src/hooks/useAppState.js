@@ -1,4 +1,4 @@
-// src/hooks/useAppState.js
+﻿// src/hooks/useAppState.js
 // Central state hook - documents all AppInner useState calls
 // TODO: Extract all state from AppInner to this hook for centralized management
 //
@@ -50,9 +50,9 @@
   // const [hcChoiceAgenda, setHcChoiceAgenda] = useState(null);
   // const [historyRecords, setHistoryRecords] = useState([]);
   // const [patientSearchTerm, setPatientSearchTerm] = useState("");
-  // const [genPatSearch, setGenPatSearch] = useState(""); // b�squeda paciente HC General
+  // const [genPatSearch, setGenPatSearch] = useState(""); // búsqueda paciente HC General
   // const [examSearch, setExamSearch] = useState(""); // solicitud examenes
-  // const [examList, setExamList] = useState([]); // lista ex�menes solicitados
+  // const [examList, setExamList] = useState([]); // lista exámenes solicitados
   // const [showExamSuggs, setShowExamSuggs] = useState(false);
   // const [diagExamen, setDiagExamen] = useState("");
   // const [justExamen, setJustExamen] = useState("");
@@ -132,7 +132,7 @@
   // const [notifData, setNotifData] = useState({});
   // const [portalCodigo, setPortalCodigo] = useState("");
   // const [portalPaciente, setPortalPaciente] = useState(null);
-  // const [portalMultiple, setPortalMultiple] = useState([]); // m�ltiples HCs por c�dula
+  // const [portalMultiple, setPortalMultiple] = useState([]); // múltiples HCs por cédula
   // const [epiEmpresa, setEpiEmpresa] = useState("todas");
   // const [epiPeriodo, setEpiPeriodo] = useState("anio");
   // const [epiTab, setEpiTab] = useState("resumen");
@@ -153,7 +153,7 @@
   // const [companiesTab, setCompaniesTab] = useState("lista");
   // const [editingCompany, setEditingCompany] = useState(null);
   // const [cajaMedicoPeriodo, setCajaMedicoPeriodo] = useState("mes");
-  // const [porcentajeMedico, setPorcentajeMedico] = useState(60); // % honorarios m�dico vs cl�nica
+  // const [porcentajeMedico, setPorcentajeMedico] = useState(60); // % honorarios médico vs clínica
   // const [medicoTurnoActivo, setMedicoTurnoActivo] = useState(() => {
   // const [orgsList, setOrgsList] = useState(() => {
   // const [activeOrgId, setActiveOrgId] = useState(ORG_DEFAULT_ID);
@@ -164,8 +164,8 @@
   // const [portalEmpresaPacientes, setPortalEmpresaPacientes] = useState([]);
   // const [portalEmpresaTab, setPortalEmpresaTab] = useState("trabajadores");
   // const [portalEmpresaBuscando, setPortalEmpresaBuscando] = useState(false);
-  // const [portalEmpresaFiltroDoc, setPortalEmpresaFiltroDoc] = useState(""); // filtro c�dula en portal empresa
-  // const [portalActivadoInfo, setPortalActivadoInfo] = useState(null); // {empresa, portalCode} post-activaci�n
+  // const [portalEmpresaFiltroDoc, setPortalEmpresaFiltroDoc] = useState(""); // filtro cédula en portal empresa
+  // const [portalActivadoInfo, setPortalActivadoInfo] = useState(null); // {empresa, portalCode} post-activación
   // const [portalEmpresaAdmin, setPortalEmpresaAdmin] = useState(null); // empresa admin logueado
   // const [portalAdminTab, setPortalAdminTab] = useState("medicos");
   // const [portalAdminLoginUser, setPortalAdminLoginUser] = useState("");

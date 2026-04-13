@@ -16,3 +16,10 @@
 [2m5:33:19 p. m.[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mindex.html[22m
 [2m5:33:19 p. m.[22m [36m[1m[vite][22m[39m changed tsconfig file detected: C:/Users/JQK3/Desktop/ocupasalud-ultimate/tsconfig.json - Clearing cache and forcing full-reload to ensure TypeScript is compiled with updated config values.
 [2m5:33:19 p. m.[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mpublic/index.html[22m
+[2m11:23:54 p. m.[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mpublic/index.html[22m
+[2m11:23:54 p. m.[22m [36m[1m[vite][22m[39m changed tsconfig file detected: C:/Users/JQK3/Desktop/ocupasalud-ultimate/tsconfig.json - Clearing cache and forcing full-reload to ensure TypeScript is compiled with updated config values.
+[2m11:23:54 p. m.[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mindex.html[22m
+[2m11:23:54 p. m.[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mpublic/index.html[22m
+[2m11:23:54 p. m.[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mindex.html[22m
+[2m11:23:54 p. m.[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2mindex.html[22m
+[2m11:23:54 p. m.[22m [36m[1m[vite][22m[39m changed tsconfig file detected: C:/Users/JQK3/Desktop/ocupasalud-ultimate/tsconfig.json - Clearing cache and forcing full-reload to ensure TypeScript is compiled with updated config values.

@@ -1,4 +1,4 @@
-// src/utils/supabase.js - Supabase Cloud Sync
+﻿// src/utils/supabase.js - Supabase Cloud Sync
 import { _ls, _ss } from './storage.js';
 
 const _PROXY_URL =
@@ -16,15 +16,15 @@ const _SB_URL =
 const _SB_KEY =
   _cfgSafeKey(_cfgRaw.sbKey) ||
   "sb_publishable_K88qYuJ9wsWjQqnIhLVK7Q_NroFvPI7";
-// FASE 2 � Service Role Key (solo para operaciones super_admin: crear orgs, migrar datos)
-// ??  NUNCA hardcodear en producci�n. Inyectar via window.__SISO_CONFIG.sbServiceKey
+// FASE 2 — Service Role Key (solo para operaciones super_admin: crear orgs, migrar datos)
+// ⚠️  NUNCA hardcodear en producción. Inyectar via window.__SISO_CONFIG.sbServiceKey
 // Para configurar: en index.html agregar antes del bundle:
 //   <script>window.__SISO_CONFIG={sbUrl:'...',sbKey:'...',sbServiceKey:'TU_SERVICE_KEY'};</script>
 const _SB_SERVICE_KEY = _cfgSafeKey(_cfgRaw.sbServiceKey) || null; // null = solo lectura (seguro por defecto)
-// SEC-FIX-01: Credenciales removidas del c�digo fuente (OWASP A07 - Hardcoded Credentials)
-// En producci�n inyectar via: <script>window.__SISO_CONFIG={sbUrl:'TU_URL',sbKey:'TU_KEY'};</script>
-// Las claves se configuran en el primer despliegue y se rotan cada 90 d�as - NUNCA en c�digo fuente.
-// Gesti�n de sesi�n - expiraci�n autom�tica por inactividad (30 min)
+// SEC-FIX-01: Credenciales removidas del código fuente (OWASP A07 - Hardcoded Credentials)
+// En producción inyectar via: <script>window.__SISO_CONFIG={sbUrl:'TU_URL',sbKey:'TU_KEY'};</script>
+// Las claves se configuran en el primer despliegue y se rotan cada 90 días - NUNCA en código fuente.
+// Gestión de sesión - expiración automática por inactividad (30 min)
 // Headers con soporte para proxy o Supabase directo
 const _SB_HEADERS = {
   apikey: _SB_KEY,
@@ -79,7 +79,7 @@ const _SB_KEYS = [
   "siso_atenciones_cerradas",
   "siso_arl_reportes",
 ];
-// Prefijos para claves din�micas por usuario
+// Prefijos para claves dinámicas por usuario
 const _SB_KEY_PREFIXES = [
   "siso_db_patients_",
   "siso_companies_",
@@ -144,15 +144,15 @@ const _sbQueue = {
   },
 };
 
-// --------------------------------------------------------------------------
-// B-16: Supabase Storage - Adjuntos de paracl�nicos
+// ══════════════════════════════════════════════════════════════════════════
+// B-16: Supabase Storage - Adjuntos de paraclínicos
 // Bucket: siso-adjuntos | Permisos: autenticados (RLS por path)
 // Path: {medicoUserId}/{hcId}/{timestamp}-{filename}
-// Para habilitar: Dashboard Supabase ? Storage ? Crear bucket "siso-adjuntos"
-//   Pol�tica: "authenticated can upload/read their own files" basada en path prefix
-// --------------------------------------------------------------------------
+// Para habilitar: Dashboard Supabase → Storage → Crear bucket "siso-adjuntos"
+//   Política: "authenticated can upload/read their own files" basada en path prefix
+// ══════════════════════════════════════════════════════════════════════════
 const _SB_BUCKET = "siso-adjuntos";
-// SEC-11: Validaci�n MIME real por magic bytes (no solo extensi�n)
+// SEC-11: Validación MIME real por magic bytes (no solo extensión)
 const _validateMimeType = async (file) => {
   const ALLOWED = {
     "application/pdf": [[0x25, 0x50, 0x44, 0x46]], // %PDF

@@ -1,4 +1,4 @@
-// src/utils/normativa.js - Normativa colombiana (RIPS, FHIR, RDA, etc.)
+﻿// src/utils/normativa.js - Normativa colombiana (RIPS, FHIR, RDA, etc.)
 import { _sanitize, _safeLogoUrl } from './security.js';
 import { _ipsDocLeftHtml } from './doctorHelpers.js';
 
@@ -27,8 +27,8 @@ const _generarHashHC = async (data) => {
     return "HASH-NO-DISPONIBLE-" + Date.now();
   }
 };
-// Genera c�digo de verificaci�n QR para la HC firmada
-// El c�digo contiene: ID paciente + hash (primeros 16 chars) + fecha
+// Genera código de verificación QR para la HC firmada
+// El código contiene: ID paciente + hash (primeros 16 chars) + fecha
 const _generarCodigoQR = (id, hash, fecha) => {
   const short = hash.substring(0, 16).toUpperCase();
   const fechaShort = (fecha || new Date().toISOString())
@@ -48,11 +48,11 @@ const _formatFirmaDigital = (firma) => {
   };
 
 
-// --------------------------------------------------------------------------
+// ══════════════════════════════════════════════════════════════════════════
 // B-28: HL7 FHIR R4 - Res. 1888/2025 RDA - Generador de recursos FHIR
 // Recursos: Patient, Practitioner, Observation, DiagnosticReport
 // Deadline de interoperabilidad: 15 de abril de 2026
-// --------------------------------------------------------------------------
+// ══════════════════════════════════════════════════════════════════════════
 const _generarFHIRPatient = (p) => ({
   resourceType: "Patient",
   id:
@@ -196,13 +196,13 @@ const _generarFHIRBundle = (paciente, doctor) => {
   return bundle;
 };
 
-// --------------------------------------------------------------------------
-// B-25: VALIDACI�N RIPS - Res. 2275/2023 Schema v2
-// --------------------------------------------------------------------------
+// ══════════════════════════════════════════════════════════════════════════
+// B-25: VALIDACIÓN RIPS - Res. 2275/2023 Schema v2
+// ══════════════════════════════════════════════════════════════════════════
 
 const validarRIPSPaciente = (p) => {
   const errs = [];
-  if (!p.docNumero || p.docNumero.length < 4) errs.push("docNumero inv�lido");
+  if (!p.docNumero || p.docNumero.length < 4) errs.push("docNumero inválido");
   if (!p.fechaExamen) errs.push("fechaExamen requerida");
   if (!p.tipoExamen) errs.push("tipoExamen requerido");
   if (!p.conceptoAptitud) errs.push("conceptoAptitud requerido para RIPS");
@@ -223,7 +223,7 @@ const validarRIPSLote = (pacientes) => {
 const _generarRIPSJson = (pacientes, doctorData, periodo) => {
   const now = new Date().toISOString();
   const numFactura = "SISO-" + Date.now();
-  // Archivo AF: Datos de afiliaci�n de cada paciente atendido
+  // Archivo AF: Datos de afiliación de cada paciente atendido
   const AF = pacientes.map((p) => ({
     tipoDocumentoIdentificacion: p.docTipo || "CC",
     numDocumentoIdentificacion: p.docNumero || "",
@@ -232,12 +232,12 @@ const _generarRIPSJson = (pacientes, doctorData, periodo) => {
     codSexo:
       p.genero === "Femenino" ? "F" : p.genero === "Masculino" ? "M" : "N",
     codPaisResidencia: "CO",
-    codMunicipioResidencia: "19001", // Default Popay�n - personalizable
+    codMunicipioResidencia: "19001", // Default Popayán - personalizable
     codZonaTerritorialResidencia: p.zonaResidencia === "Rural" ? "2" : "1",
     incapacidad: p.diasIncapacidad ? "S" : "N",
     codPaisOrigen: "CO",
   }));
-  // Archivo AT: Resumen de atenci�n
+  // Archivo AT: Resumen de atención
   const AT = [
     {
       codPrestador: doctorData?.licencia?.substring(0, 12) || "SISO001",
@@ -250,7 +250,7 @@ const _generarRIPSJson = (pacientes, doctorData, periodo) => {
       grupoServicios: "01",
       codServicio: "890201", // Medicina del trabajo
       finalidadTecnologiaSalud: "27", // Medicina laboral
-      causaMotivoAtencion: "26", // Evaluaci�n ocupacional
+      causaMotivoAtencion: "26", // Evaluación ocupacional
       codDiagnosticoPrincipal:
         pacientes[0]?.diagnosticoPrincipal?.substring(0, 4) || "Z00",
       codDiagnosticoPrincipalE: "",
@@ -289,7 +289,7 @@ const _generarRIPSJson = (pacientes, doctorData, periodo) => {
     version: "1.0",
     generadoEn: now,
     periodo: periodo || now.substring(0, 7),
-    norma: "Resoluci�n 2275/2023",
+    norma: "Resolución 2275/2023",
     prestador: {
       nombre: doctorData?.nombre || "",
       nit: doctorData?.rut?.replace("-", "") || "",
@@ -301,7 +301,7 @@ const _generarRIPSJson = (pacientes, doctorData, periodo) => {
     AC,
     totalRegistros: { AF: AF.length, AT: AT.length, AC: AC.length },
     advertencia:
-      "RIPS generado por SISO v4.0. Para radicaci�n formal ante MinSalud se requiere firma electr�nica DIAN certificada y validaci�n en ADRES.",
+      "RIPS generado por SISO v4.0. Para radicación formal ante MinSalud se requiere firma electrónica DIAN certificada y validación en ADRES.",
   };
 };
 // Descarga RIPS JSON sin createObjectURL (compatible con sandbox/CSP)
@@ -330,13 +330,13 @@ const _generarRDA = (paciente, doctorData, sesionId) => {
   const now = new Date().toISOString();
   return {
     version: "1.0",
-    norma: "Resoluci�n 1888/2025 MinSalud",
+    norma: "Resolución 1888/2025 MinSalud",
     fechaGeneracion: now,
     entidadGeneradora: {
       tipoDocumento: "CC",
       numDocumento: (doctorData?.cedula || "").replace(/[^0-9]/g, ""),
       nombreEntidad: doctorData?.nombre || "",
-      municipio: doctorData?.ciudad || "Popay�n",
+      municipio: doctorData?.ciudad || "Popayán",
     },
     paciente: {
       tipoDocumento: paciente.docTipo || "CC",
@@ -373,7 +373,7 @@ const _generarRDA = (paciente, doctorData, sesionId) => {
     restricciones: (paciente.restricciones || []).length,
     rdaGeneradoEn: now,
     _nota:
-      "RDA generado por SISO. Para transmisi�n oficial al IHCE se requiere firma electr�nica certificada.",
+      "RDA generado por SISO. Para transmisión oficial al IHCE se requiere firma electrónica certificada.",
   };
 };
 const _descargarRDA = (paciente, doctorData, sesionId) => {
@@ -401,7 +401,7 @@ const _generarFacturaDIAN_UBL = (billData, doctorData, numero) => {
   const hora = now.toISOString().split("T")[1].slice(0, 8);
   const cufe = `SISO-${numero}-${fecha}`.replace(/-/g, "");
   const bruto = parseFloat(billData.amount || "0");
-  const iva = 0; // Servicios m�dicos exentos de IVA (Art. 476 E.T. numeral 1)
+  const iva = 0; // Servicios médicos exentos de IVA (Art. 476 E.T. numeral 1)
   const total = bruto;
 
   return `<?xml version="1.0" encoding="UTF-8"?>
@@ -418,15 +418,15 @@ const _generarFacturaDIAN_UBL = (billData, doctorData, numero) => {
   <cbc:IssueDate>${fecha}</cbc:IssueDate>
   <cbc:IssueTime>${hora}-05:00</cbc:IssueTime>
   <cbc:InvoiceTypeCode>01</cbc:InvoiceTypeCode>
-  <cbc:Note>Servicios m�dicos ocupacionales exentos de IVA - Art. 476 E.T. num. 1</cbc:Note>
+  <cbc:Note>Servicios médicos ocupacionales exentos de IVA - Art. 476 E.T. num. 1</cbc:Note>
   <cbc:DocumentCurrencyCode>COP</cbc:DocumentCurrencyCode>
   <cbc:LineCountNumeric>1</cbc:LineCountNumeric>
-  <!-- Emisor (m�dico) -->
+  <!-- Emisor (médico) -->
   <cac:AccountingSupplierParty>
     <cac:Party>
       <cac:PartyTaxScheme>
         <cbc:RegistrationName>${
-          doctorData?.nombre || "M�DICO OCUPACIONAL"
+          doctorData?.nombre || "MÉDICO OCUPACIONAL"
         }</cbc:RegistrationName>
         <cbc:CompanyID schemeID="13">${(doctorData?.cedula || "").replace(
           /[^0-9]/g,
@@ -467,7 +467,7 @@ const _generarFacturaDIAN_UBL = (billData, doctorData, numero) => {
     )}</cbc:TaxInclusiveAmount>
     <cbc:PayableAmount currencyID="COP">${total.toFixed(2)}</cbc:PayableAmount>
   </cac:LegalMonetaryTotal>
-  <!-- L�nea de factura -->
+  <!-- Línea de factura -->
   <cac:InvoiceLine>
     <cbc:ID>1</cbc:ID>
     <cbc:InvoicedQuantity unitCode="94">1</cbc:InvoicedQuantity>
@@ -502,15 +502,15 @@ const _generarFacturaDIAN_UBL = (billData, doctorData, numero) => {
 </Invoice>`;
 };
 
-// --------------------------------------------------------------------------
-// B-14: RETENCI�N CERTIFICADA 20 A�OS - Res. 1995/1999 Art. 15
-// --------------------------------------------------------------------------
+// ══════════════════════════════════════════════════════════════════════════
+// B-14: RETENCIÓN CERTIFICADA 20 AÑOS - Res. 1995/1999 Art. 15
+// ══════════════════════════════════════════════════════════════════════════
 
-// --------------------------------------------------------------------------
+// ══════════════════════════════════════════════════════════════════════════
 // B-18: 2FA TOTP - RFC 6238 con Web Crypto API (HMAC-SHA1)
-// Res. 3100/2019 (habilitaci�n IPS) - Seguridad en sistemas de informaci�n
+// Res. 3100/2019 (habilitación IPS) - Seguridad en sistemas de información
 // Compatible con Google Authenticator, Authy, Microsoft Authenticator
-// --------------------------------------------------------------------------
+// ══════════════════════════════════════════════════════════════════════════
 
 const _generarPaqueteRetencion = async (hcData, medicoData) => {
   const hcLimpio = { ...hcData };
@@ -528,12 +528,12 @@ const _generarPaqueteRetencion = async (hcData, medicoData) => {
     _tipo: "SISO_HC_RETENCION_CERTIFICADA",
     metadata: {
       norma:
-        "Resoluci�n 1995 de 1999 Art. 15 - Retenci�n Historia Cl�nica 20 a�os",
+        "Resolución 1995 de 1999 Art. 15 - Retención Historia Clínica 20 años",
       version: "SISO-OCUPASALUD-v4",
       fechaPreservacion: ts,
       anioVencimientoLegal: new Date().getFullYear() + 20,
       medicoId: medicoData?.cedula || "desconocido",
-      medicoNombre: medicoData?.nombre || "M�dico Ocupacional",
+      medicoNombre: medicoData?.nombre || "Médico Ocupacional",
       paciente: hcData.nombres || "Desconocido",
       docNumero: hcData.docNumero || "--",
       empresa: hcData.empresaNombre || "PARTICULAR",
@@ -566,14 +566,14 @@ const _dateRef = data.fechaCierre ? new Date(data.fechaCierre + "T12:00:00") : n
     day: "numeric",
   });
   const nomDoc =
-    doctorData && doctorData.nombre ? doctorData.nombre : "M�DICO OCUPACIONAL";
+    doctorData && doctorData.nombre ? doctorData.nombre : "MÉDICO OCUPACIONAL";
   const nomTit =
     doctorData && doctorData.titulo
       ? doctorData.titulo
-      : "M�dico Especialista en Salud Ocupacional";
+      : "Médico Especialista en Salud Ocupacional";
   const nomLic = doctorData && doctorData.licencia ? doctorData.licencia : "--";
   const nomCiu =
-    doctorData && doctorData.ciudad ? doctorData.ciudad : "Popay�n";
+    doctorData && doctorData.ciudad ? doctorData.ciudad : "Popayán";
   const nomCell =
     doctorData && doctorData.celular
       ? doctorData.celular
@@ -591,7 +591,7 @@ const _dateRef = data.fechaCierre ? new Date(data.fechaCierre + "T12:00:00") : n
   const conceptoRaw = data.conceptoAptitud || "";
   const conceptoDisplay = conceptoRaw || "PENDIENTE DE CONCEPTO";
 
-  /* -- Formato de restricciones / recomendaciones ------------------- */
+  /* ── Formato de restricciones / recomendaciones ─────────────────── */
   const fmtBlocks = (txt) => {
     if (!txt) return "";
     const str = Array.isArray(txt) ? txt.join("\n") : String(txt);
@@ -601,7 +601,7 @@ const _dateRef = data.fechaCierre ? new Date(data.fechaCierre + "T12:00:00") : n
       .filter(Boolean);
     if (
       lines.some(
-        (l) => /^[�*\-]/.test(l) || /^\*\*/.test(l) || /^\d+\./.test(l)
+        (l) => /^[•*\-]/.test(l) || /^\*\*/.test(l) || /^\d+\./.test(l)
       )
     ) {
       return (
@@ -611,7 +611,7 @@ const _dateRef = data.fechaCierre ? new Date(data.fechaCierre + "T12:00:00") : n
             (l) =>
               '<li style="margin-bottom:3px;font-size:9.5pt;">' +
               l
-                .replace(/^[�*\-]+\s*/, "")
+                .replace(/^[•*\-]+\s*/, "")
                 .replace(/^\d+\.\s*/, "")
                 .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>") +
               "</li>"
@@ -644,10 +644,10 @@ const _dateRef = data.fechaCierre ? new Date(data.fechaCierre + "T12:00:00") : n
   const restCheck = checkItems(data.restriccionesChecklist);
   const recCheck = checkItems(data.recomendacionesChecklist);
 
-  /* -- Fecha de vigencia ------------------------------------------- */
-  const vigencia = data.vigencia || "1 a�o";
+  /* ── Fecha de vigencia ─────────────────────────────────────────── */
+  const vigencia = data.vigencia || "1 año";
 
-  /* -- Color concepto ---------------------------------------------- */
+  /* ── Color concepto ────────────────────────────────────────────── */
   const cLow = conceptoRaw.toLowerCase();
   const aptBg = cLow.includes("no apto")
     ? "#7f1d1d"
@@ -669,23 +669,23 @@ const _dateRef = data.fechaCierre ? new Date(data.fechaCierre + "T12:00:00") : n
     ".np-dl button{background:#065f46;color:#fff;border:none;padding:10px 20px;border-radius:10px;font-weight:900;font-size:11pt;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.2);}" +
     ".np-dl p{font-size:8pt;color:#6b7280;text-align:right;}" +
     "@media print{.np-dl{display:none!important;}body{padding:10mm 14mm;}}" +
-    /* -- HEADER -- */
+    /* ── HEADER ── */
     ".hdr{display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid #065f46;padding-bottom:10px;margin-bottom:14px;}" +
     ".hdr-brand{display:flex;align-items:center;gap:10px;}" +
     ".hdr-logo{width:44px;height:44px;border-radius:10px;background:#065f46;display:flex;align-items:center;justify-content:center;font-size:20pt;color:#fff;font-weight:900;flex-shrink:0;}" +
     ".hdr-name{font-size:13pt;font-weight:900;color:#065f46;text-transform:uppercase;letter-spacing:1px;}" +
     ".hdr-sub{font-size:8pt;color:#6b7280;margin-top:1px;}" +
     ".hdr-ref{text-align:right;font-size:8pt;color:#6b7280;line-height:1.5;}" +
-    /* -- TITLE -- */
+    /* ── TITLE ── */
     ".title{text-align:center;font-size:16pt;font-weight:900;text-transform:uppercase;letter-spacing:3px;margin:10px 0 4px;}" +
     ".subtitle{text-align:center;font-size:9pt;color:#6b7280;margin-bottom:10px;}" +
     ".intro{font-size:9.5pt;color:#374151;margin-bottom:10px;line-height:1.5;}" +
-    /* -- PATIENT BOX -- */
+    /* ── PATIENT BOX ── */
     ".pat-box{border:1.5px solid #d1d5db;border-radius:8px;padding:10px 14px;margin-bottom:10px;display:grid;grid-template-columns:1fr 1fr;gap:5px 20px;}" +
     ".pat-field{display:flex;flex-direction:column;}" +
     ".pat-label{font-size:7.5pt;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.5px;}" +
     ".pat-val{font-size:10.5pt;font-weight:700;color:#111;}" +
-    /* -- CONCEPT -- */
+    /* ── CONCEPT ── */
     ".concepto-lbl{text-align:center;font-size:8pt;font-weight:900;text-transform:uppercase;letter-spacing:2px;color:#6b7280;margin:6px 0 4px;}" +
     ".concepto-box{border:2px solid " +
     aptBg +
@@ -694,14 +694,14 @@ const _dateRef = data.fechaCierre ? new Date(data.fechaCierre + "T12:00:00") : n
     ";}" +
     ".concepto-txt{font-size:16pt;font-weight:900;text-transform:uppercase;color:#fff;line-height:1.3;}" +
     ".concepto-note{font-size:8pt;color:#e5e7eb;margin-top:4px;}" +
-    /* -- SECTIONS -- */
+    /* ── SECTIONS ── */
     ".sec{margin-bottom:10px;}" +
     ".sec-title{font-size:9pt;font-weight:900;text-transform:uppercase;letter-spacing:1px;color:#111;border-bottom:2px solid #d1d5db;padding-bottom:3px;margin-bottom:6px;}" +
     ".pill{display:inline-block;background:#fef9c3;border:1px solid #fde047;color:#78350f;padding:2px 8px;border-radius:4px;font-size:8.5pt;margin:2px;}" +
     ".pill.ok{background:#f0fdf4;border-color:#86efac;color:#14532d;}" +
-    /* -- ALERTA -- */
+    /* ── ALERTA ── */
     ".alerta{background:#fef9c3;border:1px solid #fde047;padding:7px 12px;border-radius:6px;font-size:8.5pt;color:#713f12;margin-bottom:10px;}" +
-    /* -- FIRMA ROW -- */
+    /* ── FIRMA ROW ── */
     ".firma-row{display:grid;grid-template-columns:1fr auto 1fr;gap:20px;align-items:end;border-top:2px solid #d1d5db;padding-top:12px;margin-top:4px;}" +
     ".firma-col{display:flex;flex-direction:column;align-items:center;text-align:center;}" +
     ".firma-line{width:180px;border-top:1px solid #374151;margin-top:50px;padding-top:5px;}" +
@@ -711,12 +711,12 @@ const _dateRef = data.fechaCierre ? new Date(data.fechaCierre + "T12:00:00") : n
     ".cv-box{background:#f0fdf4;border:1.5px solid #86efac;border-radius:8px;padding:8px 16px;text-align:center;}" +
     ".cv-lbl{font-size:7.5pt;font-weight:900;color:#6b7280;text-transform:uppercase;letter-spacing:1px;}" +
     ".cv-code{font-size:14pt;font-family:monospace;font-weight:900;letter-spacing:3px;color:#065f46;margin-top:2px;}" +
-    /* -- FOOTER -- */
+    /* ── FOOTER ── */
     ".footer{margin-top:10px;border-top:1px solid #e5e7eb;padding-top:6px;font-size:7.5pt;color:#9ca3af;display:flex;justify-content:space-between;}" +
-    /* -- CONSENT -- */
+    /* ── CONSENT ── */
     ".consent{margin-top:8px;font-size:7pt;color:#9ca3af;line-height:1.4;border-top:1px dashed #e5e7eb;padding-top:6px;}" +
     "</style></head><body>" +
-    /* -- HEADER ----------------------------------------------- */
+    /* ── HEADER ─────────────────────────────────────────────── */
     '<div class="hdr">' +
     '<div class="hdr-brand">' +
     (ipsData
@@ -738,9 +738,9 @@ const _dateRef = data.fechaCierre ? new Date(data.fechaCierre + "T12:00:00") : n
     (ipsData
       ? _sanitize(
           (ipsData.direccion || "") +
-            (ipsData.ciudad ? " � " + ipsData.ciudad : "")
+            (ipsData.ciudad ? " · " + ipsData.ciudad : "")
         )
-      : "Lic. " + nomLic + " � " + nomCiu) +
+      : "Lic. " + nomLic + " · " + nomCiu) +
     "</div>" +
     (ipsData && ipsData.telefono
       ? '<div class="hdr-sub">Tel: ' + _sanitize(ipsData.telefono) + "</div>"
@@ -754,21 +754,21 @@ const _dateRef = data.fechaCierre ? new Date(data.fechaCierre + "T12:00:00") : n
     fechaHoy +
     "</p></div>" +
     "</div>" +
-    /* -- TITLE ------------------------------------------------ */
+    /* ── TITLE ──────────────────────────────────────────────── */
     '<div class="title">Certificado de Aptitud Laboral</div>' +
-    '<div class="subtitle">Conforme a la Resoluci�n 1843 de 2025</div>' +
-    /* -- INTRO ------------------------------------------------ */
-    '<p class="intro">El suscrito M�dico Especialista en Salud Ocupacional, con licencia vigente, certifica que ha realizado la evaluaci�n m�dica ocupacional de tipo <strong>' +
+    '<div class="subtitle">Conforme a la Resolución 1843 de 2025</div>' +
+    /* ── INTRO ──────────────────────────────────────────────── */
+    '<p class="intro">El suscrito Médico Especialista en Salud Ocupacional, con licencia vigente, certifica que ha realizado la evaluación médica ocupacional de tipo <strong>' +
     tipoExamen +
-    "</strong> con �nfasis <strong>" +
+    "</strong> con énfasis <strong>" +
     enfasis +
     "</strong> a:</p>" +
-    /* -- PATIENT BOX ------------------------------------------ */
+    /* ── PATIENT BOX ────────────────────────────────────────── */
     '<div class="pat-box">' +
     '<div class="pat-field"><span class="pat-label">Nombre</span><span class="pat-val">' +
     (data.nombres || "--") +
     "</span></div>" +
-    '<div class="pat-field"><span class="pat-label">Identificaci�n</span><span class="pat-val">' +
+    '<div class="pat-field"><span class="pat-label">Identificación</span><span class="pat-val">' +
     (data.docTipo || "CC") +
     " " +
     (data.docNumero || "--") +
@@ -786,7 +786,7 @@ const _dateRef = data.fechaCierre ? new Date(data.fechaCierre + "T12:00:00") : n
     vigencia +
     "</span></div>" +
     "</div>" +
-    /* -- CONCEPTO --------------------------------------------- */
+    /* ── CONCEPTO ───────────────────────────────────────────── */
     '<div class="concepto-lbl">Concepto Emitido</div>' +
     '<div class="concepto-box">' +
     '<div class="concepto-txt">' +
@@ -794,23 +794,23 @@ const _dateRef = data.fechaCierre ? new Date(data.fechaCierre + "T12:00:00") : n
     "</div>" +
     '<div class="concepto-note">Concepto emitido bajo Res. 1843 de 2025, Art. 20</div>' +
     "</div>" +
-    /* -- RECOMENDACIONES -------------------------------------- */
+    /* ── RECOMENDACIONES ────────────────────────────────────── */
     (recomendacionesText || recCheck.length > 0
       ? '<div class="sec"><div class="sec-title">Recomendaciones</div>' +
         "" +
         fmtBlocks(recomendacionesText) +
         "</div>"
       : "") +
-    /* -- RESTRICCIONES ---------------------------------------- */
+    /* ── RESTRICCIONES ──────────────────────────────────────── */
     (restriccionesText || restCheck.length > 0
       ? '<div class="sec"><div class="sec-title">Restricciones Laborales</div>' +
         "" +
         fmtBlocks(restriccionesText) +
         "</div>"
       : "") +
-    /* -- ALERTA CONFIDENCIALIDAD ------------------------------- */
-    '<div class="alerta">? <strong>Confidencialidad:</strong> El diagn�stico cl�nico no es entregado al empleador (Art. 16 Res. 1843/2025). Solo uso para gesti�n del riesgo ocupacional.</div>' +
-    /* -- FIRMA ROW -------------------------------------------- */
+    /* ── ALERTA CONFIDENCIALIDAD ─────────────────────────────── */
+    '<div class="alerta">⚠ <strong>Confidencialidad:</strong> El diagnóstico clínico no es entregado al empleador (Art. 16 Res. 1843/2025). Solo uso para gestión del riesgo ocupacional.</div>' +
+    /* ── FIRMA ROW ──────────────────────────────────────────── */
     '<div class="firma-row">' +
     '<div class="firma-col">' +
     '<div class="firma-line">' +
@@ -823,7 +823,7 @@ const _dateRef = data.fechaCierre ? new Date(data.fechaCierre + "T12:00:00") : n
     "</div>" +
     "</div>" +
     '<div class="cv-box">' +
-    '<div class="cv-lbl">C�digo Verificaci�n</div>' +
+    '<div class="cv-lbl">Código Verificación</div>' +
     '<div class="cv-code">' +
     (data.codigoVerificacion || "--") +
     "</div>" +
@@ -849,17 +849,17 @@ const _dateRef = data.fechaCierre ? new Date(data.fechaCierre + "T12:00:00") : n
     "</div>" +
     "</div>" +
     "</div>" +
-    /* -- FOOTER ----------------------------------------------- */
+    /* ── FOOTER ─────────────────────────────────────────────── */
     '<div class="footer">' +
-    "<span>Res. 1843/2025 � Res. 1995/1999 � Ley 23/1981 � Ley 1581/2012</span>" +
+    "<span>Res. 1843/2025 · Res. 1995/1999 · Ley 23/1981 · Ley 1581/2012</span>" +
     "<span>SISO OcupaSalud v4.8</span>" +
     "</div>" +
-    /* -- CONSENTIMIENTO --------------------------------------- */
-    '<div class="consent">El suscrito M�dico Especialista en Salud Ocupacional, con licencia vigente, certifica que realiz� el examen m�dico ocupacional registrado en este documento. ' +
-    "El paciente fue informado de las medidas de protecci�n de la confidencialidad de los resultados. " +
-    "Las respuestas dadas fueron consideradas ver�dicas. " +
-    "Se autoriza al doctor para suministrar la Historia Cl�nica a la EPS y a las personas o entidades contempladas en la legislaci�n vigente, para el buen cumplimiento del sistema de seguridad y salud en el trabajo. " +
-    "Res. 1843/2025 � Ley 1581/2012 � Ley 23/1981.</div>" +
+    /* ── CONSENTIMIENTO ─────────────────────────────────────── */
+    '<div class="consent">El suscrito Médico Especialista en Salud Ocupacional, con licencia vigente, certifica que realizó el examen médico ocupacional registrado en este documento. ' +
+    "El paciente fue informado de las medidas de protección de la confidencialidad de los resultados. " +
+    "Las respuestas dadas fueron consideradas verídicas. " +
+    "Se autoriza al doctor para suministrar la Historia Clínica a la EPS y a las personas o entidades contempladas en la legislación vigente, para el buen cumplimiento del sistema de seguridad y salud en el trabajo. " +
+    "Res. 1843/2025 · Ley 1581/2012 · Ley 23/1981.</div>" +
     "</body></html>"
   );
 };

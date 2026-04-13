@@ -1,17 +1,17 @@
-// src/components/ui/FortalezaPass.jsx
+﻿// src/components/ui/FortalezaPass.jsx
 import React from 'react';
 
 const _validarContrasena = (pw) => {
   const errores = [];
-  if (!pw || pw.length < 10) errores.push("M�nimo 10 caracteres");
-  if (!/[A-Z]/.test(pw)) errores.push("Al menos 1 letra may�scula");
-  if (!/[a-z]/.test(pw)) errores.push("Al menos 1 letra min�scula");
-  if (!/[0-9]/.test(pw)) errores.push("Al menos 1 n�mero");
+  if (!pw || pw.length < 10) errores.push("Mínimo 10 caracteres");
+  if (!/[A-Z]/.test(pw)) errores.push("Al menos 1 letra mayúscula");
+  if (!/[a-z]/.test(pw)) errores.push("Al menos 1 letra minúscula");
+  if (!/[0-9]/.test(pw)) errores.push("Al menos 1 número");
   if (!/[^A-Za-z0-9]/.test(pw))
-    errores.push("Al menos 1 car�cter especial (!@#$%...)");
+    errores.push("Al menos 1 carácter especial (!@#$%...)");
   const comunes = [
     "password",
-    "contrase�a",
+    "contraseña",
     "123456",
     "qwerty",
     "admin",
@@ -41,8 +41,8 @@ const _FortalezaPass = ({ pw }) => {
   ];
   const labels = [
     "",
-    "Muy d�bil",
-    "D�bil",
+    "Muy débil",
+    "Débil",
     "Aceptable",
     "Fuerte",
     "Muy fuerte",
@@ -64,7 +64,7 @@ const _FortalezaPass = ({ pw }) => {
           valida ? "text-emerald-700" : "text-red-600"
         }`}
       >
-        {valida ? `? ${labels[fortaleza]}` : `?? ${errores[0]}`}
+        {valida ? `✅ ${labels[fortaleza]}` : `⚠️ ${errores[0]}`}
       </p>
     </div>
   );

@@ -1,31 +1,31 @@
-// src/data/cie10.jsx - CIE-10 Diagn�sticos Salud Ocupacional
+﻿// src/data/cie10.jsx - CIE-10 Diagnósticos Salud Ocupacional
 import React, { useState, useRef } from 'react';
 
 const CIE10_OCUPACIONAL = [
   // Z: FACTORES DE RIESGO OCUPACIONAL
   {
     code: "Z10.0",
-    desc: "Examen m�dico ocupacional - evaluaci�n ingreso/peri�dica/retiro",
+    desc: "Examen médico ocupacional - evaluación ingreso/periódica/retiro",
   },
   { code: "Z10.1", desc: "Examen de salud de las fuerzas armadas" },
   { code: "Z13.1", desc: "Pesquisa especial de diabetes mellitus" },
   {
     code: "Z13.5",
-    desc: "Pesquisa especial de trastornos visuales y de la visi�n",
+    desc: "Pesquisa especial de trastornos visuales y de la visión",
   },
   { code: "Z13.6", desc: "Pesquisa especial de trastornos cardiovasculares" },
   { code: "Z56.0", desc: "Desempleo - problema relacionado con el empleo" },
   { code: "Z56.1", desc: "Cambio de empleo" },
-  { code: "Z56.2", desc: "Amenaza de p�rdida del empleo" },
+  { code: "Z56.2", desc: "Amenaza de pérdida del empleo" },
   { code: "Z56.3", desc: "Ritmo de trabajo penoso - carga laboral excesiva" },
-  { code: "Z56.4", desc: "Desacuerdo con el jefe y compa�eros de trabajo" },
+  { code: "Z56.4", desc: "Desacuerdo con el jefe y compañeros de trabajo" },
   {
     code: "Z56.5",
     desc: "Trabajo desagradable - condiciones laborales adversas",
   },
   {
     code: "Z56.6",
-    desc: "Otras dificultades f�sicas relacionadas con el trabajo",
+    desc: "Otras dificultades físicas relacionadas con el trabajo",
   },
   {
     code: "Z56.7",
@@ -33,44 +33,44 @@ const CIE10_OCUPACIONAL = [
   },
   {
     code: "Z57.0",
-    desc: "Exposici�n ocupacional al ruido - hipoacusia laboral",
+    desc: "Exposición ocupacional al ruido - hipoacusia laboral",
   },
   {
     code: "Z57.1",
-    desc: "Exposici�n ocupacional a radiaci�n ionizante y no ionizante",
+    desc: "Exposición ocupacional a radiación ionizante y no ionizante",
   },
   {
     code: "Z57.2",
-    desc: "Exposici�n ocupacional al polvo - silicosis, neumoconiosis",
+    desc: "Exposición ocupacional al polvo - silicosis, neumoconiosis",
   },
   {
     code: "Z57.3",
-    desc: "Exposici�n ocupacional a otros contaminantes del aire",
+    desc: "Exposición ocupacional a otros contaminantes del aire",
   },
   {
     code: "Z57.4",
-    desc: "Exposici�n ocupacional a agentes t�xicos en agricultura",
+    desc: "Exposición ocupacional a agentes tóxicos en agricultura",
   },
   {
     code: "Z57.5",
-    desc: "Exposici�n ocupacional a agentes t�xicos en otras industrias",
+    desc: "Exposición ocupacional a agentes tóxicos en otras industrias",
   },
-  { code: "Z57.6", desc: "Exposici�n ocupacional a temperaturas extremas" },
-  { code: "Z57.7", desc: "Exposici�n ocupacional a vibraci�n" },
-  { code: "Z57.8", desc: "Exposici�n ocupacional a otros factores de riesgo" },
+  { code: "Z57.6", desc: "Exposición ocupacional a temperaturas extremas" },
+  { code: "Z57.7", desc: "Exposición ocupacional a vibración" },
+  { code: "Z57.8", desc: "Exposición ocupacional a otros factores de riesgo" },
   {
     code: "Z57.9",
-    desc: "Exposici�n ocupacional a factor de riesgo no especificado",
+    desc: "Exposición ocupacional a factor de riesgo no especificado",
   },
-  { code: "Z73.0", desc: "S�ndrome de agotamiento - Burnout laboral" },
-  { code: "Z73.1", desc: "Acentuaci�n de rasgos de la personalidad" },
+  { code: "Z73.0", desc: "Síndrome de agotamiento - Burnout laboral" },
+  { code: "Z73.1", desc: "Acentuación de rasgos de la personalidad" },
   {
     code: "Z73.2",
-    desc: "Falta de relajaci�n y descanso - fatiga laboral cr�nica",
+    desc: "Falta de relajación y descanso - fatiga laboral crónica",
   },
   {
     code: "Z73.3",
-    desc: "Estr�s no clasificado en otra parte - estr�s laboral",
+    desc: "Estrés no clasificado en otra parte - estrés laboral",
   },
   {
     code: "Z73.4",
@@ -78,49 +78,49 @@ const CIE10_OCUPACIONAL = [
   },
   {
     code: "Z73.5",
-    desc: "Conflicto de rol - dificultad de conciliaci�n laboral/personal",
+    desc: "Conflicto de rol - dificultad de conciliación laboral/personal",
   },
-  { code: "Z73.6", desc: "Limitaci�n de actividades debida a incapacidad" },
+  { code: "Z73.6", desc: "Limitación de actividades debida a incapacidad" },
   {
     code: "Z76.5",
     desc: "Persona que simula enfermedad (simulador consciente)",
   },
-  { code: "Z77.0", desc: "Contacto y exposici�n a metales y metaloides" },
+  { code: "Z77.0", desc: "Contacto y exposición a metales y metaloides" },
   {
     code: "Z77.1",
-    desc: "Contacto y exposici�n a materiales t�xicos y contaminantes",
+    desc: "Contacto y exposición a materiales tóxicos y contaminantes",
   },
   // M: SISTEMA OSTEOMUSCULAR - GATISO-DME, GATISO-TME
   {
     code: "M47.8",
     desc: "Espondiloartrosis cervical - cervicoartrosis laboral",
   },
-  { code: "M47.81", desc: "Espondiloartrosis cervical con mielopat�a" },
+  { code: "M47.81", desc: "Espondiloartrosis cervical con mielopatía" },
   { code: "M48.0", desc: "Estenosis espinal cervical o lumbar" },
-  { code: "M50.0", desc: "Enfermedad del disco cervical con mielopat�a" },
+  { code: "M50.0", desc: "Enfermedad del disco cervical con mielopatía" },
   {
     code: "M50.1",
-    desc: "Enfermedad del disco cervical con radiculopat�a - hernia cervical",
+    desc: "Enfermedad del disco cervical con radiculopatía - hernia cervical",
   },
   {
     code: "M50.2",
-    desc: "Desplazamiento de disco cervical - hernia sin mielopat�a",
+    desc: "Desplazamiento de disco cervical - hernia sin mielopatía",
   },
   {
     code: "M51.1",
-    desc: "Enfermedad del disco lumbar con radiculopat�a - lumboci�tica laboral",
+    desc: "Enfermedad del disco lumbar con radiculopatía - lumbociática laboral",
   },
   {
     code: "M51.2",
     desc: "Desplazamiento de disco lumbar - hernia de disco lumbar",
   },
-  { code: "M51.3", desc: "Degeneraci�n del disco intervertebral lumbar" },
+  { code: "M51.3", desc: "Degeneración del disco intervertebral lumbar" },
   { code: "M54.2", desc: "Cervicalgia - dolor cervical laboral" },
-  { code: "M54.3", desc: "Ci�tica - radiculopat�a lumbosacra" },
-  { code: "M54.4", desc: "Lumbago con ci�tica" },
+  { code: "M54.3", desc: "Ciática - radiculopatía lumbosacra" },
+  { code: "M54.4", desc: "Lumbago con ciática" },
   {
     code: "M54.5",
-    desc: "Lumbago no especificado - lumbalgia laboral cr�nica",
+    desc: "Lumbago no especificado - lumbalgia laboral crónica",
   },
   { code: "M54.6", desc: "Dolor en columna dorsal" },
   { code: "M60.0", desc: "Miositis infecciosa" },
@@ -141,7 +141,7 @@ const CIE10_OCUPACIONAL = [
   { code: "M65.9", desc: "Sinovitis y tenosinovitis no especificada" },
   {
     code: "M70.0",
-    desc: "Sinovitis crepitante cr�nica de mano y mu�eca laboral",
+    desc: "Sinovitis crepitante crónica de mano y muñeca laboral",
   },
   { code: "M70.1", desc: "Bursitis de mano" },
   { code: "M70.2", desc: "Bursitis olecraniana - trabajo manual prolongado" },
@@ -150,7 +150,7 @@ const CIE10_OCUPACIONAL = [
   { code: "M70.5", desc: "Otras bursitis de rodilla - trabajo en cuclillas" },
   {
     code: "M70.6",
-    desc: "Bursitis trocant�rica - trabajo en bipedestaci�n prolongada",
+    desc: "Bursitis trocantérica - trabajo en bipedestación prolongada",
   },
   {
     code: "M70.9",
@@ -158,12 +158,12 @@ const CIE10_OCUPACIONAL = [
   },
   {
     code: "M75.0",
-    desc: "S�ndrome del manguito rotador - hombro doloroso laboral",
+    desc: "Síndrome del manguito rotador - hombro doloroso laboral",
   },
-  { code: "M75.1", desc: "S�ndrome del b�ceps - tendinitis bicipital laboral" },
+  { code: "M75.1", desc: "Síndrome del bíceps - tendinitis bicipital laboral" },
   { code: "M75.2", desc: "Tendinitis calcificante de hombro" },
-  { code: "M75.3", desc: "Tendinitis del hombro - s�ndrome de impingement" },
-  { code: "M75.4", desc: "S�ndrome de roce del hombro" },
+  { code: "M75.3", desc: "Tendinitis del hombro - síndrome de impingement" },
+  { code: "M75.4", desc: "Síndrome de roce del hombro" },
   { code: "M75.5", desc: "Bursitis del hombro laboral" },
   { code: "M75.8", desc: "Otras lesiones del hombro laboral" },
   { code: "M77.0", desc: "Epicondilitis medial - codo de golfista laboral" },
@@ -171,39 +171,39 @@ const CIE10_OCUPACIONAL = [
   { code: "M79.1", desc: "Mialgia - dolor muscular difuso" },
   { code: "M79.2", desc: "Neuralgia y neuritis no especificadas" },
   { code: "M79.3", desc: "Paniculitis - dolor en tejido adiposo" },
-  // G: NEUROL�GICOS - GATISO-MMSS
-  { code: "G50.0", desc: "Neuralgia del trig�mino parox�stica" },
+  // G: NEUROLÓGICOS - GATISO-MMSS
+  { code: "G50.0", desc: "Neuralgia del trigémino paroxística" },
   {
     code: "G54.0",
-    desc: "Trastornos de la ra�z nerviosa cervical - radiculopat�a cervical",
+    desc: "Trastornos de la raíz nerviosa cervical - radiculopatía cervical",
   },
-  { code: "G54.1", desc: "Trastornos de la ra�z nerviosa tor�cica" },
+  { code: "G54.1", desc: "Trastornos de la raíz nerviosa torácica" },
   {
     code: "G54.2",
-    desc: "Trastornos de la ra�z nerviosa lumbosacra - radiculopat�a lumbar",
+    desc: "Trastornos de la raíz nerviosa lumbosacra - radiculopatía lumbar",
   },
   {
     code: "G56.0",
-    desc: "S�ndrome del t�nel del carpo - compresi�n nervio mediano laboral",
+    desc: "Síndrome del túnel del carpo - compresión nervio mediano laboral",
   },
   { code: "G56.1", desc: "Otras lesiones del nervio mediano laboral" },
   {
     code: "G56.2",
-    desc: "Lesi�n del nervio cubital - par�lisis cubital laboral",
+    desc: "Lesión del nervio cubital - parálisis cubital laboral",
   },
-  { code: "G56.3", desc: "Lesi�n del nervio radial" },
+  { code: "G56.3", desc: "Lesión del nervio radial" },
   {
     code: "G57.1",
-    desc: "Meralgia parest�sica - compresi�n nervio femorocut�neo",
+    desc: "Meralgia parestésica - compresión nervio femorocutáneo",
   },
-  { code: "G57.2", desc: "Lesi�n del nervio femoral" },
-  { code: "G57.3", desc: "Lesi�n del nervio ci�tico popl�teo externo" },
-  { code: "G57.5", desc: "S�ndrome del t�nel del tarso" },
+  { code: "G57.2", desc: "Lesión del nervio femoral" },
+  { code: "G57.3", desc: "Lesión del nervio ciático poplíteo externo" },
+  { code: "G57.5", desc: "Síndrome del túnel del tarso" },
   {
     code: "G57.6",
-    desc: "Lesi�n del nervio plantar - trabajo en bipedestaci�n",
+    desc: "Lesión del nervio plantar - trabajo en bipedestación",
   },
-  { code: "G62.2", desc: "Polineuropat�a debida a agentes t�xicos laborales" },
+  { code: "G62.2", desc: "Polineuropatía debida a agentes tóxicos laborales" },
   // F: TRASTORNOS MENTALES - Psicosocial, Res. 2646/2008
   {
     code: "F10.1",
@@ -212,104 +212,104 @@ const CIE10_OCUPACIONAL = [
   { code: "F17.1", desc: "Trastornos debidos al tabaco - uso nocivo" },
   { code: "F32.0", desc: "Episodio depresivo leve - laboral" },
   { code: "F32.1", desc: "Episodio depresivo moderado" },
-  { code: "F32.2", desc: "Episodio depresivo grave sin s�ntomas psic�ticos" },
+  { code: "F32.2", desc: "Episodio depresivo grave sin síntomas psicóticos" },
   {
     code: "F41.0",
-    desc: "Trastorno de p�nico - ansiedad parox�stica epis�dica",
+    desc: "Trastorno de pánico - ansiedad paroxística episódica",
   },
   {
     code: "F41.1",
-    desc: "Trastorno de ansiedad generalizada - estr�s laboral",
+    desc: "Trastorno de ansiedad generalizada - estrés laboral",
   },
   {
     code: "F41.2",
-    desc: "Trastorno mixto ansioso-depresivo - s�ndrome laboral",
+    desc: "Trastorno mixto ansioso-depresivo - síndrome laboral",
   },
-  { code: "F43.0", desc: "Reacci�n aguda al estr�s - accidente laboral" },
-  { code: "F43.1", desc: "Trastorno de estr�s postraum�tico - TEPT laboral" },
-  { code: "F43.2", desc: "Trastorno de adaptaci�n - cambio laboral" },
+  { code: "F43.0", desc: "Reacción aguda al estrés - accidente laboral" },
+  { code: "F43.1", desc: "Trastorno de estrés postraumático - TEPT laboral" },
+  { code: "F43.2", desc: "Trastorno de adaptación - cambio laboral" },
   { code: "F48.0", desc: "Neurastenia - agotamiento nervioso laboral" },
-  { code: "F51.0", desc: "Insomnio no org�nico - trastorno del sue�o laboral" },
+  { code: "F51.0", desc: "Insomnio no orgánico - trastorno del sueño laboral" },
   // H: AUDITIVOS Y VISUALES - Higiene industrial
   {
     code: "H83.3",
-    desc: "Efectos del ruido sobre el o�do interno - NIHL laboral",
+    desc: "Efectos del ruido sobre el oído interno - NIHL laboral",
   },
   { code: "H90.0", desc: "Hipoacusia conductiva bilateral" },
   { code: "H90.3", desc: "Hipoacusia neurosensorial bilateral - laboral" },
   { code: "H90.4", desc: "Hipoacusia neurosensorial unilateral" },
-  { code: "H91.0", desc: "Hipoacusia otot�xica - medicamentos y disolventes" },
+  { code: "H91.0", desc: "Hipoacusia ototóxica - medicamentos y disolventes" },
   {
     code: "H91.9",
-    desc: "Hipoacusia no especificada - p�rdida auditiva laboral",
+    desc: "Hipoacusia no especificada - pérdida auditiva laboral",
   },
-  { code: "H52.1", desc: "Miop�a" },
+  { code: "H52.1", desc: "Miopía" },
   { code: "H52.2", desc: "Astigmatismo" },
-  { code: "H52.4", desc: "Presbicia - visi�n afectada por edad" },
+  { code: "H52.4", desc: "Presbicia - visión afectada por edad" },
   {
     code: "H53.1",
     desc: "Alteraciones visuales subjetivas - fatiga visual por pantallas",
   },
   // J: RESPIRATORIOS - Decreto 1477/2014
-  { code: "J45.0", desc: "Asma predominantemente al�rgica - asma ocupacional" },
-  { code: "J45.1", desc: "Asma no al�rgica - asma irritativa laboral" },
-  { code: "J60", desc: "Neumoconiosis de los mineros del carb�n" },
+  { code: "J45.0", desc: "Asma predominantemente alérgica - asma ocupacional" },
+  { code: "J45.1", desc: "Asma no alérgica - asma irritativa laboral" },
+  { code: "J60", desc: "Neumoconiosis de los mineros del carbón" },
   { code: "J61", desc: "Neumoconiosis debida a amianto - asbestosis" },
   { code: "J62.0", desc: "Neumoconiosis debida al talco - talcosis" },
   {
     code: "J62.8",
-    desc: "Neumoconiosis debida a polvos con s�lice - silicosis",
+    desc: "Neumoconiosis debida a polvos con sílice - silicosis",
   },
   { code: "J63.0", desc: "Aluminosis pulmonar" },
   { code: "J63.2", desc: "Beriliosis pulmonar" },
-  { code: "J63.4", desc: "Siderosis - polvo de hierro y �xidos" },
+  { code: "J63.4", desc: "Siderosis - polvo de hierro y óxidos" },
   { code: "J64", desc: "Neumoconiosis no especificada" },
-  { code: "J66.0", desc: "Bisinosis - polvo de algod�n, tabaco, lino" },
+  { code: "J66.0", desc: "Bisinosis - polvo de algodón, tabaco, lino" },
   {
     code: "J67.0",
-    desc: "Pulm�n del granjero - esporas de actinomicetos term�filos",
+    desc: "Pulmón del granjero - esporas de actinomicetos termófilos",
   },
   {
     code: "J68.0",
-    desc: "Bronquitis y neumonitis por inhalaci�n de gases, humos",
+    desc: "Bronquitis y neumonitis por inhalación de gases, humos",
   },
-  { code: "J00", desc: "Rinofaringitis aguda (Resfriado com�n)" },
+  { code: "J00", desc: "Rinofaringitis aguda (Resfriado común)" },
   {
     code: "J06.9",
-    desc: "Infecci�n aguda de v�as respiratorias superiores no especificada",
+    desc: "Infección aguda de vías respiratorias superiores no especificada",
   },
-  { code: "J18.9", desc: "Neumon�a no especificada" },
-  { code: "J30.4", desc: "Rinitis al�rgica no especificada - rinitis laboral" },
+  { code: "J18.9", desc: "Neumonía no especificada" },
+  { code: "J30.4", desc: "Rinitis alérgica no especificada - rinitis laboral" },
   // I: CARDIOVASCULARES
-  { code: "I10", desc: "Hipertensi�n esencial (primaria)" },
+  { code: "I10", desc: "Hipertensión esencial (primaria)" },
   {
     code: "I11.9",
-    desc: "Cardiopat�a hipertensiva sin insuficiencia card�aca",
+    desc: "Cardiopatía hipertensiva sin insuficiencia cardíaca",
   },
   { code: "I20.0", desc: "Angina de pecho inestable" },
   { code: "I21.0", desc: "Infarto agudo de miocardio de la pared anterior" },
   {
     code: "I25.1",
-    desc: "Enfermedad ateroscler�tica del coraz�n - cardiopat�a isqu�mica",
+    desc: "Enfermedad aterosclerótica del corazón - cardiopatía isquémica",
   },
-  { code: "I50.0", desc: "Insuficiencia card�aca congestiva" },
-  { code: "I63.9", desc: "Infarto cerebral no especificado - ACV isqu�mico" },
+  { code: "I50.0", desc: "Insuficiencia cardíaca congestiva" },
+  { code: "I63.9", desc: "Infarto cerebral no especificado - ACV isquémico" },
   {
     code: "I83.0",
-    desc: "V�rices de los miembros inferiores - trabajo prolongado de pie",
+    desc: "Várices de los miembros inferiores - trabajo prolongado de pie",
   },
-  // L: DERMATOL�GICOS - exposici�n ocupacional
+  // L: DERMATOLÓGICOS - exposición ocupacional
   {
     code: "L23.0",
-    desc: "Dermatitis al�rgica de contacto debida a metales - n�quel, cromo",
+    desc: "Dermatitis alérgica de contacto debida a metales - níquel, cromo",
   },
   {
     code: "L23.1",
-    desc: "Dermatitis al�rgica de contacto por adhesivos laborales",
+    desc: "Dermatitis alérgica de contacto por adhesivos laborales",
   },
   {
     code: "L23.5",
-    desc: "Dermatitis al�rgica de contacto por otros productos qu�micos",
+    desc: "Dermatitis alérgica de contacto por otros productos químicos",
   },
   {
     code: "L24.2",
@@ -318,63 +318,63 @@ const CIE10_OCUPACIONAL = [
   { code: "L24.5", desc: "Dermatitis irritativa de contacto debida a plantas" },
   {
     code: "L57.0",
-    desc: "Queratosis act�nica - exposici�n solar laboral cr�nica",
+    desc: "Queratosis actínica - exposición solar laboral crónica",
   },
   // S/T: ACCIDENTES DE TRABAJO Y LESIONES
   {
     code: "S13.4",
     desc: "Esguince o torcedura de columna cervical - accidente laboral",
   },
-  { code: "S22.0", desc: "Fractura de v�rtebra tor�cica" },
-  { code: "S32.0", desc: "Fractura de v�rtebra lumbar" },
-  { code: "S40.0", desc: "Contusi�n del hombro y del brazo" },
-  { code: "S42.0", desc: "Fractura de clav�cula - accidente laboral" },
-  { code: "S43.0", desc: "Luxaci�n de articulaci�n del hombro" },
+  { code: "S22.0", desc: "Fractura de vértebra torácica" },
+  { code: "S32.0", desc: "Fractura de vértebra lumbar" },
+  { code: "S40.0", desc: "Contusión del hombro y del brazo" },
+  { code: "S42.0", desc: "Fractura de clavícula - accidente laboral" },
+  { code: "S43.0", desc: "Luxación de articulación del hombro" },
   {
     code: "S52.5",
-    desc: "Fractura de extremidad distal del radio - ca�da laboral",
+    desc: "Fractura de extremidad distal del radio - caída laboral",
   },
-  { code: "S60.0", desc: "Contusi�n del dedo de la mano - trabajo manual" },
-  { code: "S72.0", desc: "Fractura del cuello del f�mur" },
-  { code: "S80.0", desc: "Contusi�n de rodilla" },
-  { code: "S83.0", desc: "Luxaci�n de r�tula" },
+  { code: "S60.0", desc: "Contusión del dedo de la mano - trabajo manual" },
+  { code: "S72.0", desc: "Fractura del cuello del fémur" },
+  { code: "S80.0", desc: "Contusión de rodilla" },
+  { code: "S83.0", desc: "Luxación de rótula" },
   {
     code: "T14.0",
-    desc: "Herida de lugar de cuerpo no especificado - laceraci�n laboral",
+    desc: "Herida de lugar de cuerpo no especificado - laceración laboral",
   },
   {
     code: "T56.0",
-    desc: "Efecto t�xico del plomo y sus compuestos - saturnismo laboral",
+    desc: "Efecto tóxico del plomo y sus compuestos - saturnismo laboral",
   },
   {
     code: "T56.1",
-    desc: "Efecto t�xico del mercurio - intoxicaci�n por mercurio",
+    desc: "Efecto tóxico del mercurio - intoxicación por mercurio",
   },
-  { code: "T56.2", desc: "Efecto t�xico del manganeso y sus compuestos" },
-  { code: "T56.4", desc: "Efecto t�xico del cromo y sus compuestos" },
-  { code: "T57.0", desc: "Efecto t�xico del ars�nico y sus compuestos" },
+  { code: "T56.2", desc: "Efecto tóxico del manganeso y sus compuestos" },
+  { code: "T56.4", desc: "Efecto tóxico del cromo y sus compuestos" },
+  { code: "T57.0", desc: "Efecto tóxico del arsénico y sus compuestos" },
   {
     code: "T65.3",
-    desc: "Efecto t�xico de nitroderivados del benceno - laboral",
+    desc: "Efecto tóxico de nitroderivados del benceno - laboral",
   },
-  // C: C�NCER LABORAL - Decreto 1477/2014
+  // C: CÁNCER LABORAL - Decreto 1477/2014
   {
     code: "C34.0",
-    desc: "Tumor maligno del bronquio principal - c�ncer de pulm�n laboral",
+    desc: "Tumor maligno del bronquio principal - cáncer de pulmón laboral",
   },
   {
     code: "C34.1",
-    desc: "Tumor maligno del l�bulo superior - exposici�n asbesto/s�lice",
+    desc: "Tumor maligno del lóbulo superior - exposición asbesto/sílice",
   },
   { code: "C45.0", desc: "Mesotelioma de pleura - asbestosis mesotelial" },
   { code: "C45.1", desc: "Mesotelioma de peritoneo - asbesto" },
   {
     code: "C67.9",
-    desc: "Tumor maligno de la vejiga urinaria - aminas arom�ticas",
+    desc: "Tumor maligno de la vejiga urinaria - aminas aromáticas",
   },
   {
     code: "C91.0",
-    desc: "Leucemia linfobl�stica aguda - exposici�n a benceno",
+    desc: "Leucemia linfoblástica aguda - exposición a benceno",
   },
   {
     code: "C92.0",
@@ -382,28 +382,28 @@ const CIE10_OCUPACIONAL = [
   },
   // MEDICINA GENERAL FRECUENTE
   { code: "A09.9", desc: "Gastroenteritis no especificada" },
-  { code: "B02.9", desc: "Herpes z�ster sin complicaciones" },
+  { code: "B02.9", desc: "Herpes zóster sin complicaciones" },
   { code: "E11.9", desc: "Diabetes mellitus tipo 2 sin complicaciones" },
-  { code: "E66.0", desc: "Obesidad debida a exceso de calor�as" },
+  { code: "E66.0", desc: "Obesidad debida a exceso de calorías" },
   { code: "E78.0", desc: "Hipercolesterolemia pura" },
   { code: "E78.5", desc: "Hiperlipidemia no especificada" },
   {
     code: "K21.0",
-    desc: "Enfermedad por reflujo gastroesof�gico con esofagitis",
+    desc: "Enfermedad por reflujo gastroesofágico con esofagitis",
   },
   { code: "K29.7", desc: "Gastritis no especificada" },
   {
     code: "N39.0",
-    desc: "Infecci�n de las v�as urinarias, sitio no especificado",
+    desc: "Infección de las vías urinarias, sitio no especificado",
   },
   { code: "R51", desc: "Cefalea - cefalea tensional laboral" },
   {
     code: "R53",
-    desc: "Malestar y fatiga - s�ndrome de fatiga cr�nica laboral",
+    desc: "Malestar y fatiga - síndrome de fatiga crónica laboral",
   },
-  { code: "R55", desc: "S�ncope y colapso - vagal laboral" },
+  { code: "R55", desc: "Síncope y colapso - vagal laboral" },
 ];
-// Buscador CIE-10 con filtrado en tiempo real (insensible a tildes y may�sculas)
+// Buscador CIE-10 con filtrado en tiempo real (insensible a tildes y mayúsculas)
 const _buscarCIE10 = (query, maxResults) => {
   const max = maxResults || 12;
   if (!query || query.trim().length < 2) return [];
@@ -462,7 +462,7 @@ const CIE10Input = ({ value, onChange, placeholder, className, name }) => {
         onFocus={() => {
           if (sugerencias.length > 0) setAbierto(true);
         }}
-        placeholder={placeholder || "Buscar CIE-10 - c�digo o descripci�n..."}
+        placeholder={placeholder || "Buscar CIE-10 - código o descripción..."}
         className={
           className ||
           "w-full p-1.5 border rounded-lg text-xs focus:ring-2 focus:ring-emerald-400 outline-none border-gray-300"
@@ -541,8 +541,8 @@ const CIE10Input = ({ value, onChange, placeholder, className, name }) => {
               borderTop: "1px solid #e5e7eb",
             }}
           >
-            {sugerencias.length} resultado(s) � CIE-10 Salud Ocupacional �
-            Decreto 1477/2014 � Res. 1843/2025
+            {sugerencias.length} resultado(s) · CIE-10 Salud Ocupacional ·
+            Decreto 1477/2014 · Res. 1843/2025
           </div>
         </div>
       )}

@@ -1,10 +1,10 @@
-// src/data/catalogos.js - Cat�logos est�ticos OcupaSalud
+﻿// src/data/catalogos.js - Catálogos estáticos OcupaSalud
 
 const ARL_LIST = [
   "ARL SURA",
-  "POSITIVA COMPA��A DE SEGUROS",
+  "POSITIVA COMPAÑÍA DE SEGUROS",
   "AXA COLPATRIA",
-  "SEGUROS BOL�VAR",
+  "SEGUROS BOLÍVAR",
   "COLMENA SEGUROS",
   "LA EQUIDAD SEGUROS",
   "MAPFRE SEGUROS",
@@ -14,7 +14,7 @@ const ARL_LIST = [
 const AFP_LIST = [
   "COLPENSIONES",
   "PORVENIR",
-  "PROTECCI�N",
+  "PROTECCIÓN",
   "COLFONDOS",
   "SKANDIA",
 ];
@@ -34,10 +34,10 @@ const EPS_LIST = [
   "SAVIA SALUD",
 ].sort();
 const CONTRATO_LIST = [
-  "T�rmino Indefinido",
-  "T�rmino Fijo",
+  "Término Indefinido",
+  "Término Fijo",
   "Obra o Labor",
-  "Prestaci�n de Servicios",
+  "Prestación de Servicios",
   "Aprendizaje",
   "Ocasional o Transitorio",
 ];
@@ -45,123 +45,123 @@ const TURNO_LIST = ["Diurno", "Nocturno", "Mixto", "Rotativo"];
 const ETNIA_LIST = [
   "Mestizo",
   "Afrocolombiano",
-  "Ind�gena",
+  "Indígena",
   "Raizal",
   "Palenquero",
   "Gitano / Rrom",
   "Ninguno",
 ];
 const SPECIALTIES_LIST = [
-  "Alergolog�a",
-  "Anestesiolog�a",
-  "Angiolog�a y Cirug�a Vascular",
-  "Audiolog�a",
-  "Cardiolog�a",
-  "Cardiolog�a Pedi�trica",
-  "Cirug�a Bari�trica",
-  "Cirug�a Cardiovascular",
-  "Cirug�a de Cabeza y Cuello",
-  "Cirug�a de Columna",
-  "Cirug�a de Mano",
-  "Cirug�a de Mama y Tejidos Blandos",
-  "Cirug�a de T�rax",
-  "Cirug�a General",
-  "Cirug�a Hepatobiliar",
-  "Cirug�a Maxilofacial",
-  "Cirug�a Pedi�trica",
-  "Cirug�a Pl�stica y Reconstructiva",
-  "Coloproctolog�a",
+  "Alergología",
+  "Anestesiología",
+  "Angiología y Cirugía Vascular",
+  "Audiología",
+  "Cardiología",
+  "Cardiología Pediátrica",
+  "Cirugía Bariátrica",
+  "Cirugía Cardiovascular",
+  "Cirugía de Cabeza y Cuello",
+  "Cirugía de Columna",
+  "Cirugía de Mano",
+  "Cirugía de Mama y Tejidos Blandos",
+  "Cirugía de Tórax",
+  "Cirugía General",
+  "Cirugía Hepatobiliar",
+  "Cirugía Maxilofacial",
+  "Cirugía Pediátrica",
+  "Cirugía Plástica y Reconstructiva",
+  "Coloproctología",
   "Cuidado Paliativo",
   "Cuidados Intensivos",
-  "Dermatolog�a",
+  "Dermatología",
   "Dolor y Cuidados Paliativos",
-  "Electrofisiolog�a Card�aca",
-  "Endocrinolog�a",
-  "Endocrinolog�a Pedi�trica",
-  "Enfermer�a Profesional",
-  "Epidemiolog�a",
-  "Fisiatr�a (Medicina F�sica y Rehabilitaci�n)",
+  "Electrofisiología Cardíaca",
+  "Endocrinología",
+  "Endocrinología Pediátrica",
+  "Enfermería Profesional",
+  "Epidemiología",
+  "Fisiatría (Medicina Física y Rehabilitación)",
   "Fisioterapia",
-  "Fonoaudiolog�a",
-  "Gastroenterolog�a",
-  "Gastroenterolog�a Pedi�trica",
-  "Gen�tica M�dica",
-  "Geriatr�a",
-  "Ginecolog�a y Obstetricia",
-  "Ginecolog�a Oncol�gica",
-  "Hematolog�a",
-  "Hematolog�a Pedi�trica",
-  "Hepatolog�a",
-  "Infectolog�a",
-  "Infectolog�a Pedi�trica",
-  "Inmunolog�a Cl�nica",
-  "Mastolog�a",
+  "Fonoaudiología",
+  "Gastroenterología",
+  "Gastroenterología Pediátrica",
+  "Genética Médica",
+  "Geriatría",
+  "Ginecología y Obstetricia",
+  "Ginecología Oncológica",
+  "Hematología",
+  "Hematología Pediátrica",
+  "Hepatología",
+  "Infectología",
+  "Infectología Pediátrica",
+  "Inmunología Clínica",
+  "Mastología",
   "Medicina Alternativa y Complementaria",
   "Medicina de Emergencias",
   "Medicina del Deporte",
   "Medicina del Dolor",
   "Medicina del Trabajo y Salud Ocupacional",
-  "Medicina Est�tica",
+  "Medicina Estética",
   "Medicina Familiar",
   "Medicina Forense",
   "Medicina General",
   "Medicina Interna",
   "Medicina Nuclear",
-  "Medicina Preventiva y Salud P�blica",
-  "Nefrolog�a",
-  "Nefrolog�a Pedi�trica",
-  "Neonatolog�a",
-  "Neumolog�a",
-  "Neumolog�a Pedi�trica",
-  "Neurocirug�a",
-  "Neurofisiolog�a Cl�nica",
-  "Neurolog�a",
-  "Neurolog�a Pedi�trica",
-  "Neuropediatr�a",
-  "Neuropsicolog�a",
-  "Neuropsiquiatr�a",
-  "Neurorradiolog�a",
-  "Nutrici�n y Diet�tica",
+  "Medicina Preventiva y Salud Pública",
+  "Nefrología",
+  "Nefrología Pediátrica",
+  "Neonatología",
+  "Neumología",
+  "Neumología Pediátrica",
+  "Neurocirugía",
+  "Neurofisiología Clínica",
+  "Neurología",
+  "Neurología Pediátrica",
+  "Neuropediatría",
+  "Neuropsicología",
+  "Neuropsiquiatría",
+  "Neurorradiología",
+  "Nutrición y Dietética",
   "Obstetricia de Alto Riesgo",
-  "Odontolog�a General",
-  "Oftalmolog�a",
-  "Oftalmolog�a Pedi�trica",
-  "Oncolog�a",
-  "Oncolog�a Pedi�trica",
-  "Oncolog�a Radioter�pica",
-  "Optometr�a",
+  "Odontología General",
+  "Oftalmología",
+  "Oftalmología Pediátrica",
+  "Oncología",
+  "Oncología Pediátrica",
+  "Oncología Radioterápica",
+  "Optometría",
   "Ortodoncia",
-  "Ortopedia y Traumatolog�a",
-  "Ortopedia Pedi�trica",
-  "Otolog�a y Neurotolog�a",
-  "Otorrinolaringolog�a",
-  "Patolog�a",
-  "Patolog�a Cl�nica (Laboratorio)",
-  "Pediatr�a",
-  "Perinatolog�a",
+  "Ortopedia y Traumatología",
+  "Ortopedia Pediátrica",
+  "Otología y Neurotología",
+  "Otorrinolaringología",
+  "Patología",
+  "Patología Clínica (Laboratorio)",
+  "Pediatría",
+  "Perinatología",
   "Periodoncia",
-  "Podolog�a",
-  "Psicolog�a Cl�nica",
-  "Psicolog�a Ocupacional",
-  "Psiquiatr�a",
-  "Psiquiatr�a Infantil y del Adolescente",
-  "Radiolog�a e Im�genes Diagn�sticas",
-  "Radiolog�a Intervencionista",
-  "Rehabilitaci�n Card�aca",
-  "Rehabilitaci�n Neurol�gica",
-  "Rehabilitaci�n Oral",
-  "Rehabilitaci�n Pulmonar",
-  "Reumatolog�a",
-  "Reumatolog�a Pedi�trica",
+  "Podología",
+  "Psicología Clínica",
+  "Psicología Ocupacional",
+  "Psiquiatría",
+  "Psiquiatría Infantil y del Adolescente",
+  "Radiología e Imágenes Diagnósticas",
+  "Radiología Intervencionista",
+  "Rehabilitación Cardíaca",
+  "Rehabilitación Neurológica",
+  "Rehabilitación Oral",
+  "Rehabilitación Pulmonar",
+  "Reumatología",
+  "Reumatología Pediátrica",
   "Salud Mental Comunitaria",
   "Salud Ocupacional",
   "Terapia Ocupacional",
   "Terapia Respiratoria",
-  "Toxicolog�a Cl�nica",
-  "Traumatolog�a Deportiva",
-  "Urolog�a",
-  "Urolog�a Pedi�trica",
-  "Vascular Perif�rico",
+  "Toxicología Clínica",
+  "Traumatología Deportiva",
+  "Urología",
+  "Urología Pediátrica",
+  "Vascular Periférico",
 ].sort();
 
 const DERIVACIONES_CATALOG = [
@@ -169,170 +169,170 @@ const DERIVACIONES_CATALOG = [
     id: "d_med_trab",
     esp: "Medicina del Trabajo",
     motivo:
-      "Valoraci�n de aptitud laboral, restricciones, seguimiento ocupacional",
+      "Valoración de aptitud laboral, restricciones, seguimiento ocupacional",
     tipo: "Ocupacional",
   },
   {
     id: "d_fisiat",
-    esp: "Fisiatr�a y Rehabilitaci�n",
+    esp: "Fisiatría y Rehabilitación",
     motivo:
-      "Rehabilitaci�n funcional, valoraci�n incapacidad, prescripci�n ortesis",
-    tipo: "Rehabilitaci�n",
+      "Rehabilitación funcional, valoración incapacidad, prescripción ortesis",
+    tipo: "Rehabilitación",
   },
   {
     id: "d_fisio",
     esp: "Fisioterapia",
-    motivo: "Rehabilitaci�n m�sculoesquel�tica, manejo del dolor, movilidad",
-    tipo: "Rehabilitaci�n",
+    motivo: "Rehabilitación músculoesquelética, manejo del dolor, movilidad",
+    tipo: "Rehabilitación",
   },
   {
     id: "d_orto",
-    esp: "Ortopedia y Traumatolog�a",
-    motivo: "Patolog�a osteoarticular, fracturas, cirug�a ortop�dica",
-    tipo: "Quir�rgica",
+    esp: "Ortopedia y Traumatología",
+    motivo: "Patología osteoarticular, fracturas, cirugía ortopédica",
+    tipo: "Quirúrgica",
   },
   {
     id: "d_neuro",
-    esp: "Neurolog�a",
-    motivo: "Cefalea cr�nica, convulsiones, neuropat�as perif�ricas, mareo",
-    tipo: "Especialidad m�dica",
+    esp: "Neurología",
+    motivo: "Cefalea crónica, convulsiones, neuropatías periféricas, mareo",
+    tipo: "Especialidad médica",
   },
   {
     id: "d_cardio",
-    esp: "Cardiolog�a",
+    esp: "Cardiología",
     motivo:
-      "HTA no controlada, arritmias, dolor tor�cico, valoraci�n cardiovascular",
-    tipo: "Especialidad m�dica",
+      "HTA no controlada, arritmias, dolor torácico, valoración cardiovascular",
+    tipo: "Especialidad médica",
   },
   {
     id: "d_neumo",
-    esp: "Neumolog�a",
+    esp: "Neumología",
     motivo:
-      "EPOC, asma grave, patolog�a respiratoria ocupacional, espirometr�a",
-    tipo: "Especialidad m�dica",
+      "EPOC, asma grave, patología respiratoria ocupacional, espirometría",
+    tipo: "Especialidad médica",
   },
   {
     id: "d_gastro",
-    esp: "Gastroenterolog�a",
-    motivo: "Patolog�a digestiva cr�nica, endoscopia, hepatopat�a",
-    tipo: "Especialidad m�dica",
+    esp: "Gastroenterología",
+    motivo: "Patología digestiva crónica, endoscopia, hepatopatía",
+    tipo: "Especialidad médica",
   },
   {
     id: "d_psiq",
-    esp: "Psiquiatr�a",
+    esp: "Psiquiatría",
     motivo:
-      "Trastorno mental, depresi�n severa, ansiedad, estr�s laboral cr�nico",
+      "Trastorno mental, depresión severa, ansiedad, estrés laboral crónico",
     tipo: "Salud mental",
   },
   {
     id: "d_psico",
-    esp: "Psicolog�a Cl�nica",
+    esp: "Psicología Clínica",
     motivo: "Apoyo emocional, factores de riesgo psicosocial, burnout",
     tipo: "Salud mental",
   },
   {
     id: "d_oftal",
-    esp: "Oftalmolog�a",
-    motivo: "Agudeza visual disminuida, patolog�a ocular, adaptaci�n lentes",
-    tipo: "Especialidad m�dica",
+    esp: "Oftalmología",
+    motivo: "Agudeza visual disminuida, patología ocular, adaptación lentes",
+    tipo: "Especialidad médica",
   },
   {
     id: "d_orl",
-    esp: "Otorrinolaringolog�a",
-    motivo: "Hipoacusia, ac�fenos, v�rtigo, patolog�a ORL",
-    tipo: "Especialidad m�dica",
+    esp: "Otorrinolaringología",
+    motivo: "Hipoacusia, acúfenos, vértigo, patología ORL",
+    tipo: "Especialidad médica",
   },
   {
     id: "d_derm",
-    esp: "Dermatolog�a",
+    esp: "Dermatología",
     motivo:
-      "Dermatosis ocupacional, lesiones cut�neas activas, alergias d�rmicas",
-    tipo: "Especialidad m�dica",
+      "Dermatosis ocupacional, lesiones cutáneas activas, alergias dérmicas",
+    tipo: "Especialidad médica",
   },
   {
     id: "d_endo",
-    esp: "Endocrinolog�a",
+    esp: "Endocrinología",
     motivo:
-      "DM descompensada, hipotiroidismo, obesidad severa, s�ndrome metab�lico",
-    tipo: "Especialidad m�dica",
+      "DM descompensada, hipotiroidismo, obesidad severa, síndrome metabólico",
+    tipo: "Especialidad médica",
   },
   {
     id: "d_nefro",
-    esp: "Nefrolog�a",
-    motivo: "IRC, proteinuria, HTA nefrog�nica, alteraci�n funci�n renal",
-    tipo: "Especialidad m�dica",
+    esp: "Nefrología",
+    motivo: "IRC, proteinuria, HTA nefrogénica, alteración función renal",
+    tipo: "Especialidad médica",
   },
   {
     id: "d_reuma",
-    esp: "Reumatolog�a",
+    esp: "Reumatología",
     motivo: "Artritis, lupus, espondiloartritis, enfermedades autoinmunes",
-    tipo: "Especialidad m�dica",
+    tipo: "Especialidad médica",
   },
   {
     id: "d_nutri",
-    esp: "Nutrici�n y Diet�tica",
-    motivo: "Obesidad, DM2, dislipidemia, plan nutricional terap�utico",
-    tipo: "Apoyo diagn�stico",
+    esp: "Nutrición y Dietética",
+    motivo: "Obesidad, DM2, dislipidemia, plan nutricional terapéutico",
+    tipo: "Apoyo diagnóstico",
   },
   {
     id: "d_optom",
-    esp: "Optometr�a",
-    motivo: "Agudeza visual, adaptaci�n de lentes correctivos, pantallas",
-    tipo: "Apoyo diagn�stico",
+    esp: "Optometría",
+    motivo: "Agudeza visual, adaptación de lentes correctivos, pantallas",
+    tipo: "Apoyo diagnóstico",
   },
   {
     id: "d_audio",
-    esp: "Audiolog�a",
-    motivo: "Hipoacusia ocupacional, audiometr�a tonal, adaptaci�n aud�fonos",
-    tipo: "Apoyo diagn�stico",
+    esp: "Audiología",
+    motivo: "Hipoacusia ocupacional, audiometría tonal, adaptación audífonos",
+    tipo: "Apoyo diagnóstico",
   },
   {
     id: "d_cirgen",
-    esp: "Cirug�a General",
-    motivo: "Hernias, patolog�a abdominal, procedimientos quir�rgicos menores",
-    tipo: "Quir�rgica",
+    esp: "Cirugía General",
+    motivo: "Hernias, patología abdominal, procedimientos quirúrgicos menores",
+    tipo: "Quirúrgica",
   },
   {
     id: "d_gineco",
-    esp: "Ginecolog�a y Obstetricia",
-    motivo: "Control prenatal, patolog�a ginecol�gica, restricciones embarazo",
-    tipo: "Especialidad m�dica",
+    esp: "Ginecología y Obstetricia",
+    motivo: "Control prenatal, patología ginecológica, restricciones embarazo",
+    tipo: "Especialidad médica",
   },
   {
     id: "d_urol",
-    esp: "Urolog�a",
+    esp: "Urología",
     motivo:
-      "Patolog�a prost�tica, litiasis renal, infecciones urinarias recurrentes",
-    tipo: "Especialidad m�dica",
+      "Patología prostática, litiasis renal, infecciones urinarias recurrentes",
+    tipo: "Especialidad médica",
   },
   {
     id: "d_hemato",
-    esp: "Hematolog�a",
-    motivo: "Anemia cr�nica, trombocitopenia, coagulopat�as",
-    tipo: "Especialidad m�dica",
+    esp: "Hematología",
+    motivo: "Anemia crónica, trombocitopenia, coagulopatías",
+    tipo: "Especialidad médica",
   },
   {
     id: "d_oncol",
-    esp: "Oncolog�a",
+    esp: "Oncología",
     motivo: "Sospecha o seguimiento de neoplasias",
-    tipo: "Especialidad m�dica",
+    tipo: "Especialidad médica",
   },
   {
     id: "d_trab_soc",
     esp: "Trabajo Social",
-    motivo: "Gesti�n de beneficios, calificaci�n PCL, seguimiento social",
+    motivo: "Gestión de beneficios, calificación PCL, seguimiento social",
     tipo: "Apoyo social",
   },
   {
     id: "d_medlab",
     esp: "Medicina Laboral / ARL",
-    motivo: "Calificaci�n origen enfermedad, PCL, reincorporaci�n laboral",
+    motivo: "Calificación origen enfermedad, PCL, reincorporación laboral",
     tipo: "Ocupacional",
   },
   {
     id: "d_urgencias",
-    esp: "Urgencias / Hospitalizaci�n",
-    motivo: "Remisi�n urgente a nivel hospitalario",
+    esp: "Urgencias / Hospitalización",
+    motivo: "Remisión urgente a nivel hospitalario",
     tipo: "Urgente",
   },
 ];
@@ -340,7 +340,7 @@ const DERIVACIONES_CATALOG = [
 const RESTRICCIONES_CATALOG = {
   miembroSuperior: {
     label: "Miembro Superior",
-    icon: "??",
+    icon: "🦾",
     color: "blue",
     items: [
       {
@@ -352,44 +352,44 @@ const RESTRICCIONES_CATALOG = {
       {
         id: "ms_02",
         texto:
-          "No realizar movimientos repetitivos de mu�eca/mano (>30 ciclos/min) con miembro afectado",
+          "No realizar movimientos repetitivos de muñeca/mano (>30 ciclos/min) con miembro afectado",
         normativa: "GATISO-DME 2015",
       },
       {
         id: "ms_03",
         texto:
-          "No mantener postura est�tica de hombro en elevaci�n superior a 60� por m�s de 2 horas continuas",
+          "No mantener postura estática de hombro en elevación superior a 60° por más de 2 horas continuas",
         normativa: "GTC-45 2012",
       },
       {
         id: "ms_04",
         texto:
-          "No uso de herramientas vibr�tiles (martillos, pulidoras, taladros) con miembro afectado",
+          "No uso de herramientas vibrátiles (martillos, pulidoras, taladros) con miembro afectado",
         normativa: "GATISO-DME 2015",
       },
       {
         id: "ms_05",
         texto:
-          "Rotaci�n de actividades cada 45 minutos para tareas manuales repetitivas",
+          "Rotación de actividades cada 45 minutos para tareas manuales repetitivas",
         normativa: "Res. 1843/2025",
       },
       {
         id: "ms_06",
         texto:
-          "No realizar pinza digital fina o prensi�n de fuerza sostenida por m�s de 15 minutos continuos",
+          "No realizar pinza digital fina o prensión de fuerza sostenida por más de 15 minutos continuos",
         normativa: "GATISO-DME 2015",
       },
       {
         id: "ms_07",
         texto:
-          "Uso obligatorio de f�rula o soporte ortop�dico durante jornada laboral en actividades de alto riesgo",
+          "Uso obligatorio de férula o soporte ortopédico durante jornada laboral en actividades de alto riesgo",
         normativa: "Res. 0312/2019",
       },
     ],
   },
   columnaLumbar: {
     label: "Columna Lumbar",
-    icon: "??",
+    icon: "🦴",
     color: "orange",
     items: [
       {
@@ -401,61 +401,61 @@ const RESTRICCIONES_CATALOG = {
       {
         id: "cl_02",
         texto:
-          "No permanecer en posici�n de pie est�tica por m�s de 2 horas continuas sin descanso postural",
+          "No permanecer en posición de pie estática por más de 2 horas continuas sin descanso postural",
         normativa: "GTC-45 2012",
       },
       {
         id: "cl_03",
         texto:
-          "No permanecer en posici�n sedente por m�s de 1 hora continua sin cambio postural",
+          "No permanecer en posición sedente por más de 1 hora continua sin cambio postural",
         normativa: "GATISO-DME 2015",
       },
       {
         id: "cl_04",
-        texto: "No realizar flexi�n de tronco mayor a 45� con o sin carga",
+        texto: "No realizar flexión de tronco mayor a 45° con o sin carga",
         normativa: "GATISO-DME 2015",
       },
       {
         id: "cl_05",
         texto:
-          "No realizar movimientos de torsi�n de columna lumbar bajo carga",
+          "No realizar movimientos de torsión de columna lumbar bajo carga",
         normativa: "GATISO-DME 2015",
       },
       {
         id: "cl_06",
         texto:
-          "Uso obligatorio de cintur�n lumbar en tareas de carga/descarga durante per�odo de restricci�n",
+          "Uso obligatorio de cinturón lumbar en tareas de carga/descarga durante período de restricción",
         normativa: "Res. 0312/2019",
       },
       {
         id: "cl_07",
         texto:
-          "Adaptar puesto de trabajo con silla ergon�mica con soporte lumbar y reposapi�s si aplica",
+          "Adaptar puesto de trabajo con silla ergonómica con soporte lumbar y reposapiés si aplica",
         normativa: "Res. 2400/1979 Art. 381",
       },
     ],
   },
   columnaCervical: {
     label: "Columna Cervical",
-    icon: "??",
+    icon: "🔭",
     color: "purple",
     items: [
       {
         id: "cc_01",
         texto:
-          "No mantener postura de flexi�n cervical mayor a 20� por m�s de 2 horas continuas (uso de pantallas/microscopia)",
+          "No mantener postura de flexión cervical mayor a 20° por más de 2 horas continuas (uso de pantallas/microscopia)",
         normativa: "GATISO-DME 2015",
       },
       {
         id: "cc_02",
         texto:
-          "No realizar tareas con el cuello en rotaci�n m�xima sostenida por m�s de 30 minutos",
+          "No realizar tareas con el cuello en rotación máxima sostenida por más de 30 minutos",
         normativa: "GTC-45 2012",
       },
       {
         id: "cc_03",
         texto:
-          "Pantalla de computador a nivel de los ojos, distancia m�nima 50 cm",
+          "Pantalla de computador a nivel de los ojos, distancia mínima 50 cm",
         normativa: "Res. 2400/1979",
       },
       {
@@ -474,50 +474,50 @@ const RESTRICCIONES_CATALOG = {
   },
   columnaDorsal: {
     label: "Columna Dorsal",
-    icon: "??",
+    icon: "🏥",
     color: "teal",
     items: [
       {
         id: "cd_01",
         texto:
-          "No permanecer en sedestaci�n prolongada sin soporte dorsal adecuado (>1 hora continua)",
+          "No permanecer en sedestación prolongada sin soporte dorsal adecuado (>1 hora continua)",
         normativa: "GATISO-DME 2015",
       },
       {
         id: "cd_02",
         texto:
-          "No realizar actividades que impliquen elevaci�n de brazos por encima de los hombros de forma repetitiva",
+          "No realizar actividades que impliquen elevación de brazos por encima de los hombros de forma repetitiva",
         normativa: "GTC-45 2012",
       },
       {
         id: "cd_03",
         texto:
-          "Silla con respaldo que cubra toda la zona dorsal (v�rtebras T1-T12)",
+          "Silla con respaldo que cubra toda la zona dorsal (vértebras T1-T12)",
         normativa: "Res. 2400/1979",
       },
       {
         id: "cd_04",
         texto:
-          "No exposici�n a vibraci�n de cuerpo entero (manejo de veh�culos pesados, maquinaria) sin estudio de impacto",
+          "No exposición a vibración de cuerpo entero (manejo de vehículos pesados, maquinaria) sin estudio de impacto",
         normativa: "GTC-45 2012",
       },
     ],
   },
   miembroInferior: {
     label: "Miembro Inferior",
-    icon: "??",
+    icon: "🦵",
     color: "green",
     items: [
       {
         id: "mi_01",
         texto:
-          "No permanecer en bipedestaci�n est�tica por m�s de 2 horas continuas",
+          "No permanecer en bipedestación estática por más de 2 horas continuas",
         normativa: "GTC-45 2012",
       },
       {
         id: "mi_02",
         texto:
-          "No subir o bajar escaleras de forma repetitiva (>30 ascensos/d�a) en per�odo de restricci�n",
+          "No subir o bajar escaleras de forma repetitiva (>30 ascensos/día) en período de restricción",
         normativa: "GATISO-DME 2015",
       },
       {
@@ -529,278 +529,278 @@ const RESTRICCIONES_CATALOG = {
       {
         id: "mi_04",
         texto:
-          "Calzado ergon�mico con soporte plantar y tac�n m�ximo 3 cm durante jornada laboral",
+          "Calzado ergonómico con soporte plantar y tacón máximo 3 cm durante jornada laboral",
         normativa: "GATISO-DME 2015",
       },
       {
         id: "mi_05",
         texto:
-          "No conducci�n de veh�culos pesados o maquinaria durante per�odo de restricci�n",
+          "No conducción de vehículos pesados o maquinaria durante período de restricción",
         normativa: "Res. 4100/2004",
       },
     ],
   },
   cardiovascular: {
-    label: "Cardiovascular / Metab�lico",
-    icon: "??",
+    label: "Cardiovascular / Metabólico",
+    icon: "❤️",
     color: "red",
     items: [
       {
         id: "cv_01",
         texto:
-          "No realizar actividades de alta demanda cardiovascular sin evaluaci�n cardiol�gica previa (FC >85% FCM)",
+          "No realizar actividades de alta demanda cardiovascular sin evaluación cardiológica previa (FC >85% FCM)",
         normativa: "Res. 1843/2025",
       },
       {
         id: "cv_02",
         texto:
-          "No trabajo en alturas hasta control y estabilizaci�n de cifras tensionales (TA >140/90 mmHg)",
+          "No trabajo en alturas hasta control y estabilización de cifras tensionales (TA >140/90 mmHg)",
         normativa: "Res. 4272/2021",
       },
       {
         id: "cv_03",
         texto:
-          "Control m�dico peri�dico mensual de cifras tensionales mientras dure la restricci�n",
+          "Control médico periódico mensual de cifras tensionales mientras dure la restricción",
         normativa: "Res. 1843/2025",
       },
       {
         id: "cv_04",
         texto:
-          "No exposici�n a temperaturas extremas (calor >35�C / fr�o <10�C) sin protecci�n individual adecuada",
+          "No exposición a temperaturas extremas (calor >35°C / frío <10°C) sin protección individual adecuada",
         normativa: "GTC-45 2012",
       },
       {
         id: "cv_05",
         texto:
-          "Plan de alimentaci�n supervisado: restricci�n de sodio, grasas saturadas y az�cares simples en jornada laboral",
+          "Plan de alimentación supervisado: restricción de sodio, grasas saturadas y azúcares simples en jornada laboral",
         normativa: "Res. 1843/2025",
       },
       {
         id: "cv_06",
         texto:
-          "No trabajos en jornadas nocturnas prolongadas (>8 h/noche) sin rotaci�n semestral supervisada",
+          "No trabajos en jornadas nocturnas prolongadas (>8 h/noche) sin rotación semestral supervisada",
         normativa: "Dec. 1072/2015",
       },
     ],
   },
   respiratorio: {
     label: "Respiratorio / Pulmonar",
-    icon: "??",
+    icon: "🫁",
     color: "sky",
     items: [
       {
         id: "re_01",
         texto:
-          "No exposici�n a polvos org�nicos/inorg�nicos sin uso de respirador N95 o superior certificado",
+          "No exposición a polvos orgánicos/inorgánicos sin uso de respirador N95 o superior certificado",
         normativa: "Res. 0773/2021",
       },
       {
         id: "re_02",
         texto:
-          "No exposici�n a humos de soldadura, gases de escape o vapores qu�micos sin ventilaci�n localizada extracci�n",
+          "No exposición a humos de soldadura, gases de escape o vapores químicos sin ventilación localizada extracción",
         normativa: "GTC-45 2012",
       },
       {
         id: "re_03",
         texto:
-          "Espirometr�a de control semestral mientras persistan factores de riesgo respiratorio",
+          "Espirometría de control semestral mientras persistan factores de riesgo respiratorio",
         normativa: "GATISO-ND 2012",
       },
       {
         id: "re_04",
         texto:
-          "No trabajo en espacios confinados hasta nueva evaluaci�n neumol�gica con resultado apto",
+          "No trabajo en espacios confinados hasta nueva evaluación neumológica con resultado apto",
         normativa: "Res. 0491/2020",
       },
       {
         id: "re_05",
         texto:
-          "No exposici�n a agentes sensibilizantes respiratorios (l�tex, isocianatos, harinas) sin EPP certificado",
+          "No exposición a agentes sensibilizantes respiratorios (látex, isocianatos, harinas) sin EPP certificado",
         normativa: "GTC-45 2012",
       },
     ],
   },
   neurologico: {
-    label: "Neurol�gico / Psiqui�trico",
-    icon: "??",
+    label: "Neurológico / Psiquiátrico",
+    icon: "🧠",
     color: "violet",
     items: [
       {
         id: "ne_01",
         texto:
-          "No operaci�n de maquinaria peligrosa, veh�culos o equipos el�ctricos de alta tensi�n hasta concepto neurol�gico",
+          "No operación de maquinaria peligrosa, vehículos o equipos eléctricos de alta tensión hasta concepto neurológico",
         normativa: "Res. 1843/2025",
       },
       {
         id: "ne_02",
         texto:
-          "No trabajo en alturas hasta nueva evaluaci�n m�dica con concepto apto (Res. 4272/2021)",
+          "No trabajo en alturas hasta nueva evaluación médica con concepto apto (Res. 4272/2021)",
         normativa: "Res. 4272/2021",
       },
       {
         id: "ne_03",
         texto:
-          "No exposici�n a solventes neurot�xicos (benceno, tolueno, xileno) sin ventilaci�n y EPP certificado",
+          "No exposición a solventes neurotóxicos (benceno, tolueno, xileno) sin ventilación y EPP certificado",
         normativa: "GTC-45 2012",
       },
       {
         id: "ne_04",
         texto:
-          "Jornada laboral m�xima de 8 horas/d�a, sin horas extras durante per�odo de tratamiento psiqui�trico activo",
+          "Jornada laboral máxima de 8 horas/día, sin horas extras durante período de tratamiento psiquiátrico activo",
         normativa: "Dec. 1072/2015",
       },
       {
         id: "ne_05",
         texto:
-          "No trabajo en turno nocturno rotativo durante per�odo de tratamiento de trastorno de sue�o o ansiedad severa",
+          "No trabajo en turno nocturno rotativo durante período de tratamiento de trastorno de sueño o ansiedad severa",
         normativa: "Res. 1843/2025",
       },
       {
         id: "ne_06",
         texto:
-          "Seguimiento psicol�gico laboral mensual y reporte a m�dico SST de evoluci�n cl�nica",
+          "Seguimiento psicológico laboral mensual y reporte a médico SST de evolución clínica",
         normativa: "Res. 2404/2019",
       },
     ],
   },
   exposicionToxicos: {
-    label: "Exposici�n a T�xicos / Qu�micos",
-    icon: "??",
+    label: "Exposición a Tóxicos / Químicos",
+    icon: "⚗️",
     color: "yellow",
     items: [
       {
         id: "et_01",
         texto:
-          "No manipulaci�n directa de plaguicidas organofosforados sin equipo de protecci�n personal completo (nivel C)",
+          "No manipulación directa de plaguicidas organofosforados sin equipo de protección personal completo (nivel C)",
         normativa: "Res. 0031/1995",
       },
       {
         id: "et_02",
         texto:
-          "No exposici�n a metales pesados (plomo, mercurio, cadmio) sin niveles biol�gicos de monitoreo vigentes",
+          "No exposición a metales pesados (plomo, mercurio, cadmio) sin niveles biológicos de monitoreo vigentes",
         normativa: "GTC-45 2012",
       },
       {
         id: "et_03",
         texto:
-          "Perfil toxicol�gico (colinesterasa/metales) semestral obligatorio mientras persista exposici�n",
+          "Perfil toxicológico (colinesterasa/metales) semestral obligatorio mientras persista exposición",
         normativa: "Res. 1843/2025",
       },
       {
         id: "et_04",
         texto:
-          "No ingesta de alimentos ni bebidas en �reas de manejo de sustancias qu�micas",
+          "No ingesta de alimentos ni bebidas en áreas de manejo de sustancias químicas",
         normativa: "Res. 2400/1979",
       },
       {
         id: "et_05",
         texto:
-          "Ducha de emergencia y lavaojos funcionales en �rea de trabajo como requisito para laborar con qu�micos corrosivos",
+          "Ducha de emergencia y lavaojos funcionales en área de trabajo como requisito para laborar con químicos corrosivos",
         normativa: "Res. 2400/1979",
       },
     ],
   },
   visual: {
     label: "Visual / Auditivo",
-    icon: "???",
+    icon: "👁️",
     color: "indigo",
     items: [
       {
         id: "va_01",
         texto:
-          "Uso obligatorio de correcci�n �ptica (gafas con prescripci�n) durante jornada laboral en tareas de precisi�n visual",
+          "Uso obligatorio de corrección óptica (gafas con prescripción) durante jornada laboral en tareas de precisión visual",
         normativa: "Res. 2400/1979",
       },
       {
         id: "va_02",
         texto:
-          "No trabajo en conducci�n nocturna de veh�culos con agudeza visual corregida inferior a 20/40",
+          "No trabajo en conducción nocturna de vehículos con agudeza visual corregida inferior a 20/40",
         normativa: "Res. 4100/2004",
       },
       {
         id: "va_03",
         texto:
-          "No exposici�n a radiaci�n UV/IR sin protecci�n ocular certificada (ANSI Z87.1)",
+          "No exposición a radiación UV/IR sin protección ocular certificada (ANSI Z87.1)",
         normativa: "GTC-45 2012",
       },
       {
         id: "va_04",
         texto:
-          "No exposici�n a ruido >80 dB sin uso de protecci�n auditiva de doble v�a (tap�n + orejera)",
+          "No exposición a ruido >80 dB sin uso de protección auditiva de doble vía (tapón + orejera)",
         normativa: "Res. 1792/1990",
       },
       {
         id: "va_05",
         texto:
-          "Audiometr�a de control semestral con exposici�n a ruido ocupacional =85 dB",
+          "Audiometría de control semestral con exposición a ruido ocupacional ≥85 dB",
         normativa: "Res. 8321/1983",
       },
     ],
   },
   alturas: {
     label: "Trabajo en Alturas",
-    icon: "???",
+    icon: "🏗️",
     color: "amber",
     items: [
       {
         id: "al_01",
         texto:
-          "NO APTO para trabajo en alturas =1.5 metros hasta nueva evaluaci�n m�dica con concepto espec�fico",
+          "NO APTO para trabajo en alturas ≥1.5 metros hasta nueva evaluación médica con concepto específico",
         normativa: "Res. 4272/2021",
       },
       {
         id: "al_02",
         texto:
-          "Requiere evaluaci�n especializada (neurolog�a/otorrinolaringolog�a) antes de autorizar trabajo en alturas",
+          "Requiere evaluación especializada (neurología/otorrinolaringología) antes de autorizar trabajo en alturas",
         normativa: "Res. 4272/2021 Art. 10",
       },
       {
         id: "al_03",
         texto:
-          "No trabajo en alturas con medicaci�n que produzca somnolencia, mareo o alteraci�n del equilibrio",
+          "No trabajo en alturas con medicación que produzca somnolencia, mareo o alteración del equilibrio",
         normativa: "Res. 4272/2021",
       },
       {
         id: "al_04",
         texto:
-          "Uso obligatorio de arn�s de cuerpo completo certificado y l�nea de vida en toda tarea >1.5 m",
+          "Uso obligatorio de arnés de cuerpo completo certificado y línea de vida en toda tarea >1.5 m",
         normativa: "Res. 4272/2021",
       },
       {
         id: "al_05",
         texto:
-          "Acompa�amiento permanente de vig�a certificado en trabajo en alturas durante per�odo de restricci�n parcial",
+          "Acompañamiento permanente de vigía certificado en trabajo en alturas durante período de restricción parcial",
         normativa: "Res. 4272/2021 Art. 14",
       },
     ],
   },
   dermatologico: {
-    label: "Dermatol�gico",
-    icon: "??",
+    label: "Dermatológico",
+    icon: "🩺",
     color: "rose",
     items: [
       {
         id: "de_01",
         texto:
-          "No contacto directo con agentes irritantes/sensibilizantes cut�neos sin guantes de nitrilo/neopreno certificados",
+          "No contacto directo con agentes irritantes/sensibilizantes cutáneos sin guantes de nitrilo/neopreno certificados",
         normativa: "GTC-45 2012",
       },
       {
         id: "de_02",
         texto:
-          "No exposici�n solar directa sin protector solar SPF 50+ durante jornadas extramurales",
+          "No exposición solar directa sin protector solar SPF 50+ durante jornadas extramurales",
         normativa: "Res. 1843/2025",
       },
       {
         id: "de_03",
         texto:
-          "No manipulaci�n de alimentos hasta resoluci�n completa de lesi�n cut�nea activa en manos",
+          "No manipulación de alimentos hasta resolución completa de lesión cutánea activa en manos",
         normativa: "Res. 2674/2013",
       },
       {
         id: "de_04",
         texto:
-          "Control dermatol�gico mensual mientras persistan lesiones laborales activas",
+          "Control dermatológico mensual mientras persistan lesiones laborales activas",
         normativa: "Res. 1843/2025",
       },
     ],
@@ -810,54 +810,54 @@ const RESTRICCIONES_CATALOG = {
 const RECOMENDACIONES_CATALOG = {
   generales: {
     label: "Recomendaciones Generales de Salud",
-    icon: "??",
+    icon: "💊",
     color: "emerald",
     items: [
       {
         id: "rg_01",
         texto:
-          "Actividad f�sica aer�bica moderada m�nimo 150 minutos/semana (caminar, nadar, ciclismo)",
+          "Actividad física aeróbica moderada mínimo 150 minutos/semana (caminar, nadar, ciclismo)",
       },
       {
         id: "rg_02",
         texto:
-          "Alimentaci�n balanceada: reducir ultraprocesados, az�cares y grasas saturadas. Aumentar frutas, verduras y prote�na magra",
+          "Alimentación balanceada: reducir ultraprocesados, azúcares y grasas saturadas. Aumentar frutas, verduras y proteína magra",
       },
       {
         id: "rg_03",
         texto:
-          "Control m�dico anual con laboratorios de seguimiento (glicemia, perfil lip�dico, hemograma)",
+          "Control médico anual con laboratorios de seguimiento (glicemia, perfil lipídico, hemograma)",
       },
       {
         id: "rg_04",
         texto:
-          "Mantener �ndice de masa corporal entre 18.5 y 24.9 kg/m� mediante dieta y ejercicio supervisado",
+          "Mantener índice de masa corporal entre 18.5 y 24.9 kg/m² mediante dieta y ejercicio supervisado",
       },
       {
         id: "rg_05",
         texto:
-          "Hidrataci�n adecuada: m�nimo 2 litros de agua/d�a, aumentar en jornadas con exposici�n a calor",
+          "Hidratación adecuada: mínimo 2 litros de agua/día, aumentar en jornadas con exposición a calor",
       },
       {
         id: "rg_06",
         texto:
-          "Higiene del sue�o: dormir entre 7-8 horas/noche en ambiente oscuro y silencioso",
+          "Higiene del sueño: dormir entre 7-8 horas/noche en ambiente oscuro y silencioso",
       },
       {
         id: "rg_07",
         texto:
-          "Cesaci�n tab�quica inmediata; se recomienda programa de apoyo psicol�gico y/o farmacol�gico",
+          "Cesación tabáquica inmediata; se recomienda programa de apoyo psicológico y/o farmacológico",
       },
       {
         id: "rg_08",
         texto:
-          "Moderaci�n en consumo de alcohol: m�ximo 1 unidad/d�a (mujeres) / 2 unidades/d�a (hombres)",
+          "Moderación en consumo de alcohol: máximo 1 unidad/día (mujeres) / 2 unidades/día (hombres)",
       },
     ],
   },
   laborales: {
-    label: "Recomendaciones Laborales / Ergon�micas",
-    icon: "??",
+    label: "Recomendaciones Laborales / Ergonómicas",
+    icon: "🏢",
     color: "blue",
     items: [
       {
@@ -868,27 +868,27 @@ const RECOMENDACIONES_CATALOG = {
       {
         id: "rl_02",
         texto:
-          "Ajustar altura de escritorio/banco de trabajo: codos a 90�, pantalla a nivel de los ojos",
+          "Ajustar altura de escritorio/banco de trabajo: codos a 90°, pantalla a nivel de los ojos",
       },
       {
         id: "rl_03",
         texto:
-          "Uso de silla ergon�mica con soporte lumbar ajustable, altura regulable y apoyabrazos",
+          "Uso de silla ergonómica con soporte lumbar ajustable, altura regulable y apoyabrazos",
       },
       {
         id: "rl_04",
         texto:
-          "T�cnica correcta de levantamiento de cargas: doblar rodillas, mantener espalda recta, carga pegada al cuerpo",
+          "Técnica correcta de levantamiento de cargas: doblar rodillas, mantener espalda recta, carga pegada al cuerpo",
       },
       {
         id: "rl_05",
         texto:
-          "Rotaci�n de actividades laborales para evitar exposici�n continua a un solo factor de riesgo ergon�mico",
+          "Rotación de actividades laborales para evitar exposición continua a un solo factor de riesgo ergonómico",
       },
       {
         id: "rl_06",
         texto:
-          "Uso obligatorio de calzado de seguridad con soporte plantar en �reas de carga y descarga",
+          "Uso obligatorio de calzado de seguridad con soporte plantar en áreas de carga y descarga",
       },
       {
         id: "rl_07",
@@ -903,61 +903,61 @@ const RECOMENDACIONES_CATALOG = {
     ],
   },
   seguimiento: {
-    label: "Seguimiento M�dico y Control",
-    icon: "??",
+    label: "Seguimiento Médico y Control",
+    icon: "📋",
     color: "purple",
     items: [
       {
         id: "rs_01",
         texto:
-          "Control m�dico ocupacional semestral durante los pr�ximos 2 a�os",
+          "Control médico ocupacional semestral durante los próximos 2 años",
       },
       {
         id: "rs_02",
         texto:
-          "Consulta con m�dico general/especialista en las pr�ximas 4 semanas para manejo de patolog�a diagnosticada",
+          "Consulta con médico general/especialista en las próximas 4 semanas para manejo de patología diagnosticada",
       },
       {
         id: "rs_03",
         texto:
-          "Continuar o iniciar tratamiento farmacol�gico indicado por m�dico tratante. Reportar medicaci�n al m�dico de empresa",
+          "Continuar o iniciar tratamiento farmacológico indicado por médico tratante. Reportar medicación al médico de empresa",
       },
       {
         id: "rs_04",
         texto:
-          "Adherencia a programa de vigilancia epidemiol�gica de la empresa seg�n riesgo identificado",
+          "Adherencia a programa de vigilancia epidemiológica de la empresa según riesgo identificado",
       },
       {
         id: "rs_05",
         texto:
-          "Informar de inmediato al m�dico de empresa cualquier cambio en su condici�n de salud o aparici�n de nuevos s�ntomas",
+          "Informar de inmediato al médico de empresa cualquier cambio en su condición de salud o aparición de nuevos síntomas",
       },
       {
         id: "rs_06",
         texto:
-          "Vacunaci�n al d�a: esquema de adultos seg�n EPS + vacunas de riesgo ocupacional (hepatitis B, t�tanos, influenza)",
+          "Vacunación al día: esquema de adultos según EPS + vacunas de riesgo ocupacional (hepatitis B, tétanos, influenza)",
       },
     ],
   },
   psicosocial: {
     label: "Salud Mental / Psicosocial",
-    icon: "??",
+    icon: "🧘",
     color: "teal",
     items: [
       {
         id: "rp_01",
         texto:
-          "Participar en programa de manejo del estr�s laboral y t�cnicas de mindfulness ofrecidas por la empresa o EPS",
+          "Participar en programa de manejo del estrés laboral y técnicas de mindfulness ofrecidas por la empresa o EPS",
       },
       {
         id: "rp_02",
         texto:
-          "Solicitar apoyo psicol�gico a trav�s de EPS en caso de s�ntomas de ansiedad, depresi�n o burnout",
+          "Solicitar apoyo psicológico a través de EPS en caso de síntomas de ansiedad, depresión o burnout",
       },
       {
         id: "rp_03",
         texto:
-          "Establecer l�mites claros entre vida laboral y personal: evitar trabajo fuera de horario habitual",
+          "Establecer límites claros entre vida laboral y personal: evitar trabajo fuera de horario habitual",
       },
       {
         id: "rp_04",
@@ -968,16 +968,16 @@ const RECOMENDACIONES_CATALOG = {
   },
 };
 const DEFAULT_RECOMENDACIONES_SELECTED = {
-  rg_01: true, // Actividad f�sica aer�bica
-  rg_02: true, // Alimentaci�n balanceada
-  rg_03: true, // Control m�dico anual
-  rg_05: true, // Hidrataci�n
-  rg_06: true, // Higiene del sue�o
+  rg_01: true, // Actividad física aeróbica
+  rg_02: true, // Alimentación balanceada
+  rg_03: true, // Control médico anual
+  rg_05: true, // Hidratación
+  rg_06: true, // Higiene del sueño
   rl_01: true, // Pausas activas
-  rl_04: true, // T�cnica levantamiento cargas
-  rs_01: true, // Control m�dico ocupacional semestral
+  rl_04: true, // Técnica levantamiento cargas
+  rs_01: true, // Control médico ocupacional semestral
   rs_05: true, // Informar cambios de salud
-  rs_06: true, // Vacunaci�n al d�a
+  rs_06: true, // Vacunación al día
 };
 
 export { ARL_LIST, AFP_LIST, EPS_LIST, CONTRATO_LIST, TURNO_LIST, ETNIA_LIST, SPECIALTIES_LIST, DERIVACIONES_CATALOG, RESTRICCIONES_CATALOG, RECOMENDACIONES_CATALOG, DEFAULT_RECOMENDACIONES_SELECTED };
