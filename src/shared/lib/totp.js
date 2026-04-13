@@ -82,4 +82,3 @@ export const _totpGetOtpAuthUrl = (secret, user, issuer = "SISOOcupaSalud") =>
 export const _totpGetQRCodeUrl = (secret, user) =>
   "https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=" +
   encodeURIComponent(_totpGetOtpAuthUrl(secret, user));
-const _generarPaqueteRetencion = async (hcData, medicoData) => {

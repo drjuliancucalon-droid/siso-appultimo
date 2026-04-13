@@ -1,179 +1,149 @@
-import React, { useState } from 'react';
-import { Stethoscope, ChevronRight } from 'lucide-react';
+import React from 'react';
+import { Activity } from 'lucide-react';
 import { SectionTitle } from '../../../shared/components/ui/SectionTitle';
-import { SelectGroup } from '../../../shared/components/ui/SelectGroup';
-import { TextAreaGroup } from '../../../shared/components/ui/TextAreaGroup';
+import { NORMAL_DESCRIPTIONS_SYSTEMS } from '../../../shared/data/catalogs';
 
 /**
- * PhysicalExam - Examen Físico por Sistemas
- * Incluye todos los sistemas requeridos por Res. 1843/2025
+ * PhysicalExam — Examen Físico por Sistemas (15 sistemas)
+ * Res. 1843/2025.  Cada sistema: Normal/Anormal toggle + hallazgo.
+ * Auto-rellena descripciones normales de NORMAL_DESCRIPTIONS_SYSTEMS.
+ *
+ * Props:
+ *   data     — objeto completo del paciente
+ *   setData  — setter del estado
+ *   disabled — HC cerrada
+ *   fieldKey — 'examenFisicoSistemas' (ocupacional) o 'sistemasPorExamen' (general)
  */
-const SISTEMAS = [
-  { key: 'cabezaCuello', label: 'Cabeza y Cuello', icon: '🧠', fields: ['cabezaCuello', 'orl', 'ojos', 'agudezaVisualOD', 'agudezaVisualOI'] },
-  { key: 'cardiopulmonar', label: 'Cardiopulmonar', icon: '❤️', fields: ['cardiopulmonar', 'ruidos', 'pulmones'] },
-  { key: 'abdomen', label: 'Abdomen', icon: '🫁', fields: ['abdomen'] },
-  { key: 'extremidades', label: 'Extremidades', icon: '🦴', fields: ['extremidades', 'columnaVertebral', 'miembrosSup', 'miembrosInf'] },
-  { key: 'neurologico', label: 'Neurológico', icon: '🧬', fields: ['neurologico', 'reflejos', 'sensibilidad', 'marcha'] },
-  { key: 'pielFaneras', label: 'Piel y Faneras', icon: '🩹', fields: ['pielFaneras'] },
-  { key: 'genitourinario', label: 'Genitourinario', icon: '🏥', fields: ['genitourinario'] },
-  { key: 'psiquiatrico', label: 'Estado Mental', icon: '🧘', fields: ['estadoMental', 'orientacion', 'afecto'] },
-];
+export const PhysicalExam = ({
+  data,
+  setData,
+  disabled = false,
+  fieldKey = 'examenFisicoSistemas',
+}) => {
+  const sistemas = data[fieldKey] || {};
 
-const HALLAZGO_OPTIONS = ['Normal', 'Anormal'];
-
-export const PhysicalExam = ({ data, onChange, disabled = false, enfasis = 'GENERAL' }) => {
-  const [expanded, setExpanded] = useState({});
-
-  const handleFieldChange = (field, value) => {
-    const examen = { ...(data.examenFisicoSistemas || {}), [field]: value };
-    onChange({ ...data, examenFisicoSistemas: examen });
+  /** Todos normal de un click */
+  const handleAllNormal = () => {
+    setData((p) => ({
+      ...p,
+      [fieldKey]: Object.fromEntries(
+        Object.keys(p[fieldKey] || {}).map((sys) => [
+          sys,
+          { estado: 'Normal', hallazgo: NORMAL_DESCRIPTIONS_SYSTEMS[sys] || '' },
+        ])
+      ),
+    }));
   };
 
-  const examen = data.examenFisicoSistemas || {};
+  const handleEstado = (sys, estado) => {
+    setData((p) => ({
+      ...p,
+      [fieldKey]: {
+        ...p[fieldKey],
+        [sys]: {
+          ...p[fieldKey][sys],
+          estado,
+          hallazgo: estado === 'Normal' ? (NORMAL_DESCRIPTIONS_SYSTEMS[sys] || '') : '',
+        },
+      },
+    }));
+  };
+
+  const handleHallazgo = (sys, hallazgo) => {
+    setData((p) => ({
+      ...p,
+      [fieldKey]: {
+        ...p[fieldKey],
+        [sys]: { ...p[fieldKey][sys], hallazgo },
+      },
+    }));
+  };
 
   return (
-    <fieldset disabled={disabled}>
-      <SectionTitle title="Examen Físico por Sistemas" icon={Stethoscope} color="blue" />
-      <div className="space-y-1.5">
-        {SISTEMAS.map((sis) => {
-          const hasAnormal = sis.fields.some((f) =>
-            (examen[f] || '').toLowerCase().includes('anormal')
-          );
-          return (
+    <>
+      <SectionTitle title="Examen Físico por Sistemas" icon={Activity} />
+      <div className="bg-gray-50 p-2 rounded-lg border border-gray-200 mb-2 print:bg-transparent">
+        {/* Botón Todos Normal */}
+        <div className="flex justify-end mb-2 no-print">
+          <button
+            type="button"
+            onClick={handleAllNormal}
+            disabled={disabled}
+            className="text-[10px] bg-emerald-600 text-white px-3 py-1 rounded-lg font-bold hover:bg-emerald-700 flex items-center gap-1 disabled:opacity-50"
+          >
+            ✅ Todos Normal
+          </button>
+        </div>
+
+        <div className="grid grid-cols-2 gap-x-3 gap-y-1.5">
+          {Object.keys(sistemas).map((sys) => (
             <div
-              key={sis.key}
-              className={`border rounded-xl overflow-hidden ${
-                hasAnormal ? 'border-red-300 bg-red-50' : 'border-gray-200'
+              key={sys}
+              className={`border-b border-gray-200 pb-1.5 print:border-gray-300 ${
+                sistemas[sys].estado === 'Anormal' ? 'bg-red-50 rounded p-1' : ''
               }`}
             >
-              <button
-                type="button"
-                onClick={() => setExpanded((p) => ({ ...p, [sis.key]: !p[sis.key] }))}
-                className={`w-full flex justify-between items-center px-3 py-2.5 text-left font-bold text-xs transition ${
-                  hasAnormal ? 'bg-red-50 text-red-800' : 'bg-gray-50 text-gray-800 hover:bg-gray-100'
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  <span>{sis.icon}</span>
-                  <span>{sis.label}</span>
-                  {hasAnormal && (
-                    <span className="bg-red-600 text-white text-[9px] px-2 py-0.5 rounded-full font-bold">
-                      Anormal
-                    </span>
-                  )}
+              <div className="flex justify-between items-center mb-0.5">
+                <span className="text-[10px] font-bold text-gray-700 uppercase">
+                  {sys}
+                </span>
+                {/* Pantalla: radios Normal / Anormal */}
+                <div className="flex gap-3 no-print">
+                  <label className="text-[10px] cursor-pointer flex items-center gap-1">
+                    <input
+                      type="radio"
+                      checked={sistemas[sys].estado === 'Normal'}
+                      onChange={() => handleEstado(sys, 'Normal')}
+                      disabled={disabled}
+                      className="text-emerald-600"
+                    />
+                    <span className="text-emerald-700 font-bold">Normal</span>
+                  </label>
+                  <label className="text-[10px] cursor-pointer flex items-center gap-1">
+                    <input
+                      type="radio"
+                      checked={sistemas[sys].estado === 'Anormal'}
+                      onChange={() => handleEstado(sys, 'Anormal')}
+                      disabled={disabled}
+                      className="text-red-600"
+                    />
+                    <span className="text-red-600 font-bold">Anormal</span>
+                  </label>
                 </div>
-                <ChevronRight className={`w-4 h-4 transition-transform ${expanded[sis.key] ? 'rotate-90' : ''}`} />
-              </button>
-              {expanded[sis.key] && (
-                <div className="p-3 space-y-2 bg-white">
-                  {sis.fields.map((field) => (
-                    <div key={field} className="flex gap-2 items-start">
-                      <div className="w-1/4 min-w-[100px]">
-                        <label className="block text-[9px] font-black text-gray-500 uppercase mb-0.5">
-                          {field.replace(/([A-Z])/g, ' $1').replace(/^./, (s) => s.toUpperCase())}
-                        </label>
-                        <select
-                          value={(examen[field + '_hallazgo'] || 'Normal')}
-                          onChange={(e) => handleFieldChange(field + '_hallazgo', e.target.value)}
-                          className={`w-full p-1 border rounded text-[10px] font-bold ${
-                            (examen[field + '_hallazgo'] || 'Normal') === 'Anormal'
-                              ? 'border-red-300 bg-red-50 text-red-700'
-                              : 'border-gray-200 text-gray-700'
-                          }`}
-                        >
-                          {HALLAZGO_OPTIONS.map((o) => (
-                            <option key={o} value={o}>{o}</option>
-                          ))}
-                        </select>
-                      </div>
-                      <div className="flex-1">
-                        <textarea
-                          value={examen[field] || ''}
-                          onChange={(e) => handleFieldChange(field, e.target.value)}
-                          placeholder={`Descripción hallazgos ${field}...`}
-                          rows={2}
-                          className="w-full p-1.5 border border-gray-200 rounded text-xs focus:ring-1 focus:ring-blue-300 outline-none resize-y"
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Maniobras osteomusculares (mostrar si énfasis osteomuscular o alturas) */}
-      {(enfasis === 'OSTEOMUSCULAR' || enfasis === 'ALTURAS' || enfasis === 'GENERAL') && (
-        <div className="mt-3">
-          <SectionTitle title="Maniobras Osteomusculares" icon={Stethoscope} color="purple" />
-          <div className="grid grid-cols-2 gap-2">
-            {[
-              { name: 'maniobra_phalen', label: 'Phalen (túnel carpiano)' },
-              { name: 'maniobra_tinel', label: 'Tinel (túnel carpiano)' },
-              { name: 'maniobra_finkelstein', label: 'Finkelstein (De Quervain)' },
-              { name: 'maniobra_neer', label: 'Neer (manguito rotador)' },
-              { name: 'maniobra_hawkins', label: 'Hawkins-Kennedy (manguito rotador)' },
-              { name: 'maniobra_lassegue', label: 'Lasègue (ciática)' },
-              { name: 'maniobra_romberg', label: 'Romberg (equilibrio)' },
-              { name: 'maniobra_adams', label: 'Adams (escoliosis)' },
-            ].map(({ name, label }) => (
-              <div key={name} className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg">
-                <select
-                  value={examen[name] || 'Negativo'}
-                  onChange={(e) => handleFieldChange(name, e.target.value)}
-                  className={`p-1 border rounded text-[10px] font-bold ${
-                    (examen[name] || 'Negativo') === 'Positivo'
-                      ? 'border-red-300 bg-red-50 text-red-700'
-                      : 'border-gray-200 text-gray-700'
+                {/* Impresión: solo el estado */}
+                <span
+                  className={`hidden print:inline text-[8.5pt] font-bold ${
+                    sistemas[sys].estado === 'Anormal' ? 'text-red-600' : 'text-emerald-700'
                   }`}
                 >
-                  <option value="Negativo">Neg (−)</option>
-                  <option value="Positivo">Pos (+)</option>
-                  <option value="No evaluado">N/E</option>
-                </select>
-                <span className="text-[10px] text-gray-700 font-medium">{label}</span>
+                  {sistemas[sys].estado === 'Anormal' ? '✗ Anormal' : '✓ Normal'}
+                </span>
               </div>
-            ))}
-          </div>
-        </div>
-      )}
 
-      {/* Examen de alturas - Res. 4272/2021 */}
-      {enfasis === 'ALTURAS' && (
-        <div className="mt-3">
-          <SectionTitle title="Examen Trabajo en Alturas - Res. 4272/2021" icon={Stethoscope} color="orange" />
-          <div className="grid grid-cols-2 gap-2">
-            {[
-              { name: 'alturas_vertigo', label: 'Vértigo / acrofobia' },
-              { name: 'alturas_equilibrio', label: 'Equilibrio estático' },
-              { name: 'alturas_coordinacion', label: 'Coordinación motora' },
-              { name: 'alturas_agarre', label: 'Fuerza de agarre' },
-              { name: 'alturas_vision_profundidad', label: 'Visión de profundidad' },
-              { name: 'alturas_romberg_sensibilizado', label: 'Romberg sensibilizado' },
-            ].map(({ name, label }) => (
-              <SelectGroup
-                key={name}
-                label={label}
-                name={name}
-                value={examen[name] || ''}
-                onChange={(e) => handleFieldChange(name, e.target.value)}
-                options={['Normal', 'Anormal', 'No evaluado']}
-                width="w-full"
-              />
-            ))}
-          </div>
-          <TextAreaGroup
-            label="Concepto aptitud alturas"
-            name="alturas_concepto"
-            value={examen.alturas_concepto || ''}
-            onChange={(e) => handleFieldChange('alturas_concepto', e.target.value)}
-            placeholder="Concepto de aptitud para trabajo en alturas..."
-            rows={2}
-          />
+              {/* Descripción normal en gris (oculta si anormal) */}
+              <p
+                className={`text-[9px] leading-relaxed ${
+                  sistemas[sys].estado === 'Anormal' ? 'hidden' : ''
+                } text-gray-400 italic`}
+              >
+                {NORMAL_DESCRIPTIONS_SYSTEMS[sys]}
+              </p>
+
+              {/* Textarea de hallazgo patológico */}
+              {sistemas[sys].estado === 'Anormal' && (
+                <textarea
+                  rows={2}
+                  className="w-full text-[10px] p-1 border border-red-300 rounded bg-white resize-none"
+                  placeholder="Describa el hallazgo patológico..."
+                  value={sistemas[sys].hallazgo}
+                  onChange={(e) => handleHallazgo(sys, e.target.value)}
+                  disabled={disabled}
+                />
+              )}
+            </div>
+          ))}
         </div>
-      )}
-    </fieldset>
+      </div>
+    </>
   );
 };

@@ -1,186 +1,357 @@
 // src/pages/Dashboard.jsx
-// Página principal — Dashboard con estadísticas, accesos rápidos y alertas
-import React, { useMemo } from 'react';
+// ═══════════════════════════════════════════════════════════════════════
+// DASHBOARD PRINCIPAL — Panel con estadísticas, acciones rápidas,
+// registros recientes y alertas de cumplimiento
+// ═══════════════════════════════════════════════════════════════════════
+import React, { useMemo, useCallback } from 'react';
 import {
-  LayoutDashboard, Users, Building2, CalendarCheck, Activity,
-  FileText, Calendar, Plus, AlertTriangle, Shield, TrendingUp,
-  Clock, ChevronRight
+  FileText, Building2, Lock, Unlock, Users, Receipt,
+  Clock, Eye, FileCheck, Trash2, Stethoscope, Heart,
+  BarChart3, Shield, UserCheck, FileSearch, AlertTriangle
 } from 'lucide-react';
+import { PLAN_CONFIG, _isAdmin, _isAdminOrEmpresa, _canUse, _contarHC, _secretariaPuede } from '../shared/data/planConfig.js';
+import { getSpanishDate } from '../shared/lib/formatters.js';
 
 export default function Dashboard({
   currentUser,
+  goTo,
   patientsList = [],
   companies = [],
   atencionesCerradas = [],
-  goTo,
   canUseSGSST = false,
 }) {
-  const stats = useMemo(() => {
-    const today = new Date().toISOString().split('T')[0];
-    const thisMonth = today.slice(0, 7);
-    return {
-      totalPacientes: patientsList.length,
-      totalEmpresas: companies.length,
-      hcEsteMes: patientsList.filter(p => p.fechaExamen?.startsWith(thisMonth)).length,
-      atencionesHoy: atencionesCerradas.filter(a => a.fecha?.startsWith(today)).length,
-      hcAbiertas: patientsList.filter(p => p.estadoHistoria === 'Abierta').length,
-      recientes: patientsList
-        .filter(p => p.nombres && p.fechaExamen)
-        .sort((a, b) => (b.fechaExamen || '').localeCompare(a.fechaExamen || ''))
-        .slice(0, 5),
-    };
-  }, [patientsList, companies, atencionesCerradas]);
+  const showAlert = useCallback((msg) => window.alert(msg), []);
 
-  const StatCard = ({ icon: Icon, label, value, color, onClick }) => (
-    <button
-      onClick={onClick}
-      className={`bg-white rounded-2xl p-5 shadow-sm border border-gray-100 hover:shadow-md transition-all text-left w-full group`}
-    >
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-sm text-gray-500 font-medium">{label}</p>
-          <p className={`text-3xl font-black mt-1 text-${color}-600`}>{value}</p>
-        </div>
-        <div className={`w-12 h-12 rounded-xl bg-${color}-50 flex items-center justify-center group-hover:bg-${color}-100 transition-colors`}>
-          <Icon className={`w-6 h-6 text-${color}-500`} />
-        </div>
-      </div>
-    </button>
-  );
+  // Plan banner data
+  const plan = PLAN_CONFIG[currentUser?.license || 'libre'];
+  const hcUsadas = useMemo(() => {
+    return patientsList.filter(p => p.fechaExamen && !p._archivado).length;
+  }, [patientsList]);
+  const pct = plan.maxHC < 9999 ? Math.round((hcUsadas / plan.maxHC) * 100) : -1;
+  const colorMap = { libre: 'gray', starter: 'teal', pro: 'blue', clinica: 'purple' };
+  const col = colorMap[currentUser?.license || 'libre'];
 
-  const QuickAction = ({ icon: Icon, label, color, onClick }) => (
-    <button
-      onClick={onClick}
-      className={`flex items-center gap-3 px-4 py-3 rounded-xl bg-${color}-50 hover:bg-${color}-100 text-${color}-700 font-semibold text-sm transition-all border border-${color}-100`}
-    >
-      <Icon className="w-5 h-5" />
-      {label}
-    </button>
-  );
+  // Stat cards
+  const statCards = useMemo(() => {
+    const cards = [
+      { label: 'Historias Registradas', value: patientsList.filter(p => p.fechaExamen).length, color: 'emerald', icon: FileText },
+      { label: 'Empresas', value: companies.length, color: 'purple', icon: Building2 },
+      { label: 'HC Cerradas', value: patientsList.filter(p => p.estadoHistoria === 'Cerrada').length, color: 'red', icon: Lock },
+      { label: 'HC Abiertas', value: patientsList.filter(p => p.estadoHistoria !== 'Cerrada' && p.fechaExamen).length, color: 'blue', icon: Unlock },
+    ];
+    return cards;
+  }, [patientsList, companies]);
+
+  // Recent records
+  const recentRecords = useMemo(() => {
+    return patientsList
+      .filter(p => p.fechaExamen && !p._archivado)
+      .slice(-20)
+      .reverse();
+  }, [patientsList]);
+
+  // Alerts
+  const alertas = useMemo(() => {
+    const hoy = new Date();
+    const en30 = new Date(hoy);
+    en30.setDate(en30.getDate() + 30);
+
+    const alerts = [];
+    // Convenios próximos a vencer
+    const conveniosAlerta = companies.filter(c =>
+      c.convenioVencimiento &&
+      new Date(c.convenioVencimiento) <= en30 &&
+      new Date(c.convenioVencimiento) >= hoy
+    );
+    conveniosAlerta.forEach(c => {
+      alerts.push({ tipo: 'amber', msg: `⚠️ Convenio próximo a vencer: ${c.nombre} (${c.convenioVencimiento})`, accion: () => goTo('empresas') });
+    });
+
+    // HC abiertas
+    const hcAbiertas = patientsList.filter(p => p.estadoHistoria !== 'Cerrada' && p.fechaExamen && !p._archivado);
+    if (hcAbiertas.length > 3) {
+      alerts.push({ tipo: 'blue', msg: `📋 ${hcAbiertas.length} HCs sin cerrar`, accion: () => {} });
+    }
+
+    return alerts;
+  }, [companies, patientsList, goTo]);
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      {/* Bienvenida */}
-      <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl p-6 text-white shadow-lg">
-        <h1 className="text-2xl font-black">
-          ¡Bienvenido, {currentUser?.name || currentUser?.user || 'Doctor'}! 👋
-        </h1>
-        <p className="text-blue-100 mt-1">
-          {currentUser?.role === 'super_admin' ? 'Administrador del Sistema' :
-           currentUser?.role === 'administrador' ? 'Administrador' :
-           currentUser?.role === 'medico' ? 'Médico Ocupacional' :
-           currentUser?.role === 'secretaria' ? 'Secretaria' : 'Usuario'}
-          {' — '}{new Date().toLocaleDateString('es-CO', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+    <div className="max-w-6xl mx-auto space-y-6">
+      {/* Title + Plan Banner */}
+      <div>
+        <div className="flex items-center justify-between flex-wrap gap-3 mb-1">
+          <h2 className="text-2xl font-black text-gray-800">Panel Principal</h2>
+        </div>
+        <p className="text-gray-500 text-sm">
+          {getSpanishDate(null)} — {currentUser?.name}
         </p>
-      </div>
 
-      {/* Estadísticas */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard icon={Users} label="Total Pacientes" value={stats.totalPacientes} color="blue" onClick={() => goTo('hc_ocupacional')} />
-        <StatCard icon={Building2} label="Empresas" value={stats.totalEmpresas} color="emerald" onClick={() => goTo('empresas')} />
-        <StatCard icon={FileText} label="HC este mes" value={stats.hcEsteMes} color="purple" onClick={() => goTo('hc_ocupacional')} />
-        <StatCard icon={Activity} label="HC Abiertas" value={stats.hcAbiertas} color="amber" />
-      </div>
-
-      {/* Acciones Rápidas */}
-      <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
-        <h2 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-          <TrendingUp className="w-5 h-5 text-blue-500" />
-          Acciones Rápidas
-        </h2>
-        <div className="flex flex-wrap gap-3">
-          <QuickAction icon={Plus} label="Nueva HC Ocupacional" color="blue" onClick={() => goTo('hc_ocupacional')} />
-          <QuickAction icon={Calendar} label="Ver Agenda" color="green" onClick={() => goTo('agenda')} />
-          <QuickAction icon={Building2} label="Nueva Empresa" color="purple" onClick={() => goTo('empresas')} />
-          <QuickAction icon={FileText} label="Facturación" color="amber" onClick={() => goTo('facturacion')} />
-          {canUseSGSST && (
-            <QuickAction icon={Shield} label="SG-SST" color="red" onClick={() => goTo('sgsst')} />
-          )}
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Pacientes Recientes */}
-        <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
-          <h2 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-            <Clock className="w-5 h-5 text-blue-500" />
-            Pacientes Recientes
-          </h2>
-          {stats.recientes.length === 0 ? (
-            <p className="text-gray-400 text-sm text-center py-6">Sin pacientes registrados aún</p>
+        {/* Plan status banner */}
+        <div className={`mt-3 flex flex-wrap items-center gap-3 px-4 py-2.5 rounded-xl bg-${col}-50 border border-${col}-200`}>
+          <span className={`font-black text-${col}-700 text-sm`}>{plan.label}</span>
+          <span className="text-gray-400 text-xs">·</span>
+          {plan.maxHC < 9999 ? (
+            <span className={`text-xs font-bold ${pct >= 100 ? 'text-red-600' : pct >= 80 ? 'text-amber-600' : 'text-gray-600'}`}>
+              📋 {hcUsadas}/{plan.maxHC} HC {pct >= 80 && '⚠️'}
+            </span>
           ) : (
-            <div className="space-y-2">
-              {stats.recientes.map((p, i) => (
-                <div key={p.id || i} className="flex items-center justify-between p-3 rounded-xl hover:bg-gray-50 transition-colors">
-                  <div>
-                    <p className="font-semibold text-gray-800 text-sm">{p.nombres} {p.apellidos || ''}</p>
-                    <p className="text-xs text-gray-500">{p.docTipo} {p.docNumero} — {p.cargo || 'Sin cargo'}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-xs text-gray-400">{p.fechaExamen}</p>
-                    <span className={`text-xs px-2 py-0.5 rounded-full ${
-                      p.estadoHistoria === 'Cerrada' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
-                    }`}>
-                      {p.estadoHistoria || 'Abierta'}
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
+            <span className="text-xs text-gray-500">📋 HC ilimitadas</span>
+          )}
+          {plan.price === 0 && (
+            <button onClick={() => goTo('planes')} className={`ml-auto text-xs font-black bg-${col}-600 text-white px-3 py-1 rounded-lg hover:opacity-90 transition`}>
+              ⬆️ Ver planes
+            </button>
           )}
         </div>
+      </div>
 
-        {/* Alertas de Cumplimiento */}
-        <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
-          <h2 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-            <AlertTriangle className="w-5 h-5 text-amber-500" />
-            Alertas y Recordatorios
-          </h2>
-          <div className="space-y-3">
-            {stats.hcAbiertas > 0 && (
-              <div className="flex items-start gap-3 p-3 rounded-xl bg-yellow-50 border border-yellow-100">
-                <AlertTriangle className="w-5 h-5 text-yellow-600 mt-0.5 flex-shrink-0" />
-                <div>
-                  <p className="text-sm font-semibold text-yellow-800">HC sin cerrar</p>
-                  <p className="text-xs text-yellow-600">
-                    Tiene {stats.hcAbiertas} historia(s) clínica(s) abiertas pendientes de cierre.
-                  </p>
-                </div>
+      {/* Stats Cards */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {statCards.map((card) => (
+          <div key={card.label} className={`bg-white rounded-xl p-4 shadow-sm border border-${card.color}-100`}>
+            <div className="flex justify-between items-start">
+              <div>
+                <p className="text-xs text-gray-500 font-bold uppercase">{card.label}</p>
+                <p className={`text-3xl font-black text-${card.color}-600 mt-1`}>{card.value}</p>
               </div>
-            )}
+              <div className={`bg-${card.color}-50 p-2 rounded-lg`}>
+                <card.icon className={`w-5 h-5 text-${card.color}-600`} />
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Quick Actions */}
+      <div className="grid grid-cols-2 gap-3">
+        <button
+          onClick={() => goTo('hc_ocupacional')}
+          className="relative overflow-hidden bg-gradient-to-br from-emerald-500 to-teal-600 p-5 rounded-2xl shadow-md hover:shadow-xl hover:-translate-y-0.5 transition-all text-left"
+        >
+          <div className="absolute -top-5 -right-5 w-20 h-20 bg-white/10 rounded-full" />
+          <div className="absolute -bottom-3 -left-3 w-14 h-14 bg-white/5 rounded-full" />
+          <div className="relative">
+            <div className="bg-white/20 w-9 h-9 rounded-xl flex items-center justify-center mb-3">
+              <Stethoscope className="w-5 h-5 text-white" />
+            </div>
+            <h3 className="font-black text-white text-sm leading-tight">Nueva HC Ocupacional</h3>
+            <p className="text-emerald-100 text-[11px] mt-0.5">Evaluación médica del trabajo</p>
+          </div>
+        </button>
+        <button
+          onClick={() => goTo('hc_general')}
+          className="relative overflow-hidden bg-gradient-to-br from-blue-500 to-indigo-600 p-5 rounded-2xl shadow-md hover:shadow-xl hover:-translate-y-0.5 transition-all text-left"
+        >
+          <div className="absolute -top-5 -right-5 w-20 h-20 bg-white/10 rounded-full" />
+          <div className="absolute -bottom-3 -left-3 w-14 h-14 bg-white/5 rounded-full" />
+          <div className="relative">
+            <div className="bg-white/20 w-9 h-9 rounded-xl flex items-center justify-center mb-3">
+              <Heart className="w-5 h-5 text-white" />
+            </div>
+            <h3 className="font-black text-white text-sm leading-tight">Nueva HC General</h3>
+            <p className="text-blue-100 text-[11px] mt-0.5">Consulta medicina general</p>
+          </div>
+        </button>
+      </div>
+
+      {/* Module Grid */}
+      <div className="space-y-4">
+        {/* Gestión Clínica */}
+        <div>
+          <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">🩺 Gestión Clínica</p>
+          <div className="grid grid-cols-3 gap-2">
+            <button onClick={() => goTo('hc_ocupacional')} className="bg-white border border-gray-100 rounded-xl p-3 flex items-center gap-2.5 hover:border-teal-200 hover:bg-teal-50/40 transition group shadow-sm">
+              <div className="bg-teal-50 p-2 rounded-lg group-hover:bg-teal-100 transition flex-shrink-0">
+                <Users className="w-4 h-4 text-teal-600" />
+              </div>
+              <div className="text-left min-w-0">
+                <p className="font-black text-gray-800 text-xs leading-tight">Pacientes</p>
+                <p className="text-[10px] text-gray-400 truncate">Expedientes</p>
+              </div>
+            </button>
+            <button onClick={() => goTo('agenda')} className="bg-white border border-gray-100 rounded-xl p-3 flex items-center gap-2.5 hover:border-blue-200 hover:bg-blue-50/40 transition group shadow-sm">
+              <div className="bg-blue-50 p-2 rounded-lg group-hover:bg-blue-100 transition flex-shrink-0 text-base leading-none flex items-center justify-center w-8 h-8">🗓️</div>
+              <div className="text-left min-w-0">
+                <p className="font-black text-gray-800 text-xs leading-tight">Agenda</p>
+                <p className="text-[10px] text-gray-400 truncate">Sala de espera</p>
+              </div>
+            </button>
+            <button onClick={() => goTo('portal')} className="bg-white border border-gray-100 rounded-xl p-3 flex items-center gap-2.5 hover:border-cyan-200 hover:bg-cyan-50/40 transition group shadow-sm">
+              <div className="bg-cyan-50 p-2 rounded-lg group-hover:bg-cyan-100 transition flex-shrink-0">
+                <FileSearch className="w-4 h-4 text-cyan-600" />
+              </div>
+              <div className="text-left min-w-0">
+                <p className="font-black text-gray-800 text-xs leading-tight">Verificar</p>
+                <p className="text-[10px] text-gray-400 truncate">Certificados</p>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        {/* Administración */}
+        <div>
+          <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">💼 Administración</p>
+          <div className="grid grid-cols-3 gap-2">
+            <button onClick={() => goTo('empresas')} className="bg-white border border-gray-100 rounded-xl p-3 flex items-center gap-2.5 hover:border-purple-200 hover:bg-purple-50/40 transition group shadow-sm">
+              <div className="bg-purple-50 p-2 rounded-lg group-hover:bg-purple-100 transition flex-shrink-0">
+                <Building2 className="w-4 h-4 text-purple-600" />
+              </div>
+              <div className="text-left min-w-0">
+                <p className="font-black text-gray-800 text-xs leading-tight">Empresas</p>
+                <p className="text-[10px] text-gray-400 truncate">Clientes</p>
+              </div>
+            </button>
+            <button onClick={() => goTo('usuarios')} className="bg-white border border-gray-100 rounded-xl p-3 flex items-center gap-2.5 hover:border-violet-200 hover:bg-violet-50/40 transition group shadow-sm">
+              <div className="bg-violet-50 p-2 rounded-lg group-hover:bg-violet-100 transition flex-shrink-0">
+                <UserCheck className="w-4 h-4 text-violet-600" />
+              </div>
+              <div className="text-left min-w-0">
+                <p className="font-black text-gray-800 text-xs leading-tight">Usuarios</p>
+                <p className="text-[10px] text-gray-400 truncate">Accesos</p>
+              </div>
+            </button>
+            <button onClick={() => goTo('planes')} className="bg-white border border-gray-100 rounded-xl p-3 flex items-center gap-2.5 hover:border-indigo-200 hover:bg-indigo-50/40 transition group shadow-sm">
+              <div className="bg-indigo-50 p-2 rounded-lg group-hover:bg-indigo-100 transition flex-shrink-0 text-base leading-none flex items-center justify-center w-8 h-8">💼</div>
+              <div className="text-left min-w-0">
+                <p className="font-black text-gray-800 text-xs leading-tight">Planes</p>
+                <p className="text-[10px] text-gray-400 truncate">Suscripción</p>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        {/* Financiero y Reportes */}
+        <div>
+          <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">💰 Financiero & Reportes</p>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+            <button onClick={() => goTo('facturacion')} className="bg-white border border-gray-100 rounded-xl p-3 flex items-center gap-2.5 hover:border-orange-200 hover:bg-orange-50/40 transition group shadow-sm">
+              <div className="bg-orange-50 p-2 rounded-lg group-hover:bg-orange-100 transition flex-shrink-0">
+                <Receipt className="w-4 h-4 text-orange-600" />
+              </div>
+              <div className="text-left min-w-0">
+                <p className="font-black text-gray-800 text-xs leading-tight">Cuentas de Cobro</p>
+                <p className="text-[10px] text-gray-400 truncate">Facturación</p>
+              </div>
+            </button>
+            <button onClick={() => goTo('caja')} className="bg-white border border-gray-100 rounded-xl p-3 flex items-center gap-2.5 hover:border-green-200 hover:bg-green-50/40 transition group shadow-sm">
+              <div className="bg-green-50 p-2 rounded-lg group-hover:bg-green-100 transition flex-shrink-0 text-base leading-none flex items-center justify-center w-8 h-8">💰</div>
+              <div className="text-left min-w-0">
+                <p className="font-black text-gray-800 text-xs leading-tight">Módulo Financiero</p>
+                <p className="text-[10px] text-gray-400 truncate">Caja · Cuentas</p>
+              </div>
+            </button>
+            <button onClick={() => goTo('reportes')} className="bg-white border border-gray-100 rounded-xl p-3 flex items-center gap-2.5 hover:border-indigo-200 hover:bg-indigo-50/40 transition group shadow-sm">
+              <div className="bg-indigo-50 p-2 rounded-lg group-hover:bg-indigo-100 transition flex-shrink-0">
+                <BarChart3 className="w-4 h-4 text-indigo-600" />
+              </div>
+              <div className="text-left min-w-0">
+                <p className="font-black text-gray-800 text-xs leading-tight">Reportes</p>
+                <p className="text-[10px] text-gray-400 truncate">Diagnóstico</p>
+              </div>
+            </button>
+            <button onClick={() => goTo('telemedicina')} className="bg-white border border-gray-100 rounded-xl p-3 flex items-center gap-2.5 hover:border-blue-200 hover:bg-blue-50/40 transition group shadow-sm">
+              <div className="bg-blue-50 p-2 rounded-lg group-hover:bg-blue-100 transition flex-shrink-0 text-base leading-none flex items-center justify-center w-8 h-8">🎥</div>
+              <div className="text-left min-w-0">
+                <p className="font-black text-gray-800 text-xs leading-tight">Telemedicina</p>
+                <p className="text-[10px] text-gray-400 truncate">Videoconsulta</p>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        {/* Portales */}
+        <div>
+          <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">🌐 Portales & Acceso Externo</p>
+          <div className="grid grid-cols-3 gap-2">
+            <button onClick={() => goTo('portal')} className="bg-white border border-gray-100 rounded-xl p-3 flex items-center gap-2.5 hover:border-teal-200 hover:bg-teal-50/40 transition group shadow-sm">
+              <div className="bg-teal-50 p-2 rounded-lg group-hover:bg-teal-100 transition flex-shrink-0">
+                <Users className="w-4 h-4 text-teal-600" />
+              </div>
+              <div className="text-left min-w-0">
+                <p className="font-black text-gray-800 text-xs leading-tight">Portal Trabajador</p>
+                <p className="text-[10px] text-gray-400 truncate">Consulta código</p>
+              </div>
+            </button>
             {canUseSGSST && (
-              <div className="flex items-start gap-3 p-3 rounded-xl bg-blue-50 border border-blue-100">
-                <Shield className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
-                <div>
-                  <p className="text-sm font-semibold text-blue-800">SG-SST Activo</p>
-                  <p className="text-xs text-blue-600">
-                    Revise el cumplimiento de estándares mínimos (Res. 0312/2019).
-                  </p>
-                  <button onClick={() => goTo('sgsst')} className="text-xs text-blue-700 font-bold mt-1 flex items-center gap-1 hover:underline">
-                    Ver Dashboard SG-SST <ChevronRight className="w-3 h-3" />
-                  </button>
+              <button onClick={() => goTo('sgsst')} className="bg-white border border-gray-100 rounded-xl p-3 flex items-center gap-2.5 hover:border-red-200 hover:bg-red-50/40 transition group shadow-sm">
+                <div className="bg-red-50 p-2 rounded-lg group-hover:bg-red-100 transition flex-shrink-0">
+                  <Shield className="w-4 h-4 text-red-600" />
                 </div>
-              </div>
-            )}
-            {stats.totalEmpresas === 0 && (
-              <div className="flex items-start gap-3 p-3 rounded-xl bg-gray-50 border border-gray-200">
-                <Building2 className="w-5 h-5 text-gray-500 mt-0.5 flex-shrink-0" />
-                <div>
-                  <p className="text-sm font-semibold text-gray-700">Sin empresas registradas</p>
-                  <p className="text-xs text-gray-500">Registre su primera empresa cliente para comenzar.</p>
+                <div className="text-left min-w-0">
+                  <p className="font-black text-gray-800 text-xs leading-tight">SG-SST</p>
+                  <p className="text-[10px] text-gray-400 truncate">Seguridad y Salud</p>
                 </div>
-              </div>
-            )}
-            {stats.hcAbiertas === 0 && stats.totalEmpresas > 0 && (
-              <div className="flex items-start gap-3 p-3 rounded-xl bg-green-50 border border-green-100">
-                <CalendarCheck className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                <div>
-                  <p className="text-sm font-semibold text-green-800">Todo al día ✓</p>
-                  <p className="text-xs text-green-600">No hay alertas pendientes.</p>
-                </div>
-              </div>
+              </button>
             )}
           </div>
+        </div>
+      </div>
+
+      {/* Admin Alerts */}
+      {alertas.length > 0 && (
+        <div className="space-y-2">
+          {alertas.slice(0, 5).map((a, i) => (
+            <div
+              key={i}
+              onClick={a.accion}
+              className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer hover:opacity-80 transition bg-${a.tipo}-50 border-${a.tipo}-200`}
+            >
+              <p className={`text-xs font-bold text-${a.tipo}-800 flex-1`}>{a.msg}</p>
+              <span className={`text-[10px] text-${a.tipo}-600 font-black`}>Ver →</span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Recent Records */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="p-4 border-b border-gray-100 flex justify-between items-center">
+          <h3 className="font-black text-gray-800 flex items-center gap-2">
+            <Clock className="w-4 h-4 text-gray-400" /> Registros Recientes
+          </h3>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="bg-gray-50 text-gray-500 text-xs font-bold uppercase">
+              <tr>
+                <th className="p-3 text-left">Fecha</th>
+                <th className="p-3 text-left">Paciente</th>
+                <th className="p-3 text-left">Tipo</th>
+                <th className="p-3 text-left">Concepto</th>
+                <th className="p-3 text-center">Estado</th>
+              </tr>
+            </thead>
+            <tbody>
+              {recentRecords.map((p, i) => (
+                <tr key={`${p.id}-${i}`} className="border-b border-gray-50 hover:bg-gray-50 transition">
+                  <td className="p-3 text-xs text-gray-500 whitespace-nowrap">{p.fechaExamen}</td>
+                  <td className="p-3">
+                    <div className="font-bold text-gray-800 text-xs">{p.nombres}</div>
+                    <div className="text-[10px] text-gray-400">{p.docNumero} · {p.cargo || 'Sin cargo'}</div>
+                  </td>
+                  <td className="p-3">
+                    <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${p.type === 'general' ? 'bg-blue-100 text-blue-700' : 'bg-emerald-100 text-emerald-700'}`}>
+                      {p.type === 'general' ? 'General' : 'Ocupacional'}
+                    </span>
+                  </td>
+                  <td className="p-3 text-[10px] text-gray-600 max-w-[200px] truncate">{p.conceptoAptitud || '--'}</td>
+                  <td className="p-3 text-center">
+                    <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${p.estadoHistoria === 'Cerrada' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
+                      {p.estadoHistoria || 'Abierta'}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+              {recentRecords.length === 0 && (
+                <tr>
+                  <td colSpan="5" className="p-8 text-center text-gray-400 text-sm">
+                    No hay registros aún. Cree una nueva historia clínica.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
       </div>
     </div>

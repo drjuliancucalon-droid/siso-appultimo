@@ -390,3 +390,27 @@ export const parseAIJSON = (raw) => {
   } catch (_) {}
   repaired = repaired
     .replace(/,\s*([}\]])/g, "$1")
+    .replace(/([{,]\s*)'([^']+)'\s*:/g, '$1"$2":');
+  try {
+    return JSON.parse(repaired);
+  } catch (_) {}
+  let fixed = repaired
+    .replace(/,?\s*"[^"]*":\s*"[^"]*$/, "")
+    .replace(/,?\s*"[^"]*":\s*\[[^\]]*$/, "")
+    .replace(/,?\s*"[^"]*$/, "");
+  const opens =
+    (fixed.match(/{/g) || []).length - (fixed.match(/}/g) || []).length;
+  const arrOpens =
+    (fixed.match(/\[/g) || []).length - (fixed.match(/\]/g) || []).length;
+  fixed += "]".repeat(Math.max(0, arrOpens)) + "}".repeat(Math.max(0, opens));
+  try {
+    return JSON.parse(fixed);
+  } catch (_) {}
+  const result = {};
+  const fieldRe = /"(\w+)"\s*:\s*"((?:[^"\\]|\\.)*)"/g;
+  let fm;
+  while ((fm = fieldRe.exec(repaired)) !== null)
+    result[fm[1]] = fm[2].replace(/\\n/g, "\n");
+  if (Object.keys(result).length > 0) return result;
+  throw new Error("JSON irreparable: " + raw.substring(0, 80));
+};

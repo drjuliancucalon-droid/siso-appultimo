@@ -456,3 +456,12 @@ const _dateRef = data.fechaCierre ? new Date(data.fechaCierre + "T12:00:00") : n
     "<span>Res. 1843/2025 · Res. 1995/1999 · Ley 23/1981 · Ley 1581/2012</span>" +
     "<span>SISO OcupaSalud v4.8</span>" +
     "</div>" +
+    /* ── CONSENTIMIENTO ─────────────────────────────────────── */
+    '<div class="consent">El suscrito Médico Especialista en Salud Ocupacional, con licencia vigente, certifica que realizó el examen médico ocupacional registrado en este documento. ' +
+    "El paciente fue informado de las medidas de protección de la confidencialidad de los resultados. " +
+    "Las respuestas dadas fueron consideradas verídicas. " +
+    "Se autoriza al doctor para suministrar la Historia Clínica a la EPS y a las personas o entidades contempladas en la legislación vigente, para el buen cumplimiento del sistema de seguridad y salud en el trabajo. " +
+    "Res. 1843/2025 · Ley 1581/2012 · Ley 23/1981.</div>" +
+    "</body></html>"
+  );
+};
