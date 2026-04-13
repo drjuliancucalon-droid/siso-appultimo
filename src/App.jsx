@@ -58,7 +58,7 @@ import {
   Upload,
 } from "lucide-react";
 
-// â"€â"€ Extracted modules â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+// â”€â”€ Extracted modules â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 import { _memStore, _ls, _ss, sp, sps } from './shared/lib/storage.js';
 import {
   sanitizeInput, validatePasswordStrength, _auditLog, _rl,
@@ -135,10 +135,10 @@ import CompaniesPage from './pages/Companies.jsx';
 import UsersPage from './pages/Users.jsx';
 import AgendaPage from './pages/Agenda.jsx';
 import CajaPage from './pages/Caja.jsx';
-// â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-// [EXTRACTED â†' shared/lib/crypto.js: sanitizeInput, validatePasswordStrength, _auditLog, _rl, SESSION_TIMEOUT_MS, _resetSessionTimer, _clearSessionTimer]
-// [EXTRACTED â†' shared/lib/storage.js: _memStore, _ls, _ss, sp, sps]
+// [EXTRACTED â†’ shared/lib/crypto.js: sanitizeInput, validatePasswordStrength, _auditLog, _rl, SESSION_TIMEOUT_MS, _resetSessionTimer, _clearSessionTimer]
+// [EXTRACTED â†’ shared/lib/storage.js: _memStore, _ls, _ss, sp, sps]
 // [EXTRACTED ? shared/lib/supabase.js + shared/data/planConfig.js: Supabase sync, PLAN_CONFIG, ORG_CONFIG, permissions, helpers]
 // [EXTRACTED ? shared/lib/crypto.js: _sha256, _pbkdf2Hash, _verifyPassword, _hashSync, _H, _sanitize, _safeLogoUrl]
 // Si se pasa ipsData (objeto empresa), muestra logo+nombre+NIT+direcciÃ³n de la IPS.
@@ -209,7 +209,7 @@ const _ipsDocLeftHtml = (ipsData, docData, accentSafe) => {
   </div>`;
 };
 // ==========================================
-// MÃ"DULO 1: CONSTANTES ESTÃTICAS
+// MÃ“DULO 1: CONSTANTES ESTÃTICAS
 // ==========================================
 // â•â• B-02 SEGURIDAD: Datos personales del medico eliminados del codigo (Ley 1581/2012) â•â•
 // Los valores reales se ingresan desde el modulo de Perfil del Doctor en la aplicacion.
@@ -221,7 +221,7 @@ const _ipsDocLeftHtml = (ipsData, docData, accentSafe) => {
 // ==========================================
 // ==========================================
 // ==========================================
-// MÃ"DULO 3: MOTOR DE IA MULTI-PROVEEDOR
+// MÃ“DULO 3: MOTOR DE IA MULTI-PROVEEDOR
 // Modelos verificados activos - Marzo 2026
 // Gemini Â· Groq Â· Together AI Â· OpenRouter
 // CORS habilitado en todos - funcionan desde cualquier servidor externo
@@ -235,20 +235,20 @@ const fetchWithTimeout = (url, opts, ms = 40000) => {
   );
 };
 const AI_PROVIDERS = {
-  // â"€â"€ 1. GEMINI - API Google, CORS nativo, mÃ¡s estable en browsers externos â"€
+  // â”€â”€ 1. GEMINI - API Google, CORS nativo, mÃ¡s estable en browsers externos â”€
   gemini: {
     name: "Google Gemini",
     free: true,
     badge: "ðŸŸ¢ Gratis Â· Alta calidad",
     docs: "aistudio.google.com",
-    hint: "Key gratuita: aistudio.google.com â†' Get API Key",
+    hint: "Key gratuita: aistudio.google.com â†’ Get API Key",
     link: "https://aistudio.google.com/apikey",
     call: async (prompt, systemPrompt, apiKey) => {
       if (!apiKey)
         throw new Error(
           "Gemini: API Key no configurada - obtenla gratis en aistudio.google.com/apikey"
         );
-      // Modelos verificados activos marzo 2026 (Gemini 1.5 retirado â†' 404)
+      // Modelos verificados activos marzo 2026 (Gemini 1.5 retirado â†’ 404)
       const tryModels = [
         "gemini-2.5-flash",
         "gemini-2.5-flash-lite",
@@ -290,7 +290,7 @@ const AI_PROVIDERS = {
                 msg.includes("API key"))
             )
               break;
-            continue; // 404 = modelo no disponible â†' probar siguiente
+            continue; // 404 = modelo no disponible â†’ probar siguiente
           }
           const data = await res.json();
           const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
@@ -312,13 +312,13 @@ const AI_PROVIDERS = {
       );
     },
   },
-  // â"€â"€ 2. GROQ - Velocidad mÃ¡xima, CORS habilitado explÃ­citamente â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+  // â”€â”€ 2. GROQ - Velocidad mÃ¡xima, CORS habilitado explÃ­citamente â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   groq: {
     name: "Groq",
     free: true,
     badge: "ðŸŸ¢ Gratis Â· UltrarrÃ¡pido",
     docs: "console.groq.com",
-    hint: "Key gratuita: console.groq.com â†' API Keys â†' Create API Key",
+    hint: "Key gratuita: console.groq.com â†’ API Keys â†’ Create API Key",
     link: "https://console.groq.com/keys",
     call: async (prompt, systemPrompt, apiKey) => {
       if (!apiKey)
@@ -359,7 +359,7 @@ const AI_PROVIDERS = {
             const msg = errData?.error?.message || res.statusText;
             lastErr = new Error(`Groq/${model} [${res.status}]: ${msg}`);
             if (res.status === 401 || res.status === 403) break;
-            continue; // 404/429 â†' probar siguiente modelo
+            continue; // 404/429 â†’ probar siguiente modelo
           }
           const data = await res.json();
           const text = data.choices?.[0]?.message?.content;
@@ -387,18 +387,18 @@ const AI_PROVIDERS = {
       );
     },
   },
-  // â"€â"€ 3. TOGETHER AI - Llama 3.3 70B 100% gratis, robusto â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+  // â”€â”€ 3. TOGETHER AI - Llama 3.3 70B 100% gratis, robusto â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   together: {
     name: "Together AI",
     free: true,
     badge: "ðŸŸ¢ Gratis Â· Muy estable",
     docs: "api.together.ai",
-    hint: "Key gratuita: api.together.ai â†' Settings â†' API Keys - copia la key que empieza por letras/nÃºmeros (NO el cÃ³digo Python)",
+    hint: "Key gratuita: api.together.ai â†’ Settings â†’ API Keys - copia la key que empieza por letras/nÃºmeros (NO el cÃ³digo Python)",
     link: "https://api.together.ai",
     call: async (prompt, systemPrompt, apiKey) => {
       if (!apiKey)
         throw new Error(
-          "Together AI: API Key no configurada - obtenla gratis en api.together.ai â†' Settings â†' API Keys"
+          "Together AI: API Key no configurada - obtenla gratis en api.together.ai â†’ Settings â†’ API Keys"
         );
       // Modelos gratuitos verificados Together AI - marzo 2026
       // NOTA: los sufijos -Free fueron deprecados; ahora el acceso free
@@ -439,7 +439,7 @@ const AI_PROVIDERS = {
             if (res.status === 401 || res.status === 403) {
               // Key invÃ¡lida - no tiene sentido seguir probando modelos
               throw new Error(
-                `Together AI [401]: API Key invÃ¡lida. Ve a api.together.ai â†' Settings â†' API Keys y copia SOLO la key (texto largo, no el cÃ³digo Python).`
+                `Together AI [401]: API Key invÃ¡lida. Ve a api.together.ai â†’ Settings â†’ API Keys y copia SOLO la key (texto largo, no el cÃ³digo Python).`
               );
             }
             continue;
@@ -465,13 +465,13 @@ const AI_PROVIDERS = {
       );
     },
   },
-  // â"€â"€ 4. OPENROUTER - Multi-modelo, fallback mÃ¡ximo â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+  // â”€â”€ 4. OPENROUTER - Multi-modelo, fallback mÃ¡ximo â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   openrouter: {
     name: "OpenRouter",
     free: true,
     badge: "ðŸŸ¢ Gratis Â· Multi-modelo",
     docs: "openrouter.ai",
-    hint: "Key gratuita: openrouter.ai â†' Keys â†' Create Key (login con Google)",
+    hint: "Key gratuita: openrouter.ai â†’ Keys â†’ Create Key (login con Google)",
     link: "https://openrouter.ai/keys",
     call: async (prompt, systemPrompt, apiKey) => {
       if (!apiKey)
@@ -524,7 +524,7 @@ const AI_PROVIDERS = {
             const msg = errData?.error?.message || res.statusText;
             lastErr = new Error(`OpenRouter/${model} [${res.status}]: ${msg}`);
             if (res.status === 401 || res.status === 403) break; // key invÃ¡lida
-            continue; // 404 = modelo deprecado â†' probar siguiente
+            continue; // 404 = modelo deprecado â†’ probar siguiente
           }
           const data = await res.json();
           const text = data.choices?.[0]?.message?.content;
@@ -636,7 +636,7 @@ const parseAIJSON = (raw) => {
   throw new Error("JSON irreparable: " + raw.substring(0, 80));
 };
 // ==========================================
-// MÃ"DULO: FIRMA DIGITAL VÃLIDA - Ley 527/1999
+// MÃ“DULO: FIRMA DIGITAL VÃLIDA - Ley 527/1999
 // Implementa firma electrÃ³nica con integridad verificable:
 // hash SHA-256 del contenido clÃ­nico + cÃ³digo QR de verificaciÃ³n
 // + timestamp de servidor + identificaciÃ³n del firmante
@@ -689,7 +689,7 @@ const _formatFirmaDigital = (firma) => {
   };
 };
 // ==========================================
-// MÃ"DULO: RIPS JSON - ResoluciÃ³n 2275/2023
+// MÃ“DULO: RIPS JSON - ResoluciÃ³n 2275/2023
 // GeneraciÃ³n de archivos RIPS para reporte al MinSalud
 // Archivos: AF (afiliaciÃ³n), AT (atenciones), AC (consultas)
 // NOTA: Este mÃ³dulo genera la estructura base. Para radicar
@@ -845,7 +845,7 @@ const _generarFHIRBundle = (paciente, doctor) => {
 };
 
 // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-// B-25: VALIDACIÃ"N RIPS - Res. 2275/2023 Schema v2
+// B-25: VALIDACIÃ“N RIPS - Res. 2275/2023 Schema v2
 // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 const validarRIPSPaciente = (p) => {
   const errs = [];
@@ -972,7 +972,7 @@ const _descargarRIPSJson = (pacientes, doctorData, periodo) => {
   }
 };
 // ==========================================
-// MÃ"DULO: RDA - Res. 1888/2025 (Resumen Digital de AtenciÃ³n)
+// MÃ“DULO: RDA - Res. 1888/2025 (Resumen Digital de AtenciÃ³n)
 // GeneraciÃ³n del JSON RDA para transmisiÃ³n al IHCE MinSalud
 // [IMPORTED from shared/lib/formatters.js: numeroALetras, analyzeBP, analyzeHR, analyzeBMI, getSpanishDate, NORMAL_DESCRIPTIONS_SYSTEMS]
 // ==========================================
@@ -1045,11 +1045,11 @@ const _descargarRDA = (paciente, doctorData, sesionId) => {
     return false;
   }
 };
-// MÃ"DULO 5: ESTADOS INICIALES
+// MÃ“DULO 5: ESTADOS INICIALES
 
 // [EXTRACTED -> shared/data/initialStates.js: initialOccupPatientState, initialGeneralPatientState, initialUsers, initialCompanyState]
 // ==========================================
-// MÃ"DULO 6: COMPONENTES UI REUTILIZABLES
+// MÃ“DULO 6: COMPONENTES UI REUTILIZABLES
 // ==========================================
 // â•â• B-07: Validador de contraseÃ±a centralizado (OWASP A07 + polÃ­tica SISO) â•â•
 const _validarContrasena = (pw) => {
@@ -1115,7 +1115,7 @@ const _FortalezaPass = ({ pw }) => {
           valida ? "text-emerald-700" : "text-red-600"
         }`}
       >
-        {valida ? `âœ… ${labels[fortaleza]}` : `âš ï¸ ${errores[0]}`}
+        {valida ? `âœ… ${labels[fortaleza]}` : `âš ï¸ ${errores[0]}`}
       </p>
     </div>
   );
@@ -1136,7 +1136,7 @@ const _FortalezaPass = ({ pw }) => {
 // [EXTRACTED -> shared/ui/SectionTitle.jsx]
 
 // ==========================================
-// MÃ"DULO 6B: PLAN GATE - Control de acceso por plan
+// MÃ“DULO 6B: PLAN GATE - Control de acceso por plan
 // Uso: <PlanGate feature="ia_analisis" requiredPlan="pro" currentUser={currentUser}>
 //        <contenido restringido />
 //      </PlanGate>
@@ -1234,7 +1234,7 @@ const TabFormulaDerivacion = ({
         ).slice(0, 15)
       : [];
   const today = new Date().toISOString().split("T")[0];
-  // â"€â"€ Genera ventana de impresiÃ³n premium con HTML nativo â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+  // â”€â”€ Genera ventana de impresiÃ³n premium con HTML nativo â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   // No captura innerHTML (pierde Ã­conos). Genera HTML directamente del state.
   const buildPrintHeader = (titleDoc, accentColor) => {
     const fechaDoc =
@@ -1264,7 +1264,7 @@ const TabFormulaDerivacion = ({
       ? accentColor
       : "#059669";
 
-    // â"€â"€ PASO 2: Cabecera IPS â€" columna izquierda muestra empresa si hay empresaId â"€â"€
+    // â”€â”€ PASO 2: Cabecera IPS â€” columna izquierda muestra empresa si hay empresaId â”€â”€
     const miIPS = currentUser?.empresaId
       ? companies.find((c) => c.id === currentUser.empresaId)
       : null;
@@ -1383,7 +1383,7 @@ const TabFormulaDerivacion = ({
     )} &nbsp;Â·&nbsp; <b>DuraciÃ³n:</b> ${_sanitize(med.duracion || "--")}</p>
           ${
             med.indicaciones
-              ? `<p style="font-size:9pt;color:#92400e;font-style:italic;margin:4px 0;">âš  ${_sanitize(
+              ? `<p style="font-size:9pt;color:#92400e;font-style:italic;margin:4px 0;">âš  ${_sanitize(
                   med.indicaciones
                 )}</p>`
               : ""
@@ -1442,9 +1442,9 @@ body{padding-top:52px;}
 @media print{.print-toolbar{display:none!important;}[contenteditable]{outline:none!important;background:transparent!important;}}
 </style></head><body>
 <div class="print-toolbar">
-  <span class="ptitle">ðŸ'Š Receta - ${_sanitize(med.nombre)}</span>
+  <span class="ptitle">ðŸ’Š Receta - ${_sanitize(med.nombre)}</span>
   <span class="hint">Edita el texto antes de imprimir</span>
-  <button class="btn-print" onclick="window.print()">ðŸ-¨ï¸ Imprimir receta</button>
+  <button class="btn-print" onclick="window.print()">ðŸ–¨ï¸ Imprimir receta</button>
   <button class="btn-close" onclick="window.close()">âœ• Cerrar</button>
 </div>
 <div contenteditable="false">${header}</div>
@@ -1507,7 +1507,7 @@ body{padding-top:52px;}
       );
       const planMeds =
         !meds.length && data.plan?.medicamentos
-          ? `<div style="margin-top:10px;"><p style="font-weight:700;font-size:8.5pt;color:#374151;border-bottom:1px solid #d1d5db;padding-bottom:3px;margin-bottom:5px;">PRESCRIPCIÃ"N</p><p style="font-size:8.5pt;white-space:pre-wrap;">${_sanitize(
+          ? `<div style="margin-top:10px;"><p style="font-weight:700;font-size:8.5pt;color:#374151;border-bottom:1px solid #d1d5db;padding-bottom:3px;margin-bottom:5px;">PRESCRIPCIÃ“N</p><p style="font-size:8.5pt;white-space:pre-wrap;">${_sanitize(
               data.plan.medicamentos
             )}</p></div>`
           : "";
@@ -1628,7 +1628,7 @@ body{padding-top:52px;}
       data.nombres
     )}</span>
   <span class="hint">Haz clic en cualquier texto para editar antes de imprimir</span>
-  <button class="btn-print" onclick="window.print()">ðŸ-¨ï¸ Imprimir ahora</button>
+  <button class="btn-print" onclick="window.print()">ðŸ–¨ï¸ Imprimir ahora</button>
   <button class="btn-close" onclick="window.close()">âœ• Cerrar</button>
 </div>
 <div contenteditable="false">${header}</div><div contenteditable="true" spellcheck="false">${bodyHtml}</div></body></html>`);
@@ -1678,7 +1678,7 @@ body{padding-top:52px;}
       <div className="flex gap-2 mb-4 no-print flex-wrap items-center justify-between">
         <div className="flex gap-2">
           {[
-            { k: "formula", l: "ðŸ'Š FÃ³rmula MÃ©dica" },
+            { k: "formula", l: "ðŸ’Š FÃ³rmula MÃ©dica" },
             { k: "derivacion", l: "ðŸ¥ Derivaciones" },
           ].map((t) => (
             <button
@@ -1715,7 +1715,7 @@ body{padding-top:52px;}
           )}
         </div>
       </div>
-      {/* â•â• FÃ"RMULA â•â• */}
+      {/* â•â• FÃ“RMULA â•â• */}
       <div
         id="print-formula-sec"
         className={activeSubTab !== "formula" ? "hidden print:block" : ""}
@@ -1847,7 +1847,7 @@ body{padding-top:52px;}
                     </p>
                     {med.indicaciones && (
                       <p className="text-[10px] text-amber-700 mt-0.5 italic">
-                        âš  {med.indicaciones}
+                        âš  {med.indicaciones}
                       </p>
                     )}
                   </div>
@@ -2153,12 +2153,12 @@ body{padding-top:52px;}
   );
 };
 // ==========================================
-// MÃ"DULO 10: COMPONENTE PRINCIPAL APP
+// MÃ“DULO 10: COMPONENTE PRINCIPAL APP
 // ==========================================
 
 
 // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-// B-20: FACTURACIÃ"N ELECTRÃ"NICA DIAN - UBL 2.1
+// B-20: FACTURACIÃ“N ELECTRÃ“NICA DIAN - UBL 2.1
 // Decreto 358 de 2020 Â· ResoluciÃ³n DIAN 000012 de 2021
 // Genera XML base para envÃ­o a software autorizado (Siigo, Alegra, Facture)
 // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
@@ -2270,7 +2270,7 @@ const _generarFacturaDIAN_UBL = (billData, doctorData, numero) => {
 };
 
 // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-// B-14: RETENCIÃ"N CERTIFICADA 20 AÃ'OS - Res. 1995/1999 Art. 15
+// B-14: RETENCIÃ“N CERTIFICADA 20 AÃ‘OS - Res. 1995/1999 Art. 15
 // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
 // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
@@ -2439,7 +2439,7 @@ const _dateRef = data.fechaCierre ? new Date(data.fechaCierre + "T12:00:00") : n
   const conceptoRaw = data.conceptoAptitud || "";
   const conceptoDisplay = conceptoRaw || "PENDIENTE DE CONCEPTO";
 
-  /* â"€â"€ Formato de restricciones / recomendaciones â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€ */
+  /* â”€â”€ Formato de restricciones / recomendaciones â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
   const fmtBlocks = (txt) => {
     if (!txt) return "";
     const str = Array.isArray(txt) ? txt.join("\n") : String(txt);
@@ -2492,10 +2492,10 @@ const _dateRef = data.fechaCierre ? new Date(data.fechaCierre + "T12:00:00") : n
   const restCheck = checkItems(data.restriccionesChecklist);
   const recCheck = checkItems(data.recomendacionesChecklist);
 
-  /* â"€â"€ Fecha de vigencia â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€ */
+  /* â”€â”€ Fecha de vigencia â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
   const vigencia = data.vigencia || "1 aÃ±o";
 
-  /* â"€â"€ Color concepto â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€ */
+  /* â”€â”€ Color concepto â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
   const cLow = conceptoRaw.toLowerCase();
   const aptBg = cLow.includes("no apto")
     ? "#7f1d1d"
@@ -2517,23 +2517,23 @@ const _dateRef = data.fechaCierre ? new Date(data.fechaCierre + "T12:00:00") : n
     ".np-dl button{background:#065f46;color:#fff;border:none;padding:10px 20px;border-radius:10px;font-weight:900;font-size:11pt;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.2);}" +
     ".np-dl p{font-size:8pt;color:#6b7280;text-align:right;}" +
     "@media print{.np-dl{display:none!important;}body{padding:10mm 14mm;}}" +
-    /* â"€â"€ HEADER â"€â"€ */
+    /* â”€â”€ HEADER â”€â”€ */
     ".hdr{display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid #065f46;padding-bottom:10px;margin-bottom:14px;}" +
     ".hdr-brand{display:flex;align-items:center;gap:10px;}" +
     ".hdr-logo{width:44px;height:44px;border-radius:10px;background:#065f46;display:flex;align-items:center;justify-content:center;font-size:20pt;color:#fff;font-weight:900;flex-shrink:0;}" +
     ".hdr-name{font-size:13pt;font-weight:900;color:#065f46;text-transform:uppercase;letter-spacing:1px;}" +
     ".hdr-sub{font-size:8pt;color:#6b7280;margin-top:1px;}" +
     ".hdr-ref{text-align:right;font-size:8pt;color:#6b7280;line-height:1.5;}" +
-    /* â"€â"€ TITLE â"€â"€ */
+    /* â”€â”€ TITLE â”€â”€ */
     ".title{text-align:center;font-size:16pt;font-weight:900;text-transform:uppercase;letter-spacing:3px;margin:10px 0 4px;}" +
     ".subtitle{text-align:center;font-size:9pt;color:#6b7280;margin-bottom:10px;}" +
     ".intro{font-size:9.5pt;color:#374151;margin-bottom:10px;line-height:1.5;}" +
-    /* â"€â"€ PATIENT BOX â"€â"€ */
+    /* â”€â”€ PATIENT BOX â”€â”€ */
     ".pat-box{border:1.5px solid #d1d5db;border-radius:8px;padding:10px 14px;margin-bottom:10px;display:grid;grid-template-columns:1fr 1fr;gap:5px 20px;}" +
     ".pat-field{display:flex;flex-direction:column;}" +
     ".pat-label{font-size:7.5pt;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.5px;}" +
     ".pat-val{font-size:10.5pt;font-weight:700;color:#111;}" +
-    /* â"€â"€ CONCEPT â"€â"€ */
+    /* â”€â”€ CONCEPT â”€â”€ */
     ".concepto-lbl{text-align:center;font-size:8pt;font-weight:900;text-transform:uppercase;letter-spacing:2px;color:#6b7280;margin:6px 0 4px;}" +
     ".concepto-box{border:2px solid " +
     aptBg +
@@ -2542,14 +2542,14 @@ const _dateRef = data.fechaCierre ? new Date(data.fechaCierre + "T12:00:00") : n
     ";}" +
     ".concepto-txt{font-size:16pt;font-weight:900;text-transform:uppercase;color:#fff;line-height:1.3;}" +
     ".concepto-note{font-size:8pt;color:#e5e7eb;margin-top:4px;}" +
-    /* â"€â"€ SECTIONS â"€â"€ */
+    /* â”€â”€ SECTIONS â”€â”€ */
     ".sec{margin-bottom:10px;}" +
     ".sec-title{font-size:9pt;font-weight:900;text-transform:uppercase;letter-spacing:1px;color:#111;border-bottom:2px solid #d1d5db;padding-bottom:3px;margin-bottom:6px;}" +
     ".pill{display:inline-block;background:#fef9c3;border:1px solid #fde047;color:#78350f;padding:2px 8px;border-radius:4px;font-size:8.5pt;margin:2px;}" +
     ".pill.ok{background:#f0fdf4;border-color:#86efac;color:#14532d;}" +
-    /* â"€â"€ ALERTA â"€â"€ */
+    /* â”€â”€ ALERTA â”€â”€ */
     ".alerta{background:#fef9c3;border:1px solid #fde047;padding:7px 12px;border-radius:6px;font-size:8.5pt;color:#713f12;margin-bottom:10px;}" +
-    /* â"€â"€ FIRMA ROW â"€â"€ */
+    /* â”€â”€ FIRMA ROW â”€â”€ */
     ".firma-row{display:grid;grid-template-columns:1fr auto 1fr;gap:20px;align-items:end;border-top:2px solid #d1d5db;padding-top:12px;margin-top:4px;}" +
     ".firma-col{display:flex;flex-direction:column;align-items:center;text-align:center;}" +
     ".firma-line{width:180px;border-top:1px solid #374151;margin-top:50px;padding-top:5px;}" +
@@ -2559,12 +2559,12 @@ const _dateRef = data.fechaCierre ? new Date(data.fechaCierre + "T12:00:00") : n
     ".cv-box{background:#f0fdf4;border:1.5px solid #86efac;border-radius:8px;padding:8px 16px;text-align:center;}" +
     ".cv-lbl{font-size:7.5pt;font-weight:900;color:#6b7280;text-transform:uppercase;letter-spacing:1px;}" +
     ".cv-code{font-size:14pt;font-family:monospace;font-weight:900;letter-spacing:3px;color:#065f46;margin-top:2px;}" +
-    /* â"€â"€ FOOTER â"€â"€ */
+    /* â”€â”€ FOOTER â”€â”€ */
     ".footer{margin-top:10px;border-top:1px solid #e5e7eb;padding-top:6px;font-size:7.5pt;color:#9ca3af;display:flex;justify-content:space-between;}" +
-    /* â"€â"€ CONSENT â"€â"€ */
+    /* â”€â”€ CONSENT â”€â”€ */
     ".consent{margin-top:8px;font-size:7pt;color:#9ca3af;line-height:1.4;border-top:1px dashed #e5e7eb;padding-top:6px;}" +
     "</style></head><body>" +
-    /* â"€â"€ HEADER â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€ */
+    /* â”€â”€ HEADER â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     '<div class="hdr">' +
     '<div class="hdr-brand">' +
     (ipsData
@@ -2602,16 +2602,16 @@ const _dateRef = data.fechaCierre ? new Date(data.fechaCierre + "T12:00:00") : n
     fechaHoy +
     "</p></div>" +
     "</div>" +
-    /* â"€â"€ TITLE â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€ */
+    /* â”€â”€ TITLE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     '<div class="title">Certificado de Aptitud Laboral</div>' +
     '<div class="subtitle">Conforme a la ResoluciÃ³n 1843 de 2025</div>' +
-    /* â"€â"€ INTRO â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€ */
+    /* â”€â”€ INTRO â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     '<p class="intro">El suscrito MÃ©dico Especialista en Salud Ocupacional, con licencia vigente, certifica que ha realizado la evaluaciÃ³n mÃ©dica ocupacional de tipo <strong>' +
     tipoExamen +
     "</strong> con Ã©nfasis <strong>" +
     enfasis +
     "</strong> a:</p>" +
-    /* â"€â"€ PATIENT BOX â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€ */
+    /* â”€â”€ PATIENT BOX â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     '<div class="pat-box">' +
     '<div class="pat-field"><span class="pat-label">Nombre</span><span class="pat-val">' +
     (data.nombres || "--") +
@@ -2634,7 +2634,7 @@ const _dateRef = data.fechaCierre ? new Date(data.fechaCierre + "T12:00:00") : n
     vigencia +
     "</span></div>" +
     "</div>" +
-    /* â"€â"€ CONCEPTO â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€ */
+    /* â”€â”€ CONCEPTO â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     '<div class="concepto-lbl">Concepto Emitido</div>' +
     '<div class="concepto-box">' +
     '<div class="concepto-txt">' +
@@ -2642,23 +2642,23 @@ const _dateRef = data.fechaCierre ? new Date(data.fechaCierre + "T12:00:00") : n
     "</div>" +
     '<div class="concepto-note">Concepto emitido bajo Res. 1843 de 2025, Art. 20</div>' +
     "</div>" +
-    /* â"€â"€ RECOMENDACIONES â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€ */
+    /* â”€â”€ RECOMENDACIONES â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     (recomendacionesText || recCheck.length > 0
       ? '<div class="sec"><div class="sec-title">Recomendaciones</div>' +
         "" +
         fmtBlocks(recomendacionesText) +
         "</div>"
       : "") +
-    /* â"€â"€ RESTRICCIONES â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€ */
+    /* â”€â”€ RESTRICCIONES â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     (restriccionesText || restCheck.length > 0
       ? '<div class="sec"><div class="sec-title">Restricciones Laborales</div>' +
         "" +
         fmtBlocks(restriccionesText) +
         "</div>"
       : "") +
-    /* â"€â"€ ALERTA CONFIDENCIALIDAD â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€ */
-    '<div class="alerta">âš  <strong>Confidencialidad:</strong> El diagnÃ³stico clÃ­nico no es entregado al empleador (Art. 16 Res. 1843/2025). Solo uso para gestiÃ³n del riesgo ocupacional.</div>' +
-    /* â"€â"€ FIRMA ROW â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€ */
+    /* â”€â”€ ALERTA CONFIDENCIALIDAD â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+    '<div class="alerta">âš  <strong>Confidencialidad:</strong> El diagnÃ³stico clÃ­nico no es entregado al empleador (Art. 16 Res. 1843/2025). Solo uso para gestiÃ³n del riesgo ocupacional.</div>' +
+    /* â”€â”€ FIRMA ROW â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     '<div class="firma-row">' +
     '<div class="firma-col">' +
     '<div class="firma-line">' +
@@ -2697,12 +2697,12 @@ const _dateRef = data.fechaCierre ? new Date(data.fechaCierre + "T12:00:00") : n
     "</div>" +
     "</div>" +
     "</div>" +
-    /* â"€â"€ FOOTER â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€ */
+    /* â”€â”€ FOOTER â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     '<div class="footer">' +
     "<span>Res. 1843/2025 Â· Res. 1995/1999 Â· Ley 23/1981 Â· Ley 1581/2012</span>" +
     "<span>SISO OcupaSalud v4.8</span>" +
     "</div>" +
-    /* â"€â"€ CONSENTIMIENTO â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€ */
+    /* â”€â”€ CONSENTIMIENTO â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
     '<div class="consent">El suscrito MÃ©dico Especialista en Salud Ocupacional, con licencia vigente, certifica que realizÃ³ el examen mÃ©dico ocupacional registrado en este documento. ' +
     "El paciente fue informado de las medidas de protecciÃ³n de la confidencialidad de los resultados. " +
     "Las respuestas dadas fueron consideradas verÃ­dicas. " +
@@ -2715,18 +2715,18 @@ const _dateRef = data.fechaCierre ? new Date(data.fechaCierre + "T12:00:00") : n
 
 
 // ============================================================
-// FASE 1 â€" ESTABILIZACIÃ"N: SEGURIDAD Y RESILIENCIA
+// FASE 1 â€” ESTABILIZACIÃ“N: SEGURIDAD Y RESILIENCIA
 // ============================================================
 
 // SEC-F1-01: HTTPS enforcement (producciÃ³n)
-if (typeof window !== "undefined" && window.location.protocol === "http:" &&
-    !window.location.hostname.includes("localhost") &&
+if (typeof window !== "undefined" && window.location.protocol === "http:" && 
+    !window.location.hostname.includes("localhost") && 
     !window.location.hostname.includes("127.0.0.1") &&
     !window.location.hostname.includes("csb.app")) {
   window.location.replace("https:" + window.location.href.substring(5));
 }
 
-// SEC-F1-02: Error Boundary â€" Previene pantalla blanca ante errores
+// SEC-F1-02: Error Boundary â€” Previene pantalla blanca ante errores
 class AppErrorBoundary extends React.Component {
   constructor(props) {
     super(props);
@@ -2757,8 +2757,8 @@ class AppErrorBoundary extends React.Component {
       }, React.createElement("div", {
         style: { background: "white", borderRadius: "16px", padding: "40px", maxWidth: "480px", width: "100%", textAlign: "center", boxShadow: "0 25px 50px rgba(0,0,0,0.3)" }
       }, [
-        React.createElement("div", { key: "icon", style: { fontSize: "48px", marginBottom: "16px" } }, "âš ï¸"),
-        React.createElement("h1", { key: "title", style: { fontSize: "20px", fontWeight: "900", color: "#1e293b", marginBottom: "8px" } }, "OcupaSalud - Error inesperado"),
+        React.createElement("div", { key: "icon", style: { fontSize: "48px", marginBottom: "16px" } }, "âš ï¸"),
+        React.createElement("h1", { key: "title", style: { fontSize: "20px", fontWeight: "900", color: "#1e293b", marginBottom: "8px" } }, "OcupaSalud â€” Error inesperado"),
         React.createElement("p", { key: "msg", style: { fontSize: "13px", color: "#64748b", marginBottom: "20px", lineHeight: "1.5" } },
           "Se produjo un error en la aplicaciÃ³n. Sus datos estÃ¡n seguros en la nube. Intente recargar la pÃ¡gina."
         ),
@@ -2773,7 +2773,7 @@ class AppErrorBoundary extends React.Component {
             key: "reload",
             onClick: () => window.location.reload(),
             style: { background: "#059669", color: "white", border: "none", padding: "10px 24px", borderRadius: "8px", fontWeight: "700", fontSize: "13px", cursor: "pointer" }
-          }, "ðŸ"" Recargar"),
+          }, "ðŸ”„ Recargar"),
           React.createElement("button", {
             key: "reset",
             onClick: () => { this.setState({ hasError: false, error: null, errorInfo: null }); },
@@ -2834,7 +2834,7 @@ if (typeof navigator !== "undefined" && "serviceWorker" in navigator) {
   });
 }
 
-// â"€â"€ App principal envuelta en ErrorBoundary â"€â"€
+// â”€â”€ App principal envuelta en ErrorBoundary â”€â”€
 function AppInner() {
   const [view, setView] = useState(() => {
     // Restaurar vista activa al recargar - si habÃ­a sesiÃ³n activa
@@ -2944,7 +2944,7 @@ function AppInner() {
   const [patientsList, setPatientsList] = useState([]);
   const [savedReports, setSavedReports] = useState([]);
   const [savedBills, setSavedBills] = useState([]);
-  // â"€â"€ Atenciones cerradas desde agenda (tiempo real) â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+  // â”€â”€ Atenciones cerradas desde agenda (tiempo real) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const [atencionesCerradas, setAtencionesCerradas] = useState(() => {
     try {
       return JSON.parse(_ls.getItem("siso_atenciones_cerradas") || "[]");
@@ -2991,7 +2991,7 @@ function AppInner() {
   const [isGeneratingRestr, setIsGeneratingRestr] = useState(false);
   const [isGeneratingReco, setIsGeneratingReco] = useState(false);
   const [saveStatus, setSaveStatus] = useState("");
-  // â"€â"€ GUARD: cambios sin guardar en HC â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+  // â”€â”€ GUARD: cambios sin guardar en HC â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const [_hcDirty, _setHcDirty] = useState(false);
   const [_exitHcConfirm, _setExitHcConfirm] = useState(null); // { onProceed }
   const [patientSuggestions, setPatientSuggestions] = useState([]);
@@ -3115,7 +3115,7 @@ function AppInner() {
     emitidaPor: "organizacion", // FASE 2: 'organizacion' | 'medico_independiente'
   });
   const [savedBillsList, setSavedBillsList] = useState([]);
-  // â"€â"€ B-F1-03 Portafolio de servicios â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+  // â”€â”€ B-F1-03 Portafolio de servicios â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const [portafolioItems, setPortafolioItems] = useState(() => {
     try {
       return JSON.parse(localStorage.getItem("siso_portafolio") || "[]");
@@ -3131,7 +3131,7 @@ function AppInner() {
     descripcion: "",
   });
   const [portafolioEditId, setPortafolioEditId] = useState(null);
-  // â"€â"€ B-F1-04 Cotizaciones â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+  // â”€â”€ B-F1-04 Cotizaciones â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const [cotizaciones, setCotizaciones] = useState(() => {
     try {
       return JSON.parse(localStorage.getItem("siso_cotizaciones") || "[]");
@@ -3152,7 +3152,7 @@ function AppInner() {
   });
   const [cotizacionView, setCotizacionView] = useState("list");
   const [cotizacionSelId, setCotizacionSelId] = useState(null);
-  // â"€â"€ B-F2-01 Caja diaria â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+  // â”€â”€ B-F2-01 Caja diaria â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const [cajaMovimientos, setCajaMovimientos] = useState(() => {
     try {
       // PASO 6: usar clave aislada por empresa/usuario (si hay sesiÃ³n guardada)
@@ -3184,11 +3184,11 @@ function AppInner() {
   // PASO 5: MÃ³dulo Contabilidad
   const [contabTab, setContabTab] = useState("resumen");
   const [contabPeriodo, setContabPeriodo] = useState("mes");
-  // â"€â"€ B-F2-04 Asistencia agenda â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+  // â”€â”€ B-F2-04 Asistencia agenda â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const [asistenciaFecha, setAsistenciaFecha] = useState(
     new Date().toISOString().split("T")[0]
   );
-  // â"€â"€ B-F2-05 Evoluciones HC â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+  // â”€â”€ B-F2-05 Evoluciones HC â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const [evolucionForm, setEvolucionForm] = useState({
     texto: "",
     nuevoConcept: "",
@@ -3212,12 +3212,12 @@ function AppInner() {
     },
   });
   const [showEvolucionModal, setShowEvolucionModal] = useState(false);
-  // â"€â"€ B-PKG: Package de exÃ¡menes â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+  // â”€â”€ B-PKG: Package de exÃ¡menes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const [selectedPackage, setSelectedPackage] = useState(null);
   const [packageChecklist, setPackageChecklist] = useState({});
   const [showPackages, setShowPackages] = useState(false);
   const [newComp, setNewComp] = useState(initialCompanyState);
-  // â"€â"€ PASO 1: Perfil IPS â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+  // â”€â”€ PASO 1: Perfil IPS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const [ipsPerfilForm, setIpsPerfilForm] = useState({
     nombre: "",
     nit: "",
@@ -3262,7 +3262,7 @@ function AppInner() {
   });
   const [selSvc, setSelSvc] = useState("");
   const [propModulo, setPropModulo] = useState("propuesta"); // 'propuesta' | 'cotizacion'
-  // â"€â"€ MENSAJERÃA INTERNA â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+  // â”€â”€ MENSAJERÃA INTERNA â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const [mensajes, setMensajes] = useState([]); // [{id,from,to,text,fecha,leido,respuesta,respondido}]
   const [showMensajePanel, setShowMensajePanel] = useState(false);
   const [showConsentModal, setShowConsentModal] = useState(false); // B-19
@@ -3337,7 +3337,7 @@ function AppInner() {
   const [teleTab, setTeleTab] = useState("nueva"); // 'nueva' | 'historial'
   const [teleEspera, setTeleEspera] = useState([]); // sala de espera telemedicina
   const [mensajeRespuesta, setMensajeRespuesta] = useState(""); // texto de respuesta libre
-  // â"€â"€ AGENDA / SALA DE ESPERA â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+  // â”€â”€ AGENDA / SALA DE ESPERA â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const [agendados, setAgendados] = useState([]); // [{id,nombre,doc,tipo,medicoId,hora,estado:'espera'|'atendiendo'|'atendido',horaInicio,horaFin}]
   const [showAgenda, setShowAgenda] = useState(false);
   const [agendaForm, setAgendaForm] = useState({
@@ -3399,18 +3399,18 @@ function AppInner() {
   const fileInputRef = useRef(null);
   const fileInputSigRef = useRef(null);
   const csvInputRef = useRef(null);
-  // â"€â"€ SEGURIDAD: Auto-logout por inactividad (30 min) â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+  // â”€â”€ SEGURIDAD: Auto-logout por inactividad (30 min) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const _inactivityRef = useRef(null);
   const _warnRef = useRef(null);
   const [inactivityWarning, setInactivityWarning] = useState(false);
   const [inactivityCountdown, setInactivityCountdown] = useState(0);
-  // â"€â"€ EMPRESAS (component-level to avoid React #310) â"€â"€
+  // â”€â”€ EMPRESAS (component-level to avoid React #310) â”€â”€
   const [companiesTab, setCompaniesTab] = useState("lista");
   const [editingCompany, setEditingCompany] = useState(null);
-  // â"€â"€ CAJA POR MÃ‰DICO (component-level) â"€â"€
+  // â”€â”€ CAJA POR MÃ‰DICO (component-level) â”€â”€
   const [cajaMedicoPeriodo, setCajaMedicoPeriodo] = useState("mes");
   const [porcentajeMedico, setPorcentajeMedico] = useState(60); // % honorarios mÃ©dico vs clÃ­nica
-  // â"€â"€ FASE 2: MÃ©dico de turno activo â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+  // â”€â”€ FASE 2: MÃ©dico de turno activo â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const [medicoTurnoActivo, setMedicoTurnoActivo] = useState(() => {
     try {
       return localStorage.getItem("siso_medico_turno") || "";
@@ -3418,7 +3418,7 @@ function AppInner() {
       return "";
     }
   });
-  // â"€â"€ FASE 2: Lista de organizaciones (multi-tenant) â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+  // â”€â”€ FASE 2: Lista de organizaciones (multi-tenant) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const [orgsList, setOrgsList] = useState(() => {
     try {
       const saved = JSON.parse(
@@ -3430,11 +3430,11 @@ function AppInner() {
     }
     return [{ ...ORG_CONFIG_DEFAULT }]; // organizaciÃ³n inicial
   });
-  // â"€â"€ FASE 2: Org activa para super_admin (puede navegar entre orgs) â"€â"€â"€â"€â"€â"€â"€
+  // â”€â”€ FASE 2: Org activa para super_admin (puede navegar entre orgs) â”€â”€â”€â”€â”€â”€â”€
   const [activeOrgId, setActiveOrgId] = useState(ORG_DEFAULT_ID);
-  // â"€â"€ FASE 2: Tab panel super_admin â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+  // â”€â”€ FASE 2: Tab panel super_admin â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const [superAdminTab, setSuperAdminTab] = useState("orgs");
-  // â"€â"€ FASE 2: Form nueva organizaciÃ³n â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+  // â”€â”€ FASE 2: Form nueva organizaciÃ³n â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const [newOrgForm, setNewOrgForm] = useState({
     orgName: "",
     orgNit: "",
@@ -3443,7 +3443,7 @@ function AppInner() {
     adminEmail: "",
     plan: "pro",
   });
-  // â"€â"€ PORTAL EMPRESA (component-level) â"€â"€
+  // â”€â”€ PORTAL EMPRESA (component-level) â”€â”€
   const [portalEmpresaCodigo, setPortalEmpresaCodigo] = useState("");
   const [portalEmpresaEncontrada, setPortalEmpresaEncontrada] = useState(null);
   const [portalEmpresaPacientes, setPortalEmpresaPacientes] = useState([]);
@@ -3451,7 +3451,7 @@ function AppInner() {
   const [portalEmpresaBuscando, setPortalEmpresaBuscando] = useState(false);
   const [portalEmpresaFiltroDoc, setPortalEmpresaFiltroDoc] = useState(""); // filtro cÃ©dula en portal empresa
   const [portalActivadoInfo, setPortalActivadoInfo] = useState(null); // {empresa, portalCode} post-activaciÃ³n
-  // â"€â"€ PORTAL EMPRESA ADMIN (FASE 2) â"€â"€
+  // â”€â”€ PORTAL EMPRESA ADMIN (FASE 2) â”€â”€
   const [portalEmpresaAdmin, setPortalEmpresaAdmin] = useState(null); // empresa admin logueado
   const [portalAdminTab, setPortalAdminTab] = useState("medicos");
   const [portalAdminLoginUser, setPortalAdminLoginUser] = useState("");
@@ -3467,7 +3467,7 @@ function AppInner() {
     ciudad: "",
     direccion: "",
   });
-  // â"€â"€ IPS: Credenciales IPS desde Super Admin â"€â"€
+  // â”€â”€ IPS: Credenciales IPS desde Super Admin â”€â”€
   const [ipsCredForm, setIpsCredForm] = useState({
     nombre: "",
     user: "",
@@ -3477,7 +3477,7 @@ function AppInner() {
   const [ipsEditingEmpId, setIpsEditingEmpId] = useState(null);
   const activeDoctorData = currentUser?.doctorData || DEFAULT_DOCTOR_DATA;
   const activeSignature = currentUser?.doctorData?.signature || doctorSignature;
-  // â"€â"€ Bloque 4-A: useMemo para cÃ³mputos costosos (bajo rendimiento) â"€â"€â"€â"€â"€â"€â"€â"€â"€
+  // â”€â”€ Bloque 4-A: useMemo para cÃ³mputos costosos (bajo rendimiento) â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const _memoPatients = React.useMemo(() => patientsList, [patientsList]);
   const _memoCompanies = React.useMemo(() => companies, [companies]);
   const _memoBills = React.useMemo(() => savedBillsList, [savedBillsList]);
@@ -3644,13 +3644,13 @@ function AppInner() {
       document.head.appendChild(pp);
     }
   }, []);
-  // â"€â"€ PERF-01: CSS Global â€" Print + Mobile + content-visibility â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+  // â”€â”€ PERF-01: CSS Global â€” Print + Mobile + content-visibility â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   useEffect(() => {
     if (document.getElementById("siso-perf-styles")) return;
     const style = document.createElement("style");
     style.id = "siso-perf-styles";
     style.textContent = `
-      /* â"€â"€ PRINT: evitar texto cortado en historias clÃ­nicas â"€â"€ */
+      /* â”€â”€ PRINT: evitar texto cortado en historias clÃ­nicas â”€â”€ */
       @media print {
         * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
         body { font-size: 9pt !important; }
@@ -3706,7 +3706,7 @@ function AppInner() {
         @page { size: letter portrait; margin: 1.5cm; }
       }
 
-      /* â"€â"€ MOBILE: responsive para Android e iOS â"€â"€ */
+      /* â”€â”€ MOBILE: responsive para Android e iOS â”€â”€ */
       @media (max-width: 768px) {
         /* Navbar compacta */
         nav { flex-wrap: wrap !important; gap: 4px !important; padding: 8px !important; }
@@ -3749,7 +3749,7 @@ function AppInner() {
         }
       }
 
-      /* â"€â"€ EXTRA SMALL: telÃ©fonos 360px â"€â"€ */
+      /* â”€â”€ EXTRA SMALL: telÃ©fonos 360px â”€â”€ */
       @media (max-width: 480px) {
         .grid-cols-2 { grid-template-columns: 1fr !important; }
         .flex.gap-2, .flex.gap-3 { flex-wrap: wrap !important; }
@@ -3757,7 +3757,7 @@ function AppInner() {
         .px-4 { padding-left: 10px !important; padding-right: 10px !important; }
       }
 
-      /* â"€â"€ PERF: content-visibility para carga inicial rÃ¡pida â"€â"€ */
+      /* â”€â”€ PERF: content-visibility para carga inicial rÃ¡pida â”€â”€ */
       /* Solo aplica a secciones que no estÃ¡n visibles al inicio */
       .siso-lazy-section {
         content-visibility: auto;
@@ -3805,7 +3805,7 @@ function AppInner() {
       setUsersList(fixed);
       setUsersReady(true);
     } else {
-      // â•â• Cache vacÃ­o â€" ESPERAR a Supabase antes de permitir login â•â•
+      // â•â• Cache vacÃ­o â€” ESPERAR a Supabase antes de permitir login â•â•
       (async () => {
         try {
           // Timeout de 8 segundos para no bloquear la UI si no hay internet
@@ -3975,7 +3975,7 @@ function AppInner() {
       _sbQueue.flush();
     });
   }, []);
-  // â"€â"€ AUTO-GUARDADO CADA 2 MINUTOS â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+  // â”€â”€ AUTO-GUARDADO CADA 2 MINUTOS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   useEffect(() => {
     if (!currentUser || view !== "historia") return;
     const timer = setInterval(() => {
@@ -3998,14 +3998,14 @@ function AppInner() {
     }, 120000); // 2 minutos
     return () => clearInterval(timer);
   }, [currentUser, view, data, patientsList]);
-  // â"€â"€ BEFOREUNLOAD: advertir al recargar/cerrar pestaÃ±a con HC sucia â"€â"€â"€â"€â"€â"€â"€â"€
+  // â”€â”€ BEFOREUNLOAD: advertir al recargar/cerrar pestaÃ±a con HC sucia â”€â”€â”€â”€â”€â”€â”€â”€
   useEffect(() => {
     if (!_hcDirty || view !== "historia") return;
     const handler = (e) => { e.preventDefault(); e.returnValue = ""; };
     window.addEventListener("beforeunload", handler);
     return () => window.removeEventListener("beforeunload", handler);
   }, [_hcDirty, view]);
-  // â"€â"€ AUTOGUARDADO LOCAL cada 15 segundos â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+  // â”€â”€ AUTOGUARDADO LOCAL cada 15 segundos â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   useEffect(() => {
     if (view !== "historia" || !data.nombres) return;
     const autoSaveInterval = setInterval(() => {
@@ -4015,7 +4015,7 @@ function AppInner() {
     }, 15000);
     return () => clearInterval(autoSaveInterval);
   }, [view, data, currentUser]);
-  // â"€â"€ SYNC A SUPABASE cada 60 segundos â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+  // â”€â”€ SYNC A SUPABASE cada 60 segundos â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   useEffect(() => {
     if (view !== "historia" || !data.id || !data.nombres) return;
     const cloudSaveInterval = setInterval(() => {
@@ -4045,7 +4045,7 @@ function AppInner() {
       }));
     else setBillData((p) => ({ ...p, amountWords: "" }));
   }, [billData.amount]);
-  // â"€â"€ AUTO-SYNC A SUPABASE CADA 2 MINUTOS â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+  // â”€â”€ AUTO-SYNC A SUPABASE CADA 2 MINUTOS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   useEffect(() => {
     if (!currentUser) return;
     const AUTO_INTERVAL_MS = 2 * 60 * 1000; // 2 minutos
@@ -4118,7 +4118,7 @@ function AppInner() {
     teleconsultas,
     habeasRequests,
   ]);
-  // â"€â"€ PERSISTENCIA DE SESIÃ"N: guarda estado completo en localStorage â"€â"€â"€â"€â"€â"€â"€â"€
+  // â”€â”€ PERSISTENCIA DE SESIÃ“N: guarda estado completo en localStorage â”€â”€â”€â”€â”€â”€â”€â”€
   useEffect(() => {
     if (!currentUser) return;
     _ls.setItem(
@@ -4138,7 +4138,7 @@ function AppInner() {
     savedReports,
     aiConfig,
   ]);
-  // â"€â"€ FIX: Auto-expandir textareas al escribir (delegaciÃ³n global) â"€â"€
+  // â”€â”€ FIX: Auto-expandir textareas al escribir (delegaciÃ³n global) â”€â”€
   useEffect(() => {
     const handler = (e) => {
       if (e.target.tagName === "TEXTAREA") {
@@ -4149,7 +4149,7 @@ function AppInner() {
     document.addEventListener("input", handler);
     return () => document.removeEventListener("input", handler);
   }, []);
-  // â"€â"€ SEC-F1-05: Prevenir pÃ©rdida de datos al cerrar pestaÃ±a â"€â"€
+  // â”€â”€ SEC-F1-05: Prevenir pÃ©rdida de datos al cerrar pestaÃ±a â”€â”€
   useEffect(() => {
     const handler = (e) => {
       if (_hcDirty && view === "historia") {
@@ -4161,7 +4161,7 @@ function AppInner() {
     window.addEventListener("beforeunload", handler);
     return () => window.removeEventListener("beforeunload", handler);
   }, [_hcDirty, view]);
-  // â"€â"€ SEC-F1-06: Timeout de sesiÃ³n inactiva (30 min) â"€â"€
+  // â”€â”€ SEC-F1-06: Timeout de sesiÃ³n inactiva (30 min) â”€â”€
   useEffect(() => {
     if (!currentUser) return;
     const resetTimer = () => _resetSessionTimer(() => {
@@ -4179,7 +4179,7 @@ function AppInner() {
       events.forEach(ev => window.removeEventListener(ev, resetTimer));
     };
   }, [currentUser]);
-  // â"€â"€ PERSISTENCIA DE VISTA Y SESIÃ"N: guarda la vista activa y usuario para restaurar al recargar
+  // â”€â”€ PERSISTENCIA DE VISTA Y SESIÃ“N: guarda la vista activa y usuario para restaurar al recargar
   useEffect(() => {
     if (currentUser && view !== "login") {
       _ls.setItem(
@@ -4199,7 +4199,7 @@ function AppInner() {
       _ls.removeItem("siso_active_form");
     }
   }, [currentUser, view, navStack, activeTab, dataType]);
-  // â"€â"€ PASO 1: Cargar datos empresa cuando se navega a perfilips â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+  // â”€â”€ PASO 1: Cargar datos empresa cuando se navega a perfilips â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   useEffect(() => {
     if (view !== "perfilips" || currentUser?.role !== "admin_empresa") return;
     const me = companies.find((c) => c.id === currentUser.empresaId) || {};
@@ -4217,7 +4217,7 @@ function AppInner() {
       _loaded: true,
     });
   }, [view, currentUser?.empresaId, companies]);
-  // â"€â"€ PERSISTENCIA DEL FORMULARIO ACTIVO: guarda el borrador en tiempo real
+  // â”€â”€ PERSISTENCIA DEL FORMULARIO ACTIVO: guarda el borrador en tiempo real
   useEffect(() => {
     if (!currentUser || view !== "historia") return;
     // Solo guardar si hay datos mÃ­nimos para no sobreescribir con formulario vacÃ­o
@@ -4268,13 +4268,13 @@ function AppInner() {
       clearTimeout(_warnRef.current);
     };
   }, [currentUser, _resetInactivity]);
-  // â"€â"€ MOTOR IA â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+  // â”€â”€ MOTOR IA â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const callAI = useCallback(
     async (prompt, expectJson = false) => {
       const systemPrompt = expectJson
         ? `Eres mÃ©dico especialista en Medicina del Trabajo y Salud Ocupacional en Colombia, con mÃ¡s de 15 aÃ±os de experiencia en evaluaciones de aptitud laboral, ingresos, egresos, seguimientos periÃ³dicos y post-incapacidad, manejo de enfermedades laborales, calificaciÃ³n de origen y PCL, y gestiÃ³n de programas de vigilancia epidemiolÃ³gica (PVE) conforme a la Res. 1843/2025 (deroga 2346/2007), Res. 2404/2019, Dec. 1072/2015 y Ley 1562/2012. Cuando la consulta sea de medicina general, actÃºas como mÃ©dico general con especializaciÃ³n en medicina interna y mÃ¡s de 15 aÃ±os de experiencia clÃ­nica. Redactas con lenguaje tÃ©cnico-mÃ©dico formal, directo y puntual. RESPONDE ÃšNICAMENTE CON JSON VÃLIDO, sin texto previo, sin bloques markdown, sin explicaciones adicionales. El JSON debe comenzar con { y terminar con }.`
         : `Eres mÃ©dico especialista en Medicina del Trabajo y Salud Ocupacional en Colombia, con mÃ¡s de 15 aÃ±os de experiencia en evaluaciones ocupacionales (ingreso, egreso, periÃ³dico, reintegro, post-incapacidad), restricciones mÃ©dico-laborales, enfermedades laborales, vigilancia epidemiolÃ³gica, calificaciÃ³n de origen y pÃ©rdida de capacidad laboral (PCL). Conoces a fondo la normativa vigente: Res. 1843/2025 (norma vigente, deroga Res. 2346/2007), Res. 2404/2019, Dec. 1072/2015, GTC-45:2012, GATISO-DME, GATISO-TME, Ley 1562/2012 y Res. 0312/2019. Cuando la consulta corresponde a medicina general, actÃºas como mÃ©dico general con especializaciÃ³n clÃ­nica y mÃ¡s de 15 aÃ±os de experiencia, manejando patologÃ­a ambulatoria, crÃ³nica y aguda con criterio clÃ­nico sÃ³lido. Tu lenguaje es tÃ©cnico, formal, directo y puntual. Respondes en espaÃ±ol.`;
-      // Orden de prioridad fijo: gemini â†' openrouter â†' groq â†' together
+      // Orden de prioridad fijo: gemini â†’ openrouter â†’ groq â†’ together
       // Groq puede fallar por CORS segÃºn el dominio; gemini y openrouter son mÃ¡s estables en browser
       const PRIORITY_ORDER = ["gemini", "openrouter", "groq", "together"];
       const activeKey = aiConfig.activeProvider || "gemini";
@@ -4307,19 +4307,19 @@ function AppInner() {
         .map((k) => AI_PROVIDERS[k]?.name || k)
         .join(", ");
       throw new Error(
-        `âš ï¸ IA no disponible. Probados: ${providerNames}\n` +
+        `âš ï¸ IA no disponible. Probados: ${providerNames}\n` +
           `Ãšltimo error: ${lastError?.message || "sin respuesta"}\n\n` +
-          `SOLUCIÃ"N: Abra âš™ï¸ IA â†' use el botÃ³n "Probar" en cada proveedor â†' obtenga una key nueva gratis en el enlace que aparece â†' guarde.\n` +
+          `SOLUCIÃ“N: Abra âš™ï¸ IA â†’ use el botÃ³n "Probar" en cada proveedor â†’ obtenga una key nueva gratis en el enlace que aparece â†’ guarde.\n` +
           `Las keys gratuitas expiran o alcanzan su lÃ­mite. Renovarlas toma menos de 2 minutos.`
       );
     },
     [aiConfig]
   );
-  // â"€â"€ GENERACIÃ"N IA COMPLETA (Concepto + DiagnÃ³sticos) â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+  // â”€â”€ GENERACIÃ“N IA COMPLETA (Concepto + DiagnÃ³sticos) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const generateAIAnalysis = async () => {
     if (!_canUse("ia_analisis", currentUser)) {
       showAlert(
-        "ðŸ"' El anÃ¡lisis IA estÃ¡ disponible en el plan â­ Pro ($79.000/mes).\n\nMenÃº â†' â­ Ver Planes para actualizar."
+        "ðŸ”’ El anÃ¡lisis IA estÃ¡ disponible en el plan â­ Pro ($79.000/mes).\n\nMenÃº â†’ â­ Ver Planes para actualizar."
       );
       return;
     }
@@ -4343,16 +4343,16 @@ function AppInner() {
         .filter(([, v]) => v)
         .map(([k]) => k)
         .join(", ") || "No reportados";
-    // â"€â"€ Contexto clÃ­nico adaptado al TIPO DE EXAMEN â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+    // â”€â”€ Contexto clÃ­nico adaptado al TIPO DE EXAMEN â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     const _tipoExamen = (data.tipoExamen || "").toUpperCase();
     const _contextoTipo = (() => {
       if (_tipoExamen.includes("INGRESO"))
         return "EXAMEN DE INGRESO: EvalÃºa la aptitud INICIAL para el cargo. Las recomendaciones deben incluir: (A) Medidas preventivas desde el inicio de la relaciÃ³n laboral, (B) IdentificaciÃ³n de factores de riesgo preexistentes vs laborales, (C) LÃ­nea de base para seguimiento futuro, (D) Programa de inducciÃ³n en SST, (E) ExÃ¡menes paraclÃ­nicos de ingreso recomendados segÃºn riesgos.";
       if (
-        _tipoExamen.includes("PERIÃ"DICO") ||
+        _tipoExamen.includes("PERIÃ“DICO") ||
         _tipoExamen.includes("PERIODICO")
       )
-        return "EXAMEN PERIÃ"DICO: EvalÃºa cambios en el estado de salud respecto al examen anterior. Las recomendaciones deben incluir: (A) ComparaciÃ³n con hallazgos previos y tendencias, (B) Seguimiento de patologÃ­as crÃ³nicas ya identificadas, (C) Adherencia a PVE (Programas de Vigilancia EpidemiolÃ³gica) activos, (D) Refuerzo de medidas de control de riesgos laborales, (E) Indicadores de salud ocupacional: ausentismo, accidentes recientes.";
+        return "EXAMEN PERIÃ“DICO: EvalÃºa cambios en el estado de salud respecto al examen anterior. Las recomendaciones deben incluir: (A) ComparaciÃ³n con hallazgos previos y tendencias, (B) Seguimiento de patologÃ­as crÃ³nicas ya identificadas, (C) Adherencia a PVE (Programas de Vigilancia EpidemiolÃ³gica) activos, (D) Refuerzo de medidas de control de riesgos laborales, (E) Indicadores de salud ocupacional: ausentismo, accidentes recientes.";
       if (_tipoExamen.includes("EGRESO") || _tipoExamen.includes("RETIRO"))
         return "EXAMEN DE EGRESO: EvalÃºa el estado de salud AL FINALIZAR el vÃ­nculo laboral. Las recomendaciones deben incluir: (A) DetecciÃ³n de enfermedades o secuelas de origen laboral (Decreto 1477/2014), (B) DeterminaciÃ³n de origen laboral o comÃºn de hallazgos, (C) Indicar si el trabajador requiere seguimiento mÃ©dico post-retiro, (D) DocumentaciÃ³n de condiciones para eventual reporte a ARL, (E) Concepto sobre relaciÃ³n de causalidad con el cargo/empresa.";
       if (
@@ -4406,7 +4406,7 @@ JSON REQUERIDO (sin markdown, sin texto adicional):
         [
           "INGRESO",
           "PERIODICO",
-          "PERIÃ"DICO",
+          "PERIÃ“DICO",
           "EGRESO",
           "RETIRO",
           "POST-INCAPACIDAD",
@@ -4506,14 +4506,14 @@ JSON REQUERIDO (sin markdown, sin texto adicional):
           },
         }));
       }
-      // â"€â"€ Guardar AnÃ¡lisis ClÃ­nico IA (campo independiente) â"€â"€
+      // â”€â”€ Guardar AnÃ¡lisis ClÃ­nico IA (campo independiente) â”€â”€
       if (parsed.analisisClinico) {
         setData((prev) => ({
           ...prev,
           analisisIA: parsed.analisisClinico,
         }));
       }
-      // â"€â"€ Guardar SVE Recomendado por IA â"€â"€
+      // â”€â”€ Guardar SVE Recomendado por IA â”€â”€
       if (parsed.sveRecomendado?.length > 0) {
         setData((prev) => ({
           ...prev,
@@ -4550,7 +4550,7 @@ JSON REQUERIDO (sin markdown, sin texto adicional):
       setIsGenerating(false);
     }
   };
-  // â"€â"€ GENERACIÃ"N IA SOLO RESTRICCIONES â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+  // â”€â”€ GENERACIÃ“N IA SOLO RESTRICCIONES â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const generateAIRestricciones = async () => {
     setIsGeneratingRestr(true);
     const hallazgos =
@@ -4577,8 +4577,8 @@ Maniobras osteomusculares positivas: ${osteo || "Ninguna"}
 IMC: ${data.imc} | TA: ${data.ta} | DiagnÃ³stico principal: ${
       data.diagnosticoPrincipal
     }
-INSTRUCCIÃ"N: Las restricciones deben ser operativas, cuantificables (en kg, min, grados o frecuencias), con segmento anatÃ³mico identificado, tipo (TEMPORAL/PERMANENTE/PREVENTIVA), duraciÃ³n si temporal (ej: "Temporal 30 dÃ­as", "Permanente"), y base normativa. Si el examen es egreso, post-incapacidad o retorno-laboral (Res. 1843/2025 Art. 13), incluir restricciones de reintegro progresivo.
-FORMATO DESEADO: [TIPO: Temporal X dÃ­as / Permanente] (Segmento) DescripciÃ³n â€" Normativa
+INSTRUCCIÃ“N: Las restricciones deben ser operativas, cuantificables (en kg, min, grados o frecuencias), con segmento anatÃ³mico identificado, tipo (TEMPORAL/PERMANENTE/PREVENTIVA), duraciÃ³n si temporal (ej: "Temporal 30 dÃ­as", "Permanente"), y base normativa. Si el examen es egreso, post-incapacidad o retorno-laboral (Res. 1843/2025 Art. 13), incluir restricciones de reintegro progresivo.
+FORMATO DESEADO: [TIPO: Temporal X dÃ­as / Permanente] (Segmento) DescripciÃ³n â€” Normativa
 JSON REQUERIDO (sin markdown):
 {"restricciones":[{"segmento":"Miembro Superior/Lumbar/Cervical/Postural/General","tipo":"TEMPORAL/PERMANENTE/PREVENTIVA","duracion":"X semanas o N/A","texto":"RestricciÃ³n especÃ­fica, operativa y cuantificable para el puesto de trabajo","normativa":"GTC-45:2012 / GATISO-DME / GATISO-TME / Res. 1843/2025 / Res. 2404/2019"}]}`;
     try {
@@ -4587,7 +4587,7 @@ JSON REQUERIDO (sin markdown):
       const lista = (parsed.restricciones || [])
         .map(
           (r, i) =>
-            `${i + 1}. [${(r.tipo || "TEMPORAL").toUpperCase()}${r.duracion && r.duracion !== "N/A" ? " - " + r.duracion : ""}] (${r.segmento || "General"}) ${r.texto || r.descripcion} â€" ${r.normativa || "Res. 1843/2025"}`
+            `${i + 1}. [${(r.tipo || "TEMPORAL").toUpperCase()}${r.duracion && r.duracion !== "N/A" ? " - " + r.duracion : ""}] (${r.segmento || "General"}) ${r.texto || r.descripcion} â€” ${r.normativa || "Res. 1843/2025"}`
         )
         .join("\n");
       setData((prev) => ({ ...prev, analisisRestricciones: lista }));
@@ -4600,7 +4600,7 @@ JSON REQUERIDO (sin markdown):
       setIsGeneratingRestr(false);
     }
   };
-  // â"€â"€ GENERACIÃ"N IA SOLO RECOMENDACIONES â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+  // â”€â”€ GENERACIÃ“N IA SOLO RECOMENDACIONES â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const generateAIRecomendaciones = async () => {
     setIsGeneratingReco(true);
     const prompt = `Eres mÃ©dico especialista en Medicina del Trabajo con mÃ¡s de 15 aÃ±os de experiencia en Colombia. Genera recomendaciones mÃ©dico-laborales y de promociÃ³n de la salud ESPECÃFICAS para el trabajador evaluado. No uses recomendaciones genÃ©ricas. Responde en texto plano numerado, sin JSON, en espaÃ±ol formal y directo.
@@ -4620,7 +4620,7 @@ IMC: ${data.imc} | TA: ${data.ta} | Tabaquismo: ${
     }
 DiagnÃ³stico principal: ${data.diagnosticoPrincipal}
 Tipo de examen: ${data.tipoExamen}
-INSTRUCCIÃ"N: Genera mÃ­nimo 12 recomendaciones numeradas diferenciando: (A) Recomendaciones mÃ©dicas y de estilo de vida (B) Recomendaciones ergonÃ³micas especÃ­ficas para el cargo (C) Recomendaciones de vigilancia epidemiolÃ³gica y seguimiento (D) Recomendaciones al empleador conforme Res. 1843/2025 y Dec. 1072/2015. Lenguaje tÃ©cnico-mÃ©dico, formal, directo y puntual.`;
+INSTRUCCIÃ“N: Genera mÃ­nimo 12 recomendaciones numeradas diferenciando: (A) Recomendaciones mÃ©dicas y de estilo de vida (B) Recomendaciones ergonÃ³micas especÃ­ficas para el cargo (C) Recomendaciones de vigilancia epidemiolÃ³gica y seguimiento (D) Recomendaciones al empleador conforme Res. 1843/2025 y Dec. 1072/2015. Lenguaje tÃ©cnico-mÃ©dico, formal, directo y puntual.`;
     try {
       const text = await callAI(prompt, false);
       setData((prev) => ({ ...prev, recomendaciones: text.trim() }));
@@ -4631,11 +4631,11 @@ INSTRUCCIÃ"N: Genera mÃ­nimo 12 recomendaciones numeradas diferenciando: (A) 
       setIsGeneratingReco(false);
     }
   };
-  // â"€â"€ GENERACIÃ"N IA MEDICINA GENERAL â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+  // â”€â”€ GENERACIÃ“N IA MEDICINA GENERAL â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const generateAIGeneral = async () => {
     if (!_canUse("ia_analisis", currentUser)) {
       showAlert(
-        "ðŸ"' El anÃ¡lisis IA estÃ¡ disponible en el plan â­ Pro ($79.000/mes).\n\nMenÃº â†' â­ Ver Planes para actualizar."
+        "ðŸ”’ El anÃ¡lisis IA estÃ¡ disponible en el plan â­ Pro ($79.000/mes).\n\nMenÃº â†’ â­ Ver Planes para actualizar."
       );
       return;
     }
@@ -4658,7 +4658,7 @@ Examen fÃ­sico: TA ${data.examenFisico?.ta || "N/R"} | FC ${
     }
 Hallazgos fÃ­sicos: ${data.examenFisico?.hallazgos || "Ninguno referido"}
 RevisiÃ³n por sistemas: ${JSON.stringify(data.revisionSistemas || {})}
-INSTRUCCIÃ"N: El anÃ¡lisis clÃ­nico debe ser razonado, con diagnÃ³stico diferencial implÃ­cito. La conducta debe ser especÃ­fica para este paciente. Los medicamentos deben incluir principio activo, presentaciÃ³n, dosis, frecuencia y duraciÃ³n. Las remisiones deben justificarse clÃ­nicamente. El control debe ser en tiempo especÃ­fico. Lenguaje tÃ©cnico-mÃ©dico formal y directo.
+INSTRUCCIÃ“N: El anÃ¡lisis clÃ­nico debe ser razonado, con diagnÃ³stico diferencial implÃ­cito. La conducta debe ser especÃ­fica para este paciente. Los medicamentos deben incluir principio activo, presentaciÃ³n, dosis, frecuencia y duraciÃ³n. Las remisiones deben justificarse clÃ­nicamente. El control debe ser en tiempo especÃ­fico. Lenguaje tÃ©cnico-mÃ©dico formal y directo.
 JSON REQUERIDO (sin markdown, sin texto adicional):
 {"diagnosticos":[{"cie10":"CIE-10","descripcion":"Nombre diagnÃ³stico completo","tipo":"Principal/Secundario/Presuntivo"}],"plan":{"conducta":"Conducta mÃ©dica detallada y razonada","medicamentos":"Resumen breve del plan farmacolÃ³gico","formulaMedicamentos":[{"nombre":"Nombre genÃ©rico (principio activo)","presentacion":"Forma farmacÃ©utica y concentraciÃ³n - ej: Tableta 500mg","dosis":"Cantidad por toma - ej: 1 tableta","frecuencia":"Intervalo - ej: cada 8 horas","duracion":"Ej: 7 dÃ­as","indicaciones":"IndicaciÃ³n especial o cadena vacÃ­a"}],"paraclinicosSolicitados":"ParaclÃ­nicos con justificaciÃ³n clÃ­nica","remisiones":"Remisiones a especialista justificadas clÃ­nicamente o 'No aplica'","recomendaciones":"Recomendaciones especÃ­ficas al paciente: dieta, actividad, signos de alarma, medidas no farmacolÃ³gicas","controlEn":"Control en X dÃ­as/semanas con criterios especÃ­ficos"},"analisis":"Razonamiento clÃ­nico del caso en 4-5 lÃ­neas: hipÃ³tesis diagnÃ³stica, correlaciÃ³n clÃ­nica y justificaciÃ³n del plan"}`;
     try {
@@ -4694,11 +4694,11 @@ JSON REQUERIDO (sin markdown, sin texto adicional):
       setIsGenerating(false);
     }
   };
-  // â"€â"€ GENERACIÃ"N REPORTE IA â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+  // â”€â”€ GENERACIÃ“N REPORTE IA â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const generateAIReport = async (stats, total, companyName) => {
     if (!_canUse("ia_reporte", currentUser)) {
       showAlert(
-        "ðŸ"' Los reportes IA estÃ¡n disponibles en el plan â­ Pro ($79.000/mes).\n\nMenÃº â†' â­ Ver Planes para actualizar."
+        "ðŸ”’ Los reportes IA estÃ¡n disponibles en el plan â­ Pro ($79.000/mes).\n\nMenÃº â†’ â­ Ver Planes para actualizar."
       );
       return;
     }
@@ -4766,18 +4766,18 @@ JSON REQUERIDO (sin markdown, sin texto adicional):
       const parte2 = parseAIJSON(text2);
       setReportAIResult({ ...parte1, conclusiones: parte2.conclusiones || "", analisisJustificado: parte2.analisisJustificado || "", recomendacionesInforme: parte2.recomendacionesInforme || "" });
     } catch (e) {
-      showAlert(`âš ï¸ Error IA Reporte: ${e.message}`);
+      showAlert(`âš ï¸ Error IA Reporte: ${e.message}`);
     } finally {
       setIsGeneratingReport(false);
     }
   };
-  // â"€â"€ HANDLERS GENERALES â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+  // â”€â”€ HANDLERS GENERALES â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setData((p) => ({ ...p, [name]: type === "checkbox" ? checked : value }));
     if (view === "historia") _setHcDirty(true);
   };
-  // â"€â"€ GUARDADO MANUAL EN NUBE CON REPORTE â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+  // â”€â”€ GUARDADO MANUAL EN NUBE CON REPORTE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const handleManualCloudSave = async () => {
     setSyncStatus("syncing");
     const ts = new Date().toISOString();
@@ -4860,15 +4860,15 @@ JSON REQUERIDO (sin markdown, sin texto adicional):
     _ls.setItem("siso_ai_config_version", "v3");
     showAlert("âœ… ConfiguraciÃ³n de IA guardada en la nube.");
   };
-
+  
 const handleLogin = (u, p) => {
     // SEC: Rate limiting - verificar bloqueo
     if (_rl.isBlocked()) {
-      showAlert(`â›" Demasiados intentos fallidos. Intente de nuevo en ${_rl.getRemainingMin()} minuto(s).`);
+      showAlert(`â›” Demasiados intentos fallidos. Intente de nuevo en ${_rl.getRemainingMin()} minuto(s).`);
       return;
     }
 
-
+  
 // ============================================================
     // FIX C-01: SOLO comparar contra passHash (SHA-256) - eliminado fallback texto plano
     _sha256(p).then(async (hash) => {
@@ -4947,7 +4947,7 @@ const handleLogin = (u, p) => {
       }
       if (found && found.activo === false) {
         showAlert(
-          "â›" Esta cuenta estÃ¡ desactivada. Contacte al administrador."
+          "â›” Esta cuenta estÃ¡ desactivada. Contacte al administrador."
         );
         return;
       }
@@ -4974,7 +4974,7 @@ const handleLogin = (u, p) => {
           ? found
           : { ...found, orgId: ORG_DEFAULT_ID };
         const foundConSesion = { ...foundConOrg, sesionId: sesId };
-        // â"€â"€ Para secretaria: cargar permisos actualizados desde Supabase al login â"€â"€
+        // â”€â”€ Para secretaria: cargar permisos actualizados desde Supabase al login â”€â”€
         // Esto garantiza que los permisos del admin estÃ©n vigentes desde el primer momento
         const _initWithPermisos = async (baseSesion) => {
           if (baseSesion.role === "secretaria") {
@@ -5035,14 +5035,14 @@ const handleLogin = (u, p) => {
           return n;
         });
         // Al hacer login: cargar pacientes del mÃ©dico especÃ­fico (aislamiento)
-        // â"€â"€ IPS: si el usuario tiene empresaId, usar storage compartido de empresa â"€â"€
+        // â”€â”€ IPS: si el usuario tiene empresaId, usar storage compartido de empresa â”€â”€
         const _storageUserId = found.empresaId
           ? "empresa_" + found.empresaId
           : found.user;
         const userPatKey = _patKey(_storageUserId);
         const userPatKeyCloud = _patKeyCloud(_storageUserId);
         const localPats = sp(userPatKey, []);
-        // IPS: migraciÃ³n â€" si el usuario tenÃ­a datos personales, copiarlos al bucket empresa
+        // IPS: migraciÃ³n â€” si el usuario tenÃ­a datos personales, copiarlos al bucket empresa
         if (found.empresaId) {
           const personalPats = sp(_patKey(found.user), []);
           if (personalPats.length > 0 && localPats.length === 0) {
@@ -5071,7 +5071,7 @@ const handleLogin = (u, p) => {
         const userCompKey = _compKey(_storageUserId);
         const userCompKeyCloud = _compKeyCloud(_storageUserId);
         let localComps = sp(userCompKey, []);
-        // â"€â"€ IPS: si empresa user no tiene companies, copiar del admin de la org â"€â"€
+        // â”€â”€ IPS: si empresa user no tiene companies, copiar del admin de la org â”€â”€
         if (found.empresaId && localComps.length === 0) {
           // Buscar companies en el storage del admin de la org
           const allUsers = JSON.parse(_ls.getItem("siso_users") || "[]");
@@ -5096,7 +5096,7 @@ const handleLogin = (u, p) => {
           }
         }
         setCompanies(localComps);
-        // â"€â"€ PASO 6: cargar caja, agenda, atenciones y facturas aislados por empresa â"€â"€
+        // â”€â”€ PASO 6: cargar caja, agenda, atenciones y facturas aislados por empresa â”€â”€
         const _loadScoped = (scopedKey, globalKey) => {
           const s = sp(scopedKey, null);
           if (s !== null) return s;
@@ -5242,11 +5242,11 @@ const handleLogin = (u, p) => {
               return n;
             });
             showAlert(
-              "ðŸ"' Acceso bloqueado por 15 minutos debido a mÃºltiples intentos fallidos.\nSi olvidÃ³ su contraseÃ±a, contacte al administrador del sistema."
+              "ðŸ”’ Acceso bloqueado por 15 minutos debido a mÃºltiples intentos fallidos.\nSi olvidÃ³ su contraseÃ±a, contacte al administrador del sistema."
             );
           } else {
             showAlert(
-              `âš ï¸ Credenciales incorrectas. Intentos fallidos: ${next}/5. Tras 5 intentos se bloquearÃ¡ el acceso por 15 minutos.`
+              `âš ï¸ Credenciales incorrectas. Intentos fallidos: ${next}/5. Tras 5 intentos se bloquearÃ¡ el acceso por 15 minutos.`
             );
           }
           return next;
@@ -5310,17 +5310,17 @@ const handleLogin = (u, p) => {
       goTo("dashboard");
     }
   };
-  // â"€â"€ Guard: visibilidad de HC segÃºn rol y org (FASE 2) â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+  // â”€â”€ Guard: visibilidad de HC segÃºn rol y org (FASE 2) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const canViewPatient = (p) => {
     if (!p) return false;
     if (!currentUser) return false;
     // FASE 2: super_admin ve TODOS los pacientes de todas las orgs
     if (currentUser.role === "super_admin") return true;
-    // FASE 2: aislamiento multi-org â€" si el paciente tiene _orgId de otra org: denegar
+    // FASE 2: aislamiento multi-org â€” si el paciente tiene _orgId de otra org: denegar
     const myOrgId = currentUser.orgId || ORG_DEFAULT_ID;
     if (p._orgId && p._orgId !== myOrgId) return false;
     if (_isAdmin(currentUser.role)) return true;
-    // â"€â"€ IPS: admin_empresa ve TODOS los pacientes de su empresa â"€â"€
+    // â”€â”€ IPS: admin_empresa ve TODOS los pacientes de su empresa â”€â”€
     if (currentUser.role === "admin_empresa") {
       if (!currentUser.empresaId) return false;
       const empA = companies.find((c) => c.id === currentUser.empresaId);
@@ -5330,7 +5330,7 @@ const handleLogin = (u, p) => {
       );
     }
     if (currentUser.role === "medico") {
-      // IPS: mÃ©dico vinculado a empresa â†' ve TODOS los pacientes de la empresa (cross-read)
+      // IPS: mÃ©dico vinculado a empresa â†’ ve TODOS los pacientes de la empresa (cross-read)
       if (currentUser.empresaId) {
         const emp = companies.find((c) => c.id === currentUser.empresaId);
         return (
@@ -5360,7 +5360,7 @@ const handleLogin = (u, p) => {
   const openPatient = (p) => {
     if (!canViewPatient(p)) {
       showAlert(
-        "â›" No tiene permiso para ver esta historia clÃ­nica.\nSolo puede acceder a historias creadas por usted."
+        "â›” No tiene permiso para ver esta historia clÃ­nica.\nSolo puede acceder a historias creadas por usted."
       );
       return;
     }
@@ -5369,7 +5369,7 @@ const handleLogin = (u, p) => {
       setShowSecretariaPatientModal(p);
       return;
     }
-    // â"€â"€ RecuperaciÃ³n de autoguardado â"€â"€
+    // â”€â”€ RecuperaciÃ³n de autoguardado â”€â”€
     const _autoRaw = _ls.getItem("siso_autosave_" + p.id);
     if (_autoRaw) {
       try {
@@ -5400,18 +5400,18 @@ const handleLogin = (u, p) => {
     if (currentUser?.role === "secretaria") {
       if (!_secretariaPuede("pacientes_crear", currentUser, usersList)) {
         showAlert(
-          "â›" No tiene permiso para crear pacientes. Solicite acceso al administrador."
+          "â›” No tiene permiso para crear pacientes. Solicite acceso al administrador."
         );
         return;
       }
     }
-    // â"€â"€ PLAN GATE: verificar lÃ­mite de HC (super_admin, admin y admin_empresa exentos) â"€â"€
+    // â”€â”€ PLAN GATE: verificar lÃ­mite de HC (super_admin, admin y admin_empresa exentos) â”€â”€
     if (!_isAdminOrEmpresa(currentUser?.role)) {
       const plan = PLAN_CONFIG[currentUser?.license || "libre"];
       const usadas = _contarHC(patientsList, currentUser?.user);
       if (usadas >= plan.maxHC) {
         showAlert(
-          `ðŸ"' Plan ${plan.label}: lÃ­mite de ${plan.maxHC} historias clÃ­nicas alcanzado.\n\nActualiza tu plan para continuar creando HC.\nMenÃº â†' â­ Ver Planes`
+          `ðŸ”’ Plan ${plan.label}: lÃ­mite de ${plan.maxHC} historias clÃ­nicas alcanzado.\n\nActualiza tu plan para continuar creando HC.\nMenÃº â†’ â­ Ver Planes`
         );
         return;
       }
@@ -5426,12 +5426,12 @@ const handleLogin = (u, p) => {
       ).padStart(4, "0");
     // FASE 2: org_id se asigna automÃ¡ticamente al crear HC
     const myOrgId = currentUser?.orgId || ORG_DEFAULT_ID;
-    // FASE 2: MÃ©dico de turno â€" si admin/secretaria crea HC, proponer turno activo
+    // FASE 2: MÃ©dico de turno â€” si admin/secretaria crea HC, proponer turno activo
     const medicoDefault =
       _isAdmin(currentUser?.role) || currentUser?.role === "secretaria"
         ? medicoTurnoActivo || currentUser?.user
         : currentUser?.user;
-    // â"€â"€ IPS: auto-tag empresa si el usuario pertenece a una empresa â"€â"€
+    // â”€â”€ IPS: auto-tag empresa si el usuario pertenece a una empresa â”€â”€
     const _empresaAutoTag = {};
     if (currentUser?.empresaId) {
       const _empAT = companies.find((c) => c.id === currentUser.empresaId);
@@ -5460,18 +5460,18 @@ const handleLogin = (u, p) => {
     if (currentUser?.role === "secretaria") {
       if (!_secretariaPuede("pacientes_crear", currentUser, usersList)) {
         showAlert(
-          "â›" No tiene permiso para crear pacientes. Solicite acceso al administrador."
+          "â›” No tiene permiso para crear pacientes. Solicite acceso al administrador."
         );
         return;
       }
     }
-    // â"€â"€ PLAN GATE: verificar lÃ­mite de HC (super_admin, admin y admin_empresa exentos) â"€â"€
+    // â”€â”€ PLAN GATE: verificar lÃ­mite de HC (super_admin, admin y admin_empresa exentos) â”€â”€
     if (!_isAdminOrEmpresa(currentUser?.role)) {
       const plan = PLAN_CONFIG[currentUser?.license || "libre"];
       const usadas = _contarHC(patientsList, currentUser?.user);
       if (usadas >= plan.maxHC) {
         showAlert(
-          `ðŸ"' Plan ${plan.label}: lÃ­mite de ${plan.maxHC} historias clÃ­nicas alcanzado.\n\nActualiza tu plan para continuar creando HC.\nMenÃº â†' â­ Ver Planes`
+          `ðŸ”’ Plan ${plan.label}: lÃ­mite de ${plan.maxHC} historias clÃ­nicas alcanzado.\n\nActualiza tu plan para continuar creando HC.\nMenÃº â†’ â­ Ver Planes`
         );
         return;
       }
@@ -5482,7 +5482,7 @@ const handleLogin = (u, p) => {
       _isAdmin(currentUser?.role) || currentUser?.role === "secretaria"
         ? medicoTurnoActivo || currentUser?.user
         : currentUser?.user;
-    // â"€â"€ IPS: auto-tag empresa para HC general â"€â"€
+    // â”€â”€ IPS: auto-tag empresa para HC general â”€â”€
     const _empresaAutoTag2 = {};
     if (currentUser?.empresaId) {
       const _empAT2 = companies.find((c) => c.id === currentUser.empresaId);
@@ -5506,7 +5506,7 @@ const handleLogin = (u, p) => {
     logAccess("Apertura", newId, "general"); // AUDIT: Res. 1888/2025 RDA
   };
   // Guardar pacientes bajo la clave del usuario activo (aislamiento por mÃ©dico)
-  // â"€â"€ IPS: si el usuario tiene empresaId, usar storage compartido de empresa â"€â"€
+  // â”€â”€ IPS: si el usuario tiene empresaId, usar storage compartido de empresa â”€â”€
   const _syncPatients = (list) => {
     const _suid = currentUser?.empresaId
       ? "empresa_" + currentUser.empresaId
@@ -5546,7 +5546,7 @@ const handleLogin = (u, p) => {
       d.tipoExamen !== "POST-INCAPACIDAD"
     ) {
       alertas.push(
-        "âš ï¸ ALERTA Res. 1843/2025 Art. 9: Trabajador con â‰¥30 dÃ­as de incapacidad - se requiere evaluaciÃ³n POST-INCAPACIDAD obligatoria."
+        "âš ï¸ ALERTA Res. 1843/2025 Art. 9: Trabajador con â‰¥30 dÃ­as de incapacidad - se requiere evaluaciÃ³n POST-INCAPACIDAD obligatoria."
       );
     }
     if (
@@ -5555,7 +5555,7 @@ const handleLogin = (u, p) => {
       d.tipoExamen !== "RETORNO-LABORAL"
     ) {
       alertas.push(
-        "âš ï¸ ALERTA Res. 1843/2025 Art. 13: Ausencia >90 dÃ­as (no mÃ©dica) - se requiere evaluaciÃ³n de RETORNO LABORAL obligatoria."
+        "âš ï¸ ALERTA Res. 1843/2025 Art. 13: Ausencia >90 dÃ­as (no mÃ©dica) - se requiere evaluaciÃ³n de RETORNO LABORAL obligatoria."
       );
     }
     return alertas;
@@ -5590,7 +5590,7 @@ const handleLogin = (u, p) => {
     // NORMATIVO: Res. 1843/2025 - aviso no-bloqueante de vigencia
     if (dataType === "ocupacional" && !data.vigencia) {
       showAlert(
-        "âš ï¸ Recuerde registrar la vigencia del concepto de aptitud (Res. 1843/2025). Puede editar la HC para aÃ±adirla."
+        "âš ï¸ Recuerde registrar la vigencia del concepto de aptitud (Res. 1843/2025). Puede editar la HC para aÃ±adirla."
       );
     }
     showConfirm(
@@ -5633,7 +5633,7 @@ const handleLogin = (u, p) => {
         // PORTAL PÃšBLICO: guardar resumen en clave pÃºblica (sin RLS)
         // PolÃ­tica SQL necesaria: CREATE POLICY portal_public_read ON siso_store FOR SELECT USING (key LIKE 'siso_portal_%');
         const portalData = {
-          // â"€â"€ IdentificaciÃ³n paciente â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+          // â”€â”€ IdentificaciÃ³n paciente â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
           nombres: closed.nombres,
           docTipo: closed.docTipo,
           docNumero: closed.docNumero,
@@ -5651,7 +5651,7 @@ const handleLogin = (u, p) => {
           codigoVerificacion: code,
           estadoHistoria: "Cerrada",
           fechaCierre: new Date().toISOString().split("T")[0],
-          // â"€â"€ Restricciones y recomendaciones completas â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+          // â”€â”€ Restricciones y recomendaciones completas â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
           restricciones:
             closed.analisisRestricciones || closed.restricciones || "",
           restriccionesChecklist: closed.restriccionesChecklist || {},
@@ -5661,7 +5661,7 @@ const handleLogin = (u, p) => {
             closed.recomendacionesOcupacionales || "",
           recomendacionesChecklist: closed.recomendacionesChecklist || {},
           diagnosticoPrincipal: closed.diagnosticoPrincipal || "",
-          // â"€â"€ Datos completos del mÃ©dico (para generar PDF en portal) â"€â"€â"€â"€â"€â"€â"€â"€â"€
+          // â”€â”€ Datos completos del mÃ©dico (para generar PDF en portal) â”€â”€â”€â”€â”€â”€â”€â”€â”€
           medicoNombre: activeDoctorData?.nombre || currentUser?.name || "",
           _doctorData: {
             nombre:
@@ -5688,7 +5688,7 @@ const handleLogin = (u, p) => {
         if (code && !code.startsWith("CV-")) {
           _sbSet("siso_portal_CV-" + code, portalData);
         }
-        // â"€â"€ Auto-marcar paciente agendado como "Visto" (tiempo real) â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+        // â”€â”€ Auto-marcar paciente agendado como "Visto" (tiempo real) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         if (data._agendaId) {
           const horaFin = new Date().toLocaleTimeString("es-CO", {
             hour: "2-digit",
@@ -5711,7 +5711,7 @@ const handleLogin = (u, p) => {
             : currentUser?.user || "shared";
           _sync(`siso_agendados_${_hcSuf}`, JSON.stringify(updAg));
           _sbSet(`siso_agendados_${_hcSuf}`, updAg);
-          // â"€â"€ Registrar en Atenciones Recientes â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+          // â”€â”€ Registrar en Atenciones Recientes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
           const agOrig = agendados.find((a) => a.id === data._agendaId);
           const nuevaAtencion = {
             id: "ac_" + Date.now(),
@@ -5738,7 +5738,7 @@ const handleLogin = (u, p) => {
           _sync(`siso_atenciones_${_hcSuf}`, JSON.stringify(updAC));
           _sbSet(`siso_atenciones_${_hcSuf}`, updAC);
         }
-        // â"€â"€ PASO 3: Auto-facturaciÃ³n â€" generar movimiento en Caja â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+        // â”€â”€ PASO 3: Auto-facturaciÃ³n â€” generar movimiento en Caja â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         try {
           const agOrig2 = data._agendaId
             ? agendados.find((a) => a.id === data._agendaId)
@@ -5749,7 +5749,7 @@ const handleLogin = (u, p) => {
             closed.tipoExamen ||
             "general"
           ).toLowerCase();
-          // Calcular tarifa: convenio empresa â†' tarifa mÃ©dico â†' 0
+          // Calcular tarifa: convenio empresa â†’ tarifa mÃ©dico â†’ 0
           const _empCliente = companies.find(
             (c) =>
               c.id === closed.empresaId ||
@@ -5819,10 +5819,10 @@ const handleLogin = (u, p) => {
           console.warn("[PASO3] Auto-billing error:", _autoErr);
         }
         showAlert(
-          `âœ… Historia cerrada y firmada digitalmente.\nðŸ"‹ CÃ³digo QR: ${code}\nðŸ" Hash integridad: ${hashHC.substring(
+          `âœ… Historia cerrada y firmada digitalmente.\nðŸ“‹ CÃ³digo QR: ${code}\nðŸ” Hash integridad: ${hashHC.substring(
             0,
             20
-          )}...\nâš-ï¸ VÃ¡lido: Ley 527/1999 - Decreto 2364/2012`
+          )}...\nâš–ï¸ VÃ¡lido: Ley 527/1999 - Decreto 2364/2012`
         );
         logAccess("Cierre", data.id, dataType); // AUDIT: Res. 1888/2025 RDA
       }
@@ -5833,7 +5833,7 @@ const handleLogin = (u, p) => {
   const handleAiResumen = async (hcData) => {
     if (!_canUse("ia_resumen", currentUser)) {
       showAlert(
-        "ðŸ"' El resumen IA estÃ¡ disponible en el plan â­ Pro ($79.000/mes).\n\nMenÃº â†' â­ Ver Planes para actualizar."
+        "ðŸ”’ El resumen IA estÃ¡ disponible en el plan â­ Pro ($79.000/mes).\n\nMenÃº â†’ â­ Ver Planes para actualizar."
       );
       return;
     }
@@ -5878,17 +5878,17 @@ const handleLogin = (u, p) => {
   // Una HC firmada NO se modifica. Solo se agregan notas aclaratorias con trazabilidad completa.
   const handleEditHistory = () => {
     if (currentUser?.role === "secretaria") {
-      showAlert("â›" La secretaria no puede modificar historias clÃ­nicas.");
+      showAlert("â›” La secretaria no puede modificar historias clÃ­nicas.");
       return;
     }
     const isAdminUser = _isAdmin(currentUser?.role) || currentUser?.role === "super_admin";
-
+    
     // Usar confirmConfig con botones claros en lugar de input de nÃºmero
     setConfirmConfig({
-      msg: `ðŸ"‹ HC Cerrada â€" ${data.nombres}\nCÃ³digo: ${data.codigoVerificacion || "â€""}\n\nÂ¿QuÃ© desea hacer?`,
+      msg: `ðŸ“‹ HC Cerrada â€” ${data.nombres}\nCÃ³digo: ${data.codigoVerificacion || "â€”"}\n\nÂ¿QuÃ© desea hacer?`,
       buttons: [
         {
-          label: "ðŸ" EvoluciÃ³n clÃ­nica",
+          label: "ðŸ“ EvoluciÃ³n clÃ­nica",
           color: "bg-purple-600 hover:bg-purple-700",
           action: () => {
             setConfirmConfig(null);
@@ -5896,13 +5896,13 @@ const handleLogin = (u, p) => {
           }
         },
         {
-          label: "ðŸ"Œ Nota Aclaratoria",
+          label: "ðŸ“Œ Nota Aclaratoria",
           color: "bg-amber-600 hover:bg-amber-700",
           action: () => {
             setConfirmConfig(null);
             setTimeout(() => {
               showPrompt(
-                "ðŸ"Œ Escriba la nota aclaratoria:\n(Se registrarÃ¡ con su nombre, fecha y hora en la HC)",
+                "ðŸ“Œ Escriba la nota aclaratoria:\n(Se registrarÃ¡ con su nombre, fecha y hora en la HC)",
                 (nota) => {
                   if (!nota || nota.trim().length < 10) {
                     setTimeout(() => showAlert("La nota debe tener al menos 10 caracteres."), 100);
@@ -5939,24 +5939,24 @@ const handleLogin = (u, p) => {
           }
         },
         ...(isAdminUser ? [{
-          label: "ðŸ"" Reapertura completa",
+          label: "ðŸ”“ Reapertura completa",
           color: "bg-red-600 hover:bg-red-700",
           action: () => {
             setConfirmConfig(null);
             setTimeout(() => {
               showPrompt(
-                "ðŸ" Ingrese el cÃ³digo de administrador para reabrir la HC:",
+                "ðŸ” Ingrese el cÃ³digo de administrador para reabrir la HC:",
                 (adminCode) => {
                   if (!adminCode) return;
                   _sha256(adminCode).then((h) => {
                     const storedCode = _ls.getItem("siso_admin_code_hash") || _H.adminCode;
                     if (h !== storedCode) {
-                      setTimeout(() => showAlert("â›" CÃ³digo incorrecto."), 100);
+                      setTimeout(() => showAlert("â›” CÃ³digo incorrecto."), 100);
                       return;
                     }
                     setTimeout(() => {
                       showPrompt(
-                        "ðŸ"‹ Motivo de reapertura (mÃ­n. 20 caracteres â€" queda en auditorÃ­a):",
+                        "ðŸ“‹ Motivo de reapertura (mÃ­n. 20 caracteres â€” queda en auditorÃ­a):",
                         (reason) => {
                           if (!reason || reason.trim().length < 20) {
                             setTimeout(() => showAlert("El motivo debe tener al menos 20 caracteres."), 100);
@@ -5978,7 +5978,7 @@ const handleLogin = (u, p) => {
                             ],
                           }));
                           logAccess("ReaperturaAdmin", data.id, `Motivo: ${reason}`);
-                          setTimeout(() => showAlert("âš ï¸ HC reabierta para ediciÃ³n completa.\nEste evento quedÃ³ registrado en auditorÃ­a."), 100);
+                          setTimeout(() => showAlert("âš ï¸ HC reabierta para ediciÃ³n completa.\nEste evento quedÃ³ registrado en auditorÃ­a."), 100);
                         }
                       );
                     }, 150);
@@ -5995,13 +5995,13 @@ const handleLogin = (u, p) => {
             setConfirmConfig(null);
             setTimeout(() => {
               showPrompt(
-                "ðŸ" CÃ³digo de administrador para editar campos:",
+                "ðŸ” CÃ³digo de administrador para editar campos:",
                 (adminCode) => {
                   if (!adminCode) return;
                   _sha256(adminCode).then((h) => {
                     const storedCode = _ls.getItem("siso_admin_code_hash") || _H.adminCode;
                     if (h !== storedCode) {
-                      setTimeout(() => showAlert("â›" CÃ³digo incorrecto."), 100);
+                      setTimeout(() => showAlert("â›” CÃ³digo incorrecto."), 100);
                       return;
                     }
                     // Mostrar selector de campo a editar
@@ -6010,18 +6010,18 @@ const handleLogin = (u, p) => {
                         msg: `âœï¸ Editar campo de HC cerrada\nPaciente: ${data.nombres}\n\nSeleccione el campo a modificar:`,
                         buttons: [
                           {
-                            label: "ðŸ"‹ Tipo de EvaluaciÃ³n (actual: " + (data.tipoExamen || "â€"") + ")",
+                            label: "ðŸ“‹ Tipo de EvaluaciÃ³n (actual: " + (data.tipoExamen || "â€”") + ")",
                             color: "bg-indigo-600 hover:bg-indigo-700",
                             action: () => {
                               setConfirmConfig(null);
                               setTimeout(() => {
                                 showPrompt(
-                                  `Nuevo tipo de evaluaciÃ³n:\n(Actual: ${data.tipoExamen || "â€""})\n\nOpciones: INGRESO, PERIÃ"DICO, EGRESO, POST-INCAPACIDAD, SEGUIMIENTO, RETIRO`,
+                                  `Nuevo tipo de evaluaciÃ³n:\n(Actual: ${data.tipoExamen || "â€”"})\n\nOpciones: INGRESO, PERIÃ“DICO, EGRESO, POST-INCAPACIDAD, SEGUIMIENTO, RETIRO`,
                                   (nuevoValor) => {
                                     if (!nuevoValor || nuevoValor.trim().length < 3) return;
                                     setTimeout(() => {
                                       showPrompt(
-                                        "ðŸ" Motivo del cambio (obligatorio â€" queda en auditorÃ­a):",
+                                        "ðŸ“ Motivo del cambio (obligatorio â€” queda en auditorÃ­a):",
                                         (motivo) => {
                                           if (!motivo || motivo.trim().length < 10) {
                                             setTimeout(() => showAlert("El motivo debe tener al menos 10 caracteres."), 100);
@@ -6052,8 +6052,8 @@ const handleLogin = (u, p) => {
                                             const _suid = currentUser?.empresaId ? "empresa_" + currentUser.empresaId : currentUser?.user;
                                             _sync(_patKey(_suid), JSON.stringify(updPats));
                                           }, 0);
-                                          logAccess("EditCampoHCCerrada", data.id, `tipoExamen: ${data.tipoExamen} â†' ${nuevoValor.trim().toUpperCase()} | Motivo: ${motivo}`);
-                                          setTimeout(() => showAlert(`âœ… Tipo de evaluaciÃ³n cambiado.\n\n${data.tipoExamen} â†' ${nuevoValor.trim().toUpperCase()}\nMotivo: ${motivo}\n\nRegistrado en auditorÃ­a.`), 100);
+                                          logAccess("EditCampoHCCerrada", data.id, `tipoExamen: ${data.tipoExamen} â†’ ${nuevoValor.trim().toUpperCase()} | Motivo: ${motivo}`);
+                                          setTimeout(() => showAlert(`âœ… Tipo de evaluaciÃ³n cambiado.\n\n${data.tipoExamen} â†’ ${nuevoValor.trim().toUpperCase()}\nMotivo: ${motivo}\n\nRegistrado en auditorÃ­a.`), 100);
                                         }
                                       );
                                     }, 150);
@@ -6063,18 +6063,18 @@ const handleLogin = (u, p) => {
                             }
                           },
                           {
-                            label: "ðŸ¢ Empresa (actual: " + (data.empresaNombre || "â€"") + ")",
+                            label: "ðŸ¢ Empresa (actual: " + (data.empresaNombre || "â€”") + ")",
                             color: "bg-teal-600 hover:bg-teal-700",
                             action: () => {
                               setConfirmConfig(null);
                               setTimeout(() => {
                                 showPrompt(
-                                  `Nueva empresa:\n(Actual: ${data.empresaNombre || "â€""})`,
+                                  `Nueva empresa:\n(Actual: ${data.empresaNombre || "â€”"})`,
                                   (nuevoValor) => {
                                     if (!nuevoValor || nuevoValor.trim().length < 3) return;
                                     setTimeout(() => {
                                       showPrompt(
-                                        "ðŸ" Motivo del cambio (obligatorio â€" queda en auditorÃ­a):",
+                                        "ðŸ“ Motivo del cambio (obligatorio â€” queda en auditorÃ­a):",
                                         (motivo) => {
                                           if (!motivo || motivo.trim().length < 10) {
                                             setTimeout(() => showAlert("El motivo debe tener al menos 10 caracteres."), 100);
@@ -6105,8 +6105,8 @@ const handleLogin = (u, p) => {
                                             const _suid = currentUser?.empresaId ? "empresa_" + currentUser.empresaId : currentUser?.user;
                                             _sync(_patKey(_suid), JSON.stringify(updPats));
                                           }, 0);
-                                          logAccess("EditCampoHCCerrada", data.id, `empresaNombre: ${data.empresaNombre} â†' ${nuevoValor.trim()} | Motivo: ${motivo}`);
-                                          setTimeout(() => showAlert(`âœ… Empresa cambiada.\n\n${data.empresaNombre} â†' ${nuevoValor.trim()}\nMotivo: ${motivo}\n\nRegistrado en auditorÃ­a.`), 100);
+                                          logAccess("EditCampoHCCerrada", data.id, `empresaNombre: ${data.empresaNombre} â†’ ${nuevoValor.trim()} | Motivo: ${motivo}`);
+                                          setTimeout(() => showAlert(`âœ… Empresa cambiada.\n\n${data.empresaNombre} â†’ ${nuevoValor.trim()}\nMotivo: ${motivo}\n\nRegistrado en auditorÃ­a.`), 100);
                                         }
                                       );
                                     }, 150);
@@ -6116,18 +6116,18 @@ const handleLogin = (u, p) => {
                             }
                           },
                           {
-                            label: "ðŸ"¬ Ã‰nfasis (actual: " + (data.enfasisExamen || "â€"") + ")",
+                            label: "ðŸ”¬ Ã‰nfasis (actual: " + (data.enfasisExamen || "â€”") + ")",
                             color: "bg-purple-600 hover:bg-purple-700",
                             action: () => {
                               setConfirmConfig(null);
                               setTimeout(() => {
                                 showPrompt(
-                                  `Nuevo Ã©nfasis:\n(Actual: ${data.enfasisExamen || "â€""})\n\nOpciones: GENERAL, ALTURAS, ALIMENTOS, CONFINADOS, OSTEOMUSCULAR, CORAZON`,
+                                  `Nuevo Ã©nfasis:\n(Actual: ${data.enfasisExamen || "â€”"})\n\nOpciones: GENERAL, ALTURAS, ALIMENTOS, CONFINADOS, OSTEOMUSCULAR, CORAZON`,
                                   (nuevoValor) => {
                                     if (!nuevoValor || nuevoValor.trim().length < 3) return;
                                     setTimeout(() => {
                                       showPrompt(
-                                        "ðŸ" Motivo del cambio (obligatorio â€" queda en auditorÃ­a):",
+                                        "ðŸ“ Motivo del cambio (obligatorio â€” queda en auditorÃ­a):",
                                         (motivo) => {
                                           if (!motivo || motivo.trim().length < 10) {
                                             setTimeout(() => showAlert("El motivo debe tener al menos 10 caracteres."), 100);
@@ -6158,8 +6158,8 @@ const handleLogin = (u, p) => {
                                             const _suid = currentUser?.empresaId ? "empresa_" + currentUser.empresaId : currentUser?.user;
                                             _sync(_patKey(_suid), JSON.stringify(updPats));
                                           }, 0);
-                                          logAccess("EditCampoHCCerrada", data.id, `enfasisExamen: ${data.enfasisExamen} â†' ${nuevoValor.trim().toUpperCase()} | Motivo: ${motivo}`);
-                                          setTimeout(() => showAlert(`âœ… Ã‰nfasis cambiado.\n\n${data.enfasisExamen} â†' ${nuevoValor.trim().toUpperCase()}\nMotivo: ${motivo}\n\nRegistrado en auditorÃ­a.`), 100);
+                                          logAccess("EditCampoHCCerrada", data.id, `enfasisExamen: ${data.enfasisExamen} â†’ ${nuevoValor.trim().toUpperCase()} | Motivo: ${motivo}`);
+                                          setTimeout(() => showAlert(`âœ… Ã‰nfasis cambiado.\n\n${data.enfasisExamen} â†’ ${nuevoValor.trim().toUpperCase()}\nMotivo: ${motivo}\n\nRegistrado en auditorÃ­a.`), 100);
                                         }
                                       );
                                     }, 150);
@@ -6212,7 +6212,7 @@ const handleLogin = (u, p) => {
         actividadEconomica: c.actividad,
       }));
   };
-  // NORMATIVO: Res. 1995/1999 Art. 15 - RETENCIÃ"N DOCUMENTAL MÃNIMA 20 AÃ'OS
+  // NORMATIVO: Res. 1995/1999 Art. 15 - RETENCIÃ“N DOCUMENTAL MÃNIMA 20 AÃ‘OS
   // Se reemplaza el borrado definitivo por ARCHIVADO para cumplir con la obligaciÃ³n de conservaciÃ³n
   const handleDeletePatient = (id) => {
     const pac = patientsList.find((p) => p.id === id);
@@ -6224,7 +6224,7 @@ const handleLogin = (u, p) => {
       : 0;
     if (pac.estadoHistoria === "Cerrada" || aniosTranscurridos < 20) {
       showConfirm(
-        `âš ï¸ RETENCIÃ"N DOCUMENTAL (Res. 1995/1999 Art. 15)
+        `âš ï¸ RETENCIÃ“N DOCUMENTAL (Res. 1995/1999 Art. 15)
 Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
 Â¿Desea ARCHIVAR el registro en vez de eliminarlo?
 (QuedarÃ¡ oculto pero conservado para cumplimiento legal)`,
@@ -6523,19 +6523,19 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
             synced++;
           }
           showAlert(
-            `âœ… RestauraciÃ³n completada.\nðŸ" ${
+            `âœ… RestauraciÃ³n completada.\nðŸ“ ${
               (d.patients || []).length
             } pacientes Â· ${(d.companies || []).length} empresas Â· ${
               (d.users || []).length
-            } usuarios\nâœï¸ ${sigsRestored} firma(s) Â· ðŸ§¾ ${billsR} cuentas Â· ðŸ"Š ${repsR} informes restaurados\nâ˜ï¸ ${synced} certificado(s) sincronizados al Portal del Trabajador`
+            } usuarios\nâœï¸ ${sigsRestored} firma(s) Â· ðŸ§¾ ${billsR} cuentas Â· ðŸ“Š ${repsR} informes restaurados\nâ˜ï¸ ${synced} certificado(s) sincronizados al Portal del Trabajador`
           );
         } else {
           showAlert(
-            `âœ… RestauraciÃ³n completada.\nðŸ" ${
+            `âœ… RestauraciÃ³n completada.\nðŸ“ ${
               (d.patients || []).length
             } pacientes Â· ${(d.companies || []).length} empresas Â· ${
               (d.users || []).length
-            } usuarios\nâœï¸ ${sigsRestored} firma(s) Â· ðŸ§¾ ${billsR} cuentas Â· ðŸ"Š ${repsR} informes restaurados`
+            } usuarios\nâœï¸ ${sigsRestored} firma(s) Â· ðŸ§¾ ${billsR} cuentas Â· ðŸ“Š ${repsR} informes restaurados`
           );
         }
       } catch (err) {
@@ -6592,7 +6592,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
     // Memoria de antecedentes: copia todos los datos clÃ­nicos previos del paciente
     setData((prev) => ({
       ...prev,
-      // â"€â"€ Datos personales â"€â"€
+      // â”€â”€ Datos personales â”€â”€
       nombres: p.nombres,
       docNumero: p.docNumero,
       edad: p.edad,
@@ -6614,7 +6614,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
       zonaResidencia: p.zonaResidencia || "",
       grupoEtnico: p.grupoEtnico || "",
       identidadGenero: p.identidadGenero || "",
-      // â"€â"€ Datos laborales â"€â"€
+      // â”€â”€ Datos laborales â”€â”€
       cargo: p.cargo,
       dependencia: p.dependencia || "",
       turnoTrabajo: p.turnoTrabajo || "",
@@ -6636,7 +6636,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
         prev.empresaId !== "particular"
           ? prev.actividadEconomica
           : p.actividadEconomica || "",
-      // â"€â"€ ANTECEDENTES POR MEMORIA (nÃºcleo de la funciÃ³n) â"€â"€
+      // â”€â”€ ANTECEDENTES POR MEMORIA (nÃºcleo de la funciÃ³n) â”€â”€
       antecedentesAgrupados: p.antecedentesAgrupados
         ? JSON.parse(JSON.stringify(p.antecedentesAgrupados))
         : initialOccupPatientState.antecedentesAgrupados,
@@ -6648,11 +6648,11 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
         : { ...initialOccupPatientState.habitos },
       vacunacionCompleta: p.vacunacionCompleta || false,
       vacunas: p.vacunas || [],
-      // â"€â"€ Riesgos previos â"€â"€
+      // â”€â”€ Riesgos previos â”€â”€
       riesgos: p.riesgos
         ? { ...p.riesgos }
         : { ...initialOccupPatientState.riesgos },
-      // â"€â"€ Pausa: NO copiar examen fÃ­sico, diagnÃ³sticos, conceptos - son propios de cada evaluaciÃ³n â"€â"€
+      // â”€â”€ Pausa: NO copiar examen fÃ­sico, diagnÃ³sticos, conceptos - son propios de cada evaluaciÃ³n â”€â”€
     }));
     setPatientSuggestions([]);
   };
@@ -6695,7 +6695,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
     );
     setShowHistoryModal(true);
   };
-  // â"€â"€ APLICAR CHECKLIST DE RESTRICCIONES AL TEXTO â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+  // â”€â”€ APLICAR CHECKLIST DE RESTRICCIONES AL TEXTO â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const applyRestriccionesChecklist = (checklist) => {
     setData((prev) => ({ ...prev, restriccionesChecklist: checklist }));
     const selectedItems = [];
@@ -6791,7 +6791,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
     sections.push('<div style="display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #065f46;padding-bottom:10px;margin-bottom:12px;">' + hdrLeft + hdrRight + '</div>');
 
     // â•â•â• 2. DATOS DEL PACIENTE â•â•â•
-    sections.push(sec("ðŸ'¤", "Datos del Paciente") + tb(
+    sections.push(sec("ðŸ‘¤", "Datos del Paciente") + tb(
       r2("Nombres", data.nombres, "Documento", (data.docTipo||"CC")+" "+(data.docNumero||"")) +
       r2("Fecha Nac.", data.fechaNacimiento, "Edad", (data.edad||"--")+" aÃ±os") +
       r2("GÃ©nero", data.genero, "Estado Civil", data.estadoCivil) +
@@ -6839,7 +6839,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
         riesgoPills += pill(k + ": " + (typeof riesgos[k] === "object" ? JSON.stringify(riesgos[k]) : riesgos[k]), "#6b7280");
       }
     });
-    if (riesgoPills) sections.push(sec("âš ï¸", "Factores de Riesgo Ocupacional") + '<div style="padding:6px 10px;">' + riesgoPills + '</div>');
+    if (riesgoPills) sections.push(sec("âš ï¸", "Factores de Riesgo Ocupacional") + '<div style="padding:6px 10px;">' + riesgoPills + '</div>');
 
     // â•â•â• 5. MOTIVO DE CONSULTA â•â•â•
     var motivoParts = [data.motivoConsulta, data.enfermedadActual].filter(Boolean);
@@ -6876,7 +6876,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
       var hasData = det && det !== "Niega" && det !== "No";
       antRows += '<tr><th style="background:#d1fae5;font-weight:700;width:28%;font-size:8.5pt;padding:4px 8px;border:1px solid #ccc;">' + _e(label) + '</th>';
       if (hasData) {
-        antRows += '<td style="font-size:8.5pt;padding:4px 8px;border:1px solid #ccc;color:#dc2626;font-weight:700;" colspan="3">SÃ­ â€" ' + _e(det) + '</td></tr>';
+        antRows += '<td style="font-size:8.5pt;padding:4px 8px;border:1px solid #ccc;color:#dc2626;font-weight:700;" colspan="3">SÃ­ â€” ' + _e(det) + '</td></tr>';
       } else {
         antRows += '<td style="font-size:8.5pt;padding:4px 8px;border:1px solid #ccc;color:#065f46;" colspan="3">Niega</td></tr>';
       }
@@ -6900,10 +6900,10 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
       vacHtml += vacunas.map(function(v) { return _e(typeof v === "string" ? v : (v.nombre || "") + (v.dosis ? " (" + v.dosis + ")" : "") + (v.fecha ? " - " + v.fecha : "")); }).join(", ");
       antRows += r1("Vacunas", vacHtml);
     }
-    sections.push(sec("ðŸ"‹", "Antecedentes") + tb(antRows || r1("Sin antecedentes", "No registra")));
+    sections.push(sec("ðŸ“‹", "Antecedentes") + tb(antRows || r1("Sin antecedentes", "No registra")));
 
     // â•â•â• 8. SIGNOS VITALES â•â•â•
-    sections.push(sec("ðŸ"", "Signos Vitales") + tb(
+    sections.push(sec("ðŸ”", "Signos Vitales") + tb(
       r2("TensiÃ³n Arterial", data.ta||data.tensionArterial||"--", "F. CardÃ­aca", (data.fc||data.frecuenciaCardiaca||"--")+" lpm") +
       r2("F. Respiratoria", (data.fr||data.frecuenciaRespiratoria||"--")+" rpm", "Temperatura", (data.temp||data.temperatura||"--")+"Â°C") +
       r2("Peso", (data.peso||"--")+" kg", "Talla", (data.talla||"--")+" cm") +
@@ -6914,14 +6914,14 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
     // â•â•â• 9. AGUDEZA VISUAL â•â•â•
     var av = data.agudezaVisual || {};
     if (av.lejanaOD || av.lejanaOI || av.proximaOD || av.proximaOI) {
-      sections.push(sec("ðŸ'ï¸", "Agudeza Visual") + tb(
+      sections.push(sec("ðŸ‘ï¸", "Agudeza Visual") + tb(
         r2("Lejana OD", av.lejanaOD||"--", "Lejana OI", av.lejanaOI||"--") +
         r2("PrÃ³xima OD", av.proximaOD||"--", "PrÃ³xima OI", av.proximaOI||"--") +
         r1("CorrecciÃ³n", av.correccion||"Sin correcciÃ³n")
       ));
     }
 
-    // â•â•â• 10. EXAMEN FÃSICO POR SISTEMAS â€" TODOS 15 SISTEMAS â•â•â•
+    // â•â•â• 10. EXAMEN FÃSICO POR SISTEMAS â€” TODOS 15 SISTEMAS â•â•â•
     var efSis = data.examenFisicoSistemas || {};
     var allSystems = ["cabeza","ojos","oidos","nariz","boca","cuello","torax","corazon","pulmones","abdomen","genitourinario","columna","extremidades","piel","neurologico"];
     var sysLabels = {cabeza:"Cabeza",ojos:"Ojos",oidos:"OÃ­dos",nariz:"Nariz",boca:"Boca/Faringe",cuello:"Cuello",torax:"TÃ³rax",corazon:"CorazÃ³n",pulmones:"Pulmones",abdomen:"Abdomen",genitourinario:"Genitourinario",columna:"Columna",extremidades:"Extremidades",piel:"Piel/Faneras",neurologico:"NeurolÃ³gico"};
@@ -6950,7 +6950,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
     });
     sections.push(sec("ðŸ¥", "Examen FÃ­sico por Sistemas") + '<table style="width:100%;border-collapse:collapse;margin-top:4px;"><thead><tr><th style="background:#065f46;color:white;padding:4px 8px;font-size:8pt;text-align:left;">Sistema</th><th style="background:#065f46;color:white;padding:4px 8px;font-size:8pt;">Estado</th><th style="background:#065f46;color:white;padding:4px 8px;font-size:8pt;text-align:left;">Hallazgo</th></tr></thead><tbody>' + sysRows + '</tbody></table>');
 
-    // â•â•â• 11. MANIOBRAS ORTOPÃ‰DICAS â€" Solo si Ã©nfasis OSTEOMUSCULAR â•â•â•
+    // â•â•â• 11. MANIOBRAS ORTOPÃ‰DICAS â€” Solo si Ã©nfasis OSTEOMUSCULAR â•â•â•
     var _enfasis = (data.enfasisExamen || "").toUpperCase();
     var _mostrarManiobras = _enfasis === "OSTEOMUSCULAR" || _enfasis.includes("OSTEO");
     var manio = data.maniobrasOsteomusculares || {};
@@ -6979,22 +6979,22 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
       }
     });
     if (_mostrarManiobras) {
-      sections.push(sec("ðŸ¦´", "Maniobras OrtopÃ©dicas â€" Ã‰nfasis Osteomuscular") + '<table style="width:100%;border-collapse:collapse;margin-top:4px;"><thead><tr><th style="background:#065f46;color:white;padding:4px 8px;font-size:8pt;text-align:left;">Maniobra</th><th style="background:#065f46;color:white;padding:4px 8px;font-size:8pt;">Resultado</th><th style="background:#065f46;color:white;padding:4px 8px;font-size:8pt;text-align:left;">Hallazgo</th></tr></thead><tbody>' + manioRows + '</tbody></table>');
+      sections.push(sec("ðŸ¦´", "Maniobras OrtopÃ©dicas â€” Ã‰nfasis Osteomuscular") + '<table style="width:100%;border-collapse:collapse;margin-top:4px;"><thead><tr><th style="background:#065f46;color:white;padding:4px 8px;font-size:8pt;text-align:left;">Maniobra</th><th style="background:#065f46;color:white;padding:4px 8px;font-size:8pt;">Resultado</th><th style="background:#065f46;color:white;padding:4px 8px;font-size:8pt;text-align:left;">Hallazgo</th></tr></thead><tbody>' + manioRows + '</tbody></table>');
     }
 
-    // â•â•â• 12. Ã‰NFASIS ESPECIALES â€" Solo se imprime el Ã©nfasis que tiene la HC â•â•â•
+    // â•â•â• 12. Ã‰NFASIS ESPECIALES â€” Solo se imprime el Ã©nfasis que tiene la HC â•â•â•
     var _enfasisHC = (data.enfasisExamen || "").toUpperCase();
-    // ALTURAS â€" solo si el Ã©nfasis es ALTURAS
+    // ALTURAS â€” solo si el Ã©nfasis es ALTURAS
     var alt = data.examenAlturas || {};
     if (_enfasisHC === "ALTURAS" && (alt.romberg || alt.marcha || alt.vertigo || alt.coordinacion || alt.nistagmus || alt.testMiedo || alt.observaciones)) {
-      sections.push(sec("ðŸ§-", "Ã‰nfasis: Trabajo en Alturas") + tb(
+      sections.push(sec("ðŸ§—", "Ã‰nfasis: Trabajo en Alturas") + tb(
         r2("Romberg", alt.romberg||"--", "Marcha", alt.marcha||"--") +
         r2("VÃ©rtigo", alt.vertigo||"No", "CoordinaciÃ³n", alt.coordinacion||"--") +
         r2("Nistagmus", alt.nistagmus||"No", "Test de Miedo", alt.testMiedo||"--") +
         (alt.observaciones ? r1("Observaciones", alt.observaciones) : "")
       ));
     }
-    // ALIMENTOS â€" solo si el Ã©nfasis es ALIMENTOS
+    // ALIMENTOS â€” solo si el Ã©nfasis es ALIMENTOS
     var alim = data.examenAlimentos || {};
     if (_enfasisHC === "ALIMENTOS" && (alim.pielFaneras || alim.orl || alim.gastrointestinal || alim.observaciones)) {
       sections.push(sec("ðŸ½ï¸", "Ã‰nfasis: ManipulaciÃ³n de Alimentos") + tb(
@@ -7003,10 +7003,10 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
         (alim.observaciones ? r1("Observaciones", alim.observaciones) : "")
       ));
     }
-    // CONFINADOS â€" solo si el Ã©nfasis es CONFINADOS
+    // CONFINADOS â€” solo si el Ã©nfasis es CONFINADOS
     var conf = data.examenConfinados || {};
     if (_enfasisHC === "CONFINADOS" && (conf.cardiovascular || conf.respiratorio || conf.neurologico || conf.psicologico || conf.otorrino || conf.usoEpp || conf.observaciones)) {
-      sections.push(sec("ðŸ"'", "Ã‰nfasis: Espacios Confinados") + tb(
+      sections.push(sec("ðŸ”’", "Ã‰nfasis: Espacios Confinados") + tb(
         r2("Cardiovascular", conf.cardiovascular||"--", "Respiratorio", conf.respiratorio||"--") +
         r2("NeurolÃ³gico", conf.neurologico||"--", "PsicolÃ³gico", conf.psicologico||"--") +
         r2("Otorrino", conf.otorrino||"--", "Uso EPP", conf.usoEpp||"--") +
@@ -7014,10 +7014,10 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
         (conf.observaciones ? r1("Observaciones", conf.observaciones) : "")
       ));
     }
-    // OSTEOMUSCULAR â€" solo si el Ã©nfasis es OSTEOMUSCULAR
+    // OSTEOMUSCULAR â€” solo si el Ã©nfasis es OSTEOMUSCULAR
     var osteo = data.examenOsteomuscular || {};
     if (_enfasisHC === "OSTEOMUSCULAR" && (osteo.columna || osteo.miembrosSup || osteo.miembrosInf || osteo.muscular || osteo.articular || osteo.postural || osteo.hallazgos || osteo.diagnosticoFuncional)) {
-      sections.push(sec("ðŸ'ª", "Ã‰nfasis: Osteomuscular") + tb(
+      sections.push(sec("ðŸ’ª", "Ã‰nfasis: Osteomuscular") + tb(
         r2("Columna", osteo.columna||"--", "Miembros Superiores", osteo.miembrosSup||"--") +
         r2("Miembros Inferiores", osteo.miembrosInf||"--", "Muscular", osteo.muscular||"--") +
         r2("Articular", osteo.articular||"--", "Postural", osteo.postural||"--") +
@@ -7025,7 +7025,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
         (osteo.diagnosticoFuncional ? r1("DiagnÃ³stico Funcional", osteo.diagnosticoFuncional) : "")
       ));
     }
-    // CORAZÃ"N â€" solo si el Ã©nfasis es CORAZON
+    // CORAZÃ“N â€” solo si el Ã©nfasis es CORAZON
     var cora = data.examenCorazon || {};
     if (_enfasisHC === "CORAZON" && (cora.frecuenciaCardiaca || cora.presionArterial || cora.ritmoyTonos || cora.pulsos || cora.edemas || cora.perfusionPeriferica || cora.riesgoCV || cora.hallazgos || cora.restricciones)) {
       sections.push(sec("â¤ï¸", "Ã‰nfasis: Cardiovascular") + tb(
@@ -7054,15 +7054,15 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
         });
         paraHtml += '</tbody></table>';
       }
-      sections.push(sec("ðŸ"¬", "ParaclÃ­nicos y ExÃ¡menes Solicitados") + paraHtml);
+      sections.push(sec("ðŸ”¬", "ParaclÃ­nicos y ExÃ¡menes Solicitados") + paraHtml);
     }
 
-    // â•â•â• 14. DIAGNÃ"STICOS CIE-10 â•â•â•
+    // â•â•â• 14. DIAGNÃ“STICOS CIE-10 â•â•â•
     var dxList = data.diagnosticos?.length ? data.diagnosticos : [];
     sections.push(sec("ðŸ¥", "DiagnÃ³sticos CIE-10") + tb(
       r2("Dx Principal", data.diagnosticoPrincipal||"Z10.0", "Dx Secundario 1", data.diagnosticoSecundario1||"") +
       (data.diagnosticoSecundario2 ? r1("Dx Secundario 2", data.diagnosticoSecundario2) : "") +
-      dxList.map(function(d,i) { return r1("Dx " + (i+1) + " (" + _e(d.tipo||"â€"") + ")", (d.cie10||"") + " " + (d.descripcion||"")); }).join("")
+      dxList.map(function(d,i) { return r1("Dx " + (i+1) + " (" + _e(d.tipo||"â€”") + ")", (d.cie10||"") + " " + (d.descripcion||"")); }).join("")
     ));
 
     // â•â•â• 15. CONCEPTO DE APTITUD â•â•â•
@@ -7113,7 +7113,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
     }
 
     // â•â•â• 18. ANÃLISIS CLÃNICO IA â•â•â•
-    if (data.analisisIA) sections.push(sec("ðŸ§ ", "AnÃ¡lisis ClÃ­nico IA") + '<div style="padding:6px 10px;font-size:9pt;white-space:pre-wrap;line-height:1.5;background:#fefce8;border:1px solid #fde68a;border-radius:4px;margin:4px 0;">' + _nl(data.analisisIA) + '</div>');
+    if (data.analisisIA) sections.push(sec("ðŸ§ ", "AnÃ¡lisis ClÃ­nico IA") + '<div style="padding:6px 10px;font-size:9pt;white-space:pre-wrap;line-height:1.5;background:#fefce8;border:1px solid #fde68a;border-radius:4px;margin:4px 0;">' + _nl(data.analisisIA) + '</div>');
 
     // â•â•â• 19. SVE â•â•â•
     if (data.sveRecomendado?.length > 0) {
@@ -7126,10 +7126,10 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
       var derivRows = derivs.map(function(d, i) {
         return '<tr style="background:' + (i % 2 === 0 ? "#eff6ff" : "white") + '"><td style="padding:4px 8px;border:1px solid #ccc;font-size:8.5pt;font-weight:700;">' + _e(d.especialidad) + '</td><td style="padding:4px 8px;border:1px solid #ccc;font-size:8.5pt;">' + _e(d.motivo) + '</td><td style="padding:4px 8px;border:1px solid #ccc;font-size:8.5pt;">' + _e(d.urgencia) + '</td></tr>';
       }).join("");
-      sections.push(sec("ðŸ"-", "Derivaciones / Interconsultas") + '<table style="width:100%;border-collapse:collapse;"><thead><tr><th style="background:#2563eb;color:white;padding:4px 8px;font-size:8pt;">Especialidad</th><th style="background:#2563eb;color:white;padding:4px 8px;font-size:8pt;">Motivo</th><th style="background:#2563eb;color:white;padding:4px 8px;font-size:8pt;">Urgencia</th></tr></thead><tbody>' + derivRows + '</tbody></table>');
+      sections.push(sec("ðŸ”—", "Derivaciones / Interconsultas") + '<table style="width:100%;border-collapse:collapse;"><thead><tr><th style="background:#2563eb;color:white;padding:4px 8px;font-size:8pt;">Especialidad</th><th style="background:#2563eb;color:white;padding:4px 8px;font-size:8pt;">Motivo</th><th style="background:#2563eb;color:white;padding:4px 8px;font-size:8pt;">Urgencia</th></tr></thead><tbody>' + derivRows + '</tbody></table>');
     }
 
-    // â•â•â• 21. FÃ"RMULA MÃ‰DICA â•â•â•
+    // â•â•â• 21. FÃ“RMULA MÃ‰DICA â•â•â•
     var meds = data.formulaMedicamentos || [];
     var formulaTxt = data.formulaMedica || "";
     if (meds.length > 0 || formulaTxt) {
@@ -7142,13 +7142,13 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
         medHtml += '</tbody></table>';
       }
       if (formulaTxt) medHtml += '<div style="padding:6px 10px;margin-top:6px;">' + fmtList(formulaTxt) + '</div>';
-      sections.push(sec("ðŸ'Š", "FÃ³rmula MÃ©dica") + medHtml);
+      sections.push(sec("ðŸ’Š", "FÃ³rmula MÃ©dica") + medHtml);
     }
 
     // â•â•â• 22. INCAPACIDAD â•â•â•
     var inc = data.incapacidad || {};
     if (inc.aplica || inc.dias > 0) {
-      sections.push(sec("ðŸ"‹", "Incapacidad MÃ©dica") + tb(
+      sections.push(sec("ðŸ“‹", "Incapacidad MÃ©dica") + tb(
         r2("DÃ­as", inc.dias||0, "Origen", inc.origen||"Enfermedad General") +
         r2("Desde", inc.desde||"--", "Hasta", inc.hasta||"--") +
         r1("DiagnÃ³stico CIE", inc.diagnosticoCIE||inc.diagnostico||"--")
@@ -7158,7 +7158,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
     // â•â•â• 23. ADJUNTOS â•â•â•
     var adjuntos = data.adjuntos || [];
     if (adjuntos.length > 0) {
-      sections.push(sec("ðŸ"Ž", "Adjuntos") + '<ul style="padding-left:16px;margin:4px 0;">' + adjuntos.map(function(a) {
+      sections.push(sec("ðŸ“Ž", "Adjuntos") + '<ul style="padding-left:16px;margin:4px 0;">' + adjuntos.map(function(a) {
         var nombre = typeof a === "string" ? a : (a.nombre || a.name || a.url || "Archivo adjunto");
         return '<li style="font-size:9pt;margin-bottom:3px;">' + _e(nombre) + '</li>';
       }).join("") + '</ul>');
@@ -7169,9 +7169,9 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
     if (notas.length > 0) {
       var notasHtml = notas.map(function(n) {
         var fecha = n.fecha ? new Date(n.fecha).toLocaleString("es-CO") : "";
-        return '<div style="background:#fef3c7;border:1px solid #fde68a;border-radius:4px;padding:8px;margin:4px 0;font-size:8.5pt;"><strong>' + _e(fecha) + ' â€" ' + _e(n.autor||"") + '</strong><br/>' + _nl(n.contenido||"") + '</div>';
+        return '<div style="background:#fef3c7;border:1px solid #fde68a;border-radius:4px;padding:8px;margin:4px 0;font-size:8.5pt;"><strong>' + _e(fecha) + ' â€” ' + _e(n.autor||"") + '</strong><br/>' + _nl(n.contenido||"") + '</div>';
       }).join("");
-      sections.push(sec("ðŸ"Œ", "Notas Aclaratorias") + notasHtml);
+      sections.push(sec("ðŸ“Œ", "Notas Aclaratorias") + notasHtml);
     }
 
     // â•â•â• 25. EVOLUCIONES â•â•â•
@@ -7179,14 +7179,14 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
     if (evols.length > 0) {
       var evolsHtml = evols.map(function(ev) {
         var h = '<div style="background:#faf5ff;border:1px solid #e9d5ff;border-radius:4px;padding:8px;margin:4px 0;font-size:8.5pt;">';
-        h += '<strong>' + _e(ev.fecha||"") + ' â€" ' + _e(ev.medico||"") + ' Â· CÃ³digo: ' + _e(ev.codigoEvolucion||"") + '</strong><br/>';
+        h += '<strong>' + _e(ev.fecha||"") + ' â€” ' + _e(ev.medico||"") + ' Â· CÃ³digo: ' + _e(ev.codigoEvolucion||"") + '</strong><br/>';
         if (ev.motivoConsulta) h += _e(ev.motivoConsulta);
         if (ev.texto) h += '<br/>' + _nl(ev.texto);
         if (ev.nuevoConcept) h += '<br/><strong>Concepto:</strong> ' + _e(ev.nuevoConcept);
         h += '</div>';
         return h;
       }).join("");
-      sections.push(sec("ðŸ"œ", "Evoluciones ClÃ­nicas") + evolsHtml);
+      sections.push(sec("ðŸ“œ", "Evoluciones ClÃ­nicas") + evolsHtml);
     }
 
     // â•â•â• 26. FIRMA â•â•â•
@@ -7194,7 +7194,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
       '<div style="text-align:center;width:40%;"><div style="height:50px;"></div><div style="border-top:1.5px solid #333;padding-top:4px;font-size:8pt;font-weight:700;">Firma del Trabajador<br/>' + _e(data.docTipo||"CC") + ': ' + _e(data.docNumero||"") + '</div></div>' +
       '<div style="text-align:center;width:40%;">' + sigHtml + '<div style="border-top:1.5px solid #333;padding-top:4px;font-size:8pt;font-weight:700;">' + _e(doc.nombre||"") + '<br/>' + _e(doc.titulo||"") + '<br/>C.C. ' + _e(doc.cedula||"") + '<br/>RM: ' + _e(doc.licencia||"") + '<br/>' + _e(doc.ciudad||"") + '</div></div></div>');
 
-    // â•â•â• CÃ"DIGO VERIFICACIÃ"N â•â•â•
+    // â•â•â• CÃ“DIGO VERIFICACIÃ“N â•â•â•
     if (data.codigoVerificacion) {
       sections.push('<div style="text-align:center;margin-top:12px;background:#f0fdf4;border:1.5px solid #86efac;border-radius:6px;padding:8px;"><p style="font-size:7.5pt;font-weight:900;color:#6b7280;text-transform:uppercase;">Historia ClÃ­nica Firmada y Cerrada</p><p style="font-size:11pt;font-family:monospace;font-weight:900;color:#065f46;letter-spacing:2px;">' + _e(data.codigoVerificacion) + '</p></div>');
     }
@@ -7209,7 +7209,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
     w.document.close();
     w.focus();
   };
-  // â"€â"€ NavegaciÃ³n con historial -- permite â† Volver sin volver al login â"€â"€â"€â"€â"€â"€
+  // â”€â”€ NavegaciÃ³n con historial -- permite â† Volver sin volver al login â”€â”€â”€â”€â”€â”€
   // Helper: mostrar diÃ¡logo guardar-antes-de-salir si la HC tiene cambios pendientes
   const _maybeExitHC = (proceed) => {
     if (view === "historia" && _hcDirty && (data.id || data.nombres)) {
@@ -7278,9 +7278,9 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
   const goBack = () => {
     _maybeExitHC(_goBackDirect);
   };
-  // â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   // RENDER HELPERS
-  // â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const renderNavbar = () => {
     const _aiBg =
       aiStatus === "ok"
@@ -7296,7 +7296,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
         : "bg-red-50 text-red-500 border-red-200";
     const _syncTxt =
       syncStatus === "ok"
-        ? "Nube âœ""
+        ? "Nube âœ“"
         : syncStatus === "syncing"
         ? "Sync..."
         : syncStatus === "loading"
@@ -7347,7 +7347,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
           onClick={() => goTo("dashboard")}
         >
           <BrandLogo data={activeDoctorData} />
-          {/* â"€â"€ IPS: nombre de empresa en navbar â"€â"€ */}
+          {/* â”€â”€ IPS: nombre de empresa en navbar â”€â”€ */}
           {currentUser?.empresaId &&
             (() => {
               const _navEmp = companies.find(
@@ -7363,7 +7363,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
               ) : null;
             })()}
         </div>
-        {/* â"€â"€ Bloque 1: Datos mÃ©dico activo en header â"€â"€ */}
+        {/* â”€â”€ Bloque 1: Datos mÃ©dico activo en header â”€â”€ */}
         {currentUser && activeDoctorData?.nombre && (
           <div className="hidden md:flex items-center gap-2 flex-shrink-0 ml-2">
             {activeSignature ? (
@@ -7506,13 +7506,13 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                     onClick={() => setActiveTab("solicitudExamenes")}
                     className={_tabBlue("solicitudExamenes")}
                   >
-                    ðŸ"¬ ExÃ¡menes
+                    ðŸ”¬ ExÃ¡menes
                   </button>
                   <button
                     onClick={() => setActiveTab("adjuntos")}
                     className={_tabBlue("adjuntos")}
                   >
-                    ðŸ"Ž Adjuntos
+                    ðŸ“Ž Adjuntos
                   </button>
                   {data.enfasisExamen === "ALIMENTOS" && (
                     <button
@@ -7560,7 +7560,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                 <Printer className="w-3 h-3" /> PDF
               </button>
 
-              {/* â"€â"€ Descargar Todo: Certificado + Incapacidad + FÃ³rmula/DerivaciÃ³n â"€â"€ */}
+              {/* â”€â”€ Descargar Todo: Certificado + Incapacidad + FÃ³rmula/DerivaciÃ³n â”€â”€ */}
               {dataType === "ocupacional" && (
                 <button
                   onClick={() => {
@@ -7572,7 +7572,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                         .replace(/</g, "&lt;")
                         .replace(/>/g, "&gt;");
 
-                    // â"€â"€ Estilos compartidos â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+                    // â”€â”€ Estilos compartidos â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
                     const sharedCss = `
                     *{margin:0;padding:0;box-sizing:border-box;}
                     body{font-family:'Segoe UI',Arial,sans-serif;font-size:9.5pt;color:#111;}
@@ -7603,7 +7603,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                     @media print{.dl-bar{display:none!important;}.page{padding:12mm 15mm;}}
                   `;
 
-                    // â"€â"€ 1. CERTIFICADO DE APTITUD â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+                    // â”€â”€ 1. CERTIFICADO DE APTITUD â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
                     const cLow = (data.conceptoAptitud || "").toLowerCase();
                     const aptBg = cLow.includes("no apto")
                       ? "#7f1d1d"
@@ -7734,7 +7734,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                             "</div>"
                           : ""
                       }
-                      <div class="alerta">âš  <strong>Confidencialidad:</strong> El diagnÃ³stico clÃ­nico no es entregado al empleador (Art. 16 Res. 1843/2025).</div>
+                      <div class="alerta">âš  <strong>Confidencialidad:</strong> El diagnÃ³stico clÃ­nico no es entregado al empleador (Art. 16 Res. 1843/2025).</div>
                       <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:20px;align-items:end;border-top:2px solid #d1d5db;padding-top:12px;margin-top:4px;">
                         <div style="text-align:center;"><div style="height:50px;"></div><div style="border-top:1px solid #333;width:180px;margin:0 auto;padding-top:4px;font-size:8pt;font-weight:700;">Firma del Trabajador<br/>${_esc(
                           data.docTipo || "CC"
@@ -7757,7 +7757,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                       <div class="consent">El suscrito MÃ©dico Especialista certifica la evaluaciÃ³n realizada. Res. 1843/2025 Â· Ley 1581/2012 Â· Ley 23/1981.</div>
                     </div>`;
 
-                    // â"€â"€ 2. CERTIFICADO DE INCAPACIDAD â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+                    // â”€â”€ 2. CERTIFICADO DE INCAPACIDAD â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
                     const inc = data.incapacidad || {};
                     const diasInc =
                       inc.dias ||
@@ -7847,7 +7847,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                       </div>
                     </div>`;
 
-                    // â"€â"€ 3. FÃ"RMULA MÃ‰DICA â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+                    // â”€â”€ 3. FÃ“RMULA MÃ‰DICA â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
                     const meds = data.formulaMedicamentos || [];
                     const medRows =
                       meds.length > 0
@@ -7916,7 +7916,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                       </div>
                     </div>`;
 
-                    // â"€â"€ 4. DERIVACIONES / INTERCONSULTAS â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+                    // â”€â”€ 4. DERIVACIONES / INTERCONSULTAS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
                     const derivs = data.derivaciones || [];
                     const derivRows =
                       derivs.length > 0
@@ -7980,7 +7980,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                       </div>
                     </div>`;
 
-                    // â"€â"€ Ensamblar ventana â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+                    // â”€â”€ Ensamblar ventana â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
                     const w = window.open(
                       "",
                       "_blank",
@@ -8000,10 +8000,10 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                     <style>${sharedCss}</style>
                     </head><body>
                     <div class="dl-bar">
-                      <span class="title">ðŸ"" 4 documentos - ${_esc(
+                      <span class="title">ðŸ“„ 4 documentos - ${_esc(
                         data.nombres
                       )} Â· ${_esc(data.fechaExamen || "")}</span>
-                      <button class="btn-print" onclick="window.print()">ðŸ"¥ Guardar / Imprimir PDF</button>
+                      <button class="btn-print" onclick="window.print()">ðŸ“¥ Guardar / Imprimir PDF</button>
                       <button class="btn-close" onclick="window.close()">âœ• Cerrar</button>
                     </div>
                     ${certSec}${incapSec}${formulaSec}${derivSec}
@@ -8079,14 +8079,14 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                 className="bg-green-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1 no-print hover:bg-green-700"
                 title="Notificar resultado al paciente (Res. 1552/2013)"
               >
-                ðŸ"² Notificar
+                ðŸ“² Notificar
               </button>
               {/* FASE 2: Indicador HC de otro mÃ©dico (modo lectura) */}
               {currentUser?.role === "medico" &&
                 data._medicoId &&
                 data._medicoId !== currentUser?.user && (
                   <span className="bg-amber-100 text-amber-700 border border-amber-200 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1">
-                    ðŸ' Lectura â€" HC del Dr.{" "}
+                    ðŸ‘ Lectura â€” HC del Dr.{" "}
                     {usersList.find((u) => u.user === data._medicoId)?.name ||
                       data._medicoId}
                   </span>
@@ -8138,7 +8138,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                     // B-25: Validar antes de generar
                     const ripsErrs = validarRIPSLote(pats);
                     if (ripsErrs.length > 0) {
-                      const msg = `âš ï¸ ${
+                      const msg = `âš ï¸ ${
                         ripsErrs.length
                       } paciente(s) con datos incompletos para RIPS:\n\n${ripsErrs
                         .slice(0, 5)
@@ -8222,7 +8222,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
               }
               title="Habeas Data - Ley 1581/2012"
             >
-              ðŸ" Privacidad
+              ðŸ” Privacidad
             </button>
           )}
           {(_isAdmin(currentUser?.role) ||
@@ -8245,7 +8245,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
             currentUser?.role
           ) && (
             <button onClick={() => goTo("agenda")} className={_agCls}>
-              {"ðŸ-"ï¸ Agenda"}
+              {"ðŸ—“ï¸ Agenda"}
               {_agN > 0 && (
                 <span className="ml-1 bg-red-500 text-white text-[8px] font-black px-1 rounded-full">
                   {_agN}
@@ -8265,7 +8265,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
               </span>
             )}
           </button>
-          {/* â"€â"€ VER PLANES â"€â"€ */}
+          {/* â”€â”€ VER PLANES â”€â”€ */}
           <button
             onClick={() => goTo("planes")}
             className={
@@ -8292,11 +8292,11 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
       </nav>
     );
   };
-  // [EXTRACTED â†' pages/LoginPage.jsx]
+  // [EXTRACTED â†’ pages/LoginPage.jsx]
   const renderLogin = () => (
     <LoginPage handleLogin={handleLogin} loginBlockedUntil={loginBlockedUntil} loginAttempts={loginAttempts} setShowAIConfig={setShowAIConfig} fileInputRef={fileInputRef} handleImportData={handleImportData} />
   );
-  // â"€â"€â"€ RENDER: DASHBOARD â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+  // â”€â”€â”€ RENDER: DASHBOARD â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   // [EXTRACTED → pages/Dashboard.jsx]
   const renderDashboard = () => (
     <DashboardPage
@@ -8308,9 +8308,17 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
       cajaMovimientos={cajaMovimientos} setCajaTab={setCajaTab}
       renderNavbar={renderNavbar} goTo={goTo} showAlert={showAlert}
       medicoTurnoActivo={medicoTurnoActivo} setMedicoTurnoActivo={setMedicoTurnoActivo}
+      handleNewOccupHistory={handleNewOccupHistory} handleNewGeneralHistory={handleNewGeneralHistory}
+      openPatient={openPatient} canViewPatient={canViewPatient}
+      patientSuggestions={patientSuggestions} patientSearchTerm={patientSearchTerm}
+      setPatientSearchTerm={setPatientSearchTerm} selectPatientSuggestion={selectPatientSuggestion}
+      handleExportData={handleExportData} handleImportData={handleImportData}
+      fileInputRef={fileInputRef} fileInputSigRef={fileInputSigRef}
+      handleSignatureUpload={handleSignatureUpload} handleManualCloudSave={handleManualCloudSave}
+      agendados={agendados} mensajes={mensajes} hcChoiceAgenda={hcChoiceAgenda} setHcChoiceAgenda={setHcChoiceAgenda}
     />
   );
-  // â"€â"€â"€ RENDER: HC OCUPACIONAL â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+  // â”€â”€â”€ RENDER: HC OCUPACIONAL â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const renderHistoriaOcupacional = () => (
     <div
       className="bg-white mx-auto shadow-2xl print:shadow-none carta-visual"
@@ -8346,7 +8354,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
         <div className="mb-3 bg-emerald-50 border-l-4 border-emerald-500 p-3 rounded-xl flex justify-between items-center no-print">
           <div>
             <p className="text-xs font-black text-emerald-800">
-              ðŸ"š Antecedentes cargados automÃ¡ticamente desde HC anterior
+              ðŸ“š Antecedentes cargados automÃ¡ticamente desde HC anterior
             </p>
             <p className="text-[10px] text-emerald-600 mt-0.5">
               {historyNotification} atenciÃ³n(es) previa(s) Â· Antecedentes,
@@ -8361,7 +8369,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
           </button>
         </div>
       )}
-      {/* â"€â"€ B-19: Consentimiento Informado Digital - Ley 23/1981 Â· Res.8430/1993 Â· Ley 1581/2012 Â· Res.1843/2025 Art.12 â"€â"€ */}
+      {/* â”€â”€ B-19: Consentimiento Informado Digital - Ley 23/1981 Â· Res.8430/1993 Â· Ley 1581/2012 Â· Res.1843/2025 Art.12 â”€â”€ */}
       {showConsentModal && (
         <ConsentimientoModal
           data={data}
@@ -8391,7 +8399,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
             >
               {data.consentimientoInformado
                 ? "âœ… Consentimiento Informado Registrado"
-                : "âš ï¸ Consentimiento Informado Pendiente"}
+                : "âš ï¸ Consentimiento Informado Pendiente"}
             </span>
             <span className="text-[9px] text-gray-400 font-bold">
               Res. 1843/2025 Art.12 Â· Ley 1581/2012
@@ -8404,7 +8412,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                 onClick={() => setShowConsentModal(true)}
                 className="px-3 py-1 text-[11px] font-black text-white bg-amber-600 hover:bg-amber-700 rounded-lg no-print"
               >
-                ðŸ"‹ Registrar consentimiento
+                ðŸ“‹ Registrar consentimiento
               </button>
             )}
           {data.consentimientoInformado &&
@@ -8414,21 +8422,21 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                 onClick={() => setShowConsentModal(true)}
                 className="px-2 py-1 text-[10px] font-bold text-emerald-700 bg-emerald-100 hover:bg-emerald-200 rounded-lg no-print"
               >
-                ðŸ' Ver / Editar
+                ðŸ‘ Ver / Editar
               </button>
             )}
         </div>
         {data.consentimientoInformado && (
           <div className="mt-2 flex flex-wrap gap-3 text-[10px] text-emerald-700">
             <span>
-              ðŸ'¤{" "}
+              ðŸ‘¤{" "}
               <strong>
                 {data.consentimientoNombrePaciente ||
                   data.nombres ||
                   "Paciente"}
               </strong>
             </span>
-            <span>ðŸ"… {data.fechaConsentimiento}</span>
+            <span>ðŸ“… {data.fechaConsentimiento}</span>
             {data.consentimientoTimestamp && (
               <span>
                 ðŸ•{" "}
@@ -8439,7 +8447,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
               </span>
             )}
             <span className="text-[9px] text-gray-400">
-              ðŸ"- {data.consentimientoVersion}
+              ðŸ”– {data.consentimientoVersion}
             </span>
           </div>
         )}
@@ -8848,7 +8856,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
             {(data.tipoExamen === "INGRESO" ||
               data.tipoExamen === "PERIODICO") && (
               <div className="w-full mb-1 bg-amber-50 border border-amber-300 rounded-lg p-2 text-[10px] text-amber-800 print:hidden">
-                <span className="font-black">âš ï¸ Res. 1843/2025 Art. 10:</span>{" "}
+                <span className="font-black">âš ï¸ Res. 1843/2025 Art. 10:</span>{" "}
                 EstÃ¡ <strong>prohibido</strong> ordenar prueba de embarazo, VIH
                 o serologÃ­a como requisito de ingreso o permanencia laboral. Si
                 hay indicaciÃ³n clÃ­nica, documente justificaciÃ³n en el campo
@@ -8932,7 +8940,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
           {/* â•â• B-F1-01: FOTO DEL PACIENTE â•â• */}
           <div className="w-full mt-2 bg-blue-50 border border-blue-200 rounded-xl p-3">
             <p className="text-[10px] font-black text-blue-800 uppercase mb-2">
-              ðŸ"· Foto del Paciente (Opcional)
+              ðŸ“· Foto del Paciente (Opcional)
             </p>
             <div className="flex items-center gap-4">
               {data.fotoPaciente ? (
@@ -8954,13 +8962,13 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                 </div>
               ) : (
                 <div className="w-20 h-20 rounded-xl border-2 border-dashed border-blue-300 flex items-center justify-center bg-white">
-                  <span className="text-2xl">ðŸ"·</span>
+                  <span className="text-2xl">ðŸ“·</span>
                 </div>
               )}
               <div>
                 <label className="cursor-pointer">
                   <span className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-black rounded-lg flex items-center gap-1 w-fit">
-                    ðŸ" {data.fotoPaciente ? "Cambiar foto" : "Subir foto"}
+                    ðŸ“ {data.fotoPaciente ? "Cambiar foto" : "Subir foto"}
                   </span>
                   <input
                     type="file"
@@ -8999,13 +9007,13 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                   />
                 </label>
                 <p className="text-[9px] text-blue-600 mt-1">
-                  JPG/PNG Â· Se comprime a 200Ã-200px Â· Se guarda en la HC
+                  JPG/PNG Â· Se comprime a 200Ã—200px Â· Se guarda en la HC
                 </p>
               </div>
             </div>
           </div>
         </div>
-        {/* â"€â"€ NORMATIVO: Res. 1843/2025 Art. 29 - PERFIL DEL CARGO (reemplaza profesiograma) â"€â"€ */}
+        {/* â”€â”€ NORMATIVO: Res. 1843/2025 Art. 29 - PERFIL DEL CARGO (reemplaza profesiograma) â”€â”€ */}
         <SectionTitle
           title="Perfil del Cargo - Res. 1843/2025 Art. 29"
           icon={Stethoscope}
@@ -9073,7 +9081,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
             />
           </div>
           <p className="text-[9px] text-purple-500 mt-1 font-bold">
-            âš-ï¸ Campo obligatorio Res. 1843/2025 Art. 29 - Reemplaza el
+            âš–ï¸ Campo obligatorio Res. 1843/2025 Art. 29 - Reemplaza el
             profesiograma tradicional
           </p>
         </div>
@@ -9948,7 +9956,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
               </div>
               <div>
                 <p className="text-[9px] font-black text-violet-700 mb-1">
-                  DIAGNÃ"STICO FUNCIONAL / RESTRICCIONES
+                  DIAGNÃ“STICO FUNCIONAL / RESTRICCIONES
                 </p>
                 <textarea
                   rows={2}
@@ -10330,11 +10338,11 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
               rows={4}
             />
           </div>
-          {/* â"€â"€ ANÃLISIS CLÃNICO IA (campo independiente - Punto 10) â"€â"€ */}
+          {/* â”€â”€ ANÃLISIS CLÃNICO IA (campo independiente - Punto 10) â”€â”€ */}
           {data.analisisIA && (
             <div className="mt-3">
               <label className="block text-[10px] font-black text-indigo-700 uppercase mb-1">
-                ðŸ§  AnÃ¡lisis ClÃ­nico <span className="ai-label-print-hide">(generado por IA â€" campo independiente)</span>
+                ðŸ§  AnÃ¡lisis ClÃ­nico <span className="ai-label-print-hide">(generado por IA â€” campo independiente)</span>
               </label>
               <textarea
                 value={data.analisisIA || ""}
@@ -10352,7 +10360,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
           {!data.analisisIA && (
             <div className="mt-3">
               <label className="block text-[10px] font-black text-gray-500 uppercase mb-1">
-                ðŸ§  AnÃ¡lisis ClÃ­nico
+                ðŸ§  AnÃ¡lisis ClÃ­nico
               </label>
               <textarea
                 value={data.analisisIA || ""}
@@ -10364,10 +10372,10 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
               />
             </div>
           )}
-          {/* â"€â"€ SVE - Sistema de Vigilancia EpidemiolÃ³gica (Punto 9) â"€â"€ */}
+          {/* â”€â”€ SVE - Sistema de Vigilancia EpidemiolÃ³gica (Punto 9) â”€â”€ */}
           <div className="mt-3 bg-amber-50 border border-amber-200 rounded-xl p-3">
             <label className="block text-[10px] font-black text-amber-800 uppercase mb-2">
-              ðŸ›¡ï¸ Sistema de Vigilancia EpidemiolÃ³gica (SVE) <span className="ai-label-print-hide">â€" Sugerido por IA</span>
+              ðŸ›¡ï¸ Sistema de Vigilancia EpidemiolÃ³gica (SVE) <span className="ai-label-print-hide">â€” Sugerido por IA</span>
             </label>
             {(data.sveRecomendado || []).length > 0 ? (
               <div className="space-y-1.5">
@@ -10389,10 +10397,10 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                 defaultValue=""
               >
                 <option value="" disabled>Agregar SVE manualmente...</option>
-                <option>SVE Osteomuscular (Res. 2844/2007 â€" GATISO DME)</option>
+                <option>SVE Osteomuscular (Res. 2844/2007 â€” GATISO DME)</option>
                 <option>SVE DermatolÃ³gico</option>
-                <option>SVE NeurolÃ³gico (riesgo por ruido â€" hipoacusia)</option>
-                <option>SVE Psicosocial (Res. 2764/2022 â€" BaterÃ­a riesgo psicosocial)</option>
+                <option>SVE NeurolÃ³gico (riesgo por ruido â€” hipoacusia)</option>
+                <option>SVE Psicosocial (Res. 2764/2022 â€” BaterÃ­a riesgo psicosocial)</option>
                 <option>SVE Visual</option>
                 <option>SVE Respiratorio</option>
                 <option>SVE Cardiovascular</option>
@@ -10467,7 +10475,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
       </datalist>
     </div>
   );
-  // â"€â"€â"€ RENDER: HC MEDICINA GENERAL â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+  // â”€â”€â”€ RENDER: HC MEDICINA GENERAL â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const renderHistoriaGeneral = () => {
     const _ownPatsGen = _isAdmin(currentUser?.role)
       ? patientsList
@@ -10777,7 +10785,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                         hasContent ? "text-red-600" : "text-gray-400"
                       }`}
                     >
-                      {hasContent ? "âœ" Positivo" : "âœ- Niega"}
+                      {hasContent ? "âœ“ Positivo" : "âœ— Niega"}
                     </span>
                   </div>
                   {hasContent && (
@@ -10797,7 +10805,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                       className="w-full p-0.5 border-b border-red-300 bg-transparent outline-none text-[9px] resize-none"
                     />
                   )}
-                  {/* ImpresiÃ³n: antecedente negativo â†' mostrar "Niega" en texto */}
+                  {/* ImpresiÃ³n: antecedente negativo â†’ mostrar "Niega" en texto */}
                   {!hasContent && (
                     <p className="hidden print:block text-[8pt] text-gray-400 italic leading-tight">
                       Niega
@@ -10931,7 +10939,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                         isAbnormal ? "text-red-600" : "text-emerald-700"
                       }`}
                     >
-                      {isAbnormal ? "âœ- Anormal" : "âœ" Normal"}
+                      {isAbnormal ? "âœ— Anormal" : "âœ“ Normal"}
                     </span>
                   </div>
                   {isAbnormal ? (
@@ -11177,8 +11185,8 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                       }`}
                     >
                       {data.sistemasPorExamen[sys].estado === "Anormal"
-                        ? "âœ- Anormal"
-                        : "âœ" Normal"}
+                        ? "âœ— Anormal"
+                        : "âœ“ Normal"}
                     </span>
                   </div>
                   {/* Pantalla: descripciÃ³n normal en gris */}
@@ -11253,7 +11261,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                       }
                       onChange={(v) => {
                         const d = [...data.diagnosticos];
-                        // Detectar si seleccionÃ³ un item completo "CÃ"DIGO - descripciÃ³n"
+                        // Detectar si seleccionÃ³ un item completo "CÃ“DIGO - descripciÃ³n"
                         const match = v.match(
                           /^([A-Z][0-9]{2}[\.0-9]*)\s+-\s+(.+)$/
                         );
@@ -11342,7 +11350,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
               />
             </div>
           </div>
-          {/* â"€â"€ Firma y VerificaciÃ³n â"€â"€ */}
+          {/* â”€â”€ Firma y VerificaciÃ³n â”€â”€ */}
           <div
             className={`mt-6 px-4 print-break-avoid transition-all ${
               data.estadoHistoria === "Cerrada" ? "block" : "hidden print:block"
@@ -11377,7 +11385,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
       </div>
     );
   };
-  // â"€â"€â"€ RENDER: CERTIFICADO â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+  // â”€â”€â”€ RENDER: CERTIFICADO â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const renderCertificado = () => (
     <div
       className="bg-white mx-auto shadow-2xl print:shadow-none carta-visual"
@@ -11521,7 +11529,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
           )}
         </div>
       </div>
-      {/* â"€â"€ RESULTADOS Ã‰NFASIS ESPECIALIZADO en certificado â"€â"€ */}
+      {/* â”€â”€ RESULTADOS Ã‰NFASIS ESPECIALIZADO en certificado â”€â”€ */}
       {data.enfasisExamen &&
         data.enfasisExamen !== "GENERAL" &&
         (() => {
@@ -11923,7 +11931,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
           </div>
         ) : (
           <p className="text-[10px] text-red-500 font-bold mt-1">
-            âš ï¸ Vigencia no registrada - Res. 1843/2025
+            âš ï¸ Vigencia no registrada - Res. 1843/2025
           </p>
         )}
       </div>
@@ -12032,7 +12040,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
           />
         </div>
       </div>
-      {/* â"€â"€ NORMATIVO: Res. 1843/2025 Art. 25 - Registro entrega certificado â"€â"€ */}
+      {/* â”€â”€ NORMATIVO: Res. 1843/2025 Art. 25 - Registro entrega certificado â”€â”€ */}
       {/* Evoluciones clÃ­nicas: se gestionan desde la HC, no aparecen en el certificado */}
       {/* â•â• B-F1-05: CarnÃ© manipulaciÃ³n alimentos â•â• */}
       {data.enfasisExamen === "ALIMENTOS" && (
@@ -12042,14 +12050,14 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
               ðŸ½ï¸ CarnÃ© de ManipulaciÃ³n de Alimentos
             </p>
             <p className="text-[10px] text-green-600">
-              CarnÃ© imprimible 8.5Ã-5.5 cm con foto y datos del trabajador
+              CarnÃ© imprimible 8.5Ã—5.5 cm con foto y datos del trabajador
             </p>
           </div>
           <button
             onClick={() => openCarnetAlimentos(data, activeDoctorData)}
             className="px-4 py-2 bg-green-700 hover:bg-green-800 text-white text-xs font-black rounded-lg"
           >
-            ðŸ-¨ï¸ Imprimir CarnÃ©
+            ðŸ–¨ï¸ Imprimir CarnÃ©
           </button>
         </div>
       )}
@@ -12136,7 +12144,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
       </div>
     </div>
   );
-  // â"€â"€â"€ RENDER: REPORTES â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+  // â”€â”€â”€ RENDER: REPORTES â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   // [EXTRACTED → pages/Reporte.jsx]
   const renderReporte = () => (
     <ReportePage
@@ -12150,7 +12158,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
       _generarCertificadoHTMLNormalizado={_generarCertificadoHTMLNormalizado}
     />
   );
-  // â"€â"€â"€ RENDER: PACIENTES â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+  // â”€â”€â”€ RENDER: PACIENTES â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   // â•â• B-12: Helper de periodicidad - Res. 1843/2025 Art. 4 (max 3 aÃ±os entre evaluaciones) â•â•
   const _getPeriodicidadStatus = (p) => {
     // Obtener la fecha del examen mÃ¡s reciente del paciente
@@ -12158,12 +12166,12 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
       (h) => h.docNumero === p.docNumero && h.fechaExamen
     );
     if (!todasHC.length)
-      return { nivel: "sin_eval", label: "âš ï¸ Sin evaluaciÃ³n", color: "red" };
+      return { nivel: "sin_eval", label: "âš ï¸ Sin evaluaciÃ³n", color: "red" };
     const fechas = todasHC
       .map((h) => new Date(h.fechaExamen))
       .filter((d) => !isNaN(d));
     if (!fechas.length)
-      return { nivel: "sin_eval", label: "âš ï¸ Sin evaluaciÃ³n", color: "red" };
+      return { nivel: "sin_eval", label: "âš ï¸ Sin evaluaciÃ³n", color: "red" };
     const ultima = new Date(Math.max(...fechas));
     const hoy = new Date();
     const diasDesde = Math.floor((hoy - ultima) / (1000 * 60 * 60 * 24));
@@ -12171,7 +12179,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
     if (aniosDesde > 3)
       return {
         nivel: "vencida",
-        label: `ðŸ"´ Vencida (${Math.floor(aniosDesde)}a ${Math.floor(
+        label: `ðŸ”´ Vencida (${Math.floor(aniosDesde)}a ${Math.floor(
           (aniosDesde % 1) * 12
         )}m)`,
         color: "red",
@@ -12204,7 +12212,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
       ...x.data,
       historyCount: x.historyCount,
     }));
-    // â"€â"€ IPS: usuarios con empresaId ven todos los pacientes de su empresa â"€â"€
+    // â”€â”€ IPS: usuarios con empresaId ven todos los pacientes de su empresa â”€â”€
     const _miEmpresaP = currentUser?.empresaId
       ? companies.find((c) => c.id === currentUser.empresaId)
       : null;
@@ -12305,7 +12313,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                           className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-violet-50 text-violet-600 hover:bg-violet-100 border border-violet-200"
                           title="Consultar certificados de todos los mÃ©dicos"
                         >
-                          ðŸ" Todos mÃ©dicos
+                          ðŸ” Todos mÃ©dicos
                         </button>
                       </div>
                     </td>
@@ -12476,7 +12484,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
       </div>
     );
   };
-  // â"€â"€â"€ RENDER: EMPRESAS â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+  // â”€â”€â”€ RENDER: EMPRESAS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   // [EXTRACTED → pages/Companies.jsx]
   const renderCompanies = () => (
     <CompaniesPage
@@ -12490,8 +12498,8 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
       showAlert={showAlert} _syncCompanies={_syncCompanies}
     />
   );
-  // â"€â"€â"€ RENDER: VERIFICACIÃ"N â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
-  // [EXTRACTED â†' pages/VerificationPage.jsx]
+  // â”€â”€â”€ RENDER: VERIFICACIÃ“N â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // [EXTRACTED â†’ pages/VerificationPage.jsx]
   const renderVerification = () => (
     <VerificationPage
       verificationCode={verificationCode} setVerificationCode={setVerificationCode}
@@ -12500,8 +12508,8 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
       handlePrint={handlePrint} activeDoctorData={activeDoctorData} activeSignature={activeSignature}
     />
   );
-  // â"€â"€â"€ RENDER: CUENTAS DE COBRO
-  // â"€â"€â"€ RENDER: CUENTAS DE COBRO â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+  // â”€â”€â”€ RENDER: CUENTAS DE COBRO
+  // â”€â”€â”€ RENDER: CUENTAS DE COBRO â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   // [EXTRACTED → pages/Bill.jsx]
   const renderBill = () => (
     <BillPage
@@ -12524,7 +12532,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
   // B-24: PORTAL DEL TRABAJADOR - Solo lectura con cÃ³digo de verificaciÃ³n
   // Res. 2346/2007 Art. 14 Â· Ley 1581/2012 - Acceso del titular a su HC
   // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-  // [EXTRACTED â†' pages/PortalTrabajadorPage.jsx]
+  // [EXTRACTED â†’ pages/PortalTrabajadorPage.jsx]
   const renderPortalTrabajador = () => (
     <PortalTrabajadorPage
       portalCodigo={portalCodigo} setPortalCodigo={setPortalCodigo}
@@ -12542,7 +12550,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
   // B-31: SVE - Sistema Vigilancia EpidemiolÃ³gica - Res. 2346/2007 Â· Res. 1843/2025
   // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   const renderSVE = () => {
-    // â"€â"€ PLAN GATE: SVE requiere plan STARTER o superior â"€â"€
+    // â”€â”€ PLAN GATE: SVE requiere plan STARTER o superior â”€â”€
     if (!_canUse("sve_starter", currentUser))
       return (
         <div className="min-h-screen bg-gray-50 font-sans">
@@ -12564,7 +12572,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
           </div>
         </div>
       );
-    // â"€â"€ SECRETARIA GATE: "Sistema de Vigilancia EpidemiolÃ³gica (SVE)" requiere autorizaciÃ³n del admin â"€â"€
+    // â”€â”€ SECRETARIA GATE: "Sistema de Vigilancia EpidemiolÃ³gica (SVE)" requiere autorizaciÃ³n del admin â”€â”€
     if (
       currentUser?.role === "secretaria" &&
       !_secretariaPuede("sve", currentUser, usersList)
@@ -12574,7 +12582,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
           {renderNavbar()}
           <div className="max-w-xl mx-auto px-4 py-16 text-center">
             <div className="bg-amber-50 border-2 border-amber-300 rounded-2xl p-8 space-y-3">
-              <div className="text-5xl">ðŸ"</div>
+              <div className="text-5xl">ðŸ”</div>
               <p className="font-black text-amber-800 text-xl">
                 MÃ³dulo restringido
               </p>
@@ -12588,7 +12596,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                 <strong>"Sistema de Vigilancia EpidemiolÃ³gica (SVE)"</strong> en
                 tu perfil.
                 <br />
-                (Usuarios â†' tu nombre â†' ðŸ" Permisos de secretaria)
+                (Usuarios â†’ tu nombre â†’ ðŸ” Permisos de secretaria)
               </p>
               <button
                 onClick={() => goBack()}
@@ -12783,7 +12791,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
               </div>
             </div>
           </div>
-          {/* â"€â"€ IA SVE: AnÃ¡lisis por empresa â"€â"€ */}
+          {/* â”€â”€ IA SVE: AnÃ¡lisis por empresa â”€â”€ */}
           <div className="bg-white rounded-2xl shadow-sm border border-violet-100 p-5">
             <div className="flex items-center justify-between mb-3">
               <div>
@@ -12820,7 +12828,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                 onClick={async () => {
                   if (!_canUse("ia_analisis", currentUser)) {
                     showAlert(
-                      "ðŸ"' El anÃ¡lisis IA requiere plan â­ Pro ($79.000/mes).\n\nMenÃº â†' â­ Ver Planes"
+                      "ðŸ”’ El anÃ¡lisis IA requiere plan â­ Pro ($79.000/mes).\n\nMenÃº â†’ â­ Ver Planes"
                     );
                     return;
                   }
@@ -12864,7 +12872,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                         .map(([k]) => k)
                         .join(",")
                         .slice(0, 60),
-                      // â"€â"€ FIX: campo dx (diagnÃ³sticos) â€" antes ausente â"€â"€
+                      // â”€â”€ FIX: campo dx (diagnÃ³sticos) â€” antes ausente â”€â”€
                       dx:
                         (p.diagnosticos || [])
                           .map((d) =>
@@ -12953,7 +12961,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
                         0
                       );
                     }
-                    // Normalizar programas: si es array de nombres â†' convertir a conteo
+                    // Normalizar programas: si es array de nombres â†’ convertir a conteo
                     if (
                       parsed.programas &&
                       Array.isArray(Object.values(parsed.programas)[0])
@@ -12973,7 +12981,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
                     showAlert(
                       "Error en anÃ¡lisis IA SVE:\n" +
                         (e.message || "Error desconocido") +
-                        "\n\nVerifique su API Key en âš™ï¸ ConfiguraciÃ³n â†' IA"
+                        "\n\nVerifique su API Key en âš™ï¸ ConfiguraciÃ³n â†’ IA"
                     );
                   } finally {
                     setSveAIAnalisisCargando(false);
@@ -12995,7 +13003,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
             </div>
             {sveAIAnalisis && (
               <div className="space-y-4">
-                {/* â"€â"€ Tarjetas resumen global â"€â"€ */}
+                {/* â”€â”€ Tarjetas resumen global â”€â”€ */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                   <div className="bg-violet-50 border border-violet-200 rounded-xl p-3 text-center">
                     <p className="text-2xl font-black text-violet-700">
@@ -13037,11 +13045,11 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
                     </p>
                   </div>
                 </div>
-                {/* â"€â"€ Resumen general â"€â"€ */}
+                {/* â”€â”€ Resumen general â”€â”€ */}
                 {sveAIAnalisis.resumenGeneral && (
                   <div className="bg-violet-50 border border-violet-200 rounded-xl p-4">
                     <p className="text-xs font-black text-violet-800 mb-1">
-                      ðŸ"Š Resumen EpidemiolÃ³gico General
+                      ðŸ“Š Resumen EpidemiolÃ³gico General
                     </p>
                     <p className="text-xs text-violet-700 leading-relaxed">
                       {sveAIAnalisis.resumenGeneral}
@@ -13051,7 +13059,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
                     </p>
                   </div>
                 )}
-                {/* â"€â"€ DistribuciÃ³n por programa â"€â"€ */}
+                {/* â”€â”€ DistribuciÃ³n por programa â”€â”€ */}
                 <div className="grid grid-cols-4 gap-2">
                   {Object.entries(sveAIAnalisis.programas || {})
                     .filter(([, v]) => Number(v) > 0)
@@ -13070,7 +13078,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
                       </div>
                     ))}
                 </div>
-                {/* â"€â"€ Tabla POR EMPRESA â"€â"€ */}
+                {/* â”€â”€ Tabla POR EMPRESA â”€â”€ */}
                 {(sveAIAnalisis.empresas || []).map((emp, ei) => (
                   <div
                     key={ei}
@@ -13196,7 +13204,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
                     </div>
                   </div>
                 ))}
-                {/* â"€â"€ Exportar CSV completo â"€â"€ */}
+                {/* â”€â”€ Exportar CSV completo â”€â”€ */}
                 <div className="flex justify-end">
                   <button
                     onClick={() => {
@@ -13253,7 +13261,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
                     }}
                     className="px-4 py-2 bg-teal-600 text-white text-xs font-black rounded-xl hover:bg-teal-700 flex items-center gap-2"
                   >
-                    ðŸ"¥ Exportar CSV completo
+                    ðŸ“¥ Exportar CSV completo
                   </button>
                 </div>
               </div>
@@ -13276,13 +13284,13 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
                   onClick={exportarSVE}
                   className="text-xs font-black px-3 py-1.5 bg-teal-600 text-white rounded-lg hover:bg-teal-700 flex items-center gap-1"
                 >
-                  ðŸ"¥ Exportar CSV
+                  ðŸ“¥ Exportar CSV
                 </button>
               )}
             </div>
             {filtered.length === 0 ? (
               <div className="p-12 text-center text-gray-400">
-                <p className="text-2xl mb-2">ðŸ"¬</p>
+                <p className="text-2xl mb-2">ðŸ”¬</p>
                 <p className="text-sm font-bold">
                   Sin trabajadores identificados en este programa
                 </p>
@@ -13364,7 +13372,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
   // B-26: ARL - Reporte AT/EL - Decreto 1072/2015 Â· Res. 0312/2019
   // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   const renderARL = () => {
-    // â"€â"€ PLAN GATE: ARL requiere plan PRO â"€â"€
+    // â”€â”€ PLAN GATE: ARL requiere plan PRO â”€â”€
     if (!_canUse("arl", currentUser))
       return (
         <div className="min-h-screen bg-gray-50 font-sans">
@@ -13485,7 +13493,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
       const faltantes = campos.filter((c) => c.r && !arlForm[c.k]);
       if (faltantes.length) {
         showAlert(
-          "âš ï¸ Campos requeridos: " + faltantes.map((c) => c.l).join(", ")
+          "âš ï¸ Campos requeridos: " + faltantes.map((c) => c.l).join(", ")
         );
         return;
       }
@@ -13591,7 +13599,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
             {[
               { v: "at", l: "ðŸš¨ Accidente de Trabajo (AT)" },
               { v: "el", l: "ðŸ¥ Enfermedad Laboral (EL)" },
-              { v: "historial", l: "ðŸ"‹ Historial" },
+              { v: "historial", l: "ðŸ“‹ Historial" },
             ].map((t) => (
               <button
                 key={t.v}
@@ -13677,13 +13685,13 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
                   onClick={handleGuardar}
                   className="flex-1 bg-red-600 hover:bg-red-700 text-white font-black py-2.5 rounded-xl text-sm"
                 >
-                  ðŸ'¾ Guardar reporte
+                  ðŸ’¾ Guardar reporte
                 </button>
                 <button
                   onClick={() => handleImprimir(null)}
                   className="px-5 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 font-black py-2.5 rounded-xl text-sm"
                 >
-                  ðŸ-¨ï¸ Imprimir
+                  ðŸ–¨ï¸ Imprimir
                 </button>
               </div>
             </div>
@@ -13726,7 +13734,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
                         onClick={() => handleImprimir(rep)}
                         className="text-[10px] bg-white border border-gray-200 px-3 py-1 rounded-lg font-bold hover:bg-gray-50"
                       >
-                        ðŸ-¨ï¸
+                        ðŸ–¨ï¸
                       </button>
                     </div>
                   ))}
@@ -13743,7 +13751,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
   // B-22: HABEAS DATA - MÃ³dulo de Derechos del Titular
   // Ley 1581 de 2012 Â· Decreto 1078 de 2015 (DUR MinTIC) Â· Res. SIC 2023
   // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-  // [EXTRACTED â†' pages/HabeasDataPage.jsx]
+  // [EXTRACTED â†’ pages/HabeasDataPage.jsx]
   const renderHabeasData = () => (
     <HabeasDataPage
       renderNavbar={renderNavbar} goBack={goBack} showAlert={showAlert} currentUser={currentUser}
@@ -13759,7 +13767,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
   // Videoconsulta integrada con consentimiento digital, sin costo por minuto
   // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   const renderTelemedicina = () => {
-    // â"€â"€ SECRETARIA GATE: "Telemedicina" requiere autorizaciÃ³n del admin â"€â"€
+    // â”€â”€ SECRETARIA GATE: "Telemedicina" requiere autorizaciÃ³n del admin â”€â”€
     if (
       currentUser?.role === "secretaria" &&
       !_secretariaPuede("telemedicina", currentUser, usersList)
@@ -13769,7 +13777,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
           {renderNavbar()}
           <div className="max-w-xl mx-auto px-4 py-16 text-center">
             <div className="bg-amber-50 border-2 border-amber-300 rounded-2xl p-8 space-y-3">
-              <div className="text-5xl">ðŸ"</div>
+              <div className="text-5xl">ðŸ”</div>
               <p className="font-black text-amber-800 text-xl">
                 MÃ³dulo restringido
               </p>
@@ -13782,7 +13790,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
                 </strong>{" "}
                 en tu perfil.
                 <br />
-                (Usuarios â†' tu nombre â†' ðŸ" Permisos de secretaria)
+                (Usuarios â†’ tu nombre â†’ ðŸ” Permisos de secretaria)
               </p>
               <button
                 onClick={() => goBack()}
@@ -13806,20 +13814,20 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
 
     const handleIniciarSala = () => {
       if (!teleForm.paciente.trim()) {
-        showAlert("âš ï¸ Ingrese el nombre del paciente.");
+        showAlert("âš ï¸ Ingrese el nombre del paciente.");
         return;
       }
       if (!teleForm.documento.trim()) {
-        showAlert("âš ï¸ Ingrese el nÃºmero de documento del paciente.");
+        showAlert("âš ï¸ Ingrese el nÃºmero de documento del paciente.");
         return;
       }
       if (!teleForm.hora.trim()) {
-        showAlert("âš ï¸ Ingrese la hora de la teleconsulta.");
+        showAlert("âš ï¸ Ingrese la hora de la teleconsulta.");
         return;
       }
       if (!teleForm.consentimientoTele) {
         showAlert(
-          "âš ï¸ El paciente debe aceptar el consentimiento de telemedicina."
+          "âš ï¸ El paciente debe aceptar el consentimiento de telemedicina."
         );
         return;
       }
@@ -13949,7 +13957,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
               <div className="flex gap-2 items-center">
                 {teleconsultas.filter(function (t) { return t.estado === "esperando"; }).length > 0 && (
                   <span className="bg-red-500 text-white text-[10px] font-black px-2 py-1 rounded-full animate-pulse">
-                    {"ðŸ"´ " + teleconsultas.filter(function (t) { return t.estado === "esperando"; }).length + " en espera"}
+                    {"ðŸ”´ " + teleconsultas.filter(function (t) { return t.estado === "esperando"; }).length + " en espera"}
                   </span>
                 )}
                 <button
@@ -13970,7 +13978,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
                       : "bg-blue-800 text-blue-200 hover:bg-blue-600"
                   }`}
                 >
-                  ðŸ"‹ Historial ({teleconsultas.length})
+                  ðŸ“‹ Historial ({teleconsultas.length})
                 </button>
               </div>
             </div>
@@ -13981,10 +13989,10 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
             <div className="bg-white rounded-2xl shadow-lg overflow-hidden border-2 border-blue-500">
               <div className="bg-blue-600 px-4 py-2 flex items-center justify-between">
                 <div className="text-white text-xs font-bold flex items-center gap-2">
-                  {"ðŸ"´ CONSULTA EN CURSO - " + teleSalaActiva.paciente + " Â· " + teleSalaActiva.fecha + " " + teleSalaActiva.hora}
+                  {"ðŸ”´ CONSULTA EN CURSO - " + teleSalaActiva.paciente + " Â· " + teleSalaActiva.fecha + " " + teleSalaActiva.hora}
                   {teleEspera.length > 0 && (
                     <span className="bg-red-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full animate-pulse">
-                      {"ðŸ"´ " + teleEspera.length + " paciente" + (teleEspera.length !== 1 ? "s" : "") + " esperando"}
+                      {"ðŸ”´ " + teleEspera.length + " paciente" + (teleEspera.length !== 1 ? "s" : "") + " esperando"}
                     </span>
                   )}
                 </div>
@@ -14020,12 +14028,12 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
                     onClick={() => {
                       navigator.clipboard?.writeText(jitsiUrl);
                       showAlert(
-                        "ðŸ"- Enlace copiado al portapapeles. EnvÃ­elo al paciente."
+                        "ðŸ”— Enlace copiado al portapapeles. EnvÃ­elo al paciente."
                       );
                     }}
                     className="w-full bg-white border border-blue-200 text-blue-700 font-bold py-2 px-4 rounded-xl text-xs flex items-center justify-center gap-2"
                   >
-                    ðŸ"‹ Copiar enlace para el paciente
+                    ðŸ“‹ Copiar enlace para el paciente
                   </button>
                   {teleSalaActiva.celular && (
                     <a
@@ -14034,12 +14042,12 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
                       rel="noreferrer"
                       className="w-full flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-xl text-sm font-bold transition"
                     >
-                      {"ðŸ"± Enviar enlace por WhatsApp"}
+                      {"ðŸ“± Enviar enlace por WhatsApp"}
                     </a>
                   )}
                   {!teleSalaActiva.celular && (
                     <p className="text-[10px] text-amber-600 text-center font-bold">
-                      {"âš ï¸ Sin celular registrado - No se puede enviar por WhatsApp"}
+                      {"âš ï¸ Sin celular registrado - No se puede enviar por WhatsApp"}
                     </p>
                   )}
                   <p className="text-[10px] text-gray-400 text-center">
@@ -14047,7 +14055,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
                   </p>
                 </div>
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-[10px] text-blue-700 max-w-sm">
-                  <p className="font-black">â"¹ï¸ CÃ³mo funciona</p>
+                  <p className="font-black">â„¹ï¸ CÃ³mo funciona</p>
                   <p className="mt-0.5">
                     1. Presione "Abrir videollamada" - se abre en nueva pestaÃ±a
                   </p>
@@ -14061,7 +14069,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
                 </div>
               </div>
               <div className="px-4 py-2 bg-blue-50 text-[10px] text-blue-700 font-bold">
-                ðŸ"' Sala privada: {teleSalaActiva.roomName} Â· La videollamada
+                ðŸ”’ Sala privada: {teleSalaActiva.roomName} Â· La videollamada
                 ocurre en servidores de Jitsi Meet (meet.jit.si) Â· NingÃºn dato
                 clÃ­nico se transmite al proveedor de video
               </div>
@@ -14103,7 +14111,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
                 </div>
                 <div className="col-span-2">
                   <label className="block text-[10px] font-bold text-gray-600 mb-1 uppercase">
-                    {"ðŸ"± Celular del paciente (WhatsApp)"}
+                    {"ðŸ“± Celular del paciente (WhatsApp)"}
                   </label>
                   <input
                     value={teleForm.celular}
@@ -14223,7 +14231,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
             <div className="bg-white rounded-2xl shadow-sm border-2 border-amber-300 overflow-hidden">
               <div className="bg-amber-50 px-4 py-3 border-b border-amber-200">
                 <p className="text-sm font-black text-amber-800">
-                  {"ðŸ"´ Sala de Espera (" + teleEspera.length + " paciente" + (teleEspera.length !== 1 ? "s" : "") + ")"}
+                  {"ðŸ”´ Sala de Espera (" + teleEspera.length + " paciente" + (teleEspera.length !== 1 ? "s" : "") + ")"}
                 </p>
               </div>
               <div className="divide-y divide-gray-100">
@@ -14235,14 +14243,14 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
                           {t.paciente + " Â· " + t.documento}
                         </p>
                         <p className="text-[10px] text-gray-500 mt-0.5">
-                          {"ðŸ"… " + t.fecha + " " + t.hora + " Â· " + (t.motivo || "Sin motivo")}
+                          {"ðŸ“… " + t.fecha + " " + t.hora + " Â· " + (t.motivo || "Sin motivo")}
                         </p>
                       </div>
                       <button
                         onClick={function () { handleIniciarConsulta(t.id); }}
                         className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-black px-4 py-2 rounded-xl"
                       >
-                        {"â-¶ Iniciar consulta"}
+                        {"â–¶ Iniciar consulta"}
                       </button>
                     </div>
                   );
@@ -14261,7 +14269,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
               </div>
               {teleconsultas.length === 0 ? (
                 <div className="text-center py-12 text-gray-400">
-                  <p className="text-3xl mb-2">{"ðŸ"¹"}</p>
+                  <p className="text-3xl mb-2">{"ðŸ“¹"}</p>
                   <p className="text-sm font-bold">
                     Sin teleconsultas registradas
                   </p>
@@ -14269,7 +14277,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
               ) : (
                 <div className="divide-y divide-gray-100">
                   {teleconsultas.map(function (t) {
-                    var estadoLabel = t.estado === "activa" ? "ðŸ"µ En curso" : t.estado === "esperando" ? "ðŸŸ¡ Programada" : "âœ… Finalizada";
+                    var estadoLabel = t.estado === "activa" ? "ðŸ”µ En curso" : t.estado === "esperando" ? "ðŸŸ¡ Programada" : "âœ… Finalizada";
                     var estadoClass = t.estado === "activa" ? "bg-blue-100 text-blue-700" : t.estado === "esperando" ? "bg-yellow-100 text-yellow-700" : "bg-emerald-100 text-emerald-700";
                     var duracionStr = "";
                     if (t.horaInicio && t.horaFin) {
@@ -14292,11 +14300,11 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
                             </span>
                           </p>
                           <p className="text-[10px] text-gray-500 mt-0.5">
-                            {"ðŸ"… " + t.fecha + " " + t.hora + " Â· " + (t.motivo || "Sin motivo registrado")}
+                            {"ðŸ“… " + t.fecha + " " + t.hora + " Â· " + (t.motivo || "Sin motivo registrado")}
                           </p>
                           <div className="flex items-center gap-2 mt-0.5">
                             <p className="text-[10px] text-gray-400">
-                              {"ðŸ'¤ " + t.medico}
+                              {"ðŸ‘¤ " + t.medico}
                             </p>
                             {duracionStr && (
                               <p className="text-[10px] text-blue-600 font-bold">
@@ -14305,7 +14313,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
                             )}
                             {t.horaInicio && (
                               <p className="text-[10px] text-gray-400">
-                                {"ðŸ• " + t.horaInicio + (t.horaFin ? " â†' " + t.horaFin : "")}
+                                {"ðŸ• " + t.horaInicio + (t.horaFin ? " â†’ " + t.horaFin : "")}
                               </p>
                             )}
                           </div>
@@ -14319,7 +14327,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
                               onClick={function () { crearHCDesdeTele(t); }}
                               className="text-[10px] font-bold text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 px-2 py-1 rounded-lg transition"
                             >
-                              {"ðŸ"‹ Crear HC de esta teleconsulta"}
+                              {"ðŸ“‹ Crear HC de esta teleconsulta"}
                             </button>
                           )}
                           {t.estado === "esperando" && (
@@ -14327,7 +14335,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
                               onClick={function () { handleIniciarConsulta(t.id); }}
                               className="text-[10px] font-bold text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-2 py-1 rounded-lg transition"
                             >
-                              {"â-¶ Iniciar consulta"}
+                              {"â–¶ Iniciar consulta"}
                             </button>
                           )}
                         </div>
@@ -14342,7 +14350,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
           {/* Nota normativa */}
           <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
             <p className="text-[10px] font-black text-blue-800 mb-1">
-              ðŸ"‹ Marco normativo: Res. 2654 de 2019
+              ðŸ“‹ Marco normativo: Res. 2654 de 2019
             </p>
             <p className="text-[10px] text-blue-700">
               La telemedicina en Colombia estÃ¡ regulada por la ResoluciÃ³n 2654
@@ -14366,13 +14374,13 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
   const renderTabAdjuntos = () => {
     const TIPOS_ADJUNTO = [
       { valor: "espirometria", etiqueta: "ðŸ« EspirometrÃ­a" },
-      { valor: "audiometria", etiqueta: "ðŸ'' AudiometrÃ­a" },
+      { valor: "audiometria", etiqueta: "ðŸ‘‚ AudiometrÃ­a" },
       { valor: "rayos_x", etiqueta: "ðŸ©» Rayos X / ImÃ¡genes" },
       { valor: "laboratorio", etiqueta: "ðŸ§ª Laboratorio" },
-      { valor: "optometria", etiqueta: "ðŸ' OptometrÃ­a" },
+      { valor: "optometria", etiqueta: "ðŸ‘ OptometrÃ­a" },
       { valor: "ecg", etiqueta: "â¤ï¸ ECG / Holter" },
-      { valor: "vacunacion", etiqueta: "ðŸ'‰ Carnet VacunaciÃ³n" },
-      { valor: "otro", etiqueta: "ðŸ"" Otro documento" },
+      { valor: "vacunacion", etiqueta: "ðŸ’‰ Carnet VacunaciÃ³n" },
+      { valor: "otro", etiqueta: "ðŸ“„ Otro documento" },
     ];
     const adjuntos = data.adjuntos || [];
     const MAX_MB = 10;
@@ -14389,11 +14397,11 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
       const file = e.target.files?.[0];
       if (!file) return;
       if (!TIPOS_MIME.includes(file.type)) {
-        showAlert("âš ï¸ Solo se permiten PDF, PNG, JPG, TIFF o WebP.");
+        showAlert("âš ï¸ Solo se permiten PDF, PNG, JPG, TIFF o WebP.");
         return;
       }
       if (file.size > MAX_BYTES) {
-        showAlert(`âš ï¸ El archivo supera el lÃ­mite de ${MAX_MB} MB.`);
+        showAlert(`âš ï¸ El archivo supera el lÃ­mite de ${MAX_MB} MB.`);
         return;
       }
 
@@ -14449,14 +14457,14 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
         window.open(url, "_blank");
       } else {
         showAlert(
-          "âš ï¸ No se pudo obtener el enlace. Verifica la conexiÃ³n con Supabase."
+          "âš ï¸ No se pudo obtener el enlace. Verifica la conexiÃ³n con Supabase."
         );
       }
     };
 
     const handleEliminarAdjunto = async (adj) => {
       if (data.estadoHistoria === "Cerrada") {
-        showAlert("â"¹ï¸ No se pueden eliminar adjuntos de una HC cerrada.");
+        showAlert("â„¹ï¸ No se pueden eliminar adjuntos de una HC cerrada.");
         return;
       }
       const ok = await new Promise((res) =>
@@ -14470,7 +14478,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
       await _sbStorageDelete(adj.path);
       const filtrados = adjuntos.filter((a) => a.id !== adj.id);
       setData((prev) => ({ ...prev, adjuntos: filtrados }));
-      showAlert("ðŸ-' Adjunto eliminado.");
+      showAlert("ðŸ—‘ Adjunto eliminado.");
     };
 
     const formatBytes = (b) =>
@@ -14483,7 +14491,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
         {/* Header */}
         <div className="flex items-center gap-2 px-4 py-3 border-b border-gray-100 bg-teal-50">
           <span className="text-sm font-black text-teal-800">
-            ðŸ"Ž Adjuntos de ParaclÃ­nicos
+            ðŸ“Ž Adjuntos de ParaclÃ­nicos
           </span>
           <span className="text-[10px] text-teal-600 bg-teal-100 px-2 py-0.5 rounded-full">
             Res. 1843/2025 Â· Supabase Storage
@@ -14537,7 +14545,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
           {/* Lista de adjuntos */}
           {adjuntos.length === 0 ? (
             <div className="text-center py-10 text-gray-400">
-              <p className="text-3xl mb-2">ðŸ"'</p>
+              <p className="text-3xl mb-2">ðŸ“‚</p>
               <p className="text-sm font-bold">Sin adjuntos</p>
               <p className="text-xs mt-1">
                 Suba espirometrÃ­as, audiometrÃ­as, resultados de laboratorio u
@@ -14553,7 +14561,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
                 >
                   <div className="flex items-center gap-3 flex-1 min-w-0">
                     <span className="text-2xl flex-shrink-0">
-                      {adj.mimeType === "application/pdf" ? "ðŸ""" : "ðŸ-¼ï¸"}
+                      {adj.mimeType === "application/pdf" ? "ðŸ“„" : "ðŸ–¼ï¸"}
                     </span>
                     <div className="min-w-0">
                       <p className="text-xs font-bold text-gray-800 truncate">
@@ -14571,14 +14579,14 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
                       onClick={() => handleVerAdjunto(adj)}
                       className="px-3 py-1.5 text-[10px] font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg"
                     >
-                      ðŸ' Ver
+                      ðŸ‘ Ver
                     </button>
                     {data.estadoHistoria !== "Cerrada" && (
                       <button
                         onClick={() => handleEliminarAdjunto(adj)}
                         className="px-3 py-1.5 text-[10px] font-bold text-red-600 bg-red-50 hover:bg-red-100 rounded-lg"
                       >
-                        ðŸ-'
+                        ðŸ—‘
                       </button>
                     )}
                   </div>
@@ -14590,7 +14598,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
           {/* Nota normativa */}
           <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
             <p className="text-[10px] text-amber-800 font-bold">
-              ðŸ"‹ Normativa aplicable
+              ðŸ“‹ Normativa aplicable
             </p>
             <p className="text-[10px] text-amber-700 mt-0.5">
               Los resultados de paraclÃ­nicos forman parte integral de la
@@ -14605,8 +14613,8 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
     );
   };
 
-  // â"€â"€â"€ ROUTER â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
-  // â"€â"€â"€ RENDER: GESTIÃ"N DE USUARIOS â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+  // â”€â”€â”€ ROUTER â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // â”€â”€â”€ RENDER: GESTIÃ“N DE USUARIOS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   // [EXTRACTED → pages/Users.jsx]
   const renderUsers = () => (
     <UsersPage
@@ -14626,13 +14634,13 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
       _validarContrasena={_validarContrasena}
     />
   );
-  // â"€â"€â"€ RENDER: PLANES Y PRECIOS â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+  // â”€â”€â”€ RENDER: PLANES Y PRECIOS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   // [EXTRACTED → pages/PlanesPage.jsx]
   const renderPlanes = () => (
     <PlanesPage currentUser={currentUser} renderNavbar={renderNavbar} showAlert={showAlert} />
   );
 
-  // â"€â"€â"€ RENDER: PROPUESTAS ECONÃ"MICAS â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+  // â”€â”€â”€ RENDER: PROPUESTAS ECONÃ“MICAS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   // B-F1-03: PORTAFOLIO DE SERVICIOS / LISTA DE PRECIOS
   // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
@@ -14658,7 +14666,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
           </div>
         </div>
       );
-    // â"€â"€ SECRETARIA GATE: "Propuestas EconÃ³micas" requiere autorizaciÃ³n del admin â"€â"€
+    // â”€â”€ SECRETARIA GATE: "Propuestas EconÃ³micas" requiere autorizaciÃ³n del admin â”€â”€
     if (
       currentUser?.role === "secretaria" &&
       !_secretariaPuede("propuestas", currentUser, usersList)
@@ -14668,7 +14676,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
           {renderNavbar()}
           <div className="max-w-xl mx-auto px-4 py-16 text-center">
             <div className="bg-amber-50 border-2 border-amber-300 rounded-2xl p-8 space-y-3">
-              <div className="text-5xl">ðŸ"</div>
+              <div className="text-5xl">ðŸ”</div>
               <p className="font-black text-amber-800 text-xl">
                 MÃ³dulo restringido
               </p>
@@ -14681,7 +14689,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
                 Solicita que habilite el permiso{" "}
                 <strong>"Propuestas EconÃ³micas"</strong> en tu perfil.
                 <br />
-                (Usuarios â†' tu nombre â†' ðŸ" Permisos de secretaria)
+                (Usuarios â†’ tu nombre â†’ ðŸ” Permisos de secretaria)
               </p>
               <button
                 onClick={() => goBack()}
@@ -14790,7 +14798,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
     return (
       <div className="min-h-screen bg-gray-50 font-sans p-8 print:bg-white print:p-0">
         <div className="max-w-4xl mx-auto">
-          {/* â"€â"€ TAB SELECTOR: Propuesta EconÃ³mica â†" CotizaciÃ³n RÃ¡pida â†" Historial â"€â"€ */}
+          {/* â”€â”€ TAB SELECTOR: Propuesta EconÃ³mica â†” CotizaciÃ³n RÃ¡pida â†” Historial â”€â”€ */}
           <div className="flex gap-2 mb-4 no-print border-b border-gray-200 pb-3 flex-wrap">
             <button
               onClick={() => setPropModulo("propuesta")}
@@ -14800,7 +14808,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
                   : "bg-gray-100 text-gray-600 hover:bg-teal-50 hover:text-teal-700"
               }`}
             >
-              ðŸ"" Propuesta EconÃ³mica
+              ðŸ“„ Propuesta EconÃ³mica
             </button>
             <button
               onClick={() => setPropModulo("cotizacion")}
@@ -14820,18 +14828,18 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
                   : "bg-gray-100 text-gray-600 hover:bg-amber-50 hover:text-amber-700"
               }`}
             >
-              ðŸ-' Historial ({savedReports.filter(r => r._tipo === "propuesta" || r.servicios).length})
+              ðŸ—‚ Historial ({savedReports.filter(r => r._tipo === "propuesta" || r.servicios).length})
             </button>
           </div>
           {propModulo === "cotizacion" && renderCotizacionesInline()}
-          {/* â"€â"€ HISTORIAL DE PROPUESTAS GUARDADAS â"€â"€ */}
+          {/* â”€â”€ HISTORIAL DE PROPUESTAS GUARDADAS â”€â”€ */}
           {propModulo === "historial" && (() => {
             const propsSaved = savedReports.filter(r => r._tipo === "propuesta" || r.servicios);
             return (
               <div className="bg-white shadow rounded-2xl p-6">
                 <div className="flex justify-between items-center mb-5">
                   <h2 className="text-lg font-black text-amber-800 flex items-center gap-2">
-                    ðŸ-' Propuestas Guardadas
+                    ðŸ—‚ Propuestas Guardadas
                     <span className="bg-amber-100 text-amber-700 text-xs font-bold px-2 py-0.5 rounded-full">{propsSaved.length}</span>
                   </h2>
                   <button onClick={() => goBack()} className="text-gray-500 font-bold text-sm flex items-center gap-1">
@@ -14861,15 +14869,15 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
                       <tbody>
                         {[...propsSaved].reverse().map((prop, idx) => {
                           const totalProp = (prop.servicios || []).reduce((s, x) => s + (x.precio || 0) * (x.cantidad || 1), 0);
-                          const fechaProp = prop.fecha || prop.savedAt?.split("T")[0] || "â€"";
+                          const fechaProp = prop.fecha || prop.savedAt?.split("T")[0] || "â€”";
                           const diasVig = parseInt(prop.validez || "30", 10);
                           const fechaVenc = prop.fecha ? new Date(new Date(prop.fecha).getTime() + diasVig * 86400000) : null;
                           const vencida = fechaVenc && fechaVenc < new Date();
                           return (
                             <tr key={prop.id || idx} className="border-b border-gray-100 hover:bg-amber-50 transition-colors">
-                              <td className="px-3 py-2 font-black text-teal-700">#{prop.numero || "â€""}</td>
-                              <td className="px-3 py-2 font-medium text-gray-800 max-w-[160px] truncate">{prop.empresa || "â€""}</td>
-                              <td className="px-3 py-2 text-gray-500 text-xs">{prop.nit || "â€""}</td>
+                              <td className="px-3 py-2 font-black text-teal-700">#{prop.numero || "â€”"}</td>
+                              <td className="px-3 py-2 font-medium text-gray-800 max-w-[160px] truncate">{prop.empresa || "â€”"}</td>
+                              <td className="px-3 py-2 text-gray-500 text-xs">{prop.nit || "â€”"}</td>
                               <td className="px-3 py-2 text-gray-500 text-xs">{fechaProp}</td>
                               <td className="px-3 py-2 text-right font-black text-emerald-700">
                                 ${(totalProp).toLocaleString("es-CO")}
@@ -14983,7 +14991,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
                   return (
                     <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 mb-4">
                       <p className="text-xs font-black text-blue-800 mb-2">
-                        ðŸ'¨â€âš•ï¸ MÃ©dico que firma la propuesta
+                        ðŸ‘¨â€âš•ï¸ MÃ©dico que firma la propuesta
                       </p>
                       <select
                         className="w-full p-2 border border-blue-200 rounded-lg text-sm bg-white"
@@ -15302,7 +15310,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
                   fontSize: "9pt",
                 }}
               >
-                {/* â"€â"€ ENCABEZADO â"€â"€ */}
+                {/* â”€â”€ ENCABEZADO â”€â”€ */}
                 <div className="flex justify-between items-start border-b-2 border-gray-300 pb-3 mb-4">
                   <div className="scale-100 origin-left">
                     <BrandLogo data={_billDocData} />
@@ -15313,7 +15321,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
                       suppressContentEditableWarning
                       className="text-[9px] font-bold text-yellow-600 uppercase tracking-widest mb-0.5 outline-none"
                     >
-                      PROPUESTA ECONÃ"MICA
+                      PROPUESTA ECONÃ“MICA
                     </p>
                     <h1
                       contentEditable
@@ -15333,7 +15341,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
                     </p>
                   </div>
                 </div>
-                {/* â"€â"€ PREPARADO PARA â"€â"€ */}
+                {/* â”€â”€ PREPARADO PARA â”€â”€ */}
                 <div className="border border-gray-200 rounded p-3 mb-4 bg-gray-50 print:bg-transparent">
                   <p
                     contentEditable
@@ -15370,7 +15378,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
                     </p>
                   )}
                 </div>
-                {/* â"€â"€ 1. OBJETIVO â"€â"€ */}
+                {/* â”€â”€ 1. OBJETIVO â”€â”€ */}
                 <div className="mb-3">
                   <h3
                     contentEditable
@@ -15393,7 +15401,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
                     cumplimiento de la normativa vigente colombiana.
                   </p>
                 </div>
-                {/* â"€â"€ 2. MARCO LEGAL â"€â"€ */}
+                {/* â”€â”€ 2. MARCO LEGAL â”€â”€ */}
                 <div className="mb-3">
                   <h3
                     contentEditable
@@ -15411,25 +15419,25 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
                     className="pl-5 space-y-1 outline-none text-[9px] text-gray-700"
                   >
                     <p>
-                      âœ" <strong>ResoluciÃ³n 1843 de 2025:</strong> Norma que
+                      âœ“ <strong>ResoluciÃ³n 1843 de 2025:</strong> Norma que
                       establece los lineamientos para la realizaciÃ³n y custodia
                       de las historias clÃ­nicas ocupacionales.
                     </p>
                     <p>
-                      âœ" <strong>ResoluciÃ³n 2346 de 2007:</strong> RegulaciÃ³n de
+                      âœ“ <strong>ResoluciÃ³n 2346 de 2007:</strong> RegulaciÃ³n de
                       la prÃ¡ctica de evaluaciones mÃ©dicas ocupacionales.
                     </p>
                     <p>
-                      âœ" <strong>ResoluciÃ³n 0312 de 2019:</strong> EstÃ¡ndares
+                      âœ“ <strong>ResoluciÃ³n 0312 de 2019:</strong> EstÃ¡ndares
                       mÃ­nimos del SG-SST.
                     </p>
                     <p>
-                      âœ" <strong>Decreto 1072 de 2015:</strong> Decreto Ãšnico
+                      âœ“ <strong>Decreto 1072 de 2015:</strong> Decreto Ãšnico
                       Reglamentario del Sector Trabajo.
                     </p>
                   </div>
                 </div>
-                {/* â"€â"€ 3. ENTREGABLES â"€â"€ */}
+                {/* â”€â”€ 3. ENTREGABLES â”€â”€ */}
                 <div className="mb-3">
                   <h3
                     contentEditable
@@ -15447,24 +15455,24 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
                     className="pl-5 outline-none text-[9px] text-gray-700 grid grid-cols-2 gap-x-4"
                   >
                     <p className="mb-1">
-                      âœ" <strong>Certificado de Aptitud Laboral:</strong> Para el
+                      âœ“ <strong>Certificado de Aptitud Laboral:</strong> Para el
                       archivo de la empresa (segÃºn MinTrabajo).
                     </p>
                     <p className="mb-1">
-                      âœ" <strong>Remisiones mÃ©dicas:</strong> Cuando se requiera
+                      âœ“ <strong>Remisiones mÃ©dicas:</strong> Cuando se requiera
                       para trÃ¡mite a la entidad correspondiente.
                     </p>
                     <p className="mb-1">
-                      âœ" <strong>Informe de Condiciones de Salud:</strong> Perfil
+                      âœ“ <strong>Informe de Condiciones de Salud:</strong> Perfil
                       epidemiolÃ³gico consolidado de la poblaciÃ³n evaluada.
                     </p>
                     <p className="mb-1">
-                      âœ" <strong>Historia ClÃ­nica:</strong> Custodiada bajo
+                      âœ“ <strong>Historia ClÃ­nica:</strong> Custodiada bajo
                       reserva legal (Res. 1995/1999).
                     </p>
                   </div>
                 </div>
-                {/* â"€â"€ 4. METODOLOGÃA â"€â"€ */}
+                {/* â”€â”€ 4. METODOLOGÃA â”€â”€ */}
                 <div className="mb-3">
                   <h3
                     contentEditable
@@ -15488,7 +15496,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
                     ResoluciÃ³n 1843 de 2025.
                   </p>
                 </div>
-                {/* â"€â"€ 5. PROPUESTA ECONÃ"MICA â"€â"€ */}
+                {/* â”€â”€ 5. PROPUESTA ECONÃ“MICA â”€â”€ */}
                 <div className="mb-3">
                   <h3
                     contentEditable
@@ -15498,7 +15506,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
                     <span className="w-4 h-4 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[8px] font-black flex-shrink-0 no-edit">
                       5
                     </span>
-                    PROPUESTA ECONÃ"MICA
+                    PROPUESTA ECONÃ“MICA
                   </h3>
                   <div className="border border-gray-300 rounded overflow-hidden">
                     <div
@@ -15588,7 +15596,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
                     )}
                   </div>
                 </div>
-                {/* â"€â"€ 6. CONDICIONES COMERCIALES â"€â"€ */}
+                {/* â”€â”€ 6. CONDICIONES COMERCIALES â”€â”€ */}
                 <div className="mb-4">
                   <h3
                     contentEditable
@@ -15635,7 +15643,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
                     </div>
                   )}
                 </div>
-                {/* â"€â"€ FIRMA â"€â"€ */}
+                {/* â”€â”€ FIRMA â”€â”€ */}
                 <div className="mt-8 pt-4 border-t border-gray-200 flex justify-between items-end">
                   <div className="text-left">
                     <p
@@ -15672,7 +15680,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
       </div>
     );
   };
-  // â"€â"€â"€ RENDER: TAB SOLICITUD EXÃMENES â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+  // â”€â”€â”€ RENDER: TAB SOLICITUD EXÃMENES â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const renderTabSolicitudExamenes = () => {
     // FIX: definir _billDocData/_billDocSig en scope de renderTabSolicitudExamenes
     const _examDocUser2 =
@@ -15682,7 +15690,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
     const _billDocData = _examDocUser2?.doctorData || activeDoctorData;
     const _billDocSig = _examDocUser2?.doctorData?.firma || activeSignature;
     const EXAMENES_DB = [
-      // â•â•â• LABORATORIO CLÃNICO â€" GENERALES/BÃSICOS â•â•â•
+      // â•â•â• LABORATORIO CLÃNICO â€” GENERALES/BÃSICOS â•â•â•
       "Hemograma completo (CBC) [CUPS: 902210]",
       "Cuadro hemÃ¡tico [CUPS: 902210]",
       "Hemograma con diferencial [CUPS: 902218]",
@@ -15746,7 +15754,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
       "AngiografÃ­a coronaria [CUPS: 877101]",
       "AngiotomografÃ­a coronaria (Angio-TAC) [CUPS: 879201]",
       "Cateterismo cardÃ­aco [CUPS: 377101]",
-      // â•â•â• CONTROL METABÃ"LICO / PESO â•â•â•
+      // â•â•â• CONTROL METABÃ“LICO / PESO â•â•â•
       "TSH (hormona estimulante de tiroides) [CUPS: 904902]",
       "T3 libre [CUPS: 904903]",
       "T4 libre [CUPS: 904904]",
@@ -15823,7 +15831,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
       "Electroforesis de hemoglobina [CUPS: 902216]",
       "Coombs directo [CUPS: 902008]",
       "Coombs indirecto [CUPS: 902009]",
-      // â•â•â• COAGULACIÃ"N â•â•â•
+      // â•â•â• COAGULACIÃ“N â•â•â•
       "Antitrombina III [CUPS: 902032]",
       "ProteÃ­na C funcional [CUPS: 902033]",
       "ProteÃ­na S funcional [CUPS: 902034]",
@@ -15851,7 +15859,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
       "DHEA-S [CUPS: 904211]",
       "17-OH progesterona [CUPS: 904201]",
       "Espermograma [CUPS: 907501]",
-      // â•â•â• FUNCIÃ"N RENAL â•â•â•
+      // â•â•â• FUNCIÃ“N RENAL â•â•â•
       "DepuraciÃ³n de creatinina [CUPS: 903896]",
       "ProteÃ­na en orina 24h [CUPS: 907109]",
       "Creatinuria en orina 24h [CUPS: 907110]",
@@ -16103,7 +16111,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
       );
     };
     const addExam = (nombre) => {
-      // â"€â"€ Verificar si es prueba prohibida como requisito laboral â"€â"€
+      // â”€â”€ Verificar si es prueba prohibida como requisito laboral â”€â”€
       const prohibida = _esPruebaProhibida(nombre);
       const tipoExActual = data?.tipoExamen || "";
       const esEvalOcupacional = ["INGRESO", "PERIODICO", "RETIRO"].includes(
@@ -16112,7 +16120,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
       if (prohibida && esEvalOcupacional) {
         // Mostrar advertencia - el mÃ©dico PUEDE agregarla con justificaciÃ³n clÃ­nica
         showPrompt(
-          `âš ï¸ Res. 1843/2025 Art. 10 - PRUEBA RESTRINGIDA\n\n"${prohibida.nombre}" estÃ¡ prohibida como requisito de ingreso o permanencia laboral.\n\nSi hay indicaciÃ³n CLÃNICA justificada, escriba la justificaciÃ³n aquÃ­. De lo contrario, cancele.\n\nJustificaciÃ³n clÃ­nica (requerida):`,
+          `âš ï¸ Res. 1843/2025 Art. 10 - PRUEBA RESTRINGIDA\n\n"${prohibida.nombre}" estÃ¡ prohibida como requisito de ingreso o permanencia laboral.\n\nSi hay indicaciÃ³n CLÃNICA justificada, escriba la justificaciÃ³n aquÃ­. De lo contrario, cancele.\n\nJustificaciÃ³n clÃ­nica (requerida):`,
           (justificacion) => {
             if (!justificacion || !justificacion.trim()) return; // cancelÃ³
             const nuevo = {
@@ -16138,7 +16146,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
         );
         return; // espera confirmaciÃ³n del mÃ©dico
       }
-      // â"€â"€ Examen sin restricciÃ³n - agregar normalmente â"€â"€
+      // â”€â”€ Examen sin restricciÃ³n - agregar normalmente â”€â”€
       const nuevo = {
         nombre,
         fecha: new Date().toISOString().split("T")[0],
@@ -16171,7 +16179,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
     const EXAM_PACKAGES = [
       {
         id: "ocup_ingreso",
-        nombre: "ðŸ"‹ Ingreso Ocupacional",
+        nombre: "ðŸ“‹ Ingreso Ocupacional",
         frecuencia: "Por evento",
         examenes: [
           "Hemograma completo (CBC)",
@@ -16188,7 +16196,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
       },
       {
         id: "ocup_periodico",
-        nombre: "ðŸ"" PeriÃ³dico Ocupacional",
+        nombre: "ðŸ”„ PeriÃ³dico Ocupacional",
         frecuencia: "Anual",
         examenes: [
           "Hemograma completo (CBC)",
@@ -16264,7 +16272,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
       },
       {
         id: "ruido",
-        nombre: "ðŸ"Š ExposiciÃ³n a Ruido (SVE)",
+        nombre: "ðŸ”Š ExposiciÃ³n a Ruido (SVE)",
         frecuencia: "Anual",
         examenes: [
           "AudiometrÃ­a ocupacional",
@@ -16275,7 +16283,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
       },
       {
         id: "quimico",
-        nombre: "âš-ï¸ Riesgo QuÃ­mico",
+        nombre: "âš—ï¸ Riesgo QuÃ­mico",
         frecuencia: "Anual",
         examenes: [
           "Hemograma completo (CBC)",
@@ -16287,7 +16295,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
       },
       {
         id: "visual",
-        nombre: "ðŸ'ï¸ Riesgo Visual",
+        nombre: "ðŸ‘ï¸ Riesgo Visual",
         frecuencia: "Anual",
         examenes: [
           "OptometrÃ­a ocupacional",
@@ -16321,18 +16329,18 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
         {/* Encabezado */}
         <div className="bg-white rounded-2xl shadow-sm border border-teal-100 p-5">
           <h3 className="text-base font-black text-teal-800 flex items-center gap-2 mb-1">
-            ðŸ"¬ Solicitud de ExÃ¡menes y Procedimientos
+            ðŸ”¬ Solicitud de ExÃ¡menes y Procedimientos
           </h3>
           <p className="text-xs text-gray-400">
             Busque el examen o escrÃ­balo libremente Â· Se imprimirÃ¡ con los datos
             del paciente
           </p>
         </div>
-        {/* â"€â"€ PAQUETES DE EXÃMENES â"€â"€ */}
+        {/* â”€â”€ PAQUETES DE EXÃMENES â”€â”€ */}
         <div className="bg-white rounded-2xl shadow-sm border border-indigo-100 p-5">
           <div className="flex items-center justify-between mb-3">
             <p className="text-xs font-black text-indigo-800 uppercase">
-              ðŸ"¦ Paquetes por Grupo / Frecuencia
+              ðŸ“¦ Paquetes por Grupo / Frecuencia
             </p>
             <button
               onClick={() => setShowPackages((v) => !v)}
@@ -16361,7 +16369,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
                   >
                     <p className="font-black text-gray-800">{pkg.nombre}</p>
                     <p className="text-[10px] text-gray-400 mt-0.5">
-                      ðŸ" {pkg.frecuencia} Â· {pkg.examenes.length} exÃ¡menes
+                      ðŸ” {pkg.frecuencia} Â· {pkg.examenes.length} exÃ¡menes
                     </p>
                   </button>
                 ))}
@@ -16402,7 +16410,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
                           onClick={applyPackage}
                           className="px-4 py-2 bg-indigo-600 text-white text-xs font-black rounded-lg hover:bg-indigo-700"
                         >
-                          âœ" Agregar seleccionados
+                          âœ“ Agregar seleccionados
                         </button>
                         <button
                           onClick={() => {
@@ -16490,7 +16498,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
                           onClick={() => addExam(s)}
                           className="w-full text-left px-3 py-2 text-xs hover:bg-teal-50 border-b border-gray-50 last:border-none font-medium text-gray-800"
                         >
-                          ðŸ"¬ {s}
+                          ðŸ”¬ {s}
                         </button>
                       ))}
                     {examSearch.trim() &&
@@ -16527,12 +16535,12 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
                   key={i}
                   className="flex items-center gap-2 bg-teal-50 border border-teal-200 rounded-lg px-3 py-2"
                 >
-                  <span className="text-teal-500 font-black text-sm">ðŸ"¬</span>
+                  <span className="text-teal-500 font-black text-sm">ðŸ”¬</span>
                   <span className="flex-1 text-xs font-semibold text-gray-800">
                     {ex.nombre}
                     {ex.alertaRes1843 && (
                       <span className="ml-1 text-[9px] bg-amber-100 text-amber-800 border border-amber-300 px-1 rounded font-black">
-                        âš ï¸ Justif. clÃ­nica - Res.1843 Art.10
+                        âš ï¸ Justif. clÃ­nica - Res.1843 Art.10
                       </span>
                     )}
                   </span>
@@ -16721,7 +16729,7 @@ RESPONDE ÃšNICAMENTE JSON VÃLIDO sin texto previo ni bloques markdown:
       </div>
     );
   };
-  // â"€â"€â"€ RENDER: TAB INCAPACIDAD GENERAL â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+  // â”€â”€â”€ RENDER: TAB INCAPACIDAD GENERAL â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const renderTabIncapacidadGeneral = () => {
     const diasCalc = (() => {
       if (!data.incapacidad?.desde || !data.incapacidad?.hasta)
@@ -16833,7 +16841,7 @@ th{background:#fee2e2;font-weight:900;text-align:left;color:#7f1d1d;}
     data.nombres || ""
   )}</span>
   <span class="hint">âœï¸ Haz clic en cualquier celda para editar</span>
-  <button class="btn-print" onclick="window.print()">ðŸ-¨ï¸ Imprimir certificado</button>
+  <button class="btn-print" onclick="window.print()">ðŸ–¨ï¸ Imprimir certificado</button>
   <button class="btn-close" onclick="window.close()">âœ• Cerrar</button>
 </div>
 <div contenteditable="false">${headerHtml}</div>
@@ -17079,7 +17087,7 @@ th{background:#fee2e2;font-weight:900;text-align:left;color:#7f1d1d;}
       </div>
     );
   };
-  // â"€â"€â"€ RENDER: AGENDA / SALA DE ESPERA â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+  // â”€â”€â”€ RENDER: AGENDA / SALA DE ESPERA â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   // [EXTRACTED → pages/Agenda.jsx]
   const renderAgenda = () => (
     <AgendaPage
@@ -17092,7 +17100,7 @@ th{background:#fee2e2;font-weight:900;text-align:left;color:#7f1d1d;}
       showAlert={showAlert} _sync={_sync}
     />
   );
-  // â"€â"€â"€ RENDER: REPORTE ASISTENCIA AGENDA â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+  // â”€â”€â”€ RENDER: REPORTE ASISTENCIA AGENDA â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   // [EXTRACTED → pages/AsistenciaAgendaPage.jsx]
   const renderAsistenciaAgenda = () => (
     <AsistenciaAgendaPage
@@ -17101,7 +17109,7 @@ th{background:#fee2e2;font-weight:900;text-align:left;color:#7f1d1d;}
     />
   );
 
-  // â"€â"€â"€ RENDER: PORTAFOLIO DE SERVICIOS (B-F1-03) â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+  // â”€â”€â”€ RENDER: PORTAFOLIO DE SERVICIOS (B-F1-03) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   // [EXTRACTED → pages/PortafolioPage.jsx]
   const renderPortafolio = () => (
     <PortafolioPage
@@ -17112,8 +17120,8 @@ th{background:#fee2e2;font-weight:900;text-align:left;color:#7f1d1d;}
     />
   );
 
-  // â"€â"€â"€ RENDER: COTIZACIONES FORMALES (B-F1-04) â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
-  // â"€â"€ renderCotizacionesInline: contenido de cotizaciones embebido en propuestas â"€â"€
+  // â”€â”€â”€ RENDER: COTIZACIONES FORMALES (B-F1-04) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // â”€â”€ renderCotizacionesInline: contenido de cotizaciones embebido en propuestas â”€â”€
   const renderCotizacionesInline = () => {
     const cotizSel = cotizaciones.find((c) => c.id === cotizacionSelId);
     const handleNewItem = () =>
@@ -17289,13 +17297,13 @@ th{background:#fee2e2;font-weight:900;text-align:left;color:#7f1d1d;}
                             }
                             className="px-2 py-1 bg-indigo-100 text-indigo-700 text-[10px] font-black rounded"
                           >
-                            ðŸ' Ver
+                            ðŸ‘ Ver
                           </button>
                           <button
                             onClick={() => deleteCotiz(cot.id)}
                             className="px-2 py-1 bg-red-100 text-red-700 text-[10px] font-black rounded"
                           >
-                            ðŸ-'
+                            ðŸ—‘
                           </button>
                         </td>
                       </tr>
@@ -17307,7 +17315,7 @@ th{background:#fee2e2;font-weight:900;text-align:left;color:#7f1d1d;}
             {cotizSel && (
               <div className="mt-4 bg-indigo-50 border border-indigo-200 rounded-xl p-4 text-xs">
                 <p className="font-black text-indigo-800 mb-2">
-                  ðŸ"‹ CotizaciÃ³n #{cotizSel.numero} - {cotizSel.clienteNombre}
+                  ðŸ“‹ CotizaciÃ³n #{cotizSel.numero} - {cotizSel.clienteNombre}
                 </p>
                 <table className="w-full mb-2">
                   <thead className="bg-indigo-700 text-white">
@@ -17488,7 +17496,7 @@ th{background:#fee2e2;font-weight:900;text-align:left;color:#7f1d1d;}
                       onClick={() => handleRemoveItem(idx)}
                       className="text-red-500 font-black px-1"
                     >
-                      Ã-
+                      Ã—
                     </button>
                   </div>
                 </div>
@@ -17520,7 +17528,7 @@ th{background:#fee2e2;font-weight:900;text-align:left;color:#7f1d1d;}
                 onClick={() => saveCotiz("Pendiente")}
                 className="flex-1 py-2 bg-indigo-700 hover:bg-indigo-800 text-white text-sm font-black rounded-lg"
               >
-                ðŸ'¾ Guardar cotizaciÃ³n
+                ðŸ’¾ Guardar cotizaciÃ³n
               </button>
               <button
                 onClick={() => saveCotiz("Aprobada")}
@@ -17619,7 +17627,7 @@ th{background:#fee2e2;font-weight:900;text-align:left;color:#7f1d1d;}
 <div class="header">
   ${_cotizLeftHtml}
   <div class="cotiz-num">
-    <h2>COTIZACIÃ"N</h2>
+    <h2>COTIZACIÃ“N</h2>
     <p>No. ${cot.numero}</p>
     <p>Fecha: ${cot.fecha}</p>
     <p>VÃ¡lida por: ${cot.validezDias} dÃ­as</p>
@@ -17673,7 +17681,7 @@ ${
       }<br/>Lic: ${doc?.licencia || ""}</div>
 </div>
 <div class="no-print">
-  <button onclick="window.print()" style="background:#1a4f8a;color:#fff;border:none;padding:8px 20px;border-radius:6px;font-weight:900;cursor:pointer">ðŸ-¨ï¸ Imprimir</button>
+  <button onclick="window.print()" style="background:#1a4f8a;color:#fff;border:none;padding:8px 20px;border-radius:6px;font-weight:900;cursor:pointer">ðŸ–¨ï¸ Imprimir</button>
   <button onclick="window.close()" style="background:#666;color:#fff;border:none;padding:8px 20px;border-radius:6px;font-weight:900;cursor:pointer">âœ• Cerrar</button>
 </div>
 </body></html>`;
@@ -17703,7 +17711,7 @@ ${
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-lg font-black text-gray-800">
-                  ðŸ"" Cotizaciones Formales
+                  ðŸ“„ Cotizaciones Formales
                 </h2>
                 <div className="flex gap-2">
                   <button
@@ -17820,13 +17828,13 @@ ${
                               onClick={() => openPrintCotiz(cot)}
                               className="px-2 py-1 bg-blue-100 text-blue-700 rounded font-bold hover:bg-blue-200 text-[10px]"
                             >
-                              ðŸ-¨ï¸
+                              ðŸ–¨ï¸
                             </button>
                             <button
                               onClick={() => deleteCotiz(cot.id)}
                               className="px-2 py-1 bg-red-100 text-red-700 rounded font-bold hover:bg-red-200 text-[10px]"
                             >
-                              ðŸ-'ï¸
+                              ðŸ—‘ï¸
                             </button>
                           </td>
                         </tr>
@@ -17837,7 +17845,7 @@ ${
               </div>
             </div>
           )}
-          {/* VISTA NUEVA COTIZACIÃ"N */}
+          {/* VISTA NUEVA COTIZACIÃ“N */}
           {cotizacionView === "nueva" && (
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
               <div className="flex justify-between items-center mb-4">
@@ -17854,7 +17862,7 @@ ${
               {/* Datos cliente */}
               <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-4">
                 <p className="text-xs font-black text-blue-800 uppercase mb-3">
-                  ðŸ'¤ Datos del Cliente
+                  ðŸ‘¤ Datos del Cliente
                 </p>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                   {[
@@ -17935,7 +17943,7 @@ ${
               <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 mb-4">
                 <div className="flex justify-between items-center mb-3">
                   <p className="text-xs font-black text-emerald-800 uppercase">
-                    ðŸ"‹ Ãtems / Servicios
+                    ðŸ“‹ Ãtems / Servicios
                   </p>
                   <button
                     onClick={handleNewItem}
@@ -18054,7 +18062,7 @@ ${
                   onClick={() => saveCotiz("Pendiente")}
                   className="flex-1 py-2 bg-blue-700 hover:bg-blue-800 text-white text-sm font-black rounded-lg"
                 >
-                  ðŸ'¾ Guardar cotizaciÃ³n
+                  ðŸ’¾ Guardar cotizaciÃ³n
                 </button>
                 <button
                   onClick={() => saveCotiz("Aprobada")}
@@ -18070,7 +18078,7 @@ ${
     );
   };
 
-  // â"€â"€â"€ RENDER: MÃ"DULO CONTABILIDAD (PASO 5) â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+  // â”€â”€â”€ RENDER: MÃ“DULO CONTABILIDAD (PASO 5) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const renderContabilidad = () => {
     try {
       if (!_isAdminOrEmpresa(currentUser?.role)) {
@@ -18188,7 +18196,7 @@ ${
                 </button>
                 <div>
                   <h1 className="text-2xl font-black text-gray-900">
-                    ðŸ"Š Contabilidad
+                    ðŸ“Š Contabilidad
                   </h1>
                   <p className="text-sm text-gray-500">
                     GestiÃ³n financiera Â· Marco colombiano
@@ -18215,12 +18223,12 @@ ${
             {/* Tabs */}
             <div className="flex gap-1 mb-6 bg-white rounded-xl p-1 shadow-sm border border-gray-100">
               {[
-                { k: "resumen", l: "ðŸ"ˆ P&L" },
-                { k: "cartera", l: "ðŸ'¼ Cartera" },
+                { k: "resumen", l: "ðŸ“ˆ P&L" },
+                { k: "cartera", l: "ðŸ’¼ Cartera" },
                 { k: "por_empresa", l: "ðŸ­ Por Empresa" },
-                { k: "kpis", l: "ðŸ"Š KPIs" },
+                { k: "kpis", l: "ðŸ“Š KPIs" },
                 { k: "fiscal", l: "ðŸ§¾ Fiscal" },
-                { k: "exportar", l: "ðŸ"¤ Exportar" },
+                { k: "exportar", l: "ðŸ“¤ Exportar" },
               ].map((t) => (
                 <button
                   key={t.k}
@@ -18236,13 +18244,13 @@ ${
               ))}
             </div>
 
-            {/* â"€â"€ P&L â"€â"€ */}
+            {/* â”€â”€ P&L â”€â”€ */}
             {contabTab === "resumen" && (
               <div className="space-y-4">
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4">
                     <p className="text-xs font-black text-emerald-700 uppercase">
-                      â†' Ingresos
+                      â†‘ Ingresos
                     </p>
                     <p className="text-xl font-black text-emerald-900 mt-1">
                       $ {Number(ingresosTotal || 0).toLocaleString("es-CO")}
@@ -18250,7 +18258,7 @@ ${
                   </div>
                   <div className="bg-red-50 border border-red-200 rounded-xl p-4">
                     <p className="text-xs font-black text-red-700 uppercase">
-                      â†" Egresos
+                      â†“ Egresos
                     </p>
                     <p className="text-xl font-black text-red-900 mt-1">
                       $ {Number(egresosTotal || 0).toLocaleString("es-CO")}
@@ -18317,12 +18325,12 @@ ${
               </div>
             )}
 
-            {/* â"€â"€ CARTERA â"€â"€ */}
+            {/* â”€â”€ CARTERA â”€â”€ */}
             {contabTab === "cartera" && (
               <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                 <div className="p-4 border-b border-gray-100 flex items-center justify-between">
                   <h3 className="font-black text-gray-800">
-                    ðŸ'¼ Cartera â€" Ciclo de Cobro
+                    ðŸ’¼ Cartera â€” Ciclo de Cobro
                   </h3>
                   <div className="flex gap-4 text-xs">
                     <span className="text-yellow-700 font-black">
@@ -18372,13 +18380,13 @@ ${
                                 {m.fecha}
                               </td>
                               <td className="px-3 py-2 font-bold text-gray-800">
-                                {m.pacienteNombre || "â€""}
+                                {m.pacienteNombre || "â€”"}
                               </td>
                               <td className="px-3 py-2 text-gray-600">
                                 {m.empresaClienteNombre || "Particular"}
                               </td>
                               <td className="px-3 py-2 text-gray-500 capitalize">
-                                {m.tipoConsulta || "â€""}
+                                {m.tipoConsulta || "â€”"}
                               </td>
                               <td className="px-3 py-2 font-bold">
                                 $ {Number(m.monto || 0).toLocaleString("es-CO")}
@@ -18395,7 +18403,7 @@ ${
                                 </span>
                               </td>
                               <td className="px-3 py-2 text-gray-400 font-mono">
-                                {m.codigoVerificacion || "â€""}
+                                {m.codigoVerificacion || "â€”"}
                               </td>
                             </tr>
                           );
@@ -18411,7 +18419,7 @@ ${
               </div>
             )}
 
-            {/* â"€â"€ POR EMPRESA â"€â"€ */}
+            {/* â”€â”€ POR EMPRESA â”€â”€ */}
             {contabTab === "por_empresa" && (
               <div className="space-y-3">
                 <div className="grid grid-cols-3 gap-3 mb-4">
@@ -18484,7 +18492,7 @@ ${
               </div>
             )}
 
-            {/* â"€â"€ KPIs â"€â"€ */}
+            {/* â”€â”€ KPIs â”€â”€ */}
             {contabTab === "kpis" && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="bg-blue-50 border border-blue-200 rounded-xl p-5">
@@ -18569,7 +18577,7 @@ ${
                 </div>
                 <div className="md:col-span-2 bg-white rounded-xl border border-gray-100 p-4">
                   <h4 className="font-black text-gray-800 mb-3">
-                    ðŸ'¨â€âš•ï¸ Ingresos por MÃ©dico
+                    ðŸ‘¨â€âš•ï¸ Ingresos por MÃ©dico
                   </h4>
                   {Object.entries(ingXMedico)
                     .sort((a, b) => b[1] - a[1])
@@ -18588,12 +18596,12 @@ ${
               </div>
             )}
 
-            {/* â"€â"€ FISCAL â"€â"€ */}
+            {/* â”€â”€ FISCAL â”€â”€ */}
             {contabTab === "fiscal" && (
               <div className="space-y-4">
                 <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
                   <p className="text-sm font-black text-amber-800 mb-1">
-                    âš ï¸ Nota legal
+                    âš ï¸ Nota legal
                   </p>
                   <p className="text-xs text-amber-700">
                     Estos cÃ¡lculos son{" "}
@@ -18605,7 +18613,7 @@ ${
                 </div>
                 <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-4">
                   <h3 className="font-black text-gray-800">
-                    Estimados Fiscales â€"{" "}
+                    Estimados Fiscales â€”{" "}
                     {contabPeriodo === "mes" ? "Este Mes" : "Este AÃ±o"}
                   </h3>
                   <div className="grid grid-cols-2 gap-4">
@@ -18632,7 +18640,7 @@ ${
                         $ {ingresosTotal.toLocaleString("es-CO")}
                       </p>
                       <p className="text-xs text-gray-500 mt-1">
-                        IVA: Excluido (Art. 476 E.T.) â€" Servicios mÃ©dicos
+                        IVA: Excluido (Art. 476 E.T.) â€” Servicios mÃ©dicos
                       </p>
                     </div>
                     <div className="bg-blue-50 rounded-xl p-4">
@@ -18643,7 +18651,7 @@ ${
                         $ {retencionEstimada.toLocaleString("es-CO")}
                       </p>
                       <p className="text-xs text-blue-600 mt-1">
-                        {retencionPct}% â€" retiene{" "}
+                        {retencionPct}% â€” retiene{" "}
                         {esIPS
                           ? "empresa pagadora (servicios IPS)"
                           : "empresa pagadora (honorarios mÃ©dico)"}
@@ -18681,7 +18689,7 @@ ${
                     {esIPS && (
                       <p>
                         â€¢ <strong>FEV + RIPS:</strong> Obligatorio para IPS
-                        (Res. 2275/2023) â€" facturaciÃ³n electrÃ³nica con RIPS JSON
+                        (Res. 2275/2023) â€” facturaciÃ³n electrÃ³nica con RIPS JSON
                       </p>
                     )}
                     <p>
@@ -18693,7 +18701,7 @@ ${
               </div>
             )}
 
-            {/* â"€â"€ EXPORTAR â"€â"€ */}
+            {/* â”€â”€ EXPORTAR â”€â”€ */}
             {contabTab === "exportar" && (
               <div className="space-y-3">
                 {[
@@ -18849,7 +18857,7 @@ ${
     }
   };
 
-  // â"€â"€â"€ RENDER: PERFIL IPS / MI EMPRESA (PASO 1) â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+  // â”€â”€â”€ RENDER: PERFIL IPS / MI EMPRESA (PASO 1) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   // [EXTRACTED → pages/PerfilIPSPage.jsx]
   const renderPerfilIPS = () => (
     <PerfilIPSPage
@@ -18858,7 +18866,7 @@ ${
     />
   );
 
-  // â"€â"€â"€ RENDER: CAJA DIARIA + COMPROBANTES + CUENTAS COBRAR (B-F2-01/02/03) â"€â"€â"€â"€
+  // â”€â”€â”€ RENDER: CAJA DIARIA + COMPROBANTES + CUENTAS COBRAR (B-F2-01/02/03) â”€â”€â”€â”€
   // [EXTRACTED → pages/Caja.jsx]
   const renderCaja = () => (
     <CajaPage
@@ -18879,7 +18887,7 @@ ${
   );
 
   // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-  // FASE 2 â€" PANEL GLOBAL SUPER ADMIN
+  // FASE 2 â€” PANEL GLOBAL SUPER ADMIN
   // GestiÃ³n de todas las organizaciones. Solo visible para rol super_admin.
   // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
   const renderSuperAdmin = () => {
@@ -18887,7 +18895,7 @@ ${
       return (
         <div className="min-h-screen flex items-center justify-center bg-gray-50">
           <div className="bg-white rounded-2xl p-8 shadow text-center">
-            <p className="text-4xl mb-3">ðŸ"'</p>
+            <p className="text-4xl mb-3">ðŸ”’</p>
             <p className="font-black text-gray-700">
               Acceso restringido a Super Admin
             </p>
@@ -18905,7 +18913,7 @@ ${
     const crearOrganizacion = async () => {
       if (!newOrgForm.orgName.trim() || !newOrgForm.adminUser.trim()) {
         showAlert(
-          "âš ï¸ Nombre de la organizaciÃ³n y usuario administrador son obligatorios."
+          "âš ï¸ Nombre de la organizaciÃ³n y usuario administrador son obligatorios."
         );
         return;
       }
@@ -18960,7 +18968,7 @@ ${
           `Org ID: ${orgId}\n` +
           `Usuario admin: ${newAdmin.user}\n` +
           `ContraseÃ±a temporal: ${adminPass}\n\n` +
-          `âš ï¸ Anote la contraseÃ±a â€" no se mostrarÃ¡ de nuevo.`
+          `âš ï¸ Anote la contraseÃ±a â€” no se mostrarÃ¡ de nuevo.`
       );
     };
 
@@ -18981,7 +18989,7 @@ ${
           <div className="flex justify-between items-center mb-6">
             <div>
               <h2 className="text-2xl font-black text-purple-900 flex items-center gap-2">
-                â­ Panel Global â€" Super Admin
+                â­ Panel Global â€” Super Admin
               </h2>
               <p className="text-sm text-purple-600 mt-1">
                 {orgsList.length} organizaciÃ³n
@@ -19004,7 +19012,7 @@ ${
               { k: "orgs", l: "ðŸ¢ Organizaciones" },
               { k: "nueva", l: "âž• Nueva Org" },
               { k: "ips", l: "ðŸ¥ IPS / Empresas" },
-              { k: "usuarios", l: "ðŸ'¥ Todos los usuarios" },
+              { k: "usuarios", l: "ðŸ‘¥ Todos los usuarios" },
             ].map(({ k, l }) => (
               <button
                 key={k}
@@ -19141,7 +19149,7 @@ ${
                                             key={uid}
                                             className="text-[10px] bg-indigo-50 text-indigo-600 px-1.5 py-0.5 rounded-full"
                                           >
-                                            ðŸ'¨â€âš•ï¸ {m?.name || uid}
+                                            ðŸ‘¨â€âš•ï¸ {m?.name || uid}
                                           </span>
                                         );
                                       })}
@@ -19170,12 +19178,12 @@ ${
                         onClick={() => {
                           logAccess("SuperAdmin-AccesoOrg", org.orgId, "admin");
                           showAlert(
-                            `ðŸ" Accediendo a datos de "${org.orgName}". AcciÃ³n registrada en auditorÃ­a.`
+                            `ðŸ” Accediendo a datos de "${org.orgName}". AcciÃ³n registrada en auditorÃ­a.`
                           );
                         }}
                         className="mt-3 w-full text-xs bg-purple-50 text-purple-700 py-1.5 rounded-lg font-bold hover:bg-purple-100"
                       >
-                        ðŸ' Ver datos (auditado)
+                        ðŸ‘ Ver datos (auditado)
                       </button>
                     )}
                   </div>
@@ -19252,7 +19260,7 @@ ${
                   >
                     {Object.entries(PLAN_CONFIG).map(([k, v]) => (
                       <option key={k} value={k}>
-                        {v.label} â€" {v.priceLabel}
+                        {v.label} â€” {v.priceLabel}
                       </option>
                     ))}
                   </select>
@@ -19267,7 +19275,7 @@ ${
             </div>
           )}
 
-          {/* TAB: IPS / Empresas â€" crear credenciales de acceso para empresas */}
+          {/* TAB: IPS / Empresas â€” crear credenciales de acceso para empresas */}
           {superAdminTab === "ips" && (
             <div className="space-y-4">
               <div className="bg-teal-50 border border-teal-200 rounded-xl p-4 mb-4">
@@ -19316,11 +19324,11 @@ ${
                           </p>
                           <div className="flex gap-2 mt-1 flex-wrap">
                             <span className="text-[10px] bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded font-bold">
-                              ðŸ'¨â€âš•ï¸ {medicosEmp.length} mÃ©dico
+                              ðŸ‘¨â€âš•ï¸ {medicosEmp.length} mÃ©dico
                               {medicosEmp.length !== 1 ? "s" : ""}
                             </span>
                             <span className="text-[10px] bg-purple-50 text-purple-600 px-1.5 py-0.5 rounded font-bold">
-                              ðŸ-'ï¸ {secresEmp.length} secretaria
+                              ðŸ—‚ï¸ {secresEmp.length} secretaria
                               {secresEmp.length !== 1 ? "s" : ""}
                             </span>
                           </div>
@@ -19328,7 +19336,7 @@ ${
                       ) : (
                         <div className="bg-amber-50 border border-amber-200 rounded-lg p-2 mb-3">
                           <p className="text-xs text-amber-600 font-bold">
-                            âš ï¸ Sin credenciales IPS
+                            âš ï¸ Sin credenciales IPS
                           </p>
                         </div>
                       )}
@@ -19380,13 +19388,13 @@ ${
                                   !ipsCredForm.pass.trim()
                                 ) {
                                   showAlert(
-                                    "âš ï¸ Complete nombre, usuario y contraseÃ±a."
+                                    "âš ï¸ Complete nombre, usuario y contraseÃ±a."
                                   );
                                   return;
                                 }
                                 if (ipsCredForm.pass.length < 8) {
                                   showAlert(
-                                    "âš ï¸ La contraseÃ±a debe tener mÃ­nimo 8 caracteres."
+                                    "âš ï¸ La contraseÃ±a debe tener mÃ­nimo 8 caracteres."
                                   );
                                   return;
                                 }
@@ -19396,7 +19404,7 @@ ${
                                   )
                                 ) {
                                   showAlert(
-                                    "âš ï¸ Ese nombre de usuario ya existe en el sistema."
+                                    "âš ï¸ Ese nombre de usuario ya existe en el sistema."
                                   );
                                   return;
                                 }
@@ -19450,7 +19458,7 @@ ${
                                   `âœ… Credenciales IPS creadas para "${emp.nombre}".\n\n` +
                                     `Usuario: ${ipsCredForm.user.trim()}\n` +
                                     `ContraseÃ±a: ${ipsCredForm.pass}\n\n` +
-                                    `âš ï¸ Anote la contraseÃ±a â€" se pedirÃ¡ cambiarla en el primer login.`
+                                    `âš ï¸ Anote la contraseÃ±a â€” se pedirÃ¡ cambiarla en el primer login.`
                                 );
                               }}
                               className="flex-1 py-2 bg-teal-600 text-white text-xs font-black rounded-lg hover:bg-teal-700"
@@ -19491,7 +19499,7 @@ ${
                           }`}
                         >
                           {adminUser
-                            ? "ðŸ"" Crear nuevo admin"
+                            ? "ðŸ”„ Crear nuevo admin"
                             : "ðŸ¥ Crear Credenciales IPS"}
                         </button>
                       )}
@@ -19566,7 +19574,7 @@ ${
                           {uOrg?.orgName || u.orgId || ORG_DEFAULT_ID}
                         </td>
                         <td className="p-3 text-xs text-gray-600">
-                          {PLAN_CONFIG[u.license]?.label || u.license || "â€""}
+                          {PLAN_CONFIG[u.license]?.label || u.license || "â€”"}
                         </td>
                         <td className="p-3">
                           <span
@@ -19591,7 +19599,7 @@ ${
     );
   };
 
-  // â"€â"€â"€ RENDER: PORTAL EMPRESA-CLIENTE (B-F2-06) â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+  // â”€â”€â”€ RENDER: PORTAL EMPRESA-CLIENTE (B-F2-06) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const renderPortalEmpresa = () => {
     const codigoEmpresa = portalEmpresaCodigo;
     const setCodigoEmpresa = setPortalEmpresaCodigo;
@@ -19678,7 +19686,7 @@ ${
                 }}
                 className="px-3 py-1.5 bg-white/20 text-white text-xs font-black rounded-lg hover:bg-white/30"
               >
-                ðŸ"" Otra empresa
+                ðŸ”„ Otra empresa
               </button>
             )}
             <button
@@ -19694,7 +19702,7 @@ ${
           {!empresaEncontrada ? (
             /* LOGIN */
             <div className="bg-white rounded-2xl shadow-2xl p-8 mt-8 max-w-md mx-auto text-center">
-              <p className="text-4xl mb-3">ðŸ"</p>
+              <p className="text-4xl mb-3">ðŸ”</p>
               <h2 className="font-black text-gray-800 text-xl mb-1">
                 Acceso Portal Empresa
               </h2>
@@ -19714,16 +19722,16 @@ ${
                 disabled={buscando}
                 className="w-full py-3 bg-blue-700 hover:bg-blue-800 text-white font-black rounded-xl text-sm disabled:opacity-60"
               >
-                {buscando ? "â³ Buscando..." : "ðŸ" Acceder al portal"}
+                {buscando ? "â³ Buscando..." : "ðŸ” Acceder al portal"}
               </button>
               <p className="text-[10px] text-gray-400 mt-4">
-                âš ï¸ Los diagnÃ³sticos clÃ­nicos son confidenciales y NO estÃ¡n
+                âš ï¸ Los diagnÃ³sticos clÃ­nicos son confidenciales y NO estÃ¡n
                 disponibles en este portal (Art. 16 Res. 1843/2025)
               </p>
               {/* FASE 2: Login Admin de Empresa */}
               <div className="mt-6 pt-5 border-t border-gray-200">
                 <p className="text-xs text-gray-400 mb-3 font-bold">
-                  â"â" O ingresar como administrador de empresa â"â"
+                  â”â” O ingresar como administrador de empresa â”â”
                 </p>
                 <input
                   value={portalAdminLoginUser}
@@ -19800,7 +19808,7 @@ ${
                   }}
                   className="w-full py-2.5 bg-purple-700 hover:bg-purple-800 text-white font-black rounded-xl text-sm"
                 >
-                  ðŸ" Entrar como Administrador
+                  ðŸ” Entrar como Administrador
                 </button>
               </div>
             </div>
@@ -19814,7 +19822,7 @@ ${
                     {empresaEncontrada.nombre}
                   </p>
                   <p className="text-purple-200 text-xs">
-                    ðŸ" Panel de AdministraciÃ³n Â· NIT: {empresaEncontrada.nit}
+                    ðŸ” Panel de AdministraciÃ³n Â· NIT: {empresaEncontrada.nit}
                   </p>
                 </div>
                 <button
@@ -19833,10 +19841,10 @@ ${
               {/* Tabs admin */}
               <div className="flex gap-1 bg-white rounded-xl p-1 shadow-sm border border-purple-100 overflow-x-auto">
                 {[
-                  { k: "medicos", l: "ðŸ'¨â€âš•ï¸ Mis MÃ©dicos" },
-                  { k: "secretarias", l: "ðŸ-'ï¸ Secretarias" },
-                  { k: "trabajadores", l: "ðŸ"‹ Trabajadores" },
-                  { k: "cuentas", l: "ðŸ"" Cuentas" },
+                  { k: "medicos", l: "ðŸ‘¨â€âš•ï¸ Mis MÃ©dicos" },
+                  { k: "secretarias", l: "ðŸ—‚ï¸ Secretarias" },
+                  { k: "trabajadores", l: "ðŸ“‹ Trabajadores" },
+                  { k: "cuentas", l: "ðŸ“„ Cuentas" },
                   { k: "sedes", l: "ðŸ¢ Sedes" },
                 ].map((t) => (
                   <button
@@ -19857,7 +19865,7 @@ ${
                 <div className="bg-white rounded-2xl p-4 shadow-sm">
                   <div className="flex justify-between items-center mb-3">
                     <p className="font-black text-gray-800">
-                      ðŸ'¨â€âš•ï¸ MÃ©dicos de {empresaEncontrada.nombre}
+                      ðŸ‘¨â€âš•ï¸ MÃ©dicos de {empresaEncontrada.nombre}
                     </p>
                   </div>
                   {/* Lista mÃ©dicos existentes */}
@@ -20037,11 +20045,11 @@ ${
                   </div>
                 </div>
               )}
-              {/* Tab: Secretarias â€" misma lÃ³gica que mÃ©dicos pero filtro por rol */}
+              {/* Tab: Secretarias â€” misma lÃ³gica que mÃ©dicos pero filtro por rol */}
               {portalAdminTab === "secretarias" && (
                 <div className="bg-white rounded-2xl p-4 shadow-sm">
                   <p className="font-black text-gray-800 mb-3">
-                    ðŸ-'ï¸ Secretarias de {empresaEncontrada.nombre}
+                    ðŸ—‚ï¸ Secretarias de {empresaEncontrada.nombre}
                   </p>
                   <div className="space-y-2 mb-4">
                     {usersList
@@ -20181,7 +20189,7 @@ ${
               {portalAdminTab === "trabajadores" && (
                 <div className="bg-white rounded-2xl p-4 shadow-sm overflow-x-auto">
                   <p className="font-black text-gray-800 mb-3">
-                    ðŸ"‹ Trabajadores de {empresaEncontrada.nombre} (
+                    ðŸ“‹ Trabajadores de {empresaEncontrada.nombre} (
                     {pacientesEmpresa.length} evaluados)
                   </p>
                   <table className="w-full text-xs">
@@ -20245,7 +20253,7 @@ ${
               {portalAdminTab === "cuentas" && (
                 <div className="bg-white rounded-2xl p-4 shadow-sm">
                   <p className="font-black text-gray-800 mb-3">
-                    ðŸ"" Cuentas de {empresaEncontrada.nombre}
+                    ðŸ“„ Cuentas de {empresaEncontrada.nombre}
                   </p>
                   <div className="space-y-2">
                     {cuentasEmpresa.length === 0 && (
@@ -20384,9 +20392,9 @@ ${
               {/* Tabs */}
               <div className="flex gap-1 bg-white rounded-xl p-1 shadow-sm">
                 {[
-                  { k: "trabajadores", l: "ðŸ'¥ Trabajadores" },
-                  { k: "cuentas", l: "ðŸ'³ Cuentas" },
-                  { k: "noAptos", l: "â›" No Aptos / Restricciones" },
+                  { k: "trabajadores", l: "ðŸ‘¥ Trabajadores" },
+                  { k: "cuentas", l: "ðŸ’³ Cuentas" },
+                  { k: "noAptos", l: "â›” No Aptos / Restricciones" },
                 ].map((t) => (
                   <button
                     key={t.k}
@@ -20418,7 +20426,7 @@ ${
                       <input
                         value={portalEmpresaFiltroDoc}
                         onChange={(e) => setPortalEmpresaFiltroDoc(e.target.value)}
-                        placeholder="ðŸ" Filtrar por cÃ©dula o nombre del trabajador..."
+                        placeholder="ðŸ” Filtrar por cÃ©dula o nombre del trabajador..."
                         className="flex-1 px-3 py-1.5 border border-blue-200 rounded-lg text-xs focus:border-blue-500 focus:outline-none"
                         maxLength={30}
                       />
@@ -20676,7 +20684,7 @@ ${
     );
   };
 
-  // â"€â"€â"€ RENDER: EVOLUCIONES CLÃNICAS MODAL (B-F2-05 EXPANDIDO) â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+  // â”€â”€â”€ RENDER: EVOLUCIONES CLÃNICAS MODAL (B-F2-05 EXPANDIDO) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const renderEvolucionModal = () => {
     if (!showEvolucionModal) return null;
     const evoluciones = data.evoluciones || [];
@@ -20766,7 +20774,7 @@ ${
               <p className="text-purple-200 text-xs mt-0.5">
                 {data.nombres} Â· HC:{" "}
                 <strong className="text-white">
-                  {data.codigoVerificacion || "â€""}
+                  {data.codigoVerificacion || "â€”"}
                 </strong>
                 {evolucionForm.codigoEvolucion && (
                   <>
@@ -20791,7 +20799,7 @@ ${
           {evoluciones.length > 0 && (
             <div className="px-4 pt-3 pb-0 flex-shrink-0 max-h-36 overflow-y-auto border-b border-gray-100">
               <p className="text-[10px] font-black text-gray-500 uppercase mb-1.5">
-                ðŸ"œ Historial ({evoluciones.length} evoluciones previas)
+                ðŸ“œ Historial ({evoluciones.length} evoluciones previas)
               </p>
               <div className="space-y-1.5">
                 {evoluciones
@@ -20804,7 +20812,7 @@ ${
                     >
                       <div className="flex justify-between items-center mb-0.5">
                         <span className="font-black text-purple-800">
-                          {ev.fecha} â€" {ev.medico || "Dr."}
+                          {ev.fecha} â€” {ev.medico || "Dr."}
                         </span>
                         <div className="flex gap-1.5 items-center">
                           {ev.codigoEvolucion && (
@@ -20820,11 +20828,11 @@ ${
                         </div>
                       </div>
                       <p className="text-gray-700 text-[10px] leading-snug line-clamp-2">
-                        {ev.texto || ev.motivoConsulta || "â€""}
+                        {ev.texto || ev.motivoConsulta || "â€”"}
                       </p>
                       {ev.formulaMedicamentos?.length > 0 && (
                         <p className="text-[9px] text-blue-600 mt-0.5">
-                          ðŸ'Š {ev.formulaMedicamentos.length} medicamento(s)
+                          ðŸ’Š {ev.formulaMedicamentos.length} medicamento(s)
                         </p>
                       )}
                       {ev.incapacidad?.aplica && (
@@ -20841,13 +20849,13 @@ ${
           {/* Tabs navegaciÃ³n */}
           <div className="flex gap-1 px-4 pt-3 pb-1 flex-shrink-0 flex-wrap">
             {[
-              { id: "nota", label: "ðŸ" Nota ClÃ­nica" },
+              { id: "nota", label: "ðŸ“ Nota ClÃ­nica" },
               { id: "dx", label: "ðŸ©º DiagnÃ³sticos" },
-              { id: "plan", label: "ðŸ"‹ Plan" },
-              { id: "formula", label: "ðŸ'Š FÃ³rmula" },
-              { id: "examenes_ev", label: "ðŸ"¬ ExÃ¡menes" },
+              { id: "plan", label: "ðŸ“‹ Plan" },
+              { id: "formula", label: "ðŸ’Š FÃ³rmula" },
+              { id: "examenes_ev", label: "ðŸ”¬ ExÃ¡menes" },
               { id: "incapacidad", label: "ðŸ¥ Incapacidad" },
-                          { id: "concepto", label: "ðŸ"" Concepto MÃ©dico" },
+                          { id: "concepto", label: "ðŸ“„ Concepto MÃ©dico" },
             ].map((t) => (
               <button
                 key={t.id}
@@ -20897,7 +20905,7 @@ ${
                       }
                       className="w-full p-2 border border-purple-200 rounded-lg text-xs"
                     >
-                      <option value="">â€" Sin cambio â€"</option>
+                      <option value="">â€” Sin cambio â€”</option>
                       {[
                         "APTO",
                         "APTO CON RESTRICCIONES",
@@ -21241,7 +21249,7 @@ ${
                         <option>SubcutÃ¡nea (SC)</option>
                         <option>TÃ³pica</option>
                         <option>OftÃ¡lmica</option>
-                        <option>Ã"tica</option>
+                        <option>Ã“tica</option>
                         <option>Inhalatoria</option>
                         <option>Rectal</option>
                         <option>TransdÃ©rmica</option>
@@ -21340,7 +21348,7 @@ ${
                 )}
                 {(evolucionForm.examenesSolicitados || []).map((ex, i) => (
                   <div key={i} className="flex items-center gap-2 bg-teal-50 border border-teal-200 rounded-lg px-3 py-2">
-                    <span className="text-teal-500 font-black text-sm">ðŸ"¬</span>
+                    <span className="text-teal-500 font-black text-sm">ðŸ”¬</span>
                     <span className="flex-1 text-xs font-semibold text-gray-800">{ex.nombre}</span>
                     <label className="flex items-center gap-1 text-[10px] text-red-600 font-bold cursor-pointer">
                       <input
@@ -21502,7 +21510,7 @@ ${
           {evTab === "concepto" && (
             <div className="space-y-3">
               <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3">
-                <h4 className="text-xs font-bold text-emerald-800 mb-2">ðŸ"" Concepto MÃ©dico Ocupacional</h4>
+                <h4 className="text-xs font-bold text-emerald-800 mb-2">ðŸ“„ Concepto MÃ©dico Ocupacional</h4>
                 <div className="space-y-2">
                   <div>
                     <label className="text-[10px] font-black text-gray-600 block mb-1">Concepto de Aptitud</label>
@@ -21573,11 +21581,11 @@ ${
                     const html = _generarCertificadoHTMLNormalizado(certData, activeDoctorData || {}, activeSignature, companies.find((c) => c.id === currentUser?.empresaId) || {});
                     const win = window.open("", "_blank");
                     if (win) { win.document.write(html); win.document.close(); win.print(); }
-                    showAlert(`âœ… Certificado de evoluciÃ³n generado.\nNuevo cÃ³digo: ${newCode}\nVinculado a HC original: ${data.codigoVerificacion || "â€""}`);
+                    showAlert(`âœ… Certificado de evoluciÃ³n generado.\nNuevo cÃ³digo: ${newCode}\nVinculado a HC original: ${data.codigoVerificacion || "â€”"}`);
                   }}
                   className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded-lg text-xs flex items-center justify-center gap-2"
                 >
-                  ðŸ"" Expedir Nuevo Certificado (con nuevo cÃ³digo)
+                  ðŸ“„ Expedir Nuevo Certificado (con nuevo cÃ³digo)
                 </button>
               )}
             </div>
@@ -21616,7 +21624,7 @@ ${
     );
   };
 
-  // â"€â"€â"€ RENDER: MENSAJERÃA INTERNA â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+  // â”€â”€â”€ RENDER: MENSAJERÃA INTERNA â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   // Called inline as overlay + floating panel - not a full-page view
   const renderMensajesOverlay = () => {
     if (!showMensajePanel) return null;
@@ -21772,7 +21780,7 @@ ${
                     }
                     className="text-[9px] px-2 py-1 rounded-full font-bold border bg-emerald-50 text-emerald-700 border-emerald-300 hover:bg-emerald-100"
                   >
-                    âœ" Todos
+                    âœ“ Todos
                   </button>
                 </div>
               </div>
@@ -21805,7 +21813,7 @@ ${
           <div className="flex-1 overflow-y-auto p-3 space-y-3">
             {misMensajes.length === 0 && (
               <div className="text-center py-10 text-gray-400">
-                <p className="text-3xl mb-2">ðŸ'¬</p>
+                <p className="text-3xl mb-2">ðŸ’¬</p>
                 <p className="text-xs font-bold">Sin mensajes</p>
               </div>
             )}
@@ -21827,14 +21835,14 @@ ${
                   <div className="flex justify-between items-start gap-2 mb-1">
                     <p className="text-[10px] font-black text-gray-600">
                       {esMio
-                        ? `ðŸ"¤ TÃº â†' ${
+                        ? `ðŸ“¤ TÃº â†’ ${
                             msg.destinatarios?.length > 1
                               ? "Varios"
                               : usersList.find(
                                   (u) => u.user === msg.destinatarios?.[0]
                                 )?.name || "?"
                           }`
-                        : `ðŸ"¥ ${msg.fromName || msg.from}`}
+                        : `ðŸ“¥ ${msg.fromName || msg.from}`}
                     </p>
                     <p className="text-[9px] text-gray-400 flex-shrink-0">
                       {new Date(msg.fecha).toLocaleDateString("es-CO", {
@@ -21911,14 +21919,14 @@ ${
       </div>
     );
   };
-  // â"€â"€ B-F1-03: Persistir portafolio â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+  // â”€â”€ B-F1-03: Persistir portafolio â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const savePortafolio = (items) => {
     setPortafolioItems(items);
     try {
       localStorage.setItem("siso_portafolio", JSON.stringify(items));
     } catch {}
   };
-  // â"€â"€ B-F1-04: Persistir cotizaciones â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+  // â”€â”€ B-F1-04: Persistir cotizaciones â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const saveCotizaciones = (list) => {
     setCotizaciones(list);
     try {
@@ -21932,7 +21940,7 @@ ${
     );
     return String(max + 1).padStart(4, "0");
   };
-  // â"€â"€ B-F2-01: Persistir caja â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+  // â”€â”€ B-F2-01: Persistir caja â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const saveCaja = (movs) => {
     setCajaMovimientos(movs);
     try {
@@ -21944,7 +21952,7 @@ ${
       _sbSet(`siso_caja_movs_${suf}`, movs); // Bloque 3: sync Supabase
     } catch {}
   };
-  // â"€â"€ B-F2-01/02: Generar comprobante â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+  // â”€â”€ B-F2-01/02: Generar comprobante â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const openComprobanteWindow = (tipo, mov) => {
     const doc = activeDoctorData;
     const _miIPSComp = currentUser?.empresaId
@@ -22040,7 +22048,7 @@ ${_compLeftHtml}
     )}<br/>Lic: ${_sanitize(doc?.licencia || "")}</div>
 </div>
 <div class="no-print">
-<button onclick="window.print()" style="background:#1a1a1a;color:#fff;border:none;padding:8px 18px;border-radius:6px;font-weight:900;cursor:pointer">ðŸ-¨ï¸ Imprimir</button>
+<button onclick="window.print()" style="background:#1a1a1a;color:#fff;border:none;padding:8px 18px;border-radius:6px;font-weight:900;cursor:pointer">ðŸ–¨ï¸ Imprimir</button>
 <button onclick="window.close()" style="background:#666;color:#fff;border:none;padding:8px 18px;border-radius:6px;font-weight:900;cursor:pointer">âœ• Cerrar</button>
 </div></body></html>`;
     const w = window.open("", "_blank", "width=560,height=620");
@@ -22049,7 +22057,7 @@ ${_compLeftHtml}
       w.document.close();
     }
   };
-  // â"€â"€ B-F1-05: CarnÃ© manipulaciÃ³n alimentos â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+  // â”€â”€ B-F1-05: CarnÃ© manipulaciÃ³n alimentos â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const openCarnetAlimentos = (paciente, docData) => {
     const doc = docData || activeDoctorData;
     const p = paciente || {};
@@ -22088,7 +22096,7 @@ body{font-family:Arial,sans-serif;margin:0;background:#f5f5f5}
 <div class="hdr"><h1>ðŸ½ï¸ CarnÃ© MÃ©dico - ManipulaciÃ³n de Alimentos</h1></div>
 <div class="body">
 <div class="foto">${
-      p.fotoPaciente ? `<img src="${p.fotoPaciente}" alt="Foto"/>` : "ðŸ"·"
+      p.fotoPaciente ? `<img src="${p.fotoPaciente}" alt="Foto"/>` : "ðŸ“·"
     }</div>
 <div class="info">
 <div class="nom">${p.nombres || "Paciente"}</div>
@@ -22107,7 +22115,7 @@ body{font-family:Arial,sans-serif;margin:0;background:#f5f5f5}
 <div class="valid">âœ… VÃLIDO<br/>Hasta: ${fechaVig}</div>
 </div></div>
 <div class="no-print">
-<button onclick="window.print()" style="background:#1a6b2f;color:#fff;border:none;padding:8px 20px;border-radius:6px;font-weight:900;cursor:pointer">ðŸ-¨ï¸ Imprimir CarnÃ©</button>
+<button onclick="window.print()" style="background:#1a6b2f;color:#fff;border:none;padding:8px 20px;border-radius:6px;font-weight:900;cursor:pointer">ðŸ–¨ï¸ Imprimir CarnÃ©</button>
 <button onclick="window.close()" style="background:#666;color:#fff;border:none;padding:8px 20px;border-radius:6px;font-weight:900;cursor:pointer">âœ• Cerrar</button>
 </div></body></html>`;
     const w = window.open("", "_blank", "width=380,height=320");
@@ -22314,7 +22322,7 @@ body{font-family:Arial,sans-serif;margin:0;background:#f5f5f5}
                 <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                   <div className="flex items-center gap-2 px-4 py-3 border-b border-gray-100 bg-teal-50">
                     <span className="text-sm font-black text-teal-800">
-                      ðŸ"¬ Solicitud de ExÃ¡menes ParaclÃ­nicos
+                      ðŸ”¬ Solicitud de ExÃ¡menes ParaclÃ­nicos
                     </span>
                     <span className="text-[10px] text-teal-600 bg-teal-100 px-2 py-0.5 rounded-full">
                       HC Ocupacional
@@ -22326,7 +22334,7 @@ body{font-family:Arial,sans-serif;margin:0;background:#f5f5f5}
             {dataType === "ocupacional" && activeTab === "adjuntos" && (
               <div>{renderTabAdjuntos()}</div>
             )}
-            {/* B-F1-05: CARNÃ‰ MANIPULACIÃ"N ALIMENTOS */}
+            {/* B-F1-05: CARNÃ‰ MANIPULACIÃ“N ALIMENTOS */}
             {dataType === "ocupacional" &&
               activeTab === "carnetAlimentos" &&
               (() => {
@@ -22382,7 +22390,7 @@ body{font-family:Arial,sans-serif;margin:0;background:#f5f5f5}
                 </style></head><body>
                 <div class="no-print">
                   <button onclick="document.body.contentEditable='true'" style="margin-right:8px;padding:6px 14px;background:#4B5563;color:white;border:none;border-radius:6px;cursor:pointer">âœï¸ Editar</button>
-                  <button onclick="window.print()" style="padding:6px 14px;background:#16a34a;color:white;border:none;border-radius:6px;cursor:pointer">ðŸ-¨ï¸ Imprimir</button>
+                  <button onclick="window.print()" style="padding:6px 14px;background:#16a34a;color:white;border:none;border-radius:6px;cursor:pointer">ðŸ–¨ï¸ Imprimir</button>
                 </div>
                 <div class="card">
                   ${_carnetIpsBrand}
@@ -22390,7 +22398,7 @@ body{font-family:Arial,sans-serif;margin:0;background:#f5f5f5}
                     ${
                       data.fotoPaciente
                         ? `<div class="photo"><img src="${data.fotoPaciente}" style="width:100%;height:100%;object-fit:cover"/></div>`
-                        : '<div class="photo" style="font-size:22px;display:flex;align-items:center;justify-content:center">ðŸ'¤</div>'
+                        : '<div class="photo" style="font-size:22px;display:flex;align-items:center;justify-content:center">ðŸ‘¤</div>'
                     }
                     <div style="flex:1">
                       <div class="badge">ðŸ½ï¸ ManipulaciÃ³n de Alimentos</div>
@@ -22447,12 +22455,12 @@ body{font-family:Arial,sans-serif;margin:0;background:#f5f5f5}
                         onClick={printCarnet}
                         className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-black rounded-xl text-sm"
                       >
-                        ðŸ-¨ï¸ Imprimir CarnÃ©
+                        ðŸ–¨ï¸ Imprimir CarnÃ©
                       </button>
                     </div>
                     <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 mb-4">
                       <p className="text-xs text-emerald-800 font-bold mb-2">
-                        Vista previa del carnÃ© (8.56 Ã- 5.4 cm)
+                        Vista previa del carnÃ© (8.56 Ã— 5.4 cm)
                       </p>
                       <div className="bg-white rounded-xl p-3 shadow border-t-4 border-emerald-500 max-w-xs">
                         <div className="flex items-center gap-3 pb-2 border-b border-gray-100 mb-2">
@@ -22463,7 +22471,7 @@ body{font-family:Arial,sans-serif;margin:0;background:#f5f5f5}
                             />
                           ) : (
                             <div className="w-12 h-12 rounded-full border-2 border-dashed border-emerald-400 flex items-center justify-center text-lg">
-                              ðŸ'¤
+                              ðŸ‘¤
                             </div>
                           )}
                           <div>
@@ -22519,7 +22527,7 @@ body{font-family:Arial,sans-serif;margin:0;background:#f5f5f5}
                     </div>
                     {!data.fotoPaciente && (
                       <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs text-amber-800">
-                        ðŸ'¡ Tip: Agrega la foto del paciente en la secciÃ³n "Datos
+                        ðŸ’¡ Tip: Agrega la foto del paciente en la secciÃ³n "Datos
                         SociodemogrÃ¡ficos" para que aparezca en el carnÃ©.
                       </div>
                     )}
@@ -22784,7 +22792,7 @@ body{font-family:Arial,sans-serif;margin:0;background:#f5f5f5}
                       dxs
                         ? `<div style="margin-bottom:8px;"><p class="sec-title" style="color:#0d9488;">&#128203; DiagnÃ³sticos</p>${dxs}</div>`
                         : ""
-                    }${conducta}${remis}</div>${recos ? `<div style="margin-top:8px;">${recos}</div>` : ""}${paracl ? `<div style="page-break-before:always;"><p style="font-size:7pt;color:#bbb;margin-bottom:8px;">â€" Hoja de ParaclÃ­nicos y ExÃ¡menes Solicitados â€"</p>${paracl}</div>` : ""}${sigBlock}`;
+                    }${conducta}${remis}</div>${recos ? `<div style="margin-top:8px;">${recos}</div>` : ""}${paracl ? `<div style="page-break-before:always;"><p style="font-size:7pt;color:#bbb;margin-bottom:8px;">â€” Hoja de ParaclÃ­nicos y ExÃ¡menes Solicitados â€”</p>${paracl}</div>` : ""}${sigBlock}`;
                   } else if (sectionId === "gn-derivaciones") {
                     accent = "#7c3aed";
                     const derivList = data.derivaciones || [];
@@ -22855,7 +22863,7 @@ body{padding-top:52px;}
 <div class="print-toolbar">
   <span class="ptitle">âœï¸ ${_sanitize(titleDoc)}</span>
   <span class="hint">Haz clic en cualquier texto para editar</span>
-  <button class="btn-print" onclick="window.print()">ðŸ-¨ï¸ Imprimir ahora</button>
+  <button class="btn-print" onclick="window.print()">ðŸ–¨ï¸ Imprimir ahora</button>
   <button class="btn-close" onclick="window.close()">âœ• Cerrar</button>
 </div>
 <div contenteditable="false">${buildGnHeader(
@@ -22866,7 +22874,7 @@ body{padding-top:52px;}
                   w.focus();
                   // No auto-print - usuario edita y hace clic en Imprimir
                 };
-                // â"€â"€ ImpresiÃ³n individual de receta (HC General) â"€â"€
+                // â”€â”€ ImpresiÃ³n individual de receta (HC General) â”€â”€
                 const openSingleMedWindow = (med, mIdx) => {
                   const w = window.open("", "_blank", "width=600,height=700");
                   if (!w) return;
@@ -22891,7 +22899,7 @@ body{padding-top:52px;}
                   )}</p>
                       ${
                         med.indicaciones
-                          ? `<p style="font-size:9pt;color:#92400e;font-style:italic;margin:4px 0;">âš  ${_sanitize(
+                          ? `<p style="font-size:9pt;color:#92400e;font-style:italic;margin:4px 0;">âš  ${_sanitize(
                               med.indicaciones
                             )}</p>`
                           : ""
@@ -22950,9 +22958,9 @@ body{padding-top:52px;}
 @media print{.print-toolbar{display:none!important;}[contenteditable]{outline:none!important;background:transparent!important;}}
 </style></head><body>
 <div class="print-toolbar">
-  <span class="ptitle">ðŸ'Š Receta - ${_sanitize(med.nombre)}</span>
+  <span class="ptitle">ðŸ’Š Receta - ${_sanitize(med.nombre)}</span>
   <span class="hint">Edita antes de imprimir</span>
-  <button class="btn-print" onclick="window.print()">ðŸ-¨ï¸ Imprimir receta</button>
+  <button class="btn-print" onclick="window.print()">ðŸ–¨ï¸ Imprimir receta</button>
   <button class="btn-close" onclick="window.close()">âœ• Cerrar</button>
 </div>
 <div contenteditable="false">${hdr}</div>
@@ -22963,7 +22971,7 @@ body{padding-top:52px;}
                 };
                 return (
                   <div className="space-y-4">
-                    {/* â"€â"€ ENTRADA INTERACTIVA: FÃ"RMULA Y DERIVACIONES (mismo componente HC Ocup) â"€â"€ */}
+                    {/* â”€â”€ ENTRADA INTERACTIVA: FÃ“RMULA Y DERIVACIONES (mismo componente HC Ocup) â”€â”€ */}
                     <div className="no-print">
                       <TabFormulaDerivacion
                         data={data}
@@ -22973,7 +22981,7 @@ body{padding-top:52px;}
                         onPrint={handlePrint}
                       />
                     </div>
-                    {/* â•â• BARRA SELECCIÃ"N DE SECCIONES â•â• */}
+                    {/* â•â• BARRA SELECCIÃ“N DE SECCIONES â•â• */}
                     <div
                       className="no-print bg-white border border-blue-100 rounded-2xl shadow-sm p-4 mx-auto"
                       style={{ maxWidth: "21.59cm" }}
@@ -22995,7 +23003,7 @@ body{padding-top:52px;}
                           }}
                           className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition"
                         >
-                          ðŸ'Š PrescripciÃ³n MÃ©dica
+                          ðŸ’Š PrescripciÃ³n MÃ©dica
                         </button>
                         <button
                           onClick={() => {
@@ -23008,7 +23016,7 @@ body{padding-top:52px;}
                           }}
                           className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-teal-50 text-teal-700 border border-teal-200 hover:bg-teal-100 transition"
                         >
-                          ðŸ"¬ ExÃ¡menes y Recomendaciones
+                          ðŸ”¬ ExÃ¡menes y Recomendaciones
                         </button>
                         <button
                           onClick={() => {
@@ -23022,7 +23030,7 @@ body{padding-top:52px;}
                           }}
                           className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-purple-50 text-purple-700 border border-purple-200 hover:bg-purple-100 transition"
                         >
-                          ðŸ"€ Derivaciones / Interconsultas
+                          ðŸ”€ Derivaciones / Interconsultas
                         </button>
                         {data.incapacidad?.aplica && (
                           <button
@@ -23083,7 +23091,7 @@ body{padding-top:52px;}
                         </div>
                       </div>
                     </div>
-                    {/* â•â• SECCIÃ"N: PRESCRIPCIÃ"N â•â• */}
+                    {/* â•â• SECCIÃ“N: PRESCRIPCIÃ“N â•â• */}
                     <div
                       id="gn-prescripcion"
                       className="bg-white mx-auto shadow-xl print:shadow-none carta-visual"
@@ -23113,7 +23121,7 @@ body{padding-top:52px;}
                           <p>{data.fechaConsulta}</p>
                         </div>
                       </div>
-                      {/* â"€â"€ Datos del paciente horizontal â"€â"€ */}
+                      {/* â”€â”€ Datos del paciente horizontal â”€â”€ */}
                       <div className="grid grid-cols-5 gap-1 mb-4 bg-emerald-50 border border-emerald-100 rounded-xl px-4 py-2.5 print:bg-transparent print:border print:border-gray-400">
                         <div>
                           <p className="text-[8px] font-black text-emerald-600 uppercase">
@@ -23180,7 +23188,7 @@ body{padding-top:52px;}
                                 </p>
                                 {med.indicaciones && (
                                   <p className="text-[10px] italic text-amber-700">
-                                    âš  {med.indicaciones}
+                                    âš  {med.indicaciones}
                                   </p>
                                 )}
                               </div>
@@ -23237,7 +23245,7 @@ body{padding-top:52px;}
                         </div>
                       </div>
                     </div>
-                    {/* â•â• SECCIÃ"N: EXÃMENES Y RECOMENDACIONES â•â• */}
+                    {/* â•â• SECCIÃ“N: EXÃMENES Y RECOMENDACIONES â•â• */}
                     <div
                       id="gn-examenes"
                       className="bg-white mx-auto shadow-xl print:shadow-none carta-visual print-page-break"
@@ -23265,7 +23273,7 @@ body{padding-top:52px;}
                           <p>{data.fechaConsulta}</p>
                         </div>
                       </div>
-                      {/* â"€â"€ Datos del paciente horizontal â"€â"€ */}
+                      {/* â”€â”€ Datos del paciente horizontal â”€â”€ */}
                       <div className="grid grid-cols-5 gap-1 mb-4 bg-teal-50 border border-teal-100 rounded-xl px-4 py-2.5 print:bg-transparent print:border print:border-gray-400">
                         <div>
                           <p className="text-[8px] font-black text-teal-600 uppercase">
@@ -23376,7 +23384,7 @@ body{padding-top:52px;}
                         </div>
                       </div>
                     </div>
-                    {/* â•â• SECCIÃ"N: DERIVACIONES / INTERCONSULTAS â•â• */}
+                    {/* â•â• SECCIÃ“N: DERIVACIONES / INTERCONSULTAS â•â• */}
                     <div
                       id="gn-derivaciones"
                       className="bg-white mx-auto shadow-xl print:shadow-none carta-visual print-page-break"
@@ -23493,7 +23501,7 @@ body{padding-top:52px;}
                                   </p>
                                   {der.observaciones && (
                                     <p className="text-[10px] italic text-purple-700 ml-8 mt-0.5">
-                                      ðŸ" {der.observaciones}
+                                      ðŸ“ {der.observaciones}
                                     </p>
                                   )}
                                 </div>
@@ -23534,7 +23542,7 @@ body{padding-top:52px;}
                         </div>
                       </div>
                     </div>
-                    {/* â•â• SECCIÃ"N: INCAPACIDAD â•â• */}
+                    {/* â•â• SECCIÃ“N: INCAPACIDAD â•â• */}
                     {data.incapacidad?.aplica && (
                       <div
                         id="gn-incapacidad"
@@ -23643,7 +23651,7 @@ body{padding-top:52px;}
     }
     return renderLogin();
   };
-  // â"€â"€â"€ RETURN PRINCIPAL â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+  // â”€â”€â”€ RETURN PRINCIPAL â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   return (
     <>
       <PrintStyles />
@@ -23690,7 +23698,7 @@ body{padding-top:52px;}
             </div>
             <div className="px-4 py-3 bg-amber-50 border-b border-amber-200">
               <p className="text-[11px] text-amber-800 font-bold">
-                âš ï¸ Para radicar ante MinSalud se requiere firma digital DIAN
+                âš ï¸ Para radicar ante MinSalud se requiere firma digital DIAN
                 certificada (CerticÃ¡mara/GSE).
               </p>
               <p className="text-[10px] text-amber-600 mt-0.5">
@@ -23716,7 +23724,7 @@ body{padding-top:52px;}
                 }}
                 className="flex-1 bg-orange-600 text-white font-bold text-xs py-2 rounded-xl hover:bg-orange-700 flex items-center justify-center gap-1"
               >
-                ðŸ"‹ Copiar JSON
+                ðŸ“‹ Copiar JSON
               </button>
               <button
                 onClick={() => {
@@ -23767,7 +23775,7 @@ body{padding-top:52px;}
                 </p>
                 {backupModalData.summary && (
                   <p className="text-[9px] text-emerald-500 mt-0.5">
-                    ðŸ"¦ {backupModalData.summary}
+                    ðŸ“¦ {backupModalData.summary}
                   </p>
                 )}
               </div>
@@ -23796,7 +23804,7 @@ body{padding-top:52px;}
                 }}
                 className="flex-1 bg-emerald-600 text-white font-bold text-xs py-2 rounded-xl hover:bg-emerald-700"
               >
-                ðŸ"‹ Copiar JSON
+                ðŸ“‹ Copiar JSON
               </button>
               <button
                 onClick={() => {
@@ -23885,7 +23893,7 @@ body{padding-top:52px;}
           </div>
         </div>
       )}
-      {/* â"€â"€ Modal Guardar antes de salir de HC â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€ */}
+      {/* â”€â”€ Modal Guardar antes de salir de HC â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       {_exitHcConfirm && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[210] p-4">
           <div className="bg-white p-6 rounded-2xl shadow-2xl max-w-sm w-full text-center animate-fade-in">
@@ -23929,7 +23937,7 @@ body{padding-top:52px;}
           </div>
         </div>
       )}
-      {/* â"€â"€ Modal elecciÃ³n tipo HC desde Agenda â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€ */}
+      {/* â”€â”€ Modal elecciÃ³n tipo HC desde Agenda â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       {hcChoiceAgenda && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-[210] p-4">
           <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden">
@@ -24034,14 +24042,14 @@ body{padding-top:52px;}
           </div>
         </div>
       )}
-      {/* Modal datos paciente â€" Vista secretaria */}
+      {/* Modal datos paciente â€” Vista secretaria */}
       {showSecretariaPatientModal && (
         <div className="fixed inset-0 bg-black/60 z-[200] flex items-center justify-center p-4" onClick={(e) => { if (e.target === e.currentTarget) setShowSecretariaPatientModal(null); }}>
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden animate-fade-in">
             <div className="bg-gradient-to-r from-blue-700 to-indigo-700 px-6 py-4 text-white flex items-center justify-between">
               <div>
-                <h2 className="font-black text-base">ðŸ'¤ Datos del Paciente</h2>
-                <p className="text-blue-100 text-xs mt-0.5">Vista secretarÃ­a â€" Solo datos administrativos</p>
+                <h2 className="font-black text-base">ðŸ‘¤ Datos del Paciente</h2>
+                <p className="text-blue-100 text-xs mt-0.5">Vista secretarÃ­a â€” Solo datos administrativos</p>
               </div>
               <button onClick={() => setShowSecretariaPatientModal(null)} className="text-white/80 hover:text-white text-xl font-black">âœ•</button>
             </div>
@@ -24049,10 +24057,10 @@ body{padding-top:52px;}
               <div className="bg-gray-50 border border-gray-200 rounded-xl p-4">
                 <p className="text-[10px] font-black text-gray-500 uppercase tracking-wide mb-2">Datos Personales</p>
                 <div className="grid grid-cols-2 gap-2">
-                  {[["Nombres completos", showSecretariaPatientModal.nombres],["Documento", (showSecretariaPatientModal.docTipo||"CC")+" "+showSecretariaPatientModal.docNumero],["Edad", showSecretariaPatientModal.edad ? showSecretariaPatientModal.edad+" aÃ±os" : "â€""],["GÃ©nero", showSecretariaPatientModal.genero],["Estado Civil", showSecretariaPatientModal.estadoCivil],["Grupo SanguÃ­neo", showSecretariaPatientModal.grupoSanguineo]].map(([label, value]) => (
+                  {[["Nombres completos", showSecretariaPatientModal.nombres],["Documento", (showSecretariaPatientModal.docTipo||"CC")+" "+showSecretariaPatientModal.docNumero],["Edad", showSecretariaPatientModal.edad ? showSecretariaPatientModal.edad+" aÃ±os" : "â€”"],["GÃ©nero", showSecretariaPatientModal.genero],["Estado Civil", showSecretariaPatientModal.estadoCivil],["Grupo SanguÃ­neo", showSecretariaPatientModal.grupoSanguineo]].map(([label, value]) => (
                     <div key={label} className="min-w-0">
                       <p className="text-[9px] font-black text-gray-400 uppercase">{label}</p>
-                      <p className="text-xs font-bold text-gray-800 truncate">{value || "â€""}</p>
+                      <p className="text-xs font-bold text-gray-800 truncate">{value || "â€”"}</p>
                     </div>
                   ))}
                 </div>
@@ -24063,7 +24071,7 @@ body{padding-top:52px;}
                   {[["Celular", showSecretariaPatientModal.celular||showSecretariaPatientModal.telefono],["Email", showSecretariaPatientModal.email],["Residencia", showSecretariaPatientModal.residencia],["EPS", showSecretariaPatientModal.eps]].map(([label, value]) => (
                     <div key={label} className="min-w-0">
                       <p className="text-[9px] font-black text-blue-400 uppercase">{label}</p>
-                      <p className="text-xs font-bold text-gray-800 truncate">{value || "â€""}</p>
+                      <p className="text-xs font-bold text-gray-800 truncate">{value || "â€”"}</p>
                     </div>
                   ))}
                 </div>
@@ -24074,7 +24082,7 @@ body{padding-top:52px;}
                   {[["Empresa", showSecretariaPatientModal.empresaNombre||showSecretariaPatientModal.empresa],["Cargo", showSecretariaPatientModal.cargo],["ARL", showSecretariaPatientModal.arl],["Tipo Examen", showSecretariaPatientModal.tipoExamen],["Fecha Examen", showSecretariaPatientModal.fechaExamen],["MÃ©dico", usersList.find(u => u.user === showSecretariaPatientModal._medicoId)?.name || showSecretariaPatientModal._medicoId]].map(([label, value]) => (
                     <div key={label} className="min-w-0">
                       <p className="text-[9px] font-black text-indigo-400 uppercase">{label}</p>
-                      <p className="text-xs font-bold text-gray-800 truncate">{value || "â€""}</p>
+                      <p className="text-xs font-bold text-gray-800 truncate">{value || "â€”"}</p>
                     </div>
                   ))}
                 </div>
@@ -24083,15 +24091,15 @@ body{padding-top:52px;}
                 <div className={`border-2 rounded-xl p-3 text-center ${showSecretariaPatientModal.conceptoAptitud.toLowerCase().includes("no apto") ? "bg-red-50 border-red-300" : "bg-emerald-50 border-emerald-300"}`}>
                   <p className="text-[9px] font-black text-gray-400 uppercase mb-1">Concepto de Aptitud</p>
                   <p className="text-xs font-black text-emerald-700">{showSecretariaPatientModal.conceptoAptitud}</p>
-                  <p className="text-[9px] text-gray-400 mt-1">CÃ³digo: {showSecretariaPatientModal.codigoVerificacion || "â€""}</p>
+                  <p className="text-[9px] text-gray-400 mt-1">CÃ³digo: {showSecretariaPatientModal.codigoVerificacion || "â€”"}</p>
                 </div>
               )}
               <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 flex items-start gap-2">
-                <span className="text-base flex-shrink-0">ðŸ"'</span>
+                <span className="text-base flex-shrink-0">ðŸ”’</span>
                 <p className="text-xs text-amber-700 leading-relaxed"><strong>Ficha clÃ­nica restringida.</strong> Solo el mÃ©dico tratante puede abrir el contenido clÃ­nico.</p>
               </div>
               <button onClick={() => { const p = showSecretariaPatientModal; setShowSecretariaPatientModal(null); setAgendaForm(prev => ({...prev, nombre: p.nombres||"", docTipo: p.docTipo||"CC", docNumero: p.docNumero||"", celular: p.celular||p.telefono||"", empresa: p.empresaNombre||p.empresa||"", cargo: p.cargo||"", medicoId: p._medicoId||prev.medicoId||"", eps: p.eps||"", _busquedaQuery: p.nombres||""})); goTo("agenda"); }} className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-black flex items-center justify-center gap-2 transition">
-                ðŸ"… Agendar este paciente
+                ðŸ“… Agendar este paciente
               </button>
             </div>
           </div>
@@ -24106,7 +24114,7 @@ body{padding-top:52px;}
           AI_PROVIDERS={AI_PROVIDERS}
         />
       )}
-      {/* â"€â"€ MODAL REPORTE DE GUARDADO EN NUBE â"€â"€ */}
+      {/* â”€â”€ MODAL REPORTE DE GUARDADO EN NUBE â”€â”€ */}
       {showSyncReport && syncReport && (
         <div
           className="fixed inset-0 bg-black/60 z-[9999] flex items-center justify-center p-4"
@@ -24143,7 +24151,7 @@ body{padding-top:52px;}
                 {
                   label: "Pacientes",
                   val: syncReport.summary.pacientes,
-                  icon: "ðŸ'¥",
+                  icon: "ðŸ‘¥",
                 },
                 {
                   label: "Empresas",
@@ -24153,7 +24161,7 @@ body{padding-top:52px;}
                 {
                   label: "Usuarios",
                   val: syncReport.summary.usuarios,
-                  icon: "ðŸ'¤",
+                  icon: "ðŸ‘¤",
                 },
                 {
                   label: "Facturas",
@@ -24163,7 +24171,7 @@ body{padding-top:52px;}
                 {
                   label: "Informes",
                   val: syncReport.summary.informes,
-                  icon: "ðŸ""",
+                  icon: "ðŸ“„",
                 },
                 {
                   label: "Audit log",
@@ -24224,18 +24232,18 @@ body{padding-top:52px;}
                     : "bg-amber-50 text-amber-700"
                 }`}
               >
-                <span>ðŸ"' API Keys IA</span>
+                <span>ðŸ”‘ API Keys IA</span>
                 <span>
                   {syncReport.summary.apiKeys.length
                     ? `âœ… ${syncReport.summary.apiKeys.join(", ")}`
-                    : "âš  Sin keys configuradas"}
+                    : "âš  Sin keys configuradas"}
                 </span>
               </div>
             </div>
             <div className="bg-violet-50 border border-violet-100 rounded-xl p-3 text-xs text-violet-800 font-semibold text-center mb-3">
               {Object.values(syncReport.results).every(Boolean)
                 ? "â˜ï¸ Todo guardado correctamente en Supabase. Puede acceder desde cualquier dispositivo."
-                : "âš ï¸ Algunos elementos fallaron. EstÃ¡n guardados localmente y se sincronizarÃ¡n automÃ¡ticamente."}
+                : "âš ï¸ Algunos elementos fallaron. EstÃ¡n guardados localmente y se sincronizarÃ¡n automÃ¡ticamente."}
             </div>
             <button
               onClick={() => setShowSyncReport(false)}
@@ -24288,7 +24296,7 @@ body{padding-top:52px;}
   );
 }
 
-// â"€â"€ Export: App envuelta en ErrorBoundary â"€â"€
+// â”€â”€ Export: App envuelta en ErrorBoundary â”€â”€
 export default function App() {
   return React.createElement(AppErrorBoundary, null, React.createElement(AppInner));
 }
