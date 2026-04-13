@@ -37,6 +37,7 @@ import {
   initialOccupPatientState, initialGeneralPatientState,
   initialUsers, initialCompanyState,
 } from '../shared/data/initialStates.js';
+import { DEFAULT_DOCTOR_DATA } from '../shared/data/catalogs.js';
 import { _totpVerify } from '../shared/lib/totp.js';
 import { AI_PROVIDERS, AI_CONFIG_VERSION, parseAIJSON } from '../shared/lib/aiProviders.js';
 import { numeroALetras } from '../shared/lib/formatters.js';
@@ -66,13 +67,6 @@ import BrandLogo from '../shared/ui/BrandLogo.jsx';
 // ═══════════════════════════════════════════════════════════════════════
 // CONSTANTS
 // ═══════════════════════════════════════════════════════════════════════
-const DEFAULT_DOCTOR_DATA = {
-  nombre: "", cedula: "", titulo: "", licencia: "", ciudad: "",
-  celular: "", email: "", direccion: "",
-  banco: "", tipoCuenta: "Ahorros", numeroCuenta: "",
-  rut: "", regimen: "", tarifaHora: "0",
-  tarifaExamenOcup: "0", tarifaInforme: "0", tarifaDiaPVE: "0",
-};
 
 // ═══════════════════════════════════════════════════════════════════════
 // NAV ITEMS
