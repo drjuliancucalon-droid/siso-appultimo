@@ -25,6 +25,12 @@ const UsersPage = (props) => {
     _sync, _patKey, _compKey, _compKeyCloud, _patKeyCloud,
     _syncPatients, _syncCompanies,
     _validarContrasena,
+    medicoTurnoActivo, setMedicoTurnoActivo,
+    pendingActivationPlan, setPendingActivationPlan,
+    cotizaciones, teleconsultas,
+    auditLog, setAuditLog,
+    doctorSignature, setDoctorSignature,
+    showConfirm,
   } = props;
 
   // M├⌐dico (sin empresa): solo puede ver/editar su propio perfil

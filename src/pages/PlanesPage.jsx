@@ -3,7 +3,8 @@ import React from 'react';
 import { PLAN_CONFIG } from '../shared/data/planConfig.js';
 
 const PlanesPage = ({
-  currentUser, renderNavbar, showAlert,
+  currentUser, renderNavbar, showAlert, goTo,
+  setPendingActivationPlan, data, setUserEditId, setActiveUserMgmtTab,
 }) => {
     const planOrder = ["libre", "starter", "pro", "clinica"];
     const currentPlan = currentUser?.license || "libre";

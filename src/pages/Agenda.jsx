@@ -13,6 +13,8 @@ const AgendaPage = (props) => {
     setData, setDataType, setActiveTab,
     renderNavbar, goTo, goBack, showAlert,
     _sync,
+    setHcChoiceAgenda, agendaForm, setAgendaForm,
+    agendaSuggs, setAgendaSuggs, showConfirm, data,
   } = props;
 
   if (!_canUse("agenda", currentUser))

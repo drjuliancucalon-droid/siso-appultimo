@@ -16,6 +16,8 @@ const CajaPage = (props) => {
     cajaMedicoPeriodo, setCajaMedicoPeriodo,
     renderNavbar, goTo, showAlert,
     _sync,
+    porcentajeMedico, setPorcentajeMedico,
+    showConfirm, data, saveCaja,
   } = props;
 
   // Secretaria necesita permiso 'caja' para acceder al m├│dulo financiero

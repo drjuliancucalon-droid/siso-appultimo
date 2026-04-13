@@ -2,7 +2,7 @@ import React from 'react';
 
 
 const AsistenciaAgendaPage = ({
-  renderNavbar, asistenciaFecha, setAsistenciaFecha, agendados,
+  renderNavbar, asistenciaFecha, setAsistenciaFecha, agendados, goTo,
 }) => {
     const fechaFin = asistenciaFecha;
     const fechaIni = new Date(

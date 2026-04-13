@@ -17,6 +17,8 @@ const DashboardPage = (props) => {
     activeDoctorData, savedBillsList, orgsList,
     cajaMovimientos, setCajaTab,
     renderNavbar, goTo, showAlert,
+    medicoTurnoActivo, handleNewOccupHistory, handleNewGeneralHistory,
+    openPatient, setUserEditId, setEditForm, setActiveUserMgmtTab,
   } = props;
 
   return (

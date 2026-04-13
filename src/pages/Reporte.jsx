@@ -15,6 +15,16 @@ const ReportePage = (props) => {
     savedBillsList, setBillData,
     renderNavbar, goTo, goBack, showAlert, handlePrint,
     _generarCertificadoHTMLNormalizado,
+    exportPatientTable, isGeneratingReport,
+    reportAIResult, setReportAIResult,
+    reporteActiveTab, setReporteActiveTab,
+    certSelected, setCertSelected,
+    reportStartDate, setReportStartDate,
+    reportEndDate, setReportEndDate,
+    selectedCompanyReport, setSelectedCompanyReport,
+    selectedMedicoReport, setSelectedMedicoReport,
+    showExportTable, setShowExportTable,
+    precioPorPaciente, setPrecioPorPaciente,
   } = props;
 
   // ΓöÇΓöÇ SECRETARIA GATE: "Reportes Epidemiol├│gicos" requiere autorizaci├│n del admin ΓöÇΓöÇ

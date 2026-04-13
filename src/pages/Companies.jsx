@@ -13,6 +13,7 @@ const CompaniesPage = (props) => {
     setPortalEmpresaCodigo,
     renderNavbar, goTo, goBack, showAlert,
     _syncCompanies,
+    showConfirm, data,
   } = props;
 
   if (
