@@ -41,7 +41,6 @@ export default function UsersSection({ ctx }) {
     doctorSignature,
     editForm,
     goBack,
-    h,
     lista,
     medicoTurnoActivo,
     newUserForm,

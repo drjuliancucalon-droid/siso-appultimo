@@ -17,7 +17,6 @@ export default function CompaniesSection({ ctx }) {
     editingCompany,
     goBack,
     goTo,
-    h,
     lista,
     newComp,
     p,

@@ -33,7 +33,6 @@ export default function ReporteSection({ ctx }) {
     generateAIReport,
     goBack,
     goTo,
-    h,
     handlePrint,
     isGeneratingReport,
     lista,

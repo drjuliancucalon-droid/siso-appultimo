@@ -28,7 +28,6 @@ export default function AgendaSection({ ctx }) {
     currentUser,
     goBack,
     goTo,
-    h,
     p,
     parts,
     patientsList,
@@ -131,7 +130,7 @@ export default function AgendaSection({ ctx }) {
     ];
     // ── Helpers de hora ────────────────────────────────────────────
     const addMins = (hhmm, mins) => {
-      const [h, m] = hhmm.split(":").map(Number);
+      const [m] = hhmm.split(":").map(Number);
       const total = h * 60 + m + mins;
       return `${String(Math.floor(total / 60) % 24).padStart(2, "0")}:${String(
         total % 60

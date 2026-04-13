@@ -30,7 +30,6 @@ export default function HistoriaOcupacional({ ctx }) {
     companies,
     data,
     generateAIAnalysis,
-    h,
     handleChange,
     handleCompanySelect,
     handleNameChange,
@@ -87,8 +86,7 @@ export default function HistoriaOcupacional({ ctx }) {
               📚 Antecedentes cargados automáticamente desde HC anterior
             </p>
             <p className="text-[10px] text-emerald-600 mt-0.5">
-              {historyNotification} atención(es) previa(s) · Antecedentes,
-              hábitos y riesgos prellenos · Puede editarlos libremente
+              {historyNotification} atención(es) previa(s) · Antecedentesábitos y riesgos prellenos · Puede editarlos libremente
             </p>
           </div>
           <button
