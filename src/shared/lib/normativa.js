@@ -1,73 +1,6 @@
-﻿// NORMATIVA COLOMBIANA - RIPS, FHIR, RDA, Firma Digital, DIAN
-// Resolución 2275/2023 (RIPS), Res. 1888/2025 (RDA), Ley 527/1999 (Firma Digital)
-// HL7 FHIR R4, Decreto 358/2020 (DIAN UBL 2.1)
-// Extracted from App.jsx - Module compartido
-
-
-// MÓDULO: FIRMA DIGITAL VÁLIDA - Ley 527/1999
-// Implementa firma electrónica con integridad verificable:
-// hash SHA-256 del contenido clínico + código QR de verificación
-// + timestamp de servidor + identificación del firmante
-// Cumple: Ley 527/1999, Decreto 2364/2012 (firma electrónica)
-// ==========================================
-// Genera hash SHA-256 del contenido de la HC para verificabilidad
-export const _generarHashHC = async (data) => {
-  try {
-    const contenido = JSON.stringify({
-      id: data.id,
-      nombres: data.nombres,
-      docNumero: data.docNumero,
-      fechaExamen: data.fechaExamen,
-      conceptoAptitud: data.conceptoAptitud,
-      tipoExamen: data.tipoExamen,
-      diagnosticoPrincipal: data.diagnosticoPrincipal,
-      medicoId: data._medicoId,
-      estadoHistoria: "Cerrada",
-      ts: new Date().toISOString(),
-    });
-    const buf = await crypto.subtle.digest(
-      "SHA-256",
-      new TextEncoder().encode(contenido)
-    );
-    return Array.from(new Uint8Array(buf))
-      .map((b) => b.toString(16).padStart(2, "0"))
-      .join("");
-  } catch {
-    return "HASH-NO-DISPONIBLE-" + Date.now();
-  }
-};
-// Genera código de verificación QR para la HC firmada
-// El código contiene: ID paciente + hash (primeros 16 chars) + fecha
-export const _generarCodigoQR = (id, hash, fecha) => {
-  const short = hash.substring(0, 16).toUpperCase();
-  const fechaShort = (fecha || new Date().toISOString())
-    .substring(0, 10)
-    .replace(/-/g, "");
-  return `SISO-${fechaShort}-${id.substring(0, 8).toUpperCase()}-${short}`;
-};
-// Formatea datos de firma para mostrar en la HC impresa
-export const _formatFirmaDigital = (firma) => {
-  if (!firma) return null;
-  return {
-    codigo: firma.codigoQR || firma.codigo,
-    hash: firma.hash ? firma.hash.substring(0, 32) + "..." : null,
-    firmadoPor: firma.firmadoPor,
-    fechaFirma: firma.fechaFirma,
-    valido: !!(firma.codigoQR && firma.hash && firma.firmadoPor),
-  };
-};
-// ==========================================
-// MÓDULO: RIPS JSON - Resolución 2275/2023
-// Generación de archivos RIPS para reporte al MinSalud
-// Archivos: AF (afiliación), AT (atenciones), AC (consultas)
-// NOTA: Este módulo genera la estructura base. Para radicar
-// ante MinSalud se requiere firma digital certificada DIAN.
-// ==========================================
-
-// ══════════════════════════════════════════════════════════════════════════
-// B-28: HL7 FHIR R4 - Res. 1888/2025 RDA - Generador de recursos FHIR
-// Recursos: Patient, Practitioner, Observation, DiagnosticReport
-// Deadline de interoperabilidad: 15 de abril de 2026
+﻿// ══════════════════════════════════════════════════════════════════════════
+// NORMATIVA COLOMBIANA: RIPS, FHIR R4, RDA, DIAN UBL
+// Res. 2275/2023, Res. 1888/2025, Decreto 358/2020
 // ══════════════════════════════════════════════════════════════════════════
 export const _generarFHIRPatient = (p) => ({
   resourceType: "Patient",
@@ -110,6 +43,7 @@ export const _generarFHIRPatient = (p) => ({
     ? [{ text: p.ciudadResidencia, country: "CO" }]
     : undefined,
 });
+
 export const _generarFHIRPractitioner = (d) => ({
   resourceType: "Practitioner",
   id: "prac-" + (d?.cedula || "doc").replace(/\s/g, ""),
@@ -145,6 +79,7 @@ export const _generarFHIRPractitioner = (d) => ({
     },
   ],
 });
+
 export const _generarFHIRObservation = (p, tipo) => ({
   resourceType: "Observation",
   id: "obs-" + tipo + "-" + (p.id || Date.now()),
@@ -180,6 +115,7 @@ export const _generarFHIRObservation = (p, tipo) => ({
   valueString: p.conceptoAptitud || "",
   note: p.restricciones ? [{ text: p.restricciones }] : undefined,
 });
+
 export const _generarFHIRBundle = (paciente, doctor) => {
   const bundle = {
     resourceType: "Bundle",
@@ -212,9 +148,6 @@ export const _generarFHIRBundle = (paciente, doctor) => {
   return bundle;
 };
 
-// ══════════════════════════════════════════════════════════════════════════
-// B-25: VALIDACIÓN RIPS - Res. 2275/2023 Schema v2
-// ══════════════════════════════════════════════════════════════════════════
 export const validarRIPSPaciente = (p) => {
   const errs = [];
   if (!p.docNumero || p.docNumero.length < 4) errs.push("docNumero inválido");
@@ -224,6 +157,7 @@ export const validarRIPSPaciente = (p) => {
   if (!p.eps) errs.push("EPS requerida para RIPS");
   return errs;
 };
+
 export const validarRIPSLote = (pacientes) => {
   const errores = [];
   pacientes.forEach((p, idx) => {
@@ -235,6 +169,7 @@ export const validarRIPSLote = (pacientes) => {
   });
   return errores;
 };
+
 export const _generarRIPSJson = (pacientes, doctorData, periodo) => {
   const now = new Date().toISOString();
   const numFactura = "SISO-" + Date.now();
@@ -319,7 +254,7 @@ export const _generarRIPSJson = (pacientes, doctorData, periodo) => {
       "RIPS generado por SISO v4.0. Para radicación formal ante MinSalud se requiere firma electrónica DIAN certificada y validación en ADRES.",
   };
 };
-// Descarga RIPS JSON sin createObjectURL (compatible con sandbox/CSP)
+
 export const _descargarRIPSJson = (pacientes, doctorData, periodo) => {
   try {
     const rips = _generarRIPSJson(pacientes, doctorData, periodo);
@@ -339,11 +274,7 @@ export const _descargarRIPSJson = (pacientes, doctorData, periodo) => {
     return false;
   }
 };
-// ==========================================
-// MÓDULO: RDA - Res. 1888/2025 (Resumen Digital de Atención)
-// Generación del JSON RDA para transmisión al IHCE MinSalud
-// ==========================================
-// ══ B-13: Generador RDA - Res. 1888/2025 ══
+
 export const _generarRDA = (paciente, doctorData, sesionId) => {
   if (!paciente || !paciente.fechaExamen) return null;
   const now = new Date().toISOString();
@@ -395,6 +326,7 @@ export const _generarRDA = (paciente, doctorData, sesionId) => {
       "RDA generado por SISO. Para transmisión oficial al IHCE se requiere firma electrónica certificada.",
   };
 };
+
 export const _descargarRDA = (paciente, doctorData, sesionId) => {
   try {
     const rda = _generarRDA(paciente, doctorData, sesionId);
@@ -414,10 +346,6 @@ export const _descargarRDA = (paciente, doctorData, sesionId) => {
   }
 };
 
-// B-20: FACTURACIÓN ELECTRÓNICA DIAN - UBL 2.1
-// Decreto 358 de 2020 · Resolución DIAN 000012 de 2021
-// Genera XML base para envío a software autorizado (Siigo, Alegra, Facture)
-// ══════════════════════════════════════════════════════════════════════════
 export const _generarFacturaDIAN_UBL = (billData, doctorData, numero) => {
   const now = new Date();
   const fecha = now.toISOString().split("T")[0];

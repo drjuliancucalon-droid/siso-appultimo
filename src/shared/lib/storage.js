@@ -3,7 +3,9 @@
 // FIX C-02: localStorage para datos clínicos (persiste entre sesiones)
 // FIX C-03: sessionStorage para credenciales de IA (se limpia al cerrar)
 // ==========================================
+
 export const _memStore = {}; // fallback si localStorage no está disponible
+
 export const _ls = {
   getItem: (k) => {
     try {
@@ -27,6 +29,7 @@ export const _ls = {
     }
   },
 };
+
 // sessionStorage: para API Keys - se limpia automáticamente al cerrar la pestaña
 export const _ss = {
   getItem: (k) => {
@@ -51,7 +54,8 @@ export const _ss = {
     }
   },
 };
-// Helper global - accesible desde cualquier función incluyendo goTo
+
+// Helper global - accesible desde cualquier función
 export const sp = (k, fb) => {
   const s = _ls.getItem(k);
   if (!s) return fb;
@@ -61,6 +65,7 @@ export const sp = (k, fb) => {
     return fb;
   }
 };
+
 export const sps = (k, fb) => {
   const s = _ss.getItem(k);
   if (!s) return fb;

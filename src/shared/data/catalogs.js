@@ -1,7 +1,8 @@
 // ==========================================
 // MÓDULO 1: CONSTANTES ESTÁTICAS
 // ==========================================
-// B-02 SEGURIDAD: Datos personales del medico eliminados del codigo (Ley 1581/2012)
+
+// ══ B-02 SEGURIDAD: Datos personales del medico eliminados del codigo (Ley 1581/2012) ══
 export const DEFAULT_DOCTOR_DATA = {
   nombre: "",
   cedula: "",
@@ -21,6 +22,7 @@ export const DEFAULT_DOCTOR_DATA = {
   tarifaInforme: "0",
   tarifaDiaPVE: "0",
 };
+
 export const ARL_LIST = [
   "ARL SURA",
   "POSITIVA COMPAÑÍA DE SEGUROS",
@@ -32,6 +34,7 @@ export const ARL_LIST = [
   "LIBERTY SEGUROS",
   "ALFA SEGUROS",
 ];
+
 export const AFP_LIST = [
   "COLPENSIONES",
   "PORVENIR",
@@ -39,6 +42,7 @@ export const AFP_LIST = [
   "COLFONDOS",
   "SKANDIA",
 ];
+
 export const EPS_LIST = [
   "SURA",
   "SANITAS",
@@ -54,6 +58,7 @@ export const EPS_LIST = [
   "CAPITAL SALUD",
   "SAVIA SALUD",
 ].sort();
+
 export const CONTRATO_LIST = [
   "Término Indefinido",
   "Término Fijo",
@@ -62,7 +67,9 @@ export const CONTRATO_LIST = [
   "Aprendizaje",
   "Ocasional o Transitorio",
 ];
+
 export const TURNO_LIST = ["Diurno", "Nocturno", "Mixto", "Rotativo"];
+
 export const ETNIA_LIST = [
   "Mestizo",
   "Afrocolombiano",
@@ -72,6 +79,7 @@ export const ETNIA_LIST = [
   "Gitano / Rrom",
   "Ninguno",
 ];
+
 export const SPECIALTIES_LIST = [
   "Alergología",
   "Anestesiología",
@@ -184,3 +192,21 @@ export const SPECIALTIES_LIST = [
   "Urología Pediátrica",
   "Vascular Periférico",
 ].sort();
+
+export const NORMAL_DESCRIPTIONS_SYSTEMS = {
+  cabeza: "Normocéfalo, sin deformidades, sin masas palpables ni dolor a la palpación.",
+  ojos: "Pupilas isocóricas normorreactivas, conjuntivas rosadas, escleróticas blancas, movimientos oculares conservados.",
+  oidos: "Pabellones auriculares sin lesiones, conductos auditivos permeables, membranas timpánicas íntegras.",
+  nariz: "Tabique centrado, mucosa húmeda rosada, sin pólipos ni secreciones patológicas, permeabilidad nasal conservada.",
+  boca: "Mucosa oral húmeda rosada, orofaringe sin eritema, amígdalas no hipertróficas, dentición conservada.",
+  cuello: "Cuello simétrico, sin adenopatías palpables, tráquea centrada, tiroides no palpable, pulsos carotídeos simétricos.",
+  torax: "Simétrico, normoexpansible, sin deformidades costales, mamas sin masas palpables.",
+  corazon: "Ruidos cardíacos rítmicos, de buena intensidad, sin soplos, no se palpan thrill.",
+  pulmones: "Murmullo vesicular presente y simétrico bilateralmente, sin agregados pulmonares (no sibilancias, no estertores).",
+  abdomen: "Blando, depresible, no doloroso a la palpación, sin masas, sin organomegalias, ruidos intestinales presentes.",
+  genitourinario: "Sin puño-percusión renal positiva, región inguinal sin masas ni hernias palpables.",
+  columna: "Sin escoliosis, sin cifosis patológica, movilidad conservada en todos los planos, no dolor a la palpación de apófisis espinosas.",
+  extremidades: "Simétricas, bien conformadas, sin edemas, pulsos periféricos presentes y simétricos, llenado capilar <2 seg.",
+  piel: "Tegumentos de coloración normal, hidratados, sin lesiones activas, sin cicatrices patológicas.",
+  neurologico: "Orientado en tiempo, lugar y persona. Pares craneales sin alteraciones. Fuerza y sensibilidad conservadas, marcha normal, coordinación adecuada.",
+};

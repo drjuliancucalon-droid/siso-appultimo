@@ -5,14 +5,6 @@ export default defineConfig({
   plugins: [react()],
   build: {
     outDir: 'dist',
-    chunkSizeWarningLimit: 2000,
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          react: ['react', 'react-dom'],
-          lucide: ['lucide-react'],
-        },
-      },
-    },
-  },
+    sourcemap: false
+  }
 });

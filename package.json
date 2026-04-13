@@ -1,13 +1,12 @@
 {
-  "name": "ocupasalud",
+  "name": "siso-appultimo",
   "private": true,
-  "version": "0.0.1",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview",
-    "start": "vite --port 3000"
+    "preview": "vite preview"
   },
   "dependencies": {
     "lucide-react": "^0.469.0",

@@ -1,10 +1,11 @@
-import { _ls } from '../lib/storage.js';
-
-// ==========================================
-// CATALOGO DE MEDICAMENTOS GENERICOS COLOMBIA
+﻿// ==========================================
+// CATÁLOGO DE MEDICAMENTOS GENÉRICOS COLOMBIA
 // Basado en INVIMA y MSPS -- Lista de medicamentos esenciales
 // ==========================================
+import { _ls } from '../lib/storage.js';
+
 export const MEDICAMENTOS_CO_CUSTOM_KEY = "siso_custom_meds";
+
 export const getCustomMeds = () => {
   try {
     return JSON.parse(_ls.getItem(MEDICAMENTOS_CO_CUSTOM_KEY) || "[]");
@@ -12,6 +13,7 @@ export const getCustomMeds = () => {
     return [];
   }
 };
+
 export const addCustomMed = (entry) => {
   const arr = getCustomMeds();
   arr.push(entry);
@@ -2885,4 +2887,3 @@ export const MEDICAMENTOS_CO_BASE = [
   },
 ];
 export const getAllMeds = () => [...MEDICAMENTOS_CO_BASE, ...getCustomMeds()];
-export const MEDICAMENTOS_CO = MEDICAMENTOS_CO_BASE; // Backward compat

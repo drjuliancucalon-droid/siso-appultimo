@@ -1,11 +1,11 @@
-// ══════════════════════════════════════════════════════════════════════════
+﻿// ══════════════════════════════════════════════════════════════════════════
 // B-18: 2FA TOTP - RFC 6238 con Web Crypto API (HMAC-SHA1)
-// Res. 3100/2019 (habilitación IPS) - Seguridad en sistemas de información
 // Compatible con Google Authenticator, Authy, Microsoft Authenticator
 // ══════════════════════════════════════════════════════════════════════════
-const _totpBase32Chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
 
-const _totpBase32ToBytes = (base32) => {
+export const _totpBase32Chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+
+export const _totpBase32ToBytes = (base32) => {
   const s = base32
     .toUpperCase()
     .replace(/=+$/, "")
@@ -82,3 +82,4 @@ export const _totpGetOtpAuthUrl = (secret, user, issuer = "SISOOcupaSalud") =>
 export const _totpGetQRCodeUrl = (secret, user) =>
   "https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=" +
   encodeURIComponent(_totpGetOtpAuthUrl(secret, user));
+const _generarPaqueteRetencion = async (hcData, medicoData) => {

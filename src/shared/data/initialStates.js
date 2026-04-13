@@ -1,7 +1,8 @@
-﻿// Initial states for patient, user, and company data
-// Extracted from App.jsx - Module compartido
-import { ORG_DEFAULT_ID } from './planConfig.js';
+﻿// ==========================================
+// MÓDULO 5: ESTADOS INICIALES
+// ==========================================
 import { DEFAULT_DOCTOR_DATA } from './catalogs.js';
+import { ORG_DEFAULT_ID, SECRETARIA_PERMISOS_DEFAULT } from './planConfig.js';
 
 export const initialOccupPatientState = {
   id: null,
@@ -395,6 +396,3 @@ export const initialCompanyState = {
   logo: "", // base64 del logo de la empresa
   lema: "", // slogan/lema de la IPS
 };
-
-// Re-export DEFAULT_DOCTOR_DATA for convenience
-export { DEFAULT_DOCTOR_DATA };
