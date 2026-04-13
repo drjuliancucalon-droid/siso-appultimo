@@ -23,11 +23,9 @@ import BrandLogo from '../components/ui/BrandLogo';
 export default function ReporteSection({ ctx }) {
   const {
     _isAdmin,
-    renderNavbar,
     activeDoctorData,
     activeSignature,
     certSelected,
-    cl,
     companies,
     currentUser,
     data,
@@ -75,7 +73,7 @@ export default function ReporteSection({ ctx }) {
     )
       return (
         <div className="min-h-screen bg-gray-50 font-sans">
-          {renderNavbar()}
+          {/* navbar rendered by App.jsx */}
           <div className="max-w-xl mx-auto px-4 py-16 text-center">
             <div className="bg-amber-50 border-2 border-amber-300 rounded-2xl p-8 space-y-3">
               <div className="text-5xl">🔐</div>

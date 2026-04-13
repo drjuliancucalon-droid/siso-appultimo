@@ -11,8 +11,6 @@ export default function CompaniesSection({ ctx }) {
   const {
     ARL_LIST,
     _syncCompanies,
-    renderNavbar,
-    cl,
     companies,
     companiesTab,
     currentUser,
@@ -46,7 +44,7 @@ export default function CompaniesSection({ ctx }) {
     )
       return (
         <div className="min-h-screen bg-gray-50 font-sans">
-          {renderNavbar()}
+          {/* navbar rendered by App.jsx */}
           <div className="max-w-xl mx-auto px-4 py-16 text-center">
             <div className="bg-amber-50 border-2 border-amber-300 rounded-2xl p-8 space-y-3">
               <div className="text-5xl">🔐</div>
@@ -97,7 +95,7 @@ export default function CompaniesSection({ ctx }) {
     // companiesTab, editingCompany are component-level state (avoid React #310)
     return (
       <div className="min-h-screen bg-gray-50 font-sans">
-        {renderNavbar()}
+        {/* navbar rendered by App.jsx */}
         <div className="max-w-5xl mx-auto px-4 py-6">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-black text-purple-900 flex items-center gap-2">

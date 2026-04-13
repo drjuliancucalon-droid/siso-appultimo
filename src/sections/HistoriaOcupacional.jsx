@@ -27,8 +27,6 @@ export default function HistoriaOcupacional({ ctx }) {
     EPS_LIST,
     activeDoctorData,
     activeSignature,
-    buscar,
-    cl,
     companies,
     data,
     generateAIAnalysis,
