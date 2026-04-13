@@ -38,7 +38,7 @@ import {
   UserCheck,
   ChevronDown,
   Lock,
-  Unlock,
+  // Unlock removed - tree-shaking issue
   FileSearch,
   Banknote,
   Receipt,
@@ -7463,7 +7463,7 @@ Esta historia clÃ­nica debe conservarse mÃ­nimo 20 aÃ±os.
                       className="bg-yellow-500 text-white px-2 py-2 rounded-lg text-xs font-bold hover:bg-yellow-600 flex items-center gap-1"
                       title="Admin: Nota Aclaratoria / Reapertura / Editar"
                     >
-                      <Unlock className="w-3.5 h-3.5" />
+                      <Lock className="w-3.5 h-3.5" style={{opacity:0.6}} />
                     </button>
                   )}
                 </div>
