@@ -1,355 +1,759 @@
 // src/pages/Reporte.jsx
 // ═══════════════════════════════════════════════════════════════════════
-// REPORTES EPIDEMIOLÓGICOS — Diagnóstico de condiciones de salud,
-// estadísticas por empresa, tendencia, top diagnósticos, SVE, RIPS/FHIR
+// REPORTES — Estadísticas, indicadores SVE, exportación RIPS/FHIR,
+// certificados batch, generación con IA
 // ═══════════════════════════════════════════════════════════════════════
 import React, { useState, useMemo, useCallback } from 'react';
-import { BarChart3, Printer } from 'lucide-react';
+import {
+  BarChart3, Download, FileText, Building2, Calendar, Filter,
+  Users, Stethoscope, Brain, Shield, Heart, Eye, Ear,
+  Wind, Activity, AlertTriangle, CheckCircle2, TrendingUp,
+  PieChart, Printer, RefreshCw, Loader2, FileCheck, Search,
+  ChevronDown, ChevronUp, Copy, Star, Zap, ClipboardList,
+} from 'lucide-react';
 
+// ═══════════════════════════════════════════════════════════════════════
+// REPORTE COMPONENT
+// ═══════════════════════════════════════════════════════════════════════
 export default function Reporte({
-  currentUser,
-  goTo,
-  patientsList = [],
-  companies = [],
-  atencionesCerradas = [],
+  patientsList = [], companies = [], currentUser, aiConfig, savedReports = [], goTo,
+  // Report state from App
+  selectedCompanyReport, setSelectedCompanyReport,
+  reporteActiveTab, setReporteActiveTab,
+  certSelected = {}, setCertSelected,
+  reportStartDate, setReportStartDate, reportEndDate, setReportEndDate,
+  reportAIResult, setReportAIResult,
+  isGeneratingReport, setIsGeneratingReport,
+  showExportTable, setShowExportTable,
+  precioPorPaciente, setPrecioPorPaciente,
+  selectedMedicoReport, setSelectedMedicoReport,
+  // AI
+  callAI, showAlert, showConfirm,
+  usersList = [],
+  ...rest
 }) {
-  const showAlert = useCallback((msg) => window.alert(msg), []);
+  const [localTab, setLocalTab] = useState(reporteActiveTab || 'estadisticas');
 
-  const [selectedCompany, setSelectedCompany] = useState('');
-  const [reportStartDate, setReportStartDate] = useState('');
-  const [reportEndDate, setReportEndDate] = useState('');
-  const [reportTab, setReportTab] = useState('estadisticas');
+  const activeTab = reporteActiveTab || localTab;
+  const setActiveTab = (t) => {
+    setLocalTab(t);
+    setReporteActiveTab?.(t);
+  };
 
-  // Filter patients by company and date range
-  const filtered = useMemo(() => {
-    if (!selectedCompany) return [];
-    return patientsList.filter(p =>
-      p.empresaId === selectedCompany &&
-      p.fechaExamen &&
-      (reportStartDate ? p.fechaExamen >= reportStartDate : true) &&
-      (reportEndDate ? p.fechaExamen <= reportEndDate : true)
-    );
-  }, [patientsList, selectedCompany, reportStartDate, reportEndDate]);
+  // ── Filtered patients ───────────────────────────────────────────────
+  const filteredPatients = useMemo(() => {
+    let list = patientsList.filter(p => p.fechaExamen && !p._archivado);
 
-  const total = filtered.length;
-  const compName = companies.find(c => c.id === selectedCompany)?.nombre || 'Empresa';
+    if (selectedCompanyReport) {
+      const comp = companies.find(c => c.id === selectedCompanyReport || c.nit === selectedCompanyReport);
+      if (comp) {
+        list = list.filter(p =>
+          p.empresaId === comp.id || p.empresaNit === comp.nit ||
+          (p.empresaNombre || '').toLowerCase() === (comp.nombre || '').toLowerCase()
+        );
+      }
+    }
 
-  // Stats helpers
-  const countBy = (list, fn) => list.reduce((acc, p) => { const k = fn(p) || 'N/R'; acc[k] = (acc[k] || 0) + 1; return acc; }, {});
-  const getAgeRange = (a) => { const n = parseInt(a); if (isNaN(n)) return 'N/R'; if (n < 28) return '18-27'; if (n < 38) return '28-37'; if (n < 48) return '38-47'; if (n < 58) return '48-57'; return '58+'; };
-  const getIMC = (v) => { const b = parseFloat(v); if (isNaN(b)) return 'N/R'; if (b < 18.5) return 'Bajo Peso'; if (b < 25) return 'Normal'; if (b < 30) return 'Sobrepeso'; return 'Obesidad'; };
-  const getTA = (v) => { if (!v || !v.includes('/')) return 'N/R'; const [s, d] = v.split('/').map(Number); if (s < 120 && d < 80) return 'Normal'; if (s < 130 && d < 80) return 'Elevada'; if (s < 140 || d < 90) return 'HTA I'; return 'HTA II'; };
-  const getSeniority = (v) => { if (!v) return 'N/R'; const n = parseFloat((v.match(/\d+(\.\d+)?/) || [0])[0]); if (!n) return 'N/R'; if (v.toLowerCase().includes('mes') || n < 1) return '<1 año'; if (n <= 3) return '1-3 años'; if (n <= 5) return '3-5 años'; if (n <= 10) return '5-10 años'; return '>10 años'; };
+    if (reportStartDate) list = list.filter(p => p.fechaExamen >= reportStartDate);
+    if (reportEndDate) list = list.filter(p => p.fechaExamen <= reportEndDate);
 
+    return list;
+  }, [patientsList, selectedCompanyReport, reportStartDate, reportEndDate, companies]);
+
+  // ── Statistics ──────────────────────────────────────────────────────
   const stats = useMemo(() => {
-    if (total === 0) return null;
-    return {
-      genero: countBy(filtered, p => p.genero),
-      edad: countBy(filtered, p => getAgeRange(p.edad)),
-      imc: countBy(filtered, p => getIMC(p.imc)),
-      ta: countBy(filtered, p => getTA(p.ta)),
-      escolaridad: countBy(filtered, p => p.escolaridad),
-      cargo: countBy(filtered, p => p.cargo || 'N/R'),
-      tipoExamen: countBy(filtered, p => p.tipoExamen || 'N/R'),
-      conceptoAptitud: countBy(filtered, p => p.conceptoAptitud || 'N/R'),
-      diagnosticos: countBy(filtered, p => p.diagnosticoPrincipal?.split(' - ')[0] || 'Z10.0'),
-      antiguedad: countBy(filtered, p => getSeniority(p.antiguedadEmpresa)),
-      topDx: Object.entries(countBy(filtered, p => (p.diagnosticos || [{ descripcion: p.diagnosticoPrincipal }])[0]?.descripcion || 'Sin dx')).sort((a, b) => b[1] - a[1]).slice(0, 10),
-      tendenciaMensual: filtered.reduce((acc, p) => { const m = (p.fechaExamen || '').substring(0, 7); if (m) acc[m] = (acc[m] || 0) + 1; return acc; }, {}),
-      promedioEdad: Math.round(filtered.reduce((s, p) => s + (parseInt(p.edad) || 0), 0) / filtered.length),
-      tasaNoAptos: Math.round((filtered.filter(p => (p.conceptoAptitud || '').toLowerCase().includes('no apto')).length / total) * 100),
-      conHallazgos: filtered.filter(p => Object.values(p.examenFisicoSistemas || {}).some(s => s.estado === 'Anormal')).length,
-      conRestricciones: filtered.filter(p => p.analisisRestricciones && p.analisisRestricciones.length > 10).length,
-      conRiesgos: filtered.filter(p => p.riesgos && Object.values(p.riesgos).some(Boolean)).length,
-      fumadores: filtered.filter(p => p.habitos?.fuma === 'Si').length,
-      alcohol: filtered.filter(p => p.habitos?.alcohol === 'Si').length,
-      deporte: filtered.filter(p => p.habitos?.deporte === 'Si').length,
-    };
-  }, [filtered, total]);
+    const total = filteredPatients.length;
 
-  // Render stat table
-  const StatTable = ({ title, data, color = 'blue' }) => {
-    if (!data) return null;
-    const entries = Object.entries(data).sort((a, b) => b[1] - a[1]);
-    const max = Math.max(...entries.map(([, v]) => v), 1);
-    return (
-      <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-        <div className={`bg-${color}-50 px-3 py-2 border-b border-${color}-100`}>
-          <p className={`text-[10px] font-black text-${color}-700 uppercase`}>{title}</p>
+    // By tipo examen
+    const byTipo = {};
+    filteredPatients.forEach(p => {
+      const tipo = p.tipoExamen || 'Sin clasificar';
+      byTipo[tipo] = (byTipo[tipo] || 0) + 1;
+    });
+
+    // By concepto aptitud
+    const byConcepto = {};
+    filteredPatients.forEach(p => {
+      const concepto = p.conceptoAptitud || p.conceptoOcupacional || 'Sin concepto';
+      byConcepto[concepto] = (byConcepto[concepto] || 0) + 1;
+    });
+
+    // Top 10 CIE-10 diagnosis
+    const diagCount = {};
+    filteredPatients.forEach(p => {
+      const diags = [
+        p.diagnostico1, p.diagnostico2, p.diagnostico3,
+        p.diagPrincipal, p.cie10Principal,
+        ...(p.diagnosticos || []).map(d => d.cie10 || d.descripcion),
+      ].filter(Boolean);
+      diags.forEach(d => {
+        const key = d.trim();
+        if (key) diagCount[key] = (diagCount[key] || 0) + 1;
+      });
+    });
+    const topDiag = Object.entries(diagCount)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 10);
+
+    // By gender
+    const byGender = {};
+    filteredPatients.forEach(p => {
+      const g = p.genero || 'No registrado';
+      byGender[g] = (byGender[g] || 0) + 1;
+    });
+
+    // By age group
+    const byAge = { '< 20': 0, '20-29': 0, '30-39': 0, '40-49': 0, '50-59': 0, '60+': 0 };
+    filteredPatients.forEach(p => {
+      const age = parseInt(p.edad) || 0;
+      if (age < 20) byAge['< 20']++;
+      else if (age < 30) byAge['20-29']++;
+      else if (age < 40) byAge['30-39']++;
+      else if (age < 50) byAge['40-49']++;
+      else if (age < 60) byAge['50-59']++;
+      else byAge['60+']++;
+    });
+
+    return { total, byTipo, byConcepto, topDiag, byGender, byAge };
+  }, [filteredPatients]);
+
+  // ── SVE Indicators ──────────────────────────────────────────────────
+  const sveIndicators = useMemo(() => {
+    const total = filteredPatients.length || 1;
+
+    // DME (Desórdenes Musculoesqueléticos)
+    const dme = filteredPatients.filter(p =>
+      (p.sintomatologiaDME || p.dolorOsteomusular || p.osteomuscular_dolor || '').toLowerCase().includes('si') ||
+      (p.diagPrincipal || '').toLowerCase().includes('m') // CIE-10 M codes
+    ).length;
+
+    // Cardiovascular
+    const cardio = filteredPatients.filter(p => {
+      const ta = p.tensionArterial || p.ta || '';
+      if (!ta.includes('/')) return false;
+      const [s] = ta.split('/').map(Number);
+      return s >= 140;
+    }).length;
+
+    // Respiratorio
+    const resp = filteredPatients.filter(p =>
+      (p.espirometria || '').toLowerCase().includes('anormal') ||
+      (p.diagPrincipal || '').toLowerCase().startsWith('j')
+    ).length;
+
+    // Auditivo
+    const audit = filteredPatients.filter(p =>
+      (p.audiometria || '').toLowerCase().includes('anormal') ||
+      (p.audiometria || '').toLowerCase().includes('hipoacusia') ||
+      (p.diagPrincipal || '').toLowerCase().startsWith('h9')
+    ).length;
+
+    // Psicosocial
+    const psico = filteredPatients.filter(p =>
+      (p.riesgoPsicosocial || '').toLowerCase().includes('alto') ||
+      (p.riesgoPsicosocial || '').toLowerCase().includes('muy alto') ||
+      (p.diagPrincipal || '').toLowerCase().startsWith('f')
+    ).length;
+
+    return {
+      dme: { count: dme, pct: ((dme / total) * 100).toFixed(1) },
+      cardiovascular: { count: cardio, pct: ((cardio / total) * 100).toFixed(1) },
+      respiratorio: { count: resp, pct: ((resp / total) * 100).toFixed(1) },
+      auditivo: { count: audit, pct: ((audit / total) * 100).toFixed(1) },
+      psicosocial: { count: psico, pct: ((psico / total) * 100).toFixed(1) },
+    };
+  }, [filteredPatients]);
+
+  // ── AI Report Generation ────────────────────────────────────────────
+  const handleGenerateAIReport = async () => {
+    if (!callAI) {
+      showAlert?.('⚠️ Configure las API keys de IA primero.');
+      return;
+    }
+    if (filteredPatients.length === 0) {
+      showAlert?.('⚠️ No hay pacientes para generar el reporte.');
+      return;
+    }
+
+    setIsGeneratingReport?.(true);
+    try {
+      const compName = selectedCompanyReport
+        ? companies.find(c => c.id === selectedCompanyReport)?.nombre || 'Todas'
+        : 'Todas las empresas';
+
+      const prompt = `Genera un informe epidemiológico ocupacional detallado con los siguientes datos:
+        - Empresa: ${compName}
+        - Total pacientes evaluados: ${stats.total}
+        - Distribución por tipo de examen: ${JSON.stringify(stats.byTipo)}
+        - Distribución por concepto de aptitud: ${JSON.stringify(stats.byConcepto)}
+        - Top diagnósticos CIE-10: ${JSON.stringify(stats.topDiag)}
+        - Distribución por género: ${JSON.stringify(stats.byGender)}
+        - Distribución por grupo etario: ${JSON.stringify(stats.byAge)}
+        - Indicadores SVE:
+          DME: ${sveIndicators.dme.pct}%
+          Cardiovascular: ${sveIndicators.cardiovascular.pct}%
+          Respiratorio: ${sveIndicators.respiratorio.pct}%
+          Auditivo: ${sveIndicators.auditivo.pct}%
+          Psicosocial: ${sveIndicators.psicosocial.pct}%
+
+        Incluye: resumen ejecutivo, hallazgos principales, análisis por programa SVE,
+        recomendaciones priorizadas, y conclusiones. Formato: texto estructurado con encabezados.
+        Normativa colombiana: Res. 1843/2025, Res. 0312/2019, Decreto 1072/2015.`;
+
+      const result = await callAI(prompt);
+      setReportAIResult?.(result);
+      showAlert?.('✅ Informe IA generado correctamente.');
+    } catch (err) {
+      showAlert?.(`❌ Error generando informe: ${err.message}`);
+    } finally {
+      setIsGeneratingReport?.(false);
+    }
+  };
+
+  // ── RIPS Export ─────────────────────────────────────────────────────
+  const handleExportRIPS = () => {
+    const ripsData = {
+      identificacion: {
+        codigoPrestador: currentUser?.doctorData?.licencia || '',
+        fechaRemision: new Date().toISOString().split('T')[0],
+        numFactura: '',
+      },
+      usuarios: filteredPatients.map(p => ({
+        tipoDoc: p.docTipo || 'CC',
+        numDoc: p.docNumero || '',
+        nombre: p.nombres || '',
+        fechaNac: p.fechaNacimiento || '',
+        sexo: (p.genero || '').charAt(0) || 'M',
+        zona: p.zonaResidencia || 'U',
+        codMunicipio: p.ciudadResidencia || '',
+      })),
+      consultas: filteredPatients.map(p => ({
+        numDoc: p.docNumero || '',
+        fechaConsulta: p.fechaExamen || '',
+        codConsulta: '890201',
+        finalidadConsulta: p.tipoExamen === 'INGRESO' ? '01' : '06',
+        causaExterna: '13',
+        diagPrincipal: p.diagPrincipal || p.cie10Principal || '',
+        diagRelacionado: p.diagnostico2 || '',
+        tipoDoc: p.docTipo || 'CC',
+      })),
+    };
+
+    const blob = new Blob([JSON.stringify(ripsData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `RIPS_${new Date().toISOString().split('T')[0]}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showAlert?.('✅ RIPS JSON exportado.');
+  };
+
+  // ── FHIR R4 Export ──────────────────────────────────────────────────
+  const handleExportFHIR = () => {
+    const bundle = {
+      resourceType: 'Bundle',
+      type: 'collection',
+      timestamp: new Date().toISOString(),
+      entry: filteredPatients.map(p => ({
+        resource: {
+          resourceType: 'Encounter',
+          id: p.id,
+          status: 'finished',
+          class: { system: 'http://terminology.hl7.org/CodeSystem/v3-ActCode', code: 'AMB' },
+          type: [{
+            coding: [{ system: 'http://snomed.info/sct', code: '410620009', display: 'Occupational health assessment' }],
+          }],
+          subject: {
+            reference: `Patient/${p.docNumero || p.id}`,
+            display: p.nombres || '',
+          },
+          period: {
+            start: p.fechaExamen || '',
+            end: p.fechaExamen || '',
+          },
+          diagnosis: [
+            p.diagPrincipal && {
+              condition: { display: p.diagPrincipal },
+              use: { coding: [{ code: 'AD', display: 'Admission diagnosis' }] },
+            },
+          ].filter(Boolean),
+        },
+      })),
+    };
+
+    const blob = new Blob([JSON.stringify(bundle, null, 2)], { type: 'application/fhir+json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `FHIR_R4_Bundle_${new Date().toISOString().split('T')[0]}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showAlert?.('✅ FHIR R4 Bundle exportado.');
+  };
+
+  // ── CSV Export ──────────────────────────────────────────────────────
+  const handleExportCSV = () => {
+    const headers = 'Documento,Nombres,Fecha Examen,Tipo Examen,Empresa,Concepto,Diagnóstico Principal,Género,Edad\n';
+    const rows = filteredPatients.map(p =>
+      [
+        p.docNumero || '',
+        (p.nombres || '').replace(/,/g, ';'),
+        p.fechaExamen || '',
+        p.tipoExamen || '',
+        (p.empresaNombre || '').replace(/,/g, ';'),
+        p.conceptoAptitud || p.conceptoOcupacional || '',
+        (p.diagPrincipal || p.cie10Principal || '').replace(/,/g, ';'),
+        p.genero || '',
+        p.edad || '',
+      ].join(',')
+    ).join('\n');
+    const csv = '\uFEFF' + headers + rows;
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `reporte_pacientes_${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showAlert?.('✅ CSV exportado.');
+  };
+
+  // ── Simple bar chart renderer ───────────────────────────────────────
+  const renderBarChart = (data, maxWidth = 200, colorClass = 'bg-emerald-500') => {
+    const max = Math.max(...Object.values(data), 1);
+    return Object.entries(data).map(([label, count]) => (
+      <div key={label} className="flex items-center gap-2 text-xs">
+        <span className="w-32 text-right text-gray-600 truncate font-bold">{label}</span>
+        <div className="flex-1 h-5 bg-gray-100 rounded-full overflow-hidden">
+          <div className={`h-full ${colorClass} rounded-full transition-all`}
+            style={{ width: `${(count / max) * 100}%` }} />
         </div>
-        <div className="p-3 space-y-1.5">
-          {entries.map(([k, v]) => (
-            <div key={k} className="flex items-center gap-2">
-              <span className="text-[10px] text-gray-700 w-24 truncate font-bold">{k}</span>
-              <div className="flex-1 bg-gray-100 rounded-full h-3 overflow-hidden">
-                <div className={`bg-${color}-400 h-full rounded-full transition-all`} style={{ width: `${(v / max) * 100}%` }} />
+        <span className="w-10 text-right font-black text-gray-700">{count}</span>
+      </div>
+    ));
+  };
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // RENDER: ESTADÍSTICAS
+  // ═══════════════════════════════════════════════════════════════════════
+  const renderEstadisticas = () => (
+    <div className="space-y-6">
+      {/* Summary cards */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="bg-white border border-emerald-200 rounded-xl p-4 text-center">
+          <Users className="w-6 h-6 text-emerald-600 mx-auto mb-1" />
+          <p className="text-2xl font-black text-emerald-700">{stats.total}</p>
+          <p className="text-xs font-bold text-gray-500">Total Pacientes</p>
+        </div>
+        <div className="bg-white border border-blue-200 rounded-xl p-4 text-center">
+          <Building2 className="w-6 h-6 text-blue-600 mx-auto mb-1" />
+          <p className="text-2xl font-black text-blue-700">{companies.length}</p>
+          <p className="text-xs font-bold text-gray-500">Empresas</p>
+        </div>
+        <div className="bg-white border border-purple-200 rounded-xl p-4 text-center">
+          <Stethoscope className="w-6 h-6 text-purple-600 mx-auto mb-1" />
+          <p className="text-2xl font-black text-purple-700">
+            {Object.keys(stats.byTipo).length}
+          </p>
+          <p className="text-xs font-bold text-gray-500">Tipos Examen</p>
+        </div>
+        <div className="bg-white border border-amber-200 rounded-xl p-4 text-center">
+          <ClipboardList className="w-6 h-6 text-amber-600 mx-auto mb-1" />
+          <p className="text-2xl font-black text-amber-700">{stats.topDiag.length}</p>
+          <p className="text-xs font-bold text-gray-500">Diagnósticos</p>
+        </div>
+      </div>
+
+      {/* Tipo examen chart */}
+      <div className="bg-white border border-gray-200 rounded-xl p-5">
+        <h3 className="font-black text-sm text-gray-800 mb-4 flex items-center gap-2">
+          <BarChart3 className="w-4 h-4 text-emerald-600" /> Distribución por Tipo de Examen
+        </h3>
+        <div className="space-y-2">
+          {renderBarChart(stats.byTipo, 300, 'bg-emerald-500')}
+          {Object.keys(stats.byTipo).length === 0 && (
+            <p className="text-gray-400 text-xs text-center py-4">Sin datos</p>
+          )}
+        </div>
+      </div>
+
+      {/* Concepto aptitud chart */}
+      <div className="bg-white border border-gray-200 rounded-xl p-5">
+        <h3 className="font-black text-sm text-gray-800 mb-4 flex items-center gap-2">
+          <CheckCircle2 className="w-4 h-4 text-blue-600" /> Distribución por Concepto de Aptitud
+        </h3>
+        <div className="space-y-2">
+          {renderBarChart(stats.byConcepto, 300, 'bg-blue-500')}
+          {Object.keys(stats.byConcepto).length === 0 && (
+            <p className="text-gray-400 text-xs text-center py-4">Sin datos</p>
+          )}
+        </div>
+      </div>
+
+      {/* Top CIE-10 */}
+      <div className="bg-white border border-gray-200 rounded-xl p-5">
+        <h3 className="font-black text-sm text-gray-800 mb-4 flex items-center gap-2">
+          <Activity className="w-4 h-4 text-red-600" /> Top 10 Diagnósticos (CIE-10)
+        </h3>
+        {stats.topDiag.length === 0 ? (
+          <p className="text-gray-400 text-xs text-center py-4">Sin diagnósticos registrados</p>
+        ) : (
+          <div className="space-y-2">
+            {stats.topDiag.map(([diag, count], i) => (
+              <div key={diag} className="flex items-center gap-3 text-xs">
+                <span className={`w-6 h-6 rounded-full flex items-center justify-center text-white font-black text-[10px] ${
+                  i < 3 ? 'bg-red-500' : 'bg-gray-400'
+                }`}>{i + 1}</span>
+                <span className="flex-1 text-gray-700 font-bold truncate">{diag}</span>
+                <span className="font-black text-gray-800">{count}</span>
+                <div className="w-20 h-3 bg-gray-100 rounded-full overflow-hidden">
+                  <div className="h-full bg-red-400 rounded-full"
+                    style={{ width: `${(count / (stats.topDiag[0]?.[1] || 1)) * 100}%` }} />
+                </div>
               </div>
-              <span className="text-[10px] font-black text-gray-800 w-8 text-right">{v}</span>
-              <span className="text-[9px] text-gray-400 w-10 text-right">{total ? Math.round((v / total) * 100) : 0}%</span>
-            </div>
-          ))}
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Demographics */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="bg-white border border-gray-200 rounded-xl p-5">
+          <h3 className="font-black text-sm text-gray-800 mb-4 flex items-center gap-2">
+            <Users className="w-4 h-4 text-purple-600" /> Por Género
+          </h3>
+          <div className="space-y-2">
+            {renderBarChart(stats.byGender, 200, 'bg-purple-500')}
+          </div>
+        </div>
+        <div className="bg-white border border-gray-200 rounded-xl p-5">
+          <h3 className="font-black text-sm text-gray-800 mb-4 flex items-center gap-2">
+            <TrendingUp className="w-4 h-4 text-teal-600" /> Por Grupo Etario
+          </h3>
+          <div className="space-y-2">
+            {renderBarChart(stats.byAge, 200, 'bg-teal-500')}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // RENDER: SVE INDICATORS
+  // ═══════════════════════════════════════════════════════════════════════
+  const renderSVE = () => {
+    const programs = [
+      {
+        name: 'DME (Desórdenes Musculoesqueléticos)',
+        icon: Activity,
+        color: 'blue',
+        data: sveIndicators.dme,
+        desc: 'Dolor osteomuscular, patologías M en CIE-10',
+      },
+      {
+        name: 'Cardiovascular',
+        icon: Heart,
+        color: 'red',
+        data: sveIndicators.cardiovascular,
+        desc: 'Tensión arterial ≥ 140 mmHg sistólica',
+      },
+      {
+        name: 'Respiratorio',
+        icon: Wind,
+        color: 'teal',
+        data: sveIndicators.respiratorio,
+        desc: 'Espirometría anormal, diagnósticos J en CIE-10',
+      },
+      {
+        name: 'Auditivo',
+        icon: Ear,
+        color: 'amber',
+        data: sveIndicators.auditivo,
+        desc: 'Audiometría anormal, hipoacusia, códigos H9x',
+      },
+      {
+        name: 'Psicosocial',
+        icon: Brain,
+        color: 'purple',
+        data: sveIndicators.psicosocial,
+        desc: 'Riesgo psicosocial alto/muy alto, diagnósticos F en CIE-10',
+      },
+    ];
+
+    return (
+      <div className="space-y-4">
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
+          <p className="text-sm font-bold text-amber-800 flex items-center gap-2">
+            <Shield className="w-4 h-4" /> Indicadores de Sistemas de Vigilancia Epidemiológica
+          </p>
+          <p className="text-xs text-amber-600 mt-1">
+            Basados en Res. 0312/2019 y Decreto 1072/2015. Evaluando {filteredPatients.length} pacientes.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {programs.map(prog => {
+            const Icon = prog.icon;
+            const pct = parseFloat(prog.data.pct);
+            const riskLevel = pct > 20 ? 'alto' : pct > 10 ? 'medio' : 'bajo';
+            const riskColor = riskLevel === 'alto' ? 'text-red-600 bg-red-100'
+              : riskLevel === 'medio' ? 'text-amber-600 bg-amber-100'
+              : 'text-emerald-600 bg-emerald-100';
+
+            return (
+              <div key={prog.name} className="bg-white border border-gray-200 rounded-xl p-5">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <div className={`w-8 h-8 bg-${prog.color}-100 rounded-lg flex items-center justify-center`}>
+                      <Icon className={`w-4 h-4 text-${prog.color}-600`} />
+                    </div>
+                    <h4 className="font-black text-sm text-gray-800">{prog.name}</h4>
+                  </div>
+                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-black ${riskColor}`}>
+                    {riskLevel.toUpperCase()}
+                  </span>
+                </div>
+                <div className="flex items-end gap-3">
+                  <div>
+                    <p className="text-3xl font-black text-gray-800">{prog.data.count}</p>
+                    <p className="text-xs text-gray-500">casos detectados</p>
+                  </div>
+                  <div className="flex-1">
+                    <div className="w-full h-4 bg-gray-100 rounded-full overflow-hidden">
+                      <div className={`h-full bg-${prog.color}-500 rounded-full transition-all`}
+                        style={{ width: `${Math.min(pct, 100)}%` }} />
+                    </div>
+                    <p className="text-right text-xs font-black text-gray-600 mt-0.5">{prog.data.pct}%</p>
+                  </div>
+                </div>
+                <p className="text-[10px] text-gray-400 mt-2">{prog.desc}</p>
+              </div>
+            );
+          })}
         </div>
       </div>
     );
   };
 
-  return (
-    <div className="max-w-5xl mx-auto">
-      {/* Controls */}
-      <div className="flex justify-between items-center mb-6 flex-wrap gap-3 no-print">
-        <div className="flex items-center gap-3 flex-wrap">
-          <input type="date" className="text-xs border rounded p-1.5" value={reportStartDate} onChange={(e) => setReportStartDate(e.target.value)} />
-          <span className="text-gray-400 text-xs">—</span>
-          <input type="date" className="text-xs border rounded p-1.5" value={reportEndDate} onChange={(e) => setReportEndDate(e.target.value)} />
-          <select className="border rounded p-1.5 text-sm max-w-[200px]" value={selectedCompany} onChange={(e) => setSelectedCompany(e.target.value)}>
-            <option value="">Seleccione empresa...</option>
-            {companies.map(c => <option key={c.id} value={c.id}>{c.nombre}</option>)}
-          </select>
-        </div>
-        <button onClick={() => window.print()} className="bg-slate-800 text-white px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2">
-          <Printer className="w-4 h-4" /> Imprimir
+  // ═══════════════════════════════════════════════════════════════════════
+  // RENDER: AI REPORT
+  // ═══════════════════════════════════════════════════════════════════════
+  const renderAIReport = () => (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h3 className="font-black text-sm text-gray-800 flex items-center gap-2">
+          <Brain className="w-4 h-4 text-purple-600" /> Informe Generado con IA
+        </h3>
+        <button onClick={handleGenerateAIReport}
+          disabled={isGeneratingReport}
+          className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-xl font-bold text-sm hover:bg-purple-700 disabled:opacity-50 shadow">
+          {isGeneratingReport ? <Loader2 className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />}
+          {isGeneratingReport ? 'Generando...' : 'Generar Informe IA'}
         </button>
       </div>
 
-      {!selectedCompany && (
-        <div className="bg-white rounded-2xl p-12 text-center text-gray-400 shadow-sm">
-          <p className="text-5xl mb-4">📊</p>
-          <p className="font-bold text-gray-600 text-lg">Seleccione una empresa para generar el reporte</p>
-          <p className="text-xs mt-2">Use el selector arriba para elegir la empresa y el rango de fechas</p>
+      {reportAIResult ? (
+        <div className="bg-white border border-gray-200 rounded-xl p-6">
+          <div className="prose prose-sm max-w-none text-gray-700 whitespace-pre-wrap text-sm leading-relaxed">
+            {reportAIResult}
+          </div>
+          <div className="flex gap-3 mt-4 pt-4 border-t border-gray-100">
+            <button onClick={() => {
+              navigator.clipboard?.writeText(reportAIResult);
+              showAlert?.('📋 Copiado al portapapeles.');
+            }}
+              className="flex items-center gap-1 px-3 py-1.5 bg-gray-100 text-gray-700 rounded-lg text-xs font-bold hover:bg-gray-200">
+              <Copy className="w-3 h-3" /> Copiar
+            </button>
+            <button onClick={() => {
+              const blob = new Blob([reportAIResult], { type: 'text/plain;charset=utf-8' });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = `informe_ia_${new Date().toISOString().split('T')[0]}.txt`;
+              a.click();
+              URL.revokeObjectURL(url);
+            }}
+              className="flex items-center gap-1 px-3 py-1.5 bg-blue-100 text-blue-700 rounded-lg text-xs font-bold hover:bg-blue-200">
+              <Download className="w-3 h-3" /> Descargar
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className="bg-gray-50 border border-gray-200 rounded-xl p-10 text-center">
+          <Brain className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+          <p className="text-gray-500 font-bold">No hay informe generado</p>
+          <p className="text-gray-400 text-xs mt-1">Haga clic en "Generar Informe IA" para crear un análisis epidemiológico</p>
         </div>
       )}
+    </div>
+  );
 
-      {selectedCompany && (
-        <>
-          {/* Tabs */}
-          <div className="flex gap-1 mb-6 border-b border-gray-200 no-print">
-            {[
-              { k: 'estadisticas', l: '📊 Estadísticas y Diagnóstico' },
-              { k: 'certificados', l: '📄 Certificados por empresa' },
-            ].map(t => (
-              <button key={t.k} onClick={() => setReportTab(t.k)} className={`px-5 py-2.5 text-xs font-black rounded-t-lg border-b-2 transition ${reportTab === t.k ? 'border-blue-600 text-blue-700 bg-blue-50' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
-                {t.l}
-              </button>
-            ))}
-          </div>
+  // ═══════════════════════════════════════════════════════════════════════
+  // RENDER: CERTIFICADOS
+  // ═══════════════════════════════════════════════════════════════════════
+  const renderCertificados = () => (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h3 className="font-black text-sm text-gray-800 flex items-center gap-2">
+          <FileCheck className="w-4 h-4 text-emerald-600" /> Certificados Batch
+        </h3>
+        <div className="flex gap-2">
+          <button onClick={() => {
+            const all = {};
+            filteredPatients.forEach(p => { all[p.id] = true; });
+            setCertSelected?.(all);
+          }}
+            className="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-lg text-xs font-bold hover:bg-gray-200">
+            Seleccionar Todos
+          </button>
+          <button onClick={() => setCertSelected?.({})}
+            className="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-lg text-xs font-bold hover:bg-gray-200">
+            Limpiar
+          </button>
+        </div>
+      </div>
 
-          {/* ESTADÍSTICAS TAB */}
-          {reportTab === 'estadisticas' && (
-            <div>
-              <div className="text-center mb-6">
-                <h1 className="text-xl font-black text-blue-900">DIAGNÓSTICO DE CONDICIONES DE SALUD</h1>
-                <div className="mt-2 inline-block p-3 bg-blue-50 rounded-lg border border-blue-100">
-                  <p className="font-bold text-blue-800 text-lg">{compName}</p>
-                  <p className="text-xs text-gray-500 mt-1">Población evaluada: <strong>{total} trabajadores</strong></p>
-                </div>
-              </div>
-
-              {total === 0 ? (
-                <div className="bg-amber-50 border border-amber-200 rounded-xl p-8 text-center">
-                  <p className="text-amber-700 font-bold">Sin evaluaciones para esta empresa en el periodo seleccionado.</p>
-                </div>
-              ) : stats && (
-                <>
-                  {/* Summary cards */}
-                  <div className="grid grid-cols-4 gap-4 mb-6 text-center">
-                    {[
-                      { l: 'Total evaluados', v: total, c: 'blue' },
-                      { l: 'Con hallazgos', v: stats.conHallazgos, c: 'yellow' },
-                      { l: 'Con restricciones', v: stats.conRestricciones, c: 'red' },
-                      { l: 'Con riesgos activos', v: stats.conRiesgos, c: 'orange' },
-                    ].map(s => (
-                      <div key={s.l} className={`bg-${s.c}-50 border border-${s.c}-200 rounded-xl p-3`}>
-                        <p className="text-[10px] text-gray-500 uppercase font-bold">{s.l}</p>
-                        <p className={`text-3xl font-black text-${s.c}-600 mt-1`}>{s.v}</p>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Analytics */}
-                  <div className="grid grid-cols-2 gap-3 mb-4">
-                    <div className="bg-violet-50 border border-violet-100 rounded-xl p-3">
-                      <p className="text-[10px] font-black text-violet-600 uppercase mb-2">🏆 Top Diagnósticos</p>
-                      {stats.topDx.length === 0 ? (
-                        <p className="text-xs text-gray-400">Sin datos</p>
-                      ) : stats.topDx.map(([dx, n]) => (
-                        <div key={dx} className="flex justify-between items-center mb-1">
-                          <span className="text-[10px] text-gray-700 truncate flex-1">{dx}</span>
-                          <span className="text-[10px] font-black text-violet-700 ml-2 bg-violet-100 px-1.5 rounded">{n}</span>
-                        </div>
-                      ))}
-                    </div>
-                    <div className="bg-blue-50 border border-blue-100 rounded-xl p-3">
-                      <p className="text-[10px] font-black text-blue-600 uppercase mb-2">📈 Tendencia Mensual</p>
-                      {Object.entries(stats.tendenciaMensual).sort(([a], [b]) => a.localeCompare(b)).slice(-6).map(([m, n]) => (
-                        <div key={m} className="flex justify-between items-center mb-1">
-                          <span className="text-[10px] text-gray-600">{m}</span>
-                          <div className="flex items-center gap-1 flex-1 ml-2">
-                            <div className="flex-1 bg-blue-100 rounded-full h-2 overflow-hidden">
-                              <div className="bg-blue-500 h-full rounded-full" style={{ width: `${Math.min(100, (n / total) * 100 * 3)}%` }} />
-                            </div>
-                            <span className="text-[10px] font-black text-blue-700 w-5 text-right">{n}</span>
-                          </div>
-                        </div>
-                      ))}
-                      <div className="flex gap-3 mt-2 pt-2 border-t border-blue-100">
-                        <div className="text-center flex-1">
-                          <p className="text-[9px] text-gray-400">Edad prom.</p>
-                          <p className="text-xs font-black text-gray-700">{stats.promedioEdad} años</p>
-                        </div>
-                        <div className="text-center flex-1">
-                          <p className="text-[9px] text-gray-400">Tasa No Aptos</p>
-                          <p className="text-xs font-black text-red-600">{stats.tasaNoAptos}%</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Estilos de vida */}
-                  <div className="bg-green-50 border border-green-200 rounded-xl p-4 mb-4">
-                    <p className="text-xs font-black text-green-800 uppercase mb-3">🏃 Estilos de Vida</p>
-                    <div className="grid grid-cols-3 gap-4 text-center">
-                      <div>
-                        <p className="text-[10px] text-gray-500">🚬 Fumadores</p>
-                        <p className="text-lg font-black text-red-600">{stats.fumadores}</p>
-                        <p className="text-[10px] text-gray-400">{total ? Math.round(stats.fumadores / total * 100) : 0}%</p>
-                      </div>
-                      <div>
-                        <p className="text-[10px] text-gray-500">🍺 Alcohol</p>
-                        <p className="text-lg font-black text-amber-600">{stats.alcohol}</p>
-                        <p className="text-[10px] text-gray-400">{total ? Math.round(stats.alcohol / total * 100) : 0}%</p>
-                      </div>
-                      <div>
-                        <p className="text-[10px] text-gray-500">🏃 Deporte</p>
-                        <p className="text-lg font-black text-emerald-600">{stats.deporte}</p>
-                        <p className="text-[10px] text-gray-400">{total ? Math.round(stats.deporte / total * 100) : 0}%</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Stat tables grid */}
-                  <div className="grid grid-cols-2 gap-4 mb-6">
-                    <StatTable title="Distribución por Género" data={stats.genero} color="blue" />
-                    <StatTable title="Distribución por Edad" data={stats.edad} color="emerald" />
-                    <StatTable title="Índice de Masa Corporal" data={stats.imc} color="orange" />
-                    <StatTable title="Tensión Arterial" data={stats.ta} color="red" />
-                    <StatTable title="Tipo de Examen" data={stats.tipoExamen} color="teal" />
-                    <StatTable title="Concepto de Aptitud" data={stats.conceptoAptitud} color="purple" />
-                    <StatTable title="Cargo" data={stats.cargo} color="indigo" />
-                    <StatTable title="Antigüedad" data={stats.antiguedad} color="amber" />
-                  </div>
-
-                  {/* Diagnósticos */}
-                  <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden mb-6">
-                    <div className="bg-red-50 px-3 py-2 border-b border-red-100">
-                      <p className="text-[10px] font-black text-red-700 uppercase">Diagnósticos CIE-10 ({Object.keys(stats.diagnosticos).length} distintos)</p>
-                    </div>
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-xs">
-                        <thead className="bg-gray-50">
-                          <tr>
-                            <th className="p-2 text-left font-black">Código CIE-10</th>
-                            <th className="p-2 text-center font-black">N</th>
-                            <th className="p-2 text-center font-black">%</th>
-                            <th className="p-2 text-left font-black">Distribución</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {Object.entries(stats.diagnosticos).sort((a, b) => b[1] - a[1]).slice(0, 15).map(([dx, n], i) => (
-                            <tr key={dx} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                              <td className="p-2 font-bold">{dx}</td>
-                              <td className="p-2 text-center font-black">{n}</td>
-                              <td className="p-2 text-center">{Math.round((n / total) * 100)}%</td>
-                              <td className="p-2">
-                                <div className="bg-gray-200 rounded-full h-2 w-full"><div className="bg-red-400 h-full rounded-full" style={{ width: `${(n / total) * 100}%` }} /></div>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-
-                  {/* SVE / Programas de vigilancia */}
-                  <div className="bg-teal-50 border border-teal-200 rounded-xl p-4 mb-4">
-                    <p className="text-xs font-black text-teal-800 uppercase mb-3">📋 Programas de Vigilancia Epidemiológica (SVE) - Res. 2346/2007</p>
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                      {[
-                        { name: 'DME (Desórdenes Músculo-Esqueléticos)', icon: '🦴', count: filtered.filter(p => (p.diagnosticoPrincipal || '').match(/M[0-9]/)).length },
-                        { name: 'Cardiovascular', icon: '❤️', count: filtered.filter(p => (p.diagnosticoPrincipal || '').match(/I[0-9]/)).length },
-                        { name: 'Respiratorio', icon: '🫁', count: filtered.filter(p => (p.diagnosticoPrincipal || '').match(/J[0-9]/)).length },
-                        { name: 'Auditivo', icon: '👂', count: filtered.filter(p => (p.diagnosticoPrincipal || '').match(/H[689][0-9]/)).length },
-                        { name: 'Psicosocial', icon: '🧠', count: filtered.filter(p => (p.diagnosticoPrincipal || '').match(/F[0-9]/)).length },
-                        { name: 'Visual', icon: '👁️', count: filtered.filter(p => (p.diagnosticoPrincipal || '').match(/H[0-5][0-9]/)).length },
-                      ].map(sve => (
-                        <div key={sve.name} className="bg-white border border-teal-100 rounded-lg p-3 text-center">
-                          <p className="text-2xl mb-1">{sve.icon}</p>
-                          <p className="text-[10px] font-black text-teal-700">{sve.name}</p>
-                          <p className="text-lg font-black text-teal-900 mt-1">{sve.count}</p>
-                          <p className="text-[9px] text-gray-400">{total ? Math.round(sve.count / total * 100) : 0}% de evaluados</p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Marco normativo */}
-                  <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 text-[10px] text-gray-600">
-                    <p className="font-black text-gray-800 mb-1">📋 Marco normativo</p>
-                    <p>Res. 2346/2007 · Res. 1843/2025 · Res. 0312/2019 · Ley 1562/2012 · Decreto 1072/2015</p>
-                    <p className="mt-1">Este reporte cumple con los requisitos del diagnóstico de condiciones de salud exigido por la normativa colombiana de SST. Los datos presentados son confidenciales y de uso exclusivo para el SG-SST de la empresa.</p>
-                  </div>
-                </>
+      <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="bg-gray-50 border-b">
+                <th className="p-3 w-10"></th>
+                <th className="text-left p-3 font-bold text-gray-600">Paciente</th>
+                <th className="text-left p-3 font-bold text-gray-600">Documento</th>
+                <th className="text-left p-3 font-bold text-gray-600">Fecha</th>
+                <th className="text-left p-3 font-bold text-gray-600">Tipo</th>
+                <th className="text-left p-3 font-bold text-gray-600">Concepto</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredPatients.slice(0, 100).map(p => (
+                <tr key={p.id} className="border-b border-gray-50 hover:bg-gray-50">
+                  <td className="p-3 text-center">
+                    <input type="checkbox" checked={!!certSelected?.[p.id]}
+                      onChange={e => setCertSelected?.(prev => ({ ...prev, [p.id]: e.target.checked }))}
+                      className="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500" />
+                  </td>
+                  <td className="p-3 font-bold text-gray-800">{p.nombres || '—'}</td>
+                  <td className="p-3 text-gray-600">{p.docNumero || '—'}</td>
+                  <td className="p-3 text-gray-600">{p.fechaExamen || '—'}</td>
+                  <td className="p-3">
+                    <span className="px-2 py-0.5 bg-blue-100 text-blue-700 text-[10px] font-bold rounded-md">
+                      {p.tipoExamen || '—'}
+                    </span>
+                  </td>
+                  <td className="p-3">
+                    <span className={`px-2 py-0.5 text-[10px] font-bold rounded-md ${
+                      (p.conceptoAptitud || '').toLowerCase().includes('apto')
+                        ? 'bg-emerald-100 text-emerald-700'
+                        : 'bg-amber-100 text-amber-700'
+                    }`}>
+                      {p.conceptoAptitud || p.conceptoOcupacional || '—'}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+              {filteredPatients.length === 0 && (
+                <tr><td colSpan={6} className="p-6 text-center text-gray-400">No hay pacientes</td></tr>
               )}
-            </div>
-          )}
-
-          {/* CERTIFICADOS TAB */}
-          {reportTab === 'certificados' && (
-            <div>
-              <h2 className="text-lg font-black text-gray-800 mb-4">📄 Certificados generados para {compName}</h2>
-              {filtered.length === 0 ? (
-                <div className="bg-white rounded-xl p-8 text-center text-gray-400">Sin evaluaciones.</div>
-              ) : (
-                <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                  <table className="w-full text-xs">
-                    <thead className="bg-gray-100 text-gray-600">
-                      <tr>
-                        {['Fecha', 'Paciente', 'Documento', 'Cargo', 'Tipo', 'Concepto', 'Estado'].map(h => (
-                          <th key={h} className="p-2 text-left font-black">{h}</th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filtered.map((p, i) => (
-                        <tr key={p.id || i} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                          <td className="p-2">{p.fechaExamen}</td>
-                          <td className="p-2 font-bold">{p.nombres}</td>
-                          <td className="p-2">{p.docNumero}</td>
-                          <td className="p-2">{p.cargo || '--'}</td>
-                          <td className="p-2">{p.tipoExamen || '--'}</td>
-                          <td className="p-2">
-                            <span className={`px-2 py-0.5 rounded-full font-bold ${
-                              (p.conceptoAptitud || '').toLowerCase().includes('no apto') ? 'bg-red-100 text-red-700' :
-                              (p.conceptoAptitud || '').toLowerCase().includes('condicion') ? 'bg-amber-100 text-amber-700' :
-                              'bg-emerald-100 text-emerald-700'
-                            }`}>
-                              {p.conceptoAptitud || 'Pendiente'}
-                            </span>
-                          </td>
-                          <td className="p-2">
-                            <span className={`px-2 py-0.5 rounded-full font-bold ${p.estadoHistoria === 'Cerrada' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
-                              {p.estadoHistoria || 'Abierta'}
-                            </span>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </div>
-          )}
-        </>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      {filteredPatients.length > 100 && (
+        <p className="text-xs text-gray-400 text-center">Mostrando primeros 100 de {filteredPatients.length}</p>
       )}
+    </div>
+  );
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // MAIN RENDER
+  // ═══════════════════════════════════════════════════════════════════════
+  return (
+    <div className="max-w-6xl mx-auto space-y-6">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl p-6 text-white">
+        <h2 className="text-xl font-black flex items-center gap-2">
+          <BarChart3 className="w-6 h-6" /> Reportes y Estadísticas
+        </h2>
+        <p className="text-indigo-100 text-sm mt-1">
+          {stats.total} pacientes evaluados · {companies.length} empresas
+        </p>
+      </div>
+
+      {/* Filters */}
+      <div className="bg-white border border-gray-200 rounded-xl p-4">
+        <div className="flex flex-wrap items-end gap-4">
+          <div className="flex-1 min-w-[200px]">
+            <label className="text-xs font-bold text-gray-600 block mb-1">
+              <Building2 className="w-3 h-3 inline mr-1" /> Empresa
+            </label>
+            <select value={selectedCompanyReport || ''}
+              onChange={e => setSelectedCompanyReport?.(e.target.value)}
+              className="w-full p-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500">
+              <option value="">Todas las empresas</option>
+              {companies.map(c => (
+                <option key={c.id || c.nit} value={c.id}>{c.nombre}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="text-xs font-bold text-gray-600 block mb-1">
+              <Calendar className="w-3 h-3 inline mr-1" /> Desde
+            </label>
+            <input type="date" value={reportStartDate || ''}
+              onChange={e => setReportStartDate?.(e.target.value)}
+              className="p-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500" />
+          </div>
+          <div>
+            <label className="text-xs font-bold text-gray-600 block mb-1">Hasta</label>
+            <input type="date" value={reportEndDate || ''}
+              onChange={e => setReportEndDate?.(e.target.value)}
+              className="p-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500" />
+          </div>
+          <div className="flex gap-2">
+            <button onClick={handleExportCSV}
+              className="flex items-center gap-1 px-3 py-2.5 bg-emerald-100 text-emerald-700 rounded-lg text-xs font-bold hover:bg-emerald-200">
+              <Download className="w-3 h-3" /> CSV
+            </button>
+            <button onClick={handleExportRIPS}
+              className="flex items-center gap-1 px-3 py-2.5 bg-blue-100 text-blue-700 rounded-lg text-xs font-bold hover:bg-blue-200">
+              <FileText className="w-3 h-3" /> RIPS
+            </button>
+            <button onClick={handleExportFHIR}
+              className="flex items-center gap-1 px-3 py-2.5 bg-purple-100 text-purple-700 rounded-lg text-xs font-bold hover:bg-purple-200">
+              <FileText className="w-3 h-3" /> FHIR R4
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Tab bar */}
+      <div className="flex gap-2 overflow-x-auto pb-2">
+        {[
+          { id: 'estadisticas', label: 'Estadísticas', icon: BarChart3 },
+          { id: 'sve', label: 'Indicadores SVE', icon: Shield },
+          { id: 'ia', label: 'Informe IA', icon: Brain },
+          { id: 'certificados', label: 'Certificados', icon: FileCheck },
+        ].map(tab => (
+          <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold whitespace-nowrap transition ${
+              activeTab === tab.id
+                ? 'bg-indigo-600 text-white shadow'
+                : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'
+            }`}>
+            <tab.icon className="w-4 h-4" /> {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Tab content */}
+      {activeTab === 'estadisticas' && renderEstadisticas()}
+      {activeTab === 'sve' && renderSVE()}
+      {activeTab === 'ia' && renderAIReport()}
+      {activeTab === 'certificados' && renderCertificados()}
     </div>
   );
 }

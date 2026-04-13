@@ -1,114 +1,162 @@
 // src/pages/Agenda.jsx
-// Agenda completa — sala de espera, citas del día, nueva cita, navegación por fecha, autocomplete paciente
-import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
-import { Clock, Plus, Search, ChevronLeft, ChevronRight, X, Users, CheckCircle2 } from 'lucide-react';
-import { _isAdmin, _isAdminOrEmpresa, _canUse, _secretariaPuede } from '../shared/data/planConfig.js';
-import { PlanGate } from '../shared/ui/PlanGate.jsx';
+// ═══════════════════════════════════════════════════════════════════════
+// AGENDA DEL DÍA — Sala de espera, citas, llamado, completado
+// ═══════════════════════════════════════════════════════════════════════
+import React, { useState, useMemo, useCallback } from 'react';
+import { InputGroup } from '../shared/ui/InputGroup.jsx';
+import { EPS_LIST, ARL_LIST } from '../shared/data/catalogs.js';
+
+const TIPOS_CONSULTA = [
+  { v: 'ingreso', l: 'Ingreso', mins: 20 },
+  { v: 'egreso', l: 'Egreso', mins: 20 },
+  { v: 'periodico', l: 'Periódico', mins: 20 },
+  { v: 'seguimiento', l: 'Seguimiento', mins: 40 },
+  { v: 'post_incapacidad', l: 'Post-Incapacidad', mins: 40 },
+];
+
+const DURACION = { ingreso: 20, egreso: 20, periodico: 20, seguimiento: 40, post_incapacidad: 40 };
+
+const addMins = (hhmm, mins) => {
+  const [h, m] = hhmm.split(':').map(Number);
+  const total = h * 60 + m + mins;
+  return `${String(Math.floor(total / 60) % 24).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`;
+};
+
+const horaActual = () => new Date().toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit', hour12: false }).replace('.', ':');
+
+const calcEdad = (fNac) => {
+  if (!fNac) return '';
+  const parts = String(fNac).split('-');
+  if (parts.length !== 3) return '';
+  const nacY = parseInt(parts[0], 10);
+  const nacM = parseInt(parts[1], 10) - 1;
+  const nacD = parseInt(parts[2], 10);
+  if (isNaN(nacY) || isNaN(nacM) || isNaN(nacD)) return '';
+  const hoy = new Date();
+  let edad = hoy.getFullYear() - nacY;
+  const mDiff = hoy.getMonth() - nacM;
+  if (mDiff < 0 || (mDiff === 0 && hoy.getDate() < nacD)) edad--;
+  return String(Math.max(0, edad));
+};
 
 export default function Agenda({
-  currentUser, usersList = [], patientsList = [], companies = [],
-  agendados = [], setAgendados,
-  agendaForm, setAgendaForm,
-  agendaTab, setAgendaTab,
-  agendaFecha, setAgendaFecha,
-  agendaSuggs = [], setAgendaSuggs,
-  goBack, goTo, showAlert,
-  handleNewOccupHistory, handleNewGeneralHistory,
-  openPatient, setData, setDataType, setActiveTab, setView,
-  atencionesCerradas = [], setAtencionesCerradas,
-  hcChoiceAgenda, setHcChoiceAgenda,
-  medicoTurnoActivo,
-  _syncAgenda,
+  currentUser,
+  goTo,
+  patientsList = [],
+  companies = [],
+  appointments = [],
+  onAddAppointment,
+  onCompleteAppointment,
 }) {
-  const [timer, setTimer] = useState(0);
-  const timerRef = useRef(null);
+  const showAlert = useCallback((msg) => window.alert(msg), []);
 
-  // ── PLAN GATE ──
-  if (!_canUse("agenda", currentUser)) {
-    return (
-      <div className="max-w-2xl mx-auto px-4 py-12">
-        <PlanGate feature="agenda" requiredPlan="starter" currentUser={currentUser} />
-        <div className="mt-4 text-center"><button onClick={() => goBack()} className="text-sm text-gray-500 hover:text-gray-700">← Volver</button></div>
-      </div>
-    );
-  }
+  const [agendaTab, setAgendaTab] = useState('hoy');
+  const [agendaSuggs, setAgendaSuggs] = useState([]);
+  const [agendaForm, setAgendaForm] = useState({
+    nombre: '', docTipo: 'CC', docNumero: '', fechaNacimiento: '', edad: '',
+    genero: '', celular: '', email: '', eps: '', arl: '',
+    empresa: '', cargo: '', tipoConsulta: 'ingreso',
+    fechaCita: '', horaCita: '', observacion: '', medicoId: currentUser?.user || '',
+    _busquedaQuery: '',
+  });
 
-  // ── SECRETARIA GATE ──
-  if (currentUser?.role === "secretaria" && !_secretariaPuede("agenda", currentUser, usersList)) {
-    return (
-      <div className="max-w-xl mx-auto px-4 py-16 text-center">
-        <div className="bg-amber-50 border-2 border-amber-300 rounded-2xl p-8 space-y-3">
-          <div className="text-5xl">🔐</div>
-          <p className="font-black text-amber-800 text-xl">Módulo restringido</p>
-          <p className="text-amber-600 text-xs">Solicita permiso "Agenda" al administrador.</p>
-          <button onClick={() => goBack()} className="mt-3 bg-amber-600 text-white px-5 py-2 rounded-lg text-sm font-bold">← Volver</button>
-        </div>
-      </div>
-    );
-  }
+  const today = new Date().toISOString().split('T')[0];
 
-  const hoy = new Date().toISOString().split("T")[0];
-  const fechaActual = agendaFecha || hoy;
+  const miAgendaHoy = useMemo(() =>
+    appointments.filter(a => a.fecha === today).sort((a, b) => (a.horaCita || '').localeCompare(b.horaCita || '')),
+    [appointments, today]
+  );
+  const enEspera = miAgendaHoy.filter(a => a.estado === 'espera');
+  const atendiendo = miAgendaHoy.filter(a => a.estado === 'atendiendo');
+  const atendidos = miAgendaHoy.filter(a => a.estado === 'atendido' || a.completed);
+  const proximas = useMemo(() =>
+    appointments.filter(a => a.fecha > today).sort((a, b) => a.fecha.localeCompare(b.fecha) || (a.horaCita || '').localeCompare(b.horaCita || '')),
+    [appointments, today]
+  );
 
-  const agendadosHoy = useMemo(() => agendados.filter(a => a.fecha === fechaActual).sort((a, b) => (a.hora || "").localeCompare(b.hora || "")), [agendados, fechaActual]);
-  const enEspera = agendadosHoy.filter(a => a.estado === "espera");
-  const atendiendo = agendadosHoy.filter(a => a.estado === "atendiendo");
-  const atendidos = agendadosHoy.filter(a => a.estado === "atendido");
-
-  // Autocomplete pacientes
-  const handleSearch = useCallback((q) => {
-    if (!q || q.length < 2) { if (setAgendaSuggs) setAgendaSuggs([]); return; }
-    const qLow = q.toLowerCase();
-    const results = patientsList.filter(p => (p.nombres || "").toLowerCase().includes(qLow) || (p.docNumero || "").includes(q)).slice(0, 8);
-    if (setAgendaSuggs) setAgendaSuggs(results);
-  }, [patientsList, setAgendaSuggs]);
-
-  const handleCallNext = useCallback(() => {
-    if (enEspera.length === 0) { showAlert("No hay pacientes en espera."); return; }
-    const next = enEspera[0];
-    const updated = agendados.map(a => a.id === next.id ? { ...a, estado: "atendiendo", horaInicio: new Date().toLocaleTimeString("es-CO", { hour: "2-digit", minute: "2-digit", hour12: false }).replace(".", ":") } : a);
-    setAgendados(updated); if (_syncAgenda) _syncAgenda(updated);
-  }, [enEspera, agendados, setAgendados, _syncAgenda, showAlert]);
-
-  const handleComplete = useCallback((id) => {
-    const horaFin = new Date().toLocaleTimeString("es-CO", { hour: "2-digit", minute: "2-digit", hour12: false }).replace(".", ":");
-    const updated = agendados.map(a => a.id === id ? { ...a, estado: "atendido", horaFin } : a);
-    setAgendados(updated); if (_syncAgenda) _syncAgenda(updated);
-    // Register in atenciones cerradas
-    const pac = agendados.find(a => a.id === id);
-    if (pac && setAtencionesCerradas) {
-      setAtencionesCerradas(prev => [...prev, { id: "at_" + Date.now(), nombre: pac.nombre, documento: pac.doc, fecha: fechaActual, horaFin, tipo: pac.tipo || "ocupacional" }]);
-    }
-  }, [agendados, setAgendados, _syncAgenda, setAtencionesCerradas, fechaActual]);
-
-  const handleAddAppointment = useCallback(() => {
-    if (!agendaForm.nombre) { showAlert("Ingrese el nombre del paciente."); return; }
-    if (!agendaForm.hora) { showAlert("Ingrese la hora."); return; }
-    const newAppt = {
-      id: "ag_" + Date.now(), nombre: agendaForm.nombre, doc: agendaForm.doc || "",
-      tipo: agendaForm.tipo || "ocupacional", hora: agendaForm.hora,
-      fecha: agendaForm.fecha || hoy, estado: "espera",
-      empresa: agendaForm.empresa || "", cargo: agendaForm.cargo || "",
-      medicoId: agendaForm.medicoId || currentUser?.user,
-      notas: agendaForm.notas || "",
-    };
-    const updated = [...agendados, newAppt];
-    setAgendados(updated); if (_syncAgenda) _syncAgenda(updated);
-    setAgendaForm({ nombre: "", doc: "", tipo: "ocupacional", hora: "", fecha: hoy, empresa: "", cargo: "", medicoId: currentUser?.user || "", notas: "" });
-    if (setAgendaSuggs) setAgendaSuggs([]);
-    showAlert("✅ Cita agendada.");
-    setAgendaTab("hoy");
-  }, [agendaForm, agendados, setAgendados, _syncAgenda, setAgendaForm, setAgendaSuggs, hoy, currentUser, showAlert, setAgendaTab]);
-
-  const navegarFecha = (dir) => {
-    const d = new Date(fechaActual); d.setDate(d.getDate() + dir);
-    if (setAgendaFecha) setAgendaFecha(d.toISOString().split("T")[0]);
+  const handleBusqueda = (val) => {
+    setAgendaForm(p => ({ ...p, nombre: val, _busquedaQuery: val }));
+    if (val.length < 2) { setAgendaSuggs([]); return; }
+    const q = val.toLowerCase();
+    setAgendaSuggs(patientsList.filter(p => p.nombres?.toLowerCase().includes(q) || p.docNumero?.toLowerCase().includes(q)).slice(0, 8));
   };
 
-  const statusBadge = (estado) => {
-    const map = { espera: { bg: "bg-amber-100", text: "text-amber-700", label: "⏳ En espera" }, atendiendo: { bg: "bg-blue-100", text: "text-blue-700", label: "🔵 Atendiendo" }, atendido: { bg: "bg-emerald-100", text: "text-emerald-700", label: "✅ Atendido" } };
-    const s = map[estado] || map.espera;
-    return <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${s.bg} ${s.text}`}>{s.label}</span>;
+  const seleccionarPaciente = (p) => {
+    setAgendaForm(prev => ({
+      ...prev,
+      nombre: p.nombres || '', docTipo: p.docTipo || 'CC', docNumero: p.docNumero || '',
+      fechaNacimiento: p.fechaNacimiento || '', edad: p.edad || calcEdad(p.fechaNacimiento),
+      genero: p.genero || '', celular: p.celular || '', email: p.email || '',
+      eps: p.eps || '', arl: p.arl || '',
+      empresa: p.empresa || companies.find(c => c.id === p.companyId)?.nombre || '',
+      cargo: p.cargo || '', _busquedaQuery: p.nombres || '',
+    }));
+    setAgendaSuggs([]);
+  };
+
+  const registrarPaciente = () => {
+    if (!agendaForm.nombre.trim()) { showAlert('Ingrese el nombre del paciente.'); return; }
+    const fechaCita = agendaForm.fechaCita || today;
+    const horaCita = agendaForm.horaCita || horaActual();
+    const duracion = DURACION[agendaForm.tipoConsulta] || 20;
+    const horaFin = addMins(horaCita, duracion);
+    const esHoy = fechaCita === today;
+
+    const nuevo = {
+      id: 'ag_' + Date.now(),
+      nombre: agendaForm.nombre.trim(),
+      docTipo: agendaForm.docTipo,
+      docNumero: agendaForm.docNumero.trim(),
+      fechaNacimiento: agendaForm.fechaNacimiento,
+      edad: agendaForm.edad || calcEdad(agendaForm.fechaNacimiento),
+      genero: agendaForm.genero,
+      celular: agendaForm.celular,
+      email: agendaForm.email,
+      eps: agendaForm.eps,
+      arl: agendaForm.arl,
+      empresa: agendaForm.empresa,
+      cargo: agendaForm.cargo,
+      medicoId: agendaForm.medicoId || currentUser?.user,
+      medicoNombre: currentUser?.name || currentUser?.user,
+      tipoConsulta: agendaForm.tipoConsulta,
+      fecha: fechaCita,
+      horaCita,
+      horaFinCita: horaFin,
+      duracion,
+      hora: horaCita,
+      observacion: agendaForm.observacion,
+      estado: esHoy ? 'espera' : 'programado',
+      registradoPor: currentUser?.user,
+      registradoEn: new Date().toISOString(),
+    };
+
+    onAddAppointment?.(nuevo);
+    setAgendaForm({
+      nombre: '', docTipo: 'CC', docNumero: '', fechaNacimiento: '', edad: '',
+      genero: '', celular: '', email: '', eps: '', arl: '',
+      empresa: '', cargo: '', tipoConsulta: 'ingreso',
+      fechaCita: '', horaCita: '', observacion: '', medicoId: currentUser?.user || '',
+      _busquedaQuery: '',
+    });
+    setAgendaSuggs([]);
+    setAgendaTab('hoy');
+    showAlert(`✅ ${esHoy ? 'Paciente en sala de espera' : 'Cita programada para ' + fechaCita + ' a las ' + horaCita}.\nDuración: ${duracion} min`);
+  };
+
+  const EstadoBadge = ({ estado }) => {
+    const map = {
+      espera: 'bg-yellow-100 text-yellow-800 border-yellow-300',
+      atendiendo: 'bg-blue-100 text-blue-800 border-blue-300',
+      atendido: 'bg-emerald-100 text-emerald-800 border-emerald-300',
+      programado: 'bg-purple-100 text-purple-800 border-purple-300',
+    };
+    const icons = { espera: '⏳', atendiendo: '🔵', atendido: '✅', programado: '📅' };
+    const labels = { espera: 'En espera', atendiendo: 'Atendiendo', atendido: 'Atendido', programado: 'Programado' };
+    return (
+      <span className={`text-[10px] font-black px-2 py-1 rounded-full border ${map[estado] || map.espera}`}>
+        {icons[estado] || '⏳'} {labels[estado] || estado}
+      </span>
+    );
   };
 
   return (
@@ -116,94 +164,68 @@ export default function Agenda({
       {/* Header */}
       <div className="bg-gradient-to-r from-blue-700 to-indigo-700 rounded-2xl p-5 text-white mb-4">
         <div className="flex items-center justify-between flex-wrap gap-3">
-          <div className="flex items-center gap-3">
-            <button onClick={() => goBack()} className="bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-lg text-xs font-bold">← Volver</button>
-            <div>
-              <h2 className="text-lg font-black">🗓️ Agenda / Sala de Espera</h2>
-              <p className="text-blue-200 text-xs mt-0.5">{fechaActual === hoy ? "Hoy" : fechaActual} · {agendadosHoy.length} pacientes</p>
-            </div>
+          <div>
+            <h2 className="text-lg font-black">🗓️ Agenda del Día</h2>
+            <p className="text-blue-200 text-xs mt-0.5">
+              Sala de espera · Programación de citas · {new Date().toLocaleDateString('es-CO', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+            </p>
           </div>
-          <div className="flex gap-2">
-            <button onClick={() => setAgendaTab("hoy")} className={`px-3 py-1.5 text-xs font-bold rounded-lg ${agendaTab === "hoy" ? "bg-white text-blue-700" : "bg-blue-800 text-blue-200"}`}>📋 Hoy ({agendadosHoy.length})</button>
-            <button onClick={() => setAgendaTab("nueva")} className={`px-3 py-1.5 text-xs font-bold rounded-lg ${agendaTab === "nueva" ? "bg-white text-blue-700" : "bg-blue-800 text-blue-200"}`}>➕ Nueva cita</button>
-            <button onClick={() => setAgendaTab("proximas")} className={`px-3 py-1.5 text-xs font-bold rounded-lg ${agendaTab === "proximas" ? "bg-white text-blue-700" : "bg-blue-800 text-blue-200"}`}>📅 Próximas</button>
+          <div className="flex gap-2 flex-wrap">
+            <span className="bg-yellow-500 text-white text-[10px] font-black px-2 py-1 rounded-full">⏳ {enEspera.length} esperando</span>
+            {atendiendo.length > 0 && <span className="bg-blue-500 text-white text-[10px] font-black px-2 py-1 rounded-full">🔵 {atendiendo.length} atendiendo</span>}
+            <span className="bg-emerald-500 text-white text-[10px] font-black px-2 py-1 rounded-full">✅ {atendidos.length} atendidos</span>
           </div>
         </div>
       </div>
 
-      {/* Navegación fecha */}
-      <div className="flex items-center justify-center gap-4 mb-4">
-        <button onClick={() => navegarFecha(-1)} className="p-2 bg-gray-100 rounded-lg hover:bg-gray-200"><ChevronLeft className="w-4 h-4" /></button>
-        <input type="date" value={fechaActual} onChange={e => setAgendaFecha && setAgendaFecha(e.target.value)} className="border rounded-lg px-3 py-1.5 text-sm font-bold" />
-        <button onClick={() => navegarFecha(1)} className="p-2 bg-gray-100 rounded-lg hover:bg-gray-200"><ChevronRight className="w-4 h-4" /></button>
-        <button onClick={() => setAgendaFecha && setAgendaFecha(hoy)} className="text-xs font-bold text-blue-600 hover:text-blue-800">Hoy</button>
+      {/* Tabs */}
+      <div className="flex gap-1 mb-4 bg-white rounded-xl p-1 shadow-sm border border-gray-100">
+        {[
+          { k: 'hoy', l: `🗓️ Hoy (${miAgendaHoy.length})` },
+          { k: 'agendar', l: '➕ Agendar paciente' },
+          { k: 'proximas', l: `📅 Próximas (${proximas.length})` },
+        ].map(t => (
+          <button key={t.k} onClick={() => setAgendaTab(t.k)} className={`flex-1 py-2 text-xs font-black rounded-lg transition ${agendaTab === t.k ? 'bg-blue-700 text-white' : 'text-gray-600 hover:bg-gray-100'}`}>
+            {t.l}
+          </button>
+        ))}
       </div>
-
-      {/* Stats rápidas */}
-      <div className="grid grid-cols-3 gap-3 mb-4">
-        <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 text-center">
-          <p className="text-2xl font-black text-amber-700">{enEspera.length}</p>
-          <p className="text-[10px] font-bold text-amber-600">En espera</p>
-        </div>
-        <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 text-center">
-          <p className="text-2xl font-black text-blue-700">{atendiendo.length}</p>
-          <p className="text-[10px] font-bold text-blue-600">Atendiendo</p>
-        </div>
-        <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-center">
-          <p className="text-2xl font-black text-emerald-700">{atendidos.length}</p>
-          <p className="text-[10px] font-bold text-emerald-600">Atendidos</p>
-        </div>
-      </div>
-
-      {/* Botón llamar siguiente */}
-      {enEspera.length > 0 && agendaTab === "hoy" && (
-        <button onClick={handleCallNext} className="w-full mb-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 rounded-xl font-black text-sm flex items-center justify-center gap-2 hover:opacity-90 transition">
-          📢 Llamar siguiente: {enEspera[0].nombre} ({enEspera[0].hora})
-        </button>
-      )}
 
       {/* TAB: HOY */}
-      {agendaTab === "hoy" && (
-        <div className="space-y-2">
-          {agendadosHoy.length === 0 ? (
-            <div className="text-center py-12 text-gray-400">
+      {agendaTab === 'hoy' && (
+        <div className="space-y-3">
+          {miAgendaHoy.length === 0 ? (
+            <div className="bg-white rounded-2xl p-12 text-center text-gray-400">
               <p className="text-4xl mb-3">📋</p>
-              <p className="font-bold text-gray-600">Sin citas para {fechaActual === hoy ? "hoy" : fechaActual}</p>
-              <button onClick={() => setAgendaTab("nueva")} className="mt-3 bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-bold">➕ Agendar cita</button>
+              <p className="font-bold text-gray-600">Sin pacientes agendados hoy</p>
+              <p className="text-xs mt-1">Use "➕ Agendar paciente" para agregar</p>
             </div>
-          ) : agendadosHoy.map(a => (
-            <div key={a.id} className={`bg-white rounded-2xl shadow-sm border p-4 ${a.estado === "atendiendo" ? "border-blue-400 ring-2 ring-blue-100" : a.estado === "atendido" ? "border-emerald-200" : "border-gray-100"}`}>
+          ) : miAgendaHoy.map(ag => (
+            <div key={ag.id} className={`bg-white rounded-2xl shadow-sm border p-4 ${ag.estado === 'atendiendo' ? 'border-blue-400 ring-2 ring-blue-100' : ag.estado === 'espera' ? 'border-yellow-300' : 'border-gray-100'}`}>
               <div className="flex justify-between items-start">
                 <div>
-                  <div className="flex items-center gap-2">
-                    <p className="font-black text-sm text-gray-800">{a.nombre}</p>
-                    {statusBadge(a.estado)}
-                    <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${a.tipo === "general" ? "bg-blue-100 text-blue-700" : "bg-emerald-100 text-emerald-700"}`}>{a.tipo === "general" ? "General" : "Ocupacional"}</span>
-                  </div>
-                  <p className="text-[10px] text-gray-500 mt-0.5">🕐 {a.hora} · {a.doc || "Sin doc"} · {a.empresa || "Particular"} · {a.cargo || ""}</p>
-                  {a.horaInicio && <p className="text-[10px] text-blue-600 font-bold mt-0.5">Inicio: {a.horaInicio}{a.horaFin ? ` → Fin: ${a.horaFin}` : ""}</p>}
-                  {a.notas && <p className="text-[10px] text-gray-400 mt-0.5">📝 {a.notas}</p>}
+                  <p className="font-black text-sm text-gray-800">{ag.nombre}</p>
+                  <p className="text-[10px] text-gray-500">{ag.docTipo} {ag.docNumero} · {ag.empresa || 'Sin empresa'} · {ag.cargo || '--'}</p>
+                  <p className="text-[10px] text-gray-400 mt-0.5">
+                    🕐 {ag.horaCita || ag.hora} - {ag.horaFinCita || '--'} · {TIPOS_CONSULTA.find(t => t.v === ag.tipoConsulta)?.l || ag.tipoConsulta} ({ag.duracion || 20} min)
+                  </p>
+                  {ag.observacion && <p className="text-[10px] text-gray-400 mt-0.5">📝 {ag.observacion}</p>}
+                  <p className="text-[10px] text-gray-400">👤 {ag.medicoNombre || '--'}</p>
                 </div>
-                <div className="flex gap-1.5">
-                  {a.estado === "espera" && (
-                    <button onClick={() => {
-                      const updated = agendados.map(x => x.id === a.id ? { ...x, estado: "atendiendo", horaInicio: new Date().toLocaleTimeString("es-CO", { hour: "2-digit", minute: "2-digit", hour12: false }).replace(".", ":") } : x);
-                      setAgendados(updated); if (_syncAgenda) _syncAgenda(updated);
-                    }} className="px-3 py-1.5 bg-blue-600 text-white text-[10px] font-black rounded-lg hover:bg-blue-700">▶ Llamar</button>
-                  )}
-                  {a.estado === "atendiendo" && (
-                    <>
-                      <button onClick={() => handleComplete(a.id)} className="px-3 py-1.5 bg-emerald-600 text-white text-[10px] font-black rounded-lg hover:bg-emerald-700">✅ Finalizar</button>
-                      <button onClick={() => {
-                        // Open HC for this patient
-                        if (setHcChoiceAgenda) setHcChoiceAgenda(a);
-                      }} className="px-3 py-1.5 bg-indigo-600 text-white text-[10px] font-black rounded-lg hover:bg-indigo-700">📋 Crear HC</button>
-                    </>
-                  )}
-                  <button onClick={() => {
-                    const updated = agendados.filter(x => x.id !== a.id);
-                    setAgendados(updated); if (_syncAgenda) _syncAgenda(updated);
-                  }} className="px-2 py-1.5 bg-red-100 text-red-600 text-[10px] font-black rounded-lg hover:bg-red-200">🗑</button>
+                <div className="flex flex-col items-end gap-2">
+                  <EstadoBadge estado={ag.completed ? 'atendido' : ag.estado} />
+                  <div className="flex gap-1">
+                    {ag.estado === 'espera' && !ag.completed && (
+                      <button onClick={() => onCompleteAppointment?.(ag.id)} className="bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-black px-3 py-1.5 rounded-lg">
+                        ▶ Llamar / Atender
+                      </button>
+                    )}
+                    {ag.estado === 'atendiendo' && !ag.completed && (
+                      <button onClick={() => onCompleteAppointment?.(ag.id)} className="bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-black px-3 py-1.5 rounded-lg">
+                        ✅ Completar
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
@@ -211,91 +233,100 @@ export default function Agenda({
         </div>
       )}
 
-      {/* TAB: NUEVA CITA */}
-      {agendaTab === "nueva" && (
+      {/* TAB: AGENDAR */}
+      {agendaTab === 'agendar' && (
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 space-y-4">
-          <h3 className="text-sm font-black text-gray-800">Nueva cita</h3>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="col-span-2 relative">
-              <label className="block text-[10px] font-bold text-gray-600 uppercase mb-1">Paciente *</label>
-              <input value={agendaForm.nombre} onChange={e => { setAgendaForm(p => ({ ...p, nombre: e.target.value })); handleSearch(e.target.value); }}
-                className="w-full p-2 border rounded-lg text-sm" placeholder="Nombre del paciente (autocomplete)" />
-              {agendaSuggs.length > 0 && (
-                <div className="absolute z-10 mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-48 overflow-auto">
-                  {agendaSuggs.map(p => (
-                    <button key={p.id} onClick={() => {
-                      setAgendaForm(prev => ({ ...prev, nombre: p.nombres, doc: p.docNumero, empresa: p.empresaNombre || "", cargo: p.cargo || "" }));
-                      if (setAgendaSuggs) setAgendaSuggs([]);
-                    }} className="w-full text-left px-3 py-2 hover:bg-teal-50 text-xs border-b border-gray-50">
-                      <p className="font-bold text-gray-800">{p.nombres}</p>
-                      <p className="text-[10px] text-gray-500">{p.docNumero} · {p.empresaNombre || "Particular"}</p>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-            <div><label className="block text-[10px] font-bold text-gray-600 uppercase mb-1">Documento</label>
-              <input value={agendaForm.doc} onChange={e => setAgendaForm(p => ({ ...p, doc: e.target.value }))} className="w-full p-2 border rounded-lg text-sm" placeholder="CC / CE" /></div>
-            <div><label className="block text-[10px] font-bold text-gray-600 uppercase mb-1">Tipo examen</label>
-              <select value={agendaForm.tipo} onChange={e => setAgendaForm(p => ({ ...p, tipo: e.target.value }))} className="w-full p-2 border rounded-lg text-sm">
-                <option value="ocupacional">Ocupacional</option><option value="general">General</option>
-              </select></div>
-            <div><label className="block text-[10px] font-bold text-gray-600 uppercase mb-1">Fecha *</label>
-              <input type="date" value={agendaForm.fecha || hoy} onChange={e => setAgendaForm(p => ({ ...p, fecha: e.target.value }))} className="w-full p-2 border rounded-lg text-sm" /></div>
-            <div><label className="block text-[10px] font-bold text-gray-600 uppercase mb-1">Hora *</label>
-              <input type="time" value={agendaForm.hora} onChange={e => setAgendaForm(p => ({ ...p, hora: e.target.value }))} className="w-full p-2 border rounded-lg text-sm" /></div>
-            <div><label className="block text-[10px] font-bold text-gray-600 uppercase mb-1">Empresa</label>
-              <select value={agendaForm.empresa} onChange={e => setAgendaForm(p => ({ ...p, empresa: e.target.value }))} className="w-full p-2 border rounded-lg text-sm">
-                <option value="">Particular</option>
-                {companies.map(c => <option key={c.id} value={c.nombre}>{c.nombre}</option>)}
-              </select></div>
-            <div><label className="block text-[10px] font-bold text-gray-600 uppercase mb-1">Cargo</label>
-              <input value={agendaForm.cargo} onChange={e => setAgendaForm(p => ({ ...p, cargo: e.target.value }))} className="w-full p-2 border rounded-lg text-sm" /></div>
-            <div className="col-span-2"><label className="block text-[10px] font-bold text-gray-600 uppercase mb-1">Notas</label>
-              <input value={agendaForm.notas} onChange={e => setAgendaForm(p => ({ ...p, notas: e.target.value }))} className="w-full p-2 border rounded-lg text-sm" placeholder="Observaciones..." /></div>
+          <h3 className="text-sm font-black text-gray-800">Datos del paciente</h3>
+
+          {/* Búsqueda */}
+          <div className="relative">
+            <label className="block text-[10px] font-black text-gray-600 uppercase mb-1">🔍 Buscar paciente existente</label>
+            <input
+              value={agendaForm._busquedaQuery}
+              onChange={(e) => handleBusqueda(e.target.value)}
+              className="w-full p-2 border-2 border-blue-200 rounded-lg text-sm"
+              placeholder="Nombre o cédula del paciente..."
+            />
+            {agendaSuggs.length > 0 && (
+              <div className="absolute z-20 bg-white border border-blue-300 rounded-xl shadow-lg mt-1 w-full max-h-40 overflow-y-auto">
+                {agendaSuggs.map(p => (
+                  <button key={p.id} onClick={() => seleccionarPaciente(p)} className="w-full text-left px-4 py-2 hover:bg-blue-50 text-xs border-b border-gray-50">
+                    <span className="font-bold">{p.nombres}</span> <span className="text-gray-400">· {p.docNumero} · {p.empresa || '--'}</span>
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
-          <button onClick={handleAddAppointment} disabled={!agendaForm.nombre || !agendaForm.hora}
-            className="w-full py-3 bg-blue-600 hover:bg-blue-700 disabled:opacity-40 text-white font-black rounded-xl">🗓️ Agendar cita</button>
+
+          {/* Form fields */}
+          <div className="flex flex-wrap -mx-1.5">
+            <InputGroup label="Nombre completo *" value={agendaForm.nombre} onChange={(e) => setAgendaForm(p => ({ ...p, nombre: e.target.value }))} width="w-1/2" />
+            <div className="px-1.5 mb-3 w-1/6">
+              <label className="block text-[10px] font-black text-gray-600 uppercase mb-1">Doc.</label>
+              <select value={agendaForm.docTipo} onChange={(e) => setAgendaForm(p => ({ ...p, docTipo: e.target.value }))} className="w-full p-1.5 border rounded-lg text-xs">
+                {['CC', 'TI', 'CE', 'PP', 'RC', 'NIP', 'PEP', 'PPT'].map(o => <option key={o}>{o}</option>)}
+              </select>
+            </div>
+            <InputGroup label="Número doc." value={agendaForm.docNumero} onChange={(e) => setAgendaForm(p => ({ ...p, docNumero: e.target.value }))} width="w-1/3" />
+            <InputGroup label="Fecha nacimiento" value={agendaForm.fechaNacimiento} onChange={(e) => setAgendaForm(p => ({ ...p, fechaNacimiento: e.target.value, edad: calcEdad(e.target.value) }))} type="date" width="w-1/4" />
+            <InputGroup label="Edad" value={agendaForm.edad} onChange={(e) => setAgendaForm(p => ({ ...p, edad: e.target.value }))} width="w-1/8 min-w-[60px]" />
+            <div className="px-1.5 mb-3 w-1/6">
+              <label className="block text-[10px] font-black text-gray-600 uppercase mb-1">Género</label>
+              <select value={agendaForm.genero} onChange={(e) => setAgendaForm(p => ({ ...p, genero: e.target.value }))} className="w-full p-1.5 border rounded-lg text-xs">
+                <option value="">--</option>
+                {['Masculino', 'Femenino', 'Otro'].map(o => <option key={o}>{o}</option>)}
+              </select>
+            </div>
+            <InputGroup label="Celular" value={agendaForm.celular} onChange={(e) => setAgendaForm(p => ({ ...p, celular: e.target.value }))} width="w-1/4" />
+            <InputGroup label="Email" value={agendaForm.email} onChange={(e) => setAgendaForm(p => ({ ...p, email: e.target.value }))} width="w-1/4" />
+            <InputGroup label="EPS" value={agendaForm.eps} onChange={(e) => setAgendaForm(p => ({ ...p, eps: e.target.value }))} width="w-1/4" list="eps-list-agenda" />
+            <InputGroup label="ARL" value={agendaForm.arl} onChange={(e) => setAgendaForm(p => ({ ...p, arl: e.target.value }))} width="w-1/4" list="arl-list-agenda" />
+            <InputGroup label="Empresa" value={agendaForm.empresa} onChange={(e) => setAgendaForm(p => ({ ...p, empresa: e.target.value }))} width="w-1/3" />
+            <InputGroup label="Cargo" value={agendaForm.cargo} onChange={(e) => setAgendaForm(p => ({ ...p, cargo: e.target.value }))} width="w-1/3" />
+          </div>
+
+          {/* Cita fields */}
+          <div className="border-t border-gray-100 pt-4">
+            <p className="text-xs font-black text-gray-700 uppercase mb-3">📅 Datos de la cita</p>
+            <div className="flex flex-wrap -mx-1.5">
+              <div className="px-1.5 mb-3 w-1/4">
+                <label className="block text-[10px] font-black text-gray-600 uppercase mb-1">Tipo de consulta</label>
+                <select value={agendaForm.tipoConsulta} onChange={(e) => setAgendaForm(p => ({ ...p, tipoConsulta: e.target.value }))} className="w-full p-1.5 border rounded-lg text-xs">
+                  {TIPOS_CONSULTA.map(t => <option key={t.v} value={t.v}>{t.l} ({t.mins} min)</option>)}
+                </select>
+              </div>
+              <InputGroup label="Fecha cita" value={agendaForm.fechaCita} onChange={(e) => setAgendaForm(p => ({ ...p, fechaCita: e.target.value }))} type="date" width="w-1/4" />
+              <InputGroup label="Hora cita" value={agendaForm.horaCita} onChange={(e) => setAgendaForm(p => ({ ...p, horaCita: e.target.value }))} type="time" width="w-1/4" />
+              <InputGroup label="Observación" value={agendaForm.observacion} onChange={(e) => setAgendaForm(p => ({ ...p, observacion: e.target.value }))} width="w-full" />
+            </div>
+          </div>
+
+          <button onClick={registrarPaciente} className="w-full py-3 bg-blue-700 hover:bg-blue-800 text-white font-black rounded-xl text-sm">
+            📋 Registrar en agenda
+          </button>
         </div>
       )}
 
       {/* TAB: PRÓXIMAS */}
-      {agendaTab === "proximas" && (
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-          <div className="px-4 py-3 border-b border-gray-100 bg-blue-50"><p className="text-sm font-black text-blue-800">Próximas citas</p></div>
-          {agendados.filter(a => a.fecha >= hoy && a.estado !== "atendido").sort((a, b) => `${a.fecha}${a.hora}`.localeCompare(`${b.fecha}${b.hora}`)).length === 0 ? (
-            <div className="text-center py-12 text-gray-400"><p className="text-sm font-bold">Sin citas pendientes</p></div>
-          ) : (
-            <div className="divide-y divide-gray-100">
-              {agendados.filter(a => a.fecha >= hoy && a.estado !== "atendido").sort((a, b) => `${a.fecha}${a.hora}`.localeCompare(`${b.fecha}${b.hora}`)).map(a => (
-                <div key={a.id} className="flex items-center justify-between p-4 hover:bg-gray-50">
-                  <div>
-                    <p className="text-xs font-bold text-gray-800">{a.nombre} <span className="text-gray-400"> · {a.doc}</span></p>
-                    <p className="text-[10px] text-gray-500">📅 {a.fecha} {a.hora} · {a.empresa || "Particular"} · {a.tipo}</p>
-                  </div>
-                  {statusBadge(a.estado)}
-                </div>
-              ))}
+      {agendaTab === 'proximas' && (
+        <div className="space-y-3">
+          {proximas.length === 0 ? (
+            <div className="bg-white rounded-2xl p-8 text-center text-gray-400">Sin citas futuras programadas.</div>
+          ) : proximas.map(ag => (
+            <div key={ag.id} className="bg-white rounded-xl shadow-sm border border-purple-100 p-4 flex justify-between items-center">
+              <div>
+                <p className="font-bold text-sm text-gray-800">{ag.nombre}</p>
+                <p className="text-[10px] text-gray-500">{ag.docNumero} · {ag.empresa || '--'} · {ag.cargo || '--'}</p>
+                <p className="text-[10px] text-purple-600 font-bold mt-0.5">📅 {ag.fecha} · 🕐 {ag.horaCita || '--'} · {TIPOS_CONSULTA.find(t => t.v === ag.tipoConsulta)?.l || ag.tipoConsulta}</p>
+              </div>
+              <EstadoBadge estado="programado" />
             </div>
-          )}
+          ))}
         </div>
       )}
 
-      {/* HC Choice modal */}
-      {hcChoiceAgenda && (
-        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full space-y-4">
-            <p className="font-black text-gray-800">Crear HC para: {hcChoiceAgenda.nombre}</p>
-            <div className="grid grid-cols-2 gap-3">
-              <button onClick={() => { if (handleNewOccupHistory) handleNewOccupHistory(hcChoiceAgenda); setHcChoiceAgenda(null); }}
-                className="bg-emerald-600 text-white py-3 rounded-xl font-black text-sm">🩺 Ocupacional</button>
-              <button onClick={() => { if (handleNewGeneralHistory) handleNewGeneralHistory(hcChoiceAgenda); setHcChoiceAgenda(null); }}
-                className="bg-blue-600 text-white py-3 rounded-xl font-black text-sm">❤ General</button>
-            </div>
-            <button onClick={() => setHcChoiceAgenda(null)} className="w-full text-gray-500 text-sm font-bold">Cancelar</button>
-          </div>
-        </div>
-      )}
+      <datalist id="eps-list-agenda">{EPS_LIST.map(o => <option key={o} value={o} />)}</datalist>
+      <datalist id="arl-list-agenda">{ARL_LIST.map(o => <option key={o} value={o} />)}</datalist>
     </div>
   );
 }

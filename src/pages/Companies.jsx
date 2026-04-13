@@ -1,173 +1,788 @@
 // src/pages/Companies.jsx
-// Gestión completa de empresas: lista, nueva empresa, convenios, portal, multi-médico, sedes
-import React, { useState, useMemo, useCallback } from 'react';
-import { Building2, LogOut } from 'lucide-react';
-import { InputGroup } from '../shared/ui/InputGroup.jsx';
-import { _isAdmin, _secretariaPuede, _secretariaMedicoAsignado, ORG_DEFAULT_ID } from '../shared/data/planConfig.js';
-import { ARL_LIST } from '../shared/data/catalogs.js';
-import { initialCompanyState } from '../shared/data/initialStates.js';
-import { _sha256 } from '../shared/lib/crypto.js';
-import { _sync } from '../shared/lib/supabase.js';
+// ═══════════════════════════════════════════════════════════════════════
+// EMPRESAS — Gestión completa de empresas/clientes: CRUD, convenios,
+// tarifas, portal empresa, multi-sede, perfil IPS
+// ═══════════════════════════════════════════════════════════════════════
+import React, { useState, useMemo, useCallback, useRef } from 'react';
+import {
+  Building2, Plus, Search, Trash2, Edit3, Eye, X, Save, Upload,
+  Users, MapPin, Phone, Mail, FileText, Calendar, DollarSign,
+  Shield, Globe, ChevronDown, ChevronUp, CheckCircle2, AlertTriangle,
+  Briefcase, UserPlus, Settings, Copy, Lock, Unlock, Image,
+  Building, CreditCard, Star, ExternalLink,
+} from 'lucide-react';
+import { _isAdmin, _isAdminOrEmpresa } from '../shared/data/planConfig.js';
 
+// ═══════════════════════════════════════════════════════════════════════
+// COMPANIES COMPONENT
+// ═══════════════════════════════════════════════════════════════════════
 export default function Companies({
-  currentUser, usersList = [], companies = [], setCompanies, patientsList = [],
-  goBack, goTo, showAlert, showConfirm, _syncCompanies,
+  companies = [], setCompanies, newComp = {}, setNewComp,
+  patientsList = [], currentUser, _sync, goTo, initialCompanyState,
+  // Companies tab state from App
   companiesTab, setCompaniesTab, editingCompany, setEditingCompany,
-  newComp, setNewComp, sedeForm, setSedeForm,
+  // IPS mode
+  mode,
+  ipsPerfilForm, setIpsPerfilForm,
+  // Portal empresa
   portalActivadoInfo, setPortalActivadoInfo,
-  setPortalEmpresaCodigo,
+  portalEmpresaAdmin, setPortalEmpresaAdmin,
+  sedeForm, setSedeForm,
+  // Sync helpers
+  _syncCompanies, _sbSet,
+  showAlert, showConfirm,
+  usersList = [],
+  ...rest
 }) {
-  // ── SECRETARIA GATE ──
-  if (currentUser?.role === "secretaria" && !_secretariaMedicoAsignado(currentUser, currentUser?.user, usersList) && !_secretariaPuede("empresas", currentUser, usersList)) {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [showModal, setShowModal] = useState(false);
+  const [detailCompany, setDetailCompany] = useState(null);
+  const [showConvenio, setShowConvenio] = useState(false);
+  const logoInputRef = useRef(null);
+
+  // ── IPS Profile mode ────────────────────────────────────────────────
+  if (mode === 'perfilips') return renderPerfilIPS();
+
+  // ── Format COP ──────────────────────────────────────────────────────
+  const formatCOP = (n) => {
+    const v = parseFloat(n) || 0;
+    return v.toLocaleString('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 });
+  };
+
+  // ── Filter companies ────────────────────────────────────────────────
+  const filteredCompanies = useMemo(() => {
+    if (!searchTerm) return companies;
+    const q = searchTerm.toLowerCase();
+    return companies.filter(c =>
+      (c.nombre || '').toLowerCase().includes(q) ||
+      (c.nit || '').toLowerCase().includes(q) ||
+      (c.ciudad || '').toLowerCase().includes(q) ||
+      (c.gerente || '').toLowerCase().includes(q)
+    );
+  }, [companies, searchTerm]);
+
+  // ── Patient count for company ───────────────────────────────────────
+  const getPatientCount = useCallback((comp) => {
+    return patientsList.filter(p =>
+      p.empresaId === comp.id || p.empresaNit === comp.nit ||
+      (p.empresaNombre || '').toLowerCase() === (comp.nombre || '').toLowerCase()
+    ).length;
+  }, [patientsList]);
+
+  // ── Reset form ──────────────────────────────────────────────────────
+  const resetForm = () => {
+    if (initialCompanyState) {
+      setNewComp({ ...initialCompanyState });
+    } else {
+      setNewComp({
+        nombre: '', nit: '', dv: '', codActividad: '', actividad: '',
+        direccion: '', ciudad: '', telefono: '', correo: '', arl: '', gerente: '',
+        tarifaIngreso: '', tarifaPeriodico: '', tarifaEgreso: '', tarifaConsulta: '',
+        condicionesPago: 'contado', convenioFecha: '', convenioVencimiento: '',
+        descuento: '', portalActivo: false, notasConvenio: '',
+        medicoIds: [], sedes: [], logo: '', lema: '',
+      });
+    }
+  };
+
+  // ── Save company ────────────────────────────────────────────────────
+  const handleSaveCompany = () => {
+    if (!newComp.nombre || !newComp.nit) {
+      showAlert?.('⚠️ Nombre y NIT son obligatorios.');
+      return;
+    }
+
+    const companyToSave = {
+      ...newComp,
+      id: editingCompany?.id || 'EMP-' + Date.now(),
+      fechaCreacion: editingCompany?.fechaCreacion || new Date().toISOString(),
+      ultimaModificacion: new Date().toISOString(),
+      creadoPor: currentUser?.user,
+    };
+
+    setCompanies(prev => {
+      const exists = prev.findIndex(c => c.id === companyToSave.id);
+      const updated = exists >= 0
+        ? prev.map(c => c.id === companyToSave.id ? companyToSave : c)
+        : [...prev, companyToSave];
+      _syncCompanies?.(updated);
+      return updated;
+    });
+
+    resetForm();
+    setShowModal(false);
+    setEditingCompany?.(null);
+    showAlert?.(`✅ Empresa "${companyToSave.nombre}" guardada.`);
+  };
+
+  // ── Edit company ────────────────────────────────────────────────────
+  const handleEditCompany = (comp) => {
+    setNewComp({ ...comp });
+    setEditingCompany?.(comp);
+    setShowModal(true);
+  };
+
+  // ── Delete company ──────────────────────────────────────────────────
+  const handleDeleteCompany = (comp) => {
+    showConfirm?.(`¿Eliminar la empresa "${comp.nombre}"? Esta acción no se puede deshacer.`, () => {
+      setCompanies(prev => {
+        const updated = prev.filter(c => c.id !== comp.id);
+        _syncCompanies?.(updated);
+        return updated;
+      });
+      showAlert?.(`🗑️ Empresa "${comp.nombre}" eliminada.`);
+    });
+  };
+
+  // ── Logo upload ─────────────────────────────────────────────────────
+  const handleLogoUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 500 * 1024) {
+      showAlert?.('⚠️ El logo debe ser menor a 500 KB.');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      setNewComp(prev => ({ ...prev, logo: reader.result }));
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // ── Toggle portal ───────────────────────────────────────────────────
+  const handleTogglePortal = (comp) => {
+    setCompanies(prev => {
+      const updated = prev.map(c =>
+        c.id === comp.id ? { ...c, portalActivo: !c.portalActivo } : c
+      );
+      _syncCompanies?.(updated);
+      return updated;
+    });
+    showAlert?.(comp.portalActivo ? '🔒 Portal empresa desactivado.' : '🌐 Portal empresa activado.');
+  };
+
+  // ── Add sede ────────────────────────────────────────────────────────
+  const handleAddSede = () => {
+    if (!sedeForm?.nombre || !sedeForm?.ciudad) {
+      showAlert?.('⚠️ Complete nombre y ciudad de la sede.');
+      return;
+    }
+    setNewComp(prev => ({
+      ...prev,
+      sedes: [...(prev.sedes || []), { ...sedeForm, id: 'SEDE-' + Date.now() }],
+    }));
+    setSedeForm?.({ nombre: '', ciudad: '', direccion: '' });
+  };
+
+  // ── Remove sede ─────────────────────────────────────────────────────
+  const handleRemoveSede = (sedeId) => {
+    setNewComp(prev => ({
+      ...prev,
+      sedes: (prev.sedes || []).filter(s => s.id !== sedeId),
+    }));
+  };
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // RENDER: COMPANY MODAL
+  // ═══════════════════════════════════════════════════════════════════════
+  const renderModal = () => {
+    if (!showModal) return null;
     return (
-      <div className="max-w-xl mx-auto px-4 py-16 text-center">
-        <div className="bg-amber-50 border-2 border-amber-300 rounded-2xl p-8 space-y-3">
-          <div className="text-5xl">🔐</div>
-          <p className="font-black text-amber-800 text-xl">Módulo restringido</p>
-          <p className="text-amber-600 text-xs leading-relaxed">Solicita que el administrador habilite el permiso "Empresas" en tu perfil.</p>
-          <button onClick={() => goBack()} className="mt-3 bg-amber-600 text-white px-5 py-2 rounded-lg text-sm font-bold">← Volver</button>
+      <div className="fixed inset-0 bg-black/40 flex items-start justify-center z-50 p-4 overflow-y-auto">
+        <div className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full my-8">
+          {/* Modal header */}
+          <div className="bg-gradient-to-r from-purple-600 to-indigo-600 rounded-t-2xl p-5 text-white flex items-center justify-between">
+            <h3 className="font-black text-lg flex items-center gap-2">
+              <Building2 className="w-5 h-5" />
+              {editingCompany ? `Editar: ${editingCompany.nombre}` : 'Nueva Empresa'}
+            </h3>
+            <button onClick={() => { setShowModal(false); resetForm(); setEditingCompany?.(null); }}
+              className="p-1 hover:bg-white/20 rounded-lg">
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+
+          <div className="p-6 space-y-6 max-h-[70vh] overflow-y-auto">
+            {/* Logo */}
+            <div className="flex items-center gap-4">
+              {newComp.logo ? (
+                <img src={newComp.logo} alt="Logo" className="w-16 h-16 rounded-xl object-cover border" />
+              ) : (
+                <div className="w-16 h-16 bg-gray-100 rounded-xl flex items-center justify-center">
+                  <Image className="w-6 h-6 text-gray-400" />
+                </div>
+              )}
+              <div>
+                <button onClick={() => logoInputRef.current?.click()}
+                  className="flex items-center gap-2 px-3 py-1.5 bg-purple-100 text-purple-700 rounded-lg text-xs font-bold hover:bg-purple-200">
+                  <Upload className="w-3 h-3" /> Subir Logo
+                </button>
+                <p className="text-[10px] text-gray-400 mt-1">PNG/JPG, máx 500 KB</p>
+                <input type="file" ref={logoInputRef} accept="image/*" className="hidden" onChange={handleLogoUpload} />
+              </div>
+            </div>
+
+            {/* Datos básicos */}
+            <div>
+              <h4 className="font-black text-sm text-gray-800 mb-3 flex items-center gap-2">
+                <Building className="w-4 h-4 text-purple-600" /> Datos de la Empresa
+              </h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="md:col-span-2">
+                  <label className="text-xs font-bold text-gray-600 block mb-1">Razón Social *</label>
+                  <input type="text" value={newComp.nombre || ''}
+                    onChange={e => setNewComp(p => ({ ...p, nombre: e.target.value }))}
+                    className="w-full p-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                    placeholder="Nombre de la empresa" />
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-gray-600 block mb-1">NIT *</label>
+                  <input type="text" value={newComp.nit || ''}
+                    onChange={e => setNewComp(p => ({ ...p, nit: e.target.value }))}
+                    className="w-full p-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                    placeholder="900.123.456" />
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-gray-600 block mb-1">DV</label>
+                  <input type="text" maxLength={1} value={newComp.dv || ''}
+                    onChange={e => setNewComp(p => ({ ...p, dv: e.target.value }))}
+                    className="w-full p-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                    placeholder="0" />
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-gray-600 block mb-1">Actividad Económica</label>
+                  <input type="text" value={newComp.actividad || ''}
+                    onChange={e => setNewComp(p => ({ ...p, actividad: e.target.value }))}
+                    className="w-full p-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                    placeholder="CIIU" />
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-gray-600 block mb-1">Código Actividad</label>
+                  <input type="text" value={newComp.codActividad || ''}
+                    onChange={e => setNewComp(p => ({ ...p, codActividad: e.target.value }))}
+                    className="w-full p-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                    placeholder="Ej: 8621" />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="text-xs font-bold text-gray-600 block mb-1">Dirección</label>
+                  <input type="text" value={newComp.direccion || ''}
+                    onChange={e => setNewComp(p => ({ ...p, direccion: e.target.value }))}
+                    className="w-full p-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                    placeholder="Dirección completa" />
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-gray-600 block mb-1">Ciudad</label>
+                  <input type="text" value={newComp.ciudad || ''}
+                    onChange={e => setNewComp(p => ({ ...p, ciudad: e.target.value }))}
+                    className="w-full p-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                    placeholder="Ciudad" />
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-gray-600 block mb-1">Teléfono</label>
+                  <input type="tel" value={newComp.telefono || ''}
+                    onChange={e => setNewComp(p => ({ ...p, telefono: e.target.value }))}
+                    className="w-full p-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                    placeholder="3001234567" />
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-gray-600 block mb-1">Correo</label>
+                  <input type="email" value={newComp.correo || ''}
+                    onChange={e => setNewComp(p => ({ ...p, correo: e.target.value }))}
+                    className="w-full p-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                    placeholder="correo@empresa.com" />
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-gray-600 block mb-1">ARL</label>
+                  <input type="text" value={newComp.arl || ''}
+                    onChange={e => setNewComp(p => ({ ...p, arl: e.target.value }))}
+                    className="w-full p-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                    placeholder="ARL de la empresa" />
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-gray-600 block mb-1">Gerente / Representante Legal</label>
+                  <input type="text" value={newComp.gerente || ''}
+                    onChange={e => setNewComp(p => ({ ...p, gerente: e.target.value }))}
+                    className="w-full p-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                    placeholder="Nombre completo" />
+                </div>
+              </div>
+            </div>
+
+            {/* Convenio */}
+            <div>
+              <button onClick={() => setShowConvenio(!showConvenio)}
+                className="flex items-center gap-2 text-sm font-black text-indigo-700 hover:text-indigo-900">
+                {showConvenio ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                <CreditCard className="w-4 h-4" /> Convenio / Tarifas
+              </button>
+              {showConvenio && (
+                <div className="mt-3 bg-indigo-50 border border-indigo-200 rounded-xl p-4 space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-xs font-bold text-gray-600 block mb-1">Tarifa Ingreso (COP)</label>
+                      <input type="number" min="0" value={newComp.tarifaIngreso || ''}
+                        onChange={e => setNewComp(p => ({ ...p, tarifaIngreso: e.target.value }))}
+                        className="w-full p-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"
+                        placeholder="0" />
+                    </div>
+                    <div>
+                      <label className="text-xs font-bold text-gray-600 block mb-1">Tarifa Periódico (COP)</label>
+                      <input type="number" min="0" value={newComp.tarifaPeriodico || ''}
+                        onChange={e => setNewComp(p => ({ ...p, tarifaPeriodico: e.target.value }))}
+                        className="w-full p-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"
+                        placeholder="0" />
+                    </div>
+                    <div>
+                      <label className="text-xs font-bold text-gray-600 block mb-1">Tarifa Egreso (COP)</label>
+                      <input type="number" min="0" value={newComp.tarifaEgreso || ''}
+                        onChange={e => setNewComp(p => ({ ...p, tarifaEgreso: e.target.value }))}
+                        className="w-full p-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"
+                        placeholder="0" />
+                    </div>
+                    <div>
+                      <label className="text-xs font-bold text-gray-600 block mb-1">Tarifa Consulta (COP)</label>
+                      <input type="number" min="0" value={newComp.tarifaConsulta || ''}
+                        onChange={e => setNewComp(p => ({ ...p, tarifaConsulta: e.target.value }))}
+                        className="w-full p-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"
+                        placeholder="0" />
+                    </div>
+                    <div>
+                      <label className="text-xs font-bold text-gray-600 block mb-1">Condiciones de Pago</label>
+                      <select value={newComp.condicionesPago || 'contado'}
+                        onChange={e => setNewComp(p => ({ ...p, condicionesPago: e.target.value }))}
+                        className="w-full p-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500">
+                        <option value="contado">Contado</option>
+                        <option value="30dias">30 días</option>
+                        <option value="60dias">60 días</option>
+                        <option value="90dias">90 días</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="text-xs font-bold text-gray-600 block mb-1">Descuento (%)</label>
+                      <input type="number" min="0" max="100" value={newComp.descuento || ''}
+                        onChange={e => setNewComp(p => ({ ...p, descuento: e.target.value }))}
+                        className="w-full p-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"
+                        placeholder="0" />
+                    </div>
+                    <div>
+                      <label className="text-xs font-bold text-gray-600 block mb-1">Fecha Convenio</label>
+                      <input type="date" value={newComp.convenioFecha || ''}
+                        onChange={e => setNewComp(p => ({ ...p, convenioFecha: e.target.value }))}
+                        className="w-full p-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500" />
+                    </div>
+                    <div>
+                      <label className="text-xs font-bold text-gray-600 block mb-1">Vencimiento Convenio</label>
+                      <input type="date" value={newComp.convenioVencimiento || ''}
+                        onChange={e => setNewComp(p => ({ ...p, convenioVencimiento: e.target.value }))}
+                        className="w-full p-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500" />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-xs font-bold text-gray-600 block mb-1">Notas del Convenio</label>
+                    <textarea value={newComp.notasConvenio || ''}
+                      onChange={e => setNewComp(p => ({ ...p, notasConvenio: e.target.value }))}
+                      className="w-full p-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"
+                      rows={2} placeholder="Observaciones adicionales..." />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Multi-sede */}
+            <div>
+              <h4 className="font-black text-sm text-gray-800 mb-3 flex items-center gap-2">
+                <MapPin className="w-4 h-4 text-teal-600" /> Sedes
+              </h4>
+              <div className="space-y-2">
+                {(newComp.sedes || []).map(sede => (
+                  <div key={sede.id || sede.nombre} className="flex items-center justify-between bg-gray-50 rounded-lg p-3">
+                    <div>
+                      <p className="text-sm font-bold">{sede.nombre}</p>
+                      <p className="text-xs text-gray-500">{sede.ciudad} — {sede.direccion}</p>
+                    </div>
+                    <button onClick={() => handleRemoveSede(sede.id)}
+                      className="text-red-400 hover:text-red-600">
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-2 mt-2">
+                <input type="text" value={sedeForm?.nombre || ''} onChange={e => setSedeForm?.(p => ({ ...p, nombre: e.target.value }))}
+                  className="p-2 border border-gray-200 rounded-lg text-xs" placeholder="Nombre sede" />
+                <input type="text" value={sedeForm?.ciudad || ''} onChange={e => setSedeForm?.(p => ({ ...p, ciudad: e.target.value }))}
+                  className="p-2 border border-gray-200 rounded-lg text-xs" placeholder="Ciudad" />
+                <input type="text" value={sedeForm?.direccion || ''} onChange={e => setSedeForm?.(p => ({ ...p, direccion: e.target.value }))}
+                  className="p-2 border border-gray-200 rounded-lg text-xs" placeholder="Dirección" />
+                <button onClick={handleAddSede}
+                  className="px-3 py-2 bg-teal-600 text-white rounded-lg text-xs font-bold hover:bg-teal-700">
+                  + Agregar Sede
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Modal footer */}
+          <div className="p-5 border-t border-gray-100 flex gap-3 justify-end">
+            <button onClick={() => { setShowModal(false); resetForm(); setEditingCompany?.(null); }}
+              className="px-5 py-2.5 bg-gray-100 text-gray-700 rounded-xl font-bold text-sm hover:bg-gray-200">
+              Cancelar
+            </button>
+            <button onClick={handleSaveCompany}
+              className="flex items-center gap-2 px-5 py-2.5 bg-purple-600 text-white rounded-xl font-bold text-sm hover:bg-purple-700 shadow">
+              <Save className="w-4 h-4" /> {editingCompany ? 'Actualizar' : 'Guardar'}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // RENDER: COMPANY DETAIL
+  // ═══════════════════════════════════════════════════════════════════════
+  const renderDetail = () => {
+    if (!detailCompany) return null;
+    const c = detailCompany;
+    const patCount = getPatientCount(c);
+
+    return (
+      <div className="fixed inset-0 bg-black/40 flex items-start justify-center z-50 p-4 overflow-y-auto">
+        <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full my-8">
+          <div className="bg-gradient-to-r from-indigo-600 to-blue-600 rounded-t-2xl p-5 text-white flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              {c.logo ? (
+                <img src={c.logo} alt="" className="w-12 h-12 rounded-xl object-cover border-2 border-white/30" />
+              ) : (
+                <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                  <Building2 className="w-6 h-6" />
+                </div>
+              )}
+              <div>
+                <h3 className="font-black text-lg">{c.nombre}</h3>
+                <p className="text-blue-100 text-sm">NIT: {c.nit}{c.dv ? `-${c.dv}` : ''}</p>
+              </div>
+            </div>
+            <button onClick={() => setDetailCompany(null)} className="p-1 hover:bg-white/20 rounded-lg">
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+
+          <div className="p-6 space-y-5">
+            {/* Stats */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <div className="bg-blue-50 rounded-xl p-3 text-center">
+                <p className="text-xs font-bold text-blue-600">Pacientes</p>
+                <p className="text-xl font-black text-blue-700">{patCount}</p>
+              </div>
+              <div className="bg-emerald-50 rounded-xl p-3 text-center">
+                <p className="text-xs font-bold text-emerald-600">Tarifa Ingreso</p>
+                <p className="text-sm font-black text-emerald-700">{c.tarifaIngreso ? formatCOP(c.tarifaIngreso) : '—'}</p>
+              </div>
+              <div className="bg-purple-50 rounded-xl p-3 text-center">
+                <p className="text-xs font-bold text-purple-600">Sedes</p>
+                <p className="text-xl font-black text-purple-700">{(c.sedes || []).length || 1}</p>
+              </div>
+              <div className="bg-amber-50 rounded-xl p-3 text-center">
+                <p className="text-xs font-bold text-amber-600">Portal</p>
+                <p className="text-sm font-black text-amber-700">{c.portalActivo ? '🟢 Activo' : '🔴 Inactivo'}</p>
+              </div>
+            </div>
+
+            {/* Info grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+              <div className="flex items-start gap-2">
+                <MapPin className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="font-bold text-gray-700">Dirección</p>
+                  <p className="text-gray-500">{c.direccion || 'No registrada'}, {c.ciudad || ''}</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-2">
+                <Phone className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="font-bold text-gray-700">Teléfono</p>
+                  <p className="text-gray-500">{c.telefono || 'No registrado'}</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-2">
+                <Mail className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="font-bold text-gray-700">Correo</p>
+                  <p className="text-gray-500">{c.correo || 'No registrado'}</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-2">
+                <Shield className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="font-bold text-gray-700">ARL</p>
+                  <p className="text-gray-500">{c.arl || 'No registrada'}</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-2">
+                <Users className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="font-bold text-gray-700">Gerente</p>
+                  <p className="text-gray-500">{c.gerente || 'No registrado'}</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-2">
+                <Briefcase className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="font-bold text-gray-700">Actividad</p>
+                  <p className="text-gray-500">{c.actividad || 'No registrada'}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Convenio info */}
+            {(c.tarifaIngreso || c.condicionesPago || c.convenioFecha) && (
+              <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-4">
+                <h4 className="font-black text-sm text-indigo-800 mb-2">📋 Convenio</h4>
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <p><strong>Pago:</strong> {c.condicionesPago || 'Contado'}</p>
+                  <p><strong>Descuento:</strong> {c.descuento ? `${c.descuento}%` : '0%'}</p>
+                  <p><strong>Desde:</strong> {c.convenioFecha || '—'}</p>
+                  <p><strong>Hasta:</strong> {c.convenioVencimiento || '—'}</p>
+                </div>
+                {c.notasConvenio && <p className="text-xs text-gray-600 mt-2 italic">{c.notasConvenio}</p>}
+              </div>
+            )}
+
+            {/* Sedes */}
+            {(c.sedes || []).length > 0 && (
+              <div>
+                <h4 className="font-black text-sm text-gray-800 mb-2">🏢 Sedes</h4>
+                <div className="space-y-2">
+                  {c.sedes.map((s, i) => (
+                    <div key={s.id || i} className="bg-gray-50 rounded-lg p-3 text-sm">
+                      <p className="font-bold">{s.nombre}</p>
+                      <p className="text-gray-500 text-xs">{s.ciudad} — {s.direccion}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="p-5 border-t border-gray-100 flex gap-3">
+            <button onClick={() => { setDetailCompany(null); handleEditCompany(c); }}
+              className="flex items-center gap-2 px-4 py-2 bg-amber-100 text-amber-700 rounded-xl text-sm font-bold hover:bg-amber-200">
+              <Edit3 className="w-4 h-4" /> Editar
+            </button>
+            <button onClick={() => handleTogglePortal(c)}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold ${
+                c.portalActivo
+                  ? 'bg-red-100 text-red-700 hover:bg-red-200'
+                  : 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200'
+              }`}>
+              {c.portalActivo ? <Lock className="w-4 h-4" /> : <Globe className="w-4 h-4" />}
+              {c.portalActivo ? 'Desactivar Portal' : 'Activar Portal'}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // RENDER: PERFIL IPS
+  // ═══════════════════════════════════════════════════════════════════════
+  function renderPerfilIPS() {
+    const handleSaveIPS = () => {
+      if (!ipsPerfilForm?.nombre) {
+        showAlert?.('⚠️ Ingrese el nombre de la IPS.');
+        return;
+      }
+      const myComp = companies.find(c => c.id === currentUser?.empresaId);
+      if (myComp) {
+        setCompanies(prev => {
+          const updated = prev.map(c =>
+            c.id === myComp.id ? { ...c, ...ipsPerfilForm } : c
+          );
+          _syncCompanies?.(updated);
+          return updated;
+        });
+      }
+      showAlert?.('✅ Perfil IPS actualizado.');
+    };
+
+    return (
+      <div className="max-w-3xl mx-auto space-y-6">
+        <div className="bg-gradient-to-r from-violet-600 to-purple-600 rounded-2xl p-6 text-white">
+          <h2 className="text-xl font-black flex items-center gap-2">
+            <Settings className="w-6 h-6" /> Perfil IPS
+          </h2>
+          <p className="text-violet-100 text-sm mt-1">Configure los datos de su institución</p>
+        </div>
+
+        <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="md:col-span-2">
+              <label className="text-xs font-bold text-gray-600 block mb-1">Nombre IPS</label>
+              <input type="text" value={ipsPerfilForm?.nombre || ''}
+                onChange={e => setIpsPerfilForm?.(p => ({ ...p, nombre: e.target.value }))}
+                className="w-full p-2.5 border border-gray-200 rounded-lg text-sm" />
+            </div>
+            <div>
+              <label className="text-xs font-bold text-gray-600 block mb-1">NIT</label>
+              <input type="text" value={ipsPerfilForm?.nit || ''}
+                onChange={e => setIpsPerfilForm?.(p => ({ ...p, nit: e.target.value }))}
+                className="w-full p-2.5 border border-gray-200 rounded-lg text-sm" />
+            </div>
+            <div>
+              <label className="text-xs font-bold text-gray-600 block mb-1">DV</label>
+              <input type="text" value={ipsPerfilForm?.dv || ''}
+                onChange={e => setIpsPerfilForm?.(p => ({ ...p, dv: e.target.value }))}
+                className="w-full p-2.5 border border-gray-200 rounded-lg text-sm" />
+            </div>
+            <div>
+              <label className="text-xs font-bold text-gray-600 block mb-1">Ciudad</label>
+              <input type="text" value={ipsPerfilForm?.ciudad || ''}
+                onChange={e => setIpsPerfilForm?.(p => ({ ...p, ciudad: e.target.value }))}
+                className="w-full p-2.5 border border-gray-200 rounded-lg text-sm" />
+            </div>
+            <div>
+              <label className="text-xs font-bold text-gray-600 block mb-1">Teléfono</label>
+              <input type="tel" value={ipsPerfilForm?.telefono || ''}
+                onChange={e => setIpsPerfilForm?.(p => ({ ...p, telefono: e.target.value }))}
+                className="w-full p-2.5 border border-gray-200 rounded-lg text-sm" />
+            </div>
+            <div className="md:col-span-2">
+              <label className="text-xs font-bold text-gray-600 block mb-1">Dirección</label>
+              <input type="text" value={ipsPerfilForm?.direccion || ''}
+                onChange={e => setIpsPerfilForm?.(p => ({ ...p, direccion: e.target.value }))}
+                className="w-full p-2.5 border border-gray-200 rounded-lg text-sm" />
+            </div>
+            <div>
+              <label className="text-xs font-bold text-gray-600 block mb-1">Correo</label>
+              <input type="email" value={ipsPerfilForm?.correo || ''}
+                onChange={e => setIpsPerfilForm?.(p => ({ ...p, correo: e.target.value }))}
+                className="w-full p-2.5 border border-gray-200 rounded-lg text-sm" />
+            </div>
+            <div>
+              <label className="text-xs font-bold text-gray-600 block mb-1">Lema</label>
+              <input type="text" value={ipsPerfilForm?.lema || ''}
+                onChange={e => setIpsPerfilForm?.(p => ({ ...p, lema: e.target.value }))}
+                className="w-full p-2.5 border border-gray-200 rounded-lg text-sm" />
+            </div>
+          </div>
+          <button onClick={handleSaveIPS}
+            className="flex items-center gap-2 px-5 py-2.5 bg-purple-600 text-white rounded-xl font-bold text-sm hover:bg-purple-700 shadow">
+            <Save className="w-4 h-4" /> Guardar Perfil
+          </button>
         </div>
       </div>
     );
   }
 
-  const hoy = new Date();
-  const en30 = new Date(hoy); en30.setDate(en30.getDate() + 30);
-  const conveniosAlerta = companies.filter(c => c.convenioVencimiento && new Date(c.convenioVencimiento) <= en30 && new Date(c.convenioVencimiento) >= hoy);
-  const medicos = usersList.filter(u => ["medico", "administrador", "super_admin"].includes(u.role) && u.activo !== false);
-
-  const _visibleCompanies = useMemo(() => {
-    if (currentUser?.role !== "secretaria") return companies;
-    const secU = usersList.find(u => u.user === currentUser.user);
-    const asig = secU?.medicosAsignados || [];
-    if (asig.length === 0) return companies;
-    return companies.filter(c => !c.medicoResponsableId || asig.includes(c.medicoResponsableId) || (c.medicoIds || []).some(mid => asig.includes(mid)));
-  }, [companies, currentUser, usersList]);
-
-  const handleSaveNew = useCallback(async () => {
-    if (!newComp.nombre) { showAlert("Ingrese la razón social."); return; }
-    let finalComp = { ...newComp, id: Date.now().toString(), _userId: currentUser?.user, orgId: newComp.orgId || currentUser?.orgId || ORG_DEFAULT_ID };
-    if (finalComp.medicoResponsableId && !(finalComp.medicoIds || []).includes(finalComp.medicoResponsableId)) {
-      finalComp.medicoIds = [...(finalComp.medicoIds || []), finalComp.medicoResponsableId];
-    }
-    if (finalComp.portalAdminPassPlain) { finalComp.portalAdminPassHash = await _sha256(finalComp.portalAdminPassPlain); delete finalComp.portalAdminPassPlain; }
-    if (finalComp.portalActivo && !finalComp.portalCode) {
-      const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-      const rand = n => Array.from({ length: n }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
-      finalComp.portalCode = `EMP-${rand(4)}-${rand(4)}`;
-    }
-    const upd = [...companies, finalComp];
-    setCompanies(upd);
-    if (_syncCompanies) _syncCompanies(upd);
-    setNewComp(initialCompanyState);
-    if (setSedeForm) setSedeForm({ nombre: "", ciudad: "", direccion: "" });
-    if (finalComp.portalActivo) { if (setPortalActivadoInfo) setPortalActivadoInfo(finalComp); setCompaniesTab("lista"); }
-    else { showAlert("✅ Empresa registrada."); setCompaniesTab("lista"); }
-  }, [newComp, companies, currentUser, setCompanies, _syncCompanies, setNewComp, setSedeForm, setPortalActivadoInfo, setCompaniesTab, showAlert]);
-
-  const handleSaveEdit = useCallback(async () => {
-    let saved = { ...editingCompany };
-    if (saved.medicoResponsableId && !(saved.medicoIds || []).includes(saved.medicoResponsableId)) {
-      saved.medicoIds = [...(saved.medicoIds || []), saved.medicoResponsableId];
-    }
-    if (saved.portalAdminPassPlain) { saved.portalAdminPassHash = await _sha256(saved.portalAdminPassPlain); delete saved.portalAdminPassPlain; }
-    if (saved.portalActivo && !saved.portalCode) {
-      const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-      const rand = n => Array.from({ length: n }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
-      saved.portalCode = `EMP-${rand(4)}-${rand(4)}`;
-    }
-    const upd = companies.map(c => c.id === saved.id ? saved : c);
-    setCompanies(upd);
-    if (_syncCompanies) _syncCompanies(upd);
-    setEditingCompany(null);
-    if (saved.portalActivo) { if (setPortalActivadoInfo) setPortalActivadoInfo(saved); } else showAlert("✅ Empresa actualizada.");
-  }, [editingCompany, companies, setCompanies, _syncCompanies, setEditingCompany, setPortalActivadoInfo, showAlert]);
-
+  // ═══════════════════════════════════════════════════════════════════════
+  // MAIN RENDER
+  // ═══════════════════════════════════════════════════════════════════════
   return (
-    <div className="max-w-5xl mx-auto px-4 py-6">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-black text-purple-900 flex items-center gap-2"><Building2 className="w-5 h-5" /> Empresas / Convenios ({_visibleCompanies.length})</h2>
-        <button onClick={() => goBack()} className="text-gray-500 font-bold text-sm flex items-center gap-1"><LogOut className="rotate-180 w-4 h-4" /> Volver</button>
-      </div>
-
-      {/* Alerta convenios */}
-      {conveniosAlerta.length > 0 && (
-        <div className="bg-amber-50 border border-amber-300 rounded-xl p-3 mb-4 flex items-center gap-3">
-          <span className="text-2xl">⚠️</span>
+    <div className="max-w-6xl mx-auto space-y-6">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-purple-600 to-indigo-600 rounded-2xl p-6 text-white">
+        <div className="flex items-center justify-between">
           <div>
-            <p className="text-xs font-black text-amber-800">{conveniosAlerta.length} convenio(s) próximo(s) a vencer:</p>
-            <p className="text-[10px] text-amber-700">{conveniosAlerta.map(c => `${c.nombre} (${c.convenioVencimiento})`).join(" · ")}</p>
+            <h2 className="text-xl font-black flex items-center gap-2">
+              <Building2 className="w-6 h-6" /> Empresas
+            </h2>
+            <p className="text-purple-100 text-sm mt-1">{companies.length} empresas registradas</p>
           </div>
+          {(_isAdmin(currentUser?.role) || currentUser?.role === 'medico') && (
+            <button onClick={() => { resetForm(); setEditingCompany?.(null); setShowModal(true); }}
+              className="flex items-center gap-2 px-4 py-2.5 bg-white/20 hover:bg-white/30 rounded-xl font-bold text-sm">
+              <Plus className="w-4 h-4" /> Nueva Empresa
+            </button>
+          )}
         </div>
-      )}
-
-      {/* Tabs */}
-      <div className="flex gap-1 mb-4 bg-white rounded-xl p-1 shadow-sm border border-gray-100">
-        {[{ k: "lista", l: "🏢 Empresas" }, { k: "nueva", l: "➕ Nueva Empresa" }, { k: "convenios", l: "🤝 Convenios" }].map(t => (
-          <button key={t.k} onClick={() => setCompaniesTab(t.k)} className={`flex-1 py-2 text-xs font-black rounded-lg transition ${companiesTab === t.k ? "bg-purple-700 text-white" : "text-gray-600 hover:bg-gray-100"}`}>{t.l}</button>
-        ))}
       </div>
 
-      {/* TAB: LISTA */}
-      {companiesTab === "lista" && (
-        <div className="space-y-3">
-          {_visibleCompanies.length === 0 && <div className="bg-white rounded-2xl p-8 text-center text-gray-400 text-sm">Sin empresas registradas. Use ➕ Nueva Empresa.</div>}
-          {_visibleCompanies.map((c, i) => {
-            const pac = patientsList.filter(p => p.empresaId === c.id || p.empresaNit === c.nit).length;
-            const medResp = medicos.find(m => m.user === c.medicoResponsableId);
-            const vence = c.convenioVencimiento ? new Date(c.convenioVencimiento) : null;
-            const venceProx = vence && vence <= en30 && vence >= hoy;
-            const vencido = vence && vence < hoy;
+      {/* Search */}
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+        <input type="text" value={searchTerm}
+          onChange={e => setSearchTerm(e.target.value)}
+          className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+          placeholder="Buscar por nombre, NIT, ciudad o gerente..." />
+      </div>
+
+      {/* Company list */}
+      {filteredCompanies.length === 0 ? (
+        <div className="bg-gray-50 border border-gray-200 rounded-xl p-10 text-center">
+          <Building2 className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+          <p className="text-gray-500 font-bold">
+            {searchTerm ? 'No se encontraron empresas' : 'No hay empresas registradas'}
+          </p>
+          <p className="text-gray-400 text-xs mt-1">
+            {searchTerm ? 'Intente con otro término de búsqueda' : 'Agregue su primera empresa'}
+          </p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {filteredCompanies.map(comp => {
+            const patCount = getPatientCount(comp);
+            const isExpiring = comp.convenioVencimiento &&
+              new Date(comp.convenioVencimiento) <= new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) &&
+              new Date(comp.convenioVencimiento) >= new Date();
+
             return (
-              <div key={c.id || i} className={`bg-white rounded-2xl shadow-sm border p-4 ${vencido ? "border-red-300" : venceProx ? "border-amber-300" : "border-gray-100"}`}>
-                <div className="flex justify-between items-start">
-                  <div>
-                    <p className="font-black text-sm text-gray-800">{c.nombre}</p>
-                    <p className="text-[10px] text-gray-500">NIT: {c.nit}{c.dv ? `-${c.dv}` : ""} · {c.ciudad} · {c.actividad?.slice(0, 40)}</p>
-                    <div className="flex flex-wrap gap-1 mt-0.5">
-                      {medResp && <span className="text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-bold">👨‍⚕️ {medResp.name} ⭐</span>}
-                      {(c.medicoIds || []).filter(id => id !== c.medicoResponsableId).slice(0, 2).map(id => {
-                        const m = medicos.find(x => x.user === id);
-                        return m ? <span key={id} className="text-[10px] bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded-full font-bold">👨‍⚕️ {m.name || m.user}</span> : null;
-                      })}
-                      {(c.medicoIds || []).filter(id => id !== c.medicoResponsableId).length > 2 && <span className="text-[10px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">+{(c.medicoIds || []).filter(id => id !== c.medicoResponsableId).length - 2} más</span>}
-                      {(c.sedes || []).length > 0 && <span className="text-[10px] bg-orange-50 text-orange-600 px-2 py-0.5 rounded-full font-bold">🏢 {(c.sedes || []).length} sede(s)</span>}
+              <div key={comp.id || comp.nit}
+                className="bg-white border border-gray-200 rounded-xl p-5 hover:shadow-lg transition group">
+                <div className="flex items-start gap-3">
+                  {comp.logo ? (
+                    <img src={comp.logo} alt="" className="w-12 h-12 rounded-xl object-cover border" />
+                  ) : (
+                    <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                      <Building2 className="w-6 h-6 text-purple-600" />
                     </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {vencido && <span className="text-[10px] px-2 py-0.5 bg-red-100 text-red-700 rounded-full font-black">⛔ Vencido</span>}
-                    {venceProx && !vencido && <span className="text-[10px] px-2 py-0.5 bg-amber-100 text-amber-700 rounded-full font-black">⚠️ Vence pronto</span>}
-                    <span className="text-[10px] text-gray-500">{pac} paciente(s)</span>
-                    <button onClick={() => setEditingCompany(c)} className="px-2 py-1 bg-blue-100 text-blue-700 rounded-lg text-[10px] font-black hover:bg-blue-200">✏️ Editar</button>
-                    <button onClick={() => showConfirm("¿Eliminar empresa?", () => { const upd = companies.filter(x => x.id !== c.id); setCompanies(upd); if (_syncCompanies) _syncCompanies(upd); })}
-                      className="px-2 py-1 bg-red-100 text-red-600 rounded-lg text-[10px] font-black hover:bg-red-200">🗑️</button>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <p className="font-black text-gray-800 text-sm truncate">{comp.nombre}</p>
+                      {comp.portalActivo && (
+                        <span className="px-1.5 py-0.5 bg-emerald-100 text-emerald-700 text-[9px] font-black rounded-md">PORTAL</span>
+                      )}
+                    </div>
+                    <p className="text-xs text-gray-500">NIT: {comp.nit}{comp.dv ? `-${comp.dv}` : ''}</p>
+                    <div className="flex items-center gap-3 mt-1.5">
+                      <span className="text-[10px] text-gray-400 flex items-center gap-1">
+                        <MapPin className="w-3 h-3" /> {comp.ciudad || '—'}
+                      </span>
+                      <span className="text-[10px] text-blue-600 font-bold flex items-center gap-1">
+                        <Users className="w-3 h-3" /> {patCount} pacientes
+                      </span>
+                      {(comp.sedes || []).length > 0 && (
+                        <span className="text-[10px] text-teal-600 font-bold">{comp.sedes.length} sedes</span>
+                      )}
+                    </div>
+                    {isExpiring && (
+                      <p className="text-[10px] text-amber-600 font-bold mt-1 flex items-center gap-1">
+                        <AlertTriangle className="w-3 h-3" /> Convenio próximo a vencer ({comp.convenioVencimiento})
+                      </p>
+                    )}
                   </div>
                 </div>
-                {/* Tarifas rápidas */}
-                {(c.tarifaIngreso || c.tarifaPeriodico || c.tarifaConsulta) && (
-                  <div className="mt-2 flex gap-2 flex-wrap">
-                    {c.tarifaIngreso && <span className="text-[10px] bg-emerald-50 border border-emerald-200 text-emerald-700 px-2 py-0.5 rounded-full font-bold">Ingreso: ${Number(c.tarifaIngreso).toLocaleString("es-CO")}</span>}
-                    {c.tarifaPeriodico && <span className="text-[10px] bg-blue-50 border border-blue-200 text-blue-700 px-2 py-0.5 rounded-full font-bold">Periódico: ${Number(c.tarifaPeriodico).toLocaleString("es-CO")}</span>}
-                    {c.tarifaEgreso && <span className="text-[10px] bg-purple-50 border border-purple-200 text-purple-700 px-2 py-0.5 rounded-full font-bold">Egreso: ${Number(c.tarifaEgreso).toLocaleString("es-CO")}</span>}
-                    {c.tarifaConsulta && <span className="text-[10px] bg-gray-50 border border-gray-200 text-gray-700 px-2 py-0.5 rounded-full font-bold">Consulta: ${Number(c.tarifaConsulta).toLocaleString("es-CO")}</span>}
-                    {c.condicionesPago && <span className="text-[10px] bg-orange-50 border border-orange-200 text-orange-700 px-2 py-0.5 rounded-full font-bold">Pago: {c.condicionesPago}</span>}
-                  </div>
-                )}
-                {/* Portal status */}
-                <div className="mt-2 flex items-center gap-2 flex-wrap">
-                  {c.portalActivo && c.portalCode ? (
-                    <>
-                      <span className="text-[10px] bg-indigo-100 border border-indigo-300 text-indigo-700 px-2 py-0.5 rounded-full font-black">🌐 Portal ACTIVO</span>
-                      <span className="text-[10px] font-mono font-black text-indigo-800 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded-full">{c.portalCode}</span>
-                      <button onClick={() => { navigator.clipboard?.writeText(c.portalCode).then(() => showAlert("✅ Código " + c.portalCode + " copiado.")); }}
-                        className="text-[10px] bg-white border border-indigo-200 text-indigo-600 px-2 py-0.5 rounded-full font-bold hover:bg-indigo-50">📋 Copiar código</button>
-                      <button onClick={() => { if (setPortalActivadoInfo) setPortalActivadoInfo(c); }}
-                        className="text-[10px] bg-white border border-indigo-200 text-indigo-600 px-2 py-0.5 rounded-full font-bold hover:bg-indigo-50">📨 Ver instrucciones</button>
-                    </>
-                  ) : c.portalActivo ? (
-                    <span className="text-[10px] bg-amber-100 border border-amber-300 text-amber-700 px-2 py-0.5 rounded-full font-black">🔑 Portal activo - sin código (editar para generar)</span>
-                  ) : (
-                    <span className="text-[10px] bg-gray-100 border border-gray-200 text-gray-500 px-2 py-0.5 rounded-full font-bold">🔒 Portal desactivado</span>
+
+                <div className="flex gap-2 mt-3 opacity-0 group-hover:opacity-100 transition">
+                  <button onClick={() => setDetailCompany(comp)}
+                    className="flex items-center gap-1 px-3 py-1.5 bg-blue-100 text-blue-700 rounded-lg text-xs font-bold hover:bg-blue-200">
+                    <Eye className="w-3 h-3" /> Ver
+                  </button>
+                  <button onClick={() => handleEditCompany(comp)}
+                    className="flex items-center gap-1 px-3 py-1.5 bg-amber-100 text-amber-700 rounded-lg text-xs font-bold hover:bg-amber-200">
+                    <Edit3 className="w-3 h-3" /> Editar
+                  </button>
+                  <button onClick={() => handleTogglePortal(comp)}
+                    className="flex items-center gap-1 px-3 py-1.5 bg-emerald-100 text-emerald-700 rounded-lg text-xs font-bold hover:bg-emerald-200">
+                    <Globe className="w-3 h-3" /> Portal
+                  </button>
+                  {_isAdmin(currentUser?.role) && (
+                    <button onClick={() => handleDeleteCompany(comp)}
+                      className="flex items-center gap-1 px-3 py-1.5 bg-red-100 text-red-700 rounded-lg text-xs font-bold hover:bg-red-200">
+                      <Trash2 className="w-3 h-3" /> Eliminar
+                    </button>
                   )}
                 </div>
               </div>
@@ -176,301 +791,9 @@ export default function Companies({
         </div>
       )}
 
-      {/* TAB: NUEVA EMPRESA */}
-      {companiesTab === "nueva" && (
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
-          <p className="text-xs font-black text-gray-700 uppercase mb-4">📋 Datos de la empresa</p>
-          <div className="flex flex-wrap -mx-1.5">
-            <InputGroup label="Razón Social *" value={newComp.nombre} onChange={e => setNewComp(p => ({ ...p, nombre: e.target.value }))} required width="w-1/2" />
-            <InputGroup label="NIT" value={newComp.nit} onChange={e => setNewComp(p => ({ ...p, nit: e.target.value }))} width="w-1/4" />
-            <InputGroup label="DV" value={newComp.dv} onChange={e => setNewComp(p => ({ ...p, dv: e.target.value }))} width="w-1/8 min-w-[70px]" />
-            <InputGroup label="Ciudad" value={newComp.ciudad} onChange={e => setNewComp(p => ({ ...p, ciudad: e.target.value }))} width="w-1/4" />
-            <InputGroup label="Actividad Económica" value={newComp.actividad} onChange={e => setNewComp(p => ({ ...p, actividad: e.target.value }))} width="w-1/2" />
-            <InputGroup label="Correo" value={newComp.correo} onChange={e => setNewComp(p => ({ ...p, correo: e.target.value }))} width="w-1/2" />
-            <InputGroup label="Teléfono" value={newComp.telefono} onChange={e => setNewComp(p => ({ ...p, telefono: e.target.value }))} width="w-1/4" />
-            <InputGroup label="ARL" value={newComp.arl} onChange={e => setNewComp(p => ({ ...p, arl: e.target.value }))} width="w-1/4" list="arl-list" />
-            <InputGroup label="Gerente / Contacto" value={newComp.gerente} onChange={e => setNewComp(p => ({ ...p, gerente: e.target.value }))} width="w-1/2" />
-          </div>
-          {/* Convenio */}
-          <div className="border-t border-gray-100 pt-4 mt-2">
-            <p className="text-xs font-black text-gray-700 uppercase mb-3">🤝 Convenio</p>
-            <div className="flex flex-wrap -mx-1.5">
-              <div className="px-1.5 mb-3 w-1/3">
-                <label className="block text-[10px] font-black text-gray-600 uppercase mb-1">Médico responsable</label>
-                <select value={newComp.medicoResponsableId} onChange={e => setNewComp(p => ({ ...p, medicoResponsableId: e.target.value }))} className="w-full p-1.5 border rounded-lg text-xs">
-                  <option value="">- Sin asignar -</option>
-                  {medicos.map(m => <option key={m.user} value={m.user}>{m.name || m.user}</option>)}
-                </select>
-              </div>
-              <InputGroup label="Tarifa Ingreso COP" value={newComp.tarifaIngreso} onChange={e => setNewComp(p => ({ ...p, tarifaIngreso: e.target.value }))} width="w-1/6" type="number" />
-              <InputGroup label="Tarifa Periódico" value={newComp.tarifaPeriodico} onChange={e => setNewComp(p => ({ ...p, tarifaPeriodico: e.target.value }))} width="w-1/6" type="number" />
-              <InputGroup label="Tarifa Egreso" value={newComp.tarifaEgreso} onChange={e => setNewComp(p => ({ ...p, tarifaEgreso: e.target.value }))} width="w-1/6" type="number" />
-              <InputGroup label="Tarifa Consulta" value={newComp.tarifaConsulta} onChange={e => setNewComp(p => ({ ...p, tarifaConsulta: e.target.value }))} width="w-1/6" type="number" />
-              <div className="px-1.5 mb-3 w-1/4">
-                <label className="block text-[10px] font-black text-gray-600 uppercase mb-1">Condición de pago</label>
-                <select value={newComp.condicionesPago} onChange={e => setNewComp(p => ({ ...p, condicionesPago: e.target.value }))} className="w-full p-1.5 border rounded-lg text-xs">
-                  {["contado", "30 días", "60 días", "90 días"].map(o => <option key={o} value={o}>{o}</option>)}
-                </select>
-              </div>
-              <InputGroup label="Inicio convenio" value={newComp.convenioFecha} onChange={e => setNewComp(p => ({ ...p, convenioFecha: e.target.value }))} width="w-1/4" type="date" />
-              <InputGroup label="Vencimiento convenio" value={newComp.convenioVencimiento} onChange={e => setNewComp(p => ({ ...p, convenioVencimiento: e.target.value }))} width="w-1/4" type="date" />
-              <InputGroup label="Descuento %" value={newComp.descuento} onChange={e => setNewComp(p => ({ ...p, descuento: e.target.value }))} width="w-1/8 min-w-[80px]" type="number" />
-            </div>
-            <div className="flex gap-4 mt-1">
-              <label className="flex items-center gap-1.5 text-xs font-bold cursor-pointer">
-                <input type="checkbox" checked={!!newComp.portalActivo} onChange={e => setNewComp(p => ({ ...p, portalActivo: e.target.checked }))} className="accent-purple-600" /> Portal cliente activo
-              </label>
-              <label className="flex items-center gap-1.5 text-xs font-bold cursor-pointer">
-                <input type="checkbox" checked={!!newComp.facturacionAgrupada} onChange={e => setNewComp(p => ({ ...p, facturacionAgrupada: e.target.checked }))} className="accent-purple-600" /> Facturación agrupada
-              </label>
-            </div>
-          </div>
-          {/* Multi-médico */}
-          <div className="border-t border-gray-100 pt-4 mt-2">
-            <p className="text-xs font-black text-gray-700 uppercase mb-2">👨‍⚕️ Médicos asignados a esta empresa</p>
-            <p className="text-[10px] text-gray-500 mb-2">El médico responsable es el principal; los adicionales también pueden atender pacientes de esta empresa.</p>
-            <div className="flex flex-wrap gap-2">
-              {medicos.map(m => (
-                <label key={m.user} className="flex items-center gap-1.5 text-xs cursor-pointer bg-indigo-50 border border-indigo-200 rounded-lg px-2 py-1">
-                  <input type="checkbox" checked={(newComp.medicoIds || []).includes(m.user) || newComp.medicoResponsableId === m.user}
-                    onChange={e => { if (m.user === newComp.medicoResponsableId) return; setNewComp(p => ({ ...p, medicoIds: e.target.checked ? [...(p.medicoIds || []), m.user] : (p.medicoIds || []).filter(x => x !== m.user) })); }}
-                    className="accent-indigo-600" disabled={m.user === newComp.medicoResponsableId} />
-                  <span className={m.user === newComp.medicoResponsableId ? "font-black text-indigo-700" : "text-gray-700"}>{m.name || m.user}{m.user === newComp.medicoResponsableId && " ⭐"}</span>
-                </label>
-              ))}
-              {medicos.length === 0 && <p className="text-xs text-gray-400 italic">No hay médicos registrados aún.</p>}
-            </div>
-          </div>
-          {/* Sedes */}
-          <div className="border-t border-gray-100 pt-4 mt-2">
-            <p className="text-xs font-black text-gray-700 uppercase mb-2">🏢 Sedes de la empresa</p>
-            <div className="space-y-1 mb-2">
-              {(newComp.sedes || []).map((s, i) => (
-                <div key={i} className="flex items-center justify-between bg-blue-50 border border-blue-200 rounded-lg px-3 py-1.5">
-                  <span className="text-xs font-bold text-blue-800">{s.nombre} — {s.ciudad}</span>
-                  <button onClick={() => setNewComp(p => ({ ...p, sedes: p.sedes.filter((_, j) => j !== i) }))} className="text-red-500 hover:text-red-700 text-xs font-black">✕</button>
-                </div>
-              ))}
-            </div>
-            <div className="flex gap-2 items-end">
-              <input placeholder="Nombre sede" value={sedeForm?.nombre || ""} onChange={e => setSedeForm && setSedeForm(p => ({ ...p, nombre: e.target.value }))} className="border rounded-lg p-1.5 text-xs flex-1" />
-              <input placeholder="Ciudad" value={sedeForm?.ciudad || ""} onChange={e => setSedeForm && setSedeForm(p => ({ ...p, ciudad: e.target.value }))} className="border rounded-lg p-1.5 text-xs w-28" />
-              <input placeholder="Dirección" value={sedeForm?.direccion || ""} onChange={e => setSedeForm && setSedeForm(p => ({ ...p, direccion: e.target.value }))} className="border rounded-lg p-1.5 text-xs flex-1" />
-              <button onClick={() => { if (!sedeForm?.nombre) return; setNewComp(p => ({ ...p, sedes: [...(p.sedes || []), { ...sedeForm }] })); if (setSedeForm) setSedeForm({ nombre: "", ciudad: "", direccion: "" }); }}
-                className="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs font-black hover:bg-blue-700">+ Sede</button>
-            </div>
-          </div>
-          {/* Portal admin */}
-          {newComp.portalActivo && (
-            <div className="border-t border-purple-100 pt-4 mt-2 bg-purple-50 rounded-xl p-3">
-              <p className="text-xs font-black text-purple-700 uppercase mb-1">🔐 Acceso Admin del Portal</p>
-              <p className="text-[10px] text-purple-600 mb-2">El admin de la empresa usará estas credenciales para ingresar al portal.</p>
-              <div className="flex gap-2">
-                <div className="flex-1">
-                  <label className="block text-[10px] font-black text-purple-700 uppercase mb-1">Usuario admin</label>
-                  <input value={newComp.portalAdminUser} onChange={e => setNewComp(p => ({ ...p, portalAdminUser: e.target.value }))} placeholder="ej: admin_empresa" className="w-full border border-purple-200 rounded-lg p-1.5 text-xs" />
-                </div>
-                <div className="flex-1">
-                  <label className="block text-[10px] font-black text-purple-700 uppercase mb-1">Contraseña temporal</label>
-                  <input type="password" value={newComp.portalAdminPassPlain || ""} onChange={e => setNewComp(p => ({ ...p, portalAdminPassPlain: e.target.value }))} placeholder="mín. 8 caracteres" className="w-full border border-purple-200 rounded-lg p-1.5 text-xs" />
-                </div>
-              </div>
-            </div>
-          )}
-          <button onClick={handleSaveNew} className="w-full mt-4 bg-purple-700 hover:bg-purple-800 text-white py-2.5 rounded-xl text-sm font-black">💾 Guardar Empresa</button>
-        </div>
-      )}
-
-      {/* TAB: CONVENIOS RESUMEN */}
-      {companiesTab === "convenios" && (
-        <div className="space-y-3">
-          <div className="grid grid-cols-3 gap-3 mb-2">
-            <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-center">
-              <p className="text-xs font-black text-emerald-700">Con convenio activo</p>
-              <p className="text-2xl font-black text-emerald-800">{companies.filter(c => c.convenioVencimiento && new Date(c.convenioVencimiento) >= hoy).length}</p>
-            </div>
-            <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 text-center">
-              <p className="text-xs font-black text-amber-700">Próximos a vencer (&lt;30d)</p>
-              <p className="text-2xl font-black text-amber-800">{conveniosAlerta.length}</p>
-            </div>
-            <div className="bg-red-50 border border-red-200 rounded-xl p-3 text-center">
-              <p className="text-xs font-black text-red-700">Sin convenio / vencido</p>
-              <p className="text-2xl font-black text-red-800">{companies.filter(c => !c.convenioVencimiento || new Date(c.convenioVencimiento) < hoy).length}</p>
-            </div>
-          </div>
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-            <table className="w-full text-xs">
-              <thead className="bg-gray-800 text-white">
-                <tr>{["Empresa", "Médico Resp.", "Tarifa Ingreso", "Vencimiento", "Estado"].map(h => <th key={h} className="p-2 text-left font-black">{h}</th>)}</tr>
-              </thead>
-              <tbody>
-                {companies.map((c, i) => {
-                  const med = medicos.find(m => m.user === c.medicoResponsableId);
-                  const vence = c.convenioVencimiento ? new Date(c.convenioVencimiento) : null;
-                  const estado = !vence ? "Sin fecha" : vence < hoy ? "⛔ Vencido" : vence <= en30 ? "⚠️ Próximo" : "✅ Vigente";
-                  return (
-                    <tr key={c.id || i} className={i % 2 === 0 ? "bg-white" : "bg-gray-50"}>
-                      <td className="p-2 font-bold">{c.nombre}</td>
-                      <td className="p-2 text-gray-600">{med?.name || "-"}</td>
-                      <td className="p-2">{c.tarifaIngreso ? "$" + Number(c.tarifaIngreso).toLocaleString("es-CO") : "-"}</td>
-                      <td className="p-2">{c.convenioVencimiento || "-"}</td>
-                      <td className="p-2 font-bold">{estado}</td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
-
-      {/* MODAL EDITAR EMPRESA */}
-      {editingCompany && (
-        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <div className="bg-purple-700 p-4 rounded-t-2xl flex justify-between items-center">
-              <p className="text-white font-black">✏️ Editar: {editingCompany.nombre}</p>
-              <button onClick={() => setEditingCompany(null)} className="text-white font-black text-xl">✕</button>
-            </div>
-            <div className="p-4">
-              <div className="flex flex-wrap -mx-1.5">
-                <InputGroup label="Razón Social" value={editingCompany.nombre} onChange={e => setEditingCompany(p => ({ ...p, nombre: e.target.value }))} required width="w-1/2" />
-                <InputGroup label="NIT" value={editingCompany.nit} onChange={e => setEditingCompany(p => ({ ...p, nit: e.target.value }))} width="w-1/4" />
-                <InputGroup label="Ciudad" value={editingCompany.ciudad} onChange={e => setEditingCompany(p => ({ ...p, ciudad: e.target.value }))} width="w-1/4" />
-                <InputGroup label="Correo" value={editingCompany.correo || ""} onChange={e => setEditingCompany(p => ({ ...p, correo: e.target.value }))} width="w-1/2" />
-                <InputGroup label="Teléfono" value={editingCompany.telefono || ""} onChange={e => setEditingCompany(p => ({ ...p, telefono: e.target.value }))} width="w-1/4" />
-                <InputGroup label="Gerente" value={editingCompany.gerente || ""} onChange={e => setEditingCompany(p => ({ ...p, gerente: e.target.value }))} width="w-1/4" />
-              </div>
-              <div className="border-t pt-3 mt-1">
-                <p className="text-xs font-black text-gray-700 uppercase mb-2">🤝 Convenio</p>
-                <div className="flex flex-wrap -mx-1.5">
-                  <div className="px-1.5 mb-2 w-1/2">
-                    <label className="block text-[10px] font-black text-gray-600 uppercase mb-1">Médico responsable</label>
-                    <select value={editingCompany.medicoResponsableId || ""} onChange={e => setEditingCompany(p => ({ ...p, medicoResponsableId: e.target.value }))} className="w-full p-1.5 border rounded-lg text-xs">
-                      <option value="">- Sin asignar -</option>
-                      {medicos.map(m => <option key={m.user} value={m.user}>{m.name || m.user}</option>)}
-                    </select>
-                  </div>
-                  <InputGroup label="Tarifa Ingreso" value={editingCompany.tarifaIngreso || ""} onChange={e => setEditingCompany(p => ({ ...p, tarifaIngreso: e.target.value }))} width="w-1/4" type="number" />
-                  <InputGroup label="Tarifa Periódico" value={editingCompany.tarifaPeriodico || ""} onChange={e => setEditingCompany(p => ({ ...p, tarifaPeriodico: e.target.value }))} width="w-1/4" type="number" />
-                  <InputGroup label="Tarifa Egreso" value={editingCompany.tarifaEgreso || ""} onChange={e => setEditingCompany(p => ({ ...p, tarifaEgreso: e.target.value }))} width="w-1/4" type="number" />
-                  <InputGroup label="Tarifa Consulta" value={editingCompany.tarifaConsulta || ""} onChange={e => setEditingCompany(p => ({ ...p, tarifaConsulta: e.target.value }))} width="w-1/4" type="number" />
-                  <InputGroup label="Vencimiento" value={editingCompany.convenioVencimiento || ""} onChange={e => setEditingCompany(p => ({ ...p, convenioVencimiento: e.target.value }))} width="w-1/3" type="date" />
-                  <div className="px-1.5 mb-2 w-1/3">
-                    <label className="block text-[10px] font-black text-gray-600 uppercase mb-1">Condición pago</label>
-                    <select value={editingCompany.condicionesPago || "contado"} onChange={e => setEditingCompany(p => ({ ...p, condicionesPago: e.target.value }))} className="w-full p-1.5 border rounded-lg text-xs">
-                      {["contado", "30 días", "60 días", "90 días"].map(o => <option key={o} value={o}>{o}</option>)}
-                    </select>
-                  </div>
-                </div>
-                <div className="flex gap-4">
-                  <label className="flex items-center gap-1.5 text-xs font-bold cursor-pointer"><input type="checkbox" checked={!!editingCompany.portalActivo} onChange={e => setEditingCompany(p => ({ ...p, portalActivo: e.target.checked }))} className="accent-purple-600" /> Portal activo</label>
-                  <label className="flex items-center gap-1.5 text-xs font-bold cursor-pointer"><input type="checkbox" checked={!!editingCompany.facturacionAgrupada} onChange={e => setEditingCompany(p => ({ ...p, facturacionAgrupada: e.target.checked }))} className="accent-purple-600" /> Facturación agrupada</label>
-                </div>
-              </div>
-              {/* Portal code */}
-              {editingCompany.portalActivo && (
-                <div className="mt-3 bg-indigo-50 border border-indigo-200 rounded-xl p-3">
-                  <p className="text-[10px] font-black text-indigo-700 uppercase mb-2">🌐 Portal cliente</p>
-                  {editingCompany.portalCode ? (
-                    <div className="flex items-center gap-2">
-                      <span className="font-mono font-black text-indigo-900 text-sm bg-white border border-indigo-300 px-3 py-1 rounded-lg flex-1 text-center">{editingCompany.portalCode}</span>
-                      <button onClick={() => { const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; const rand = n => Array.from({ length: n }, () => chars[Math.floor(Math.random() * chars.length)]).join(""); const nc = `EMP-${rand(4)}-${rand(4)}`; setEditingCompany(p => ({ ...p, portalCode: nc })); showAlert("🔄 Código regenerado: " + nc); }}
-                        className="px-3 py-1.5 bg-amber-100 text-amber-700 text-[10px] font-black rounded-lg hover:bg-amber-200">🔄 Regenerar</button>
-                    </div>
-                  ) : <p className="text-[10px] text-amber-700">Sin código generado - se creará al guardar</p>}
-                </div>
-              )}
-              {/* Multi-médico edit */}
-              <div className="border-t border-gray-100 pt-3 mt-2">
-                <p className="text-xs font-black text-gray-700 uppercase mb-2">👨‍⚕️ Médicos asignados</p>
-                <div className="flex flex-wrap gap-2">
-                  {medicos.map(m => (
-                    <label key={m.user} className="flex items-center gap-1.5 text-xs cursor-pointer bg-indigo-50 border border-indigo-200 rounded-lg px-2 py-1">
-                      <input type="checkbox" checked={(editingCompany.medicoIds || []).includes(m.user) || editingCompany.medicoResponsableId === m.user}
-                        onChange={e => { if (m.user === editingCompany.medicoResponsableId) return; setEditingCompany(p => ({ ...p, medicoIds: e.target.checked ? [...(p.medicoIds || []), m.user] : (p.medicoIds || []).filter(x => x !== m.user) })); }}
-                        className="accent-indigo-600" disabled={m.user === editingCompany.medicoResponsableId} />
-                      <span className={m.user === editingCompany.medicoResponsableId ? "font-black text-indigo-700" : "text-gray-700"}>{m.name || m.user}{m.user === editingCompany.medicoResponsableId && " ⭐"}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-              {/* Sedes edit */}
-              <div className="border-t border-gray-100 pt-3 mt-2">
-                <p className="text-xs font-black text-gray-700 uppercase mb-2">🏢 Sedes</p>
-                <div className="space-y-1 mb-2">
-                  {(editingCompany.sedes || []).map((s, i) => (
-                    <div key={i} className="flex items-center justify-between bg-blue-50 border border-blue-200 rounded-lg px-3 py-1.5">
-                      <span className="text-xs font-bold text-blue-800">{s.nombre} — {s.ciudad}{s.direccion && ` · ${s.direccion}`}</span>
-                      <button onClick={() => setEditingCompany(p => ({ ...p, sedes: (p.sedes || []).filter((_, j) => j !== i) }))} className="text-red-500 text-xs font-black ml-2">✕</button>
-                    </div>
-                  ))}
-                </div>
-                <div className="flex gap-2 items-end">
-                  <input placeholder="Nombre sede" value={sedeForm?.nombre || ""} onChange={e => setSedeForm && setSedeForm(p => ({ ...p, nombre: e.target.value }))} className="border rounded-lg p-1.5 text-xs flex-1" />
-                  <input placeholder="Ciudad" value={sedeForm?.ciudad || ""} onChange={e => setSedeForm && setSedeForm(p => ({ ...p, ciudad: e.target.value }))} className="border rounded-lg p-1.5 text-xs w-24" />
-                  <button onClick={() => { if (!sedeForm?.nombre) return; setEditingCompany(p => ({ ...p, sedes: [...(p.sedes || []), { ...sedeForm }] })); if (setSedeForm) setSedeForm({ nombre: "", ciudad: "", direccion: "" }); }}
-                    className="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs font-black hover:bg-blue-700">+ Sede</button>
-                </div>
-              </div>
-              {/* Portal admin edit */}
-              {editingCompany.portalActivo && (
-                <div className="border-t border-purple-100 pt-3 mt-2 bg-purple-50 rounded-xl p-3">
-                  <p className="text-xs font-black text-purple-700 uppercase mb-1">🔐 Admin del Portal</p>
-                  <div className="flex gap-2">
-                    <div className="flex-1"><label className="block text-[10px] font-black text-purple-700 mb-1">Usuario admin</label>
-                      <input value={editingCompany.portalAdminUser || ""} onChange={e => setEditingCompany(p => ({ ...p, portalAdminUser: e.target.value }))} placeholder="usuario_admin" className="w-full border border-purple-200 rounded-lg p-1.5 text-xs" /></div>
-                    <div className="flex-1"><label className="block text-[10px] font-black text-purple-700 mb-1">Nueva contraseña (vacío = sin cambio)</label>
-                      <input type="password" value={editingCompany.portalAdminPassPlain || ""} onChange={e => setEditingCompany(p => ({ ...p, portalAdminPassPlain: e.target.value }))} placeholder="••••••••" className="w-full border border-purple-200 rounded-lg p-1.5 text-xs" /></div>
-                  </div>
-                </div>
-              )}
-              <button onClick={handleSaveEdit} className="w-full mt-4 bg-purple-700 hover:bg-purple-800 text-white py-2.5 rounded-xl text-sm font-black">💾 Guardar cambios</button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      <datalist id="arl-list">{ARL_LIST.map(o => <option key={o} value={o} />)}</datalist>
-
-      {/* Portal activado modal */}
-      {portalActivadoInfo && (() => {
-        const baseUrl = window.location.href.split("#")[0];
-        const portalUrl = `${baseUrl}#portalempresa?code=${portalActivadoInfo.portalCode}`;
-        return (
-          <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4 overflow-y-auto">
-            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-xl my-4">
-              <div className="bg-gradient-to-r from-indigo-600 to-purple-700 p-5 rounded-t-2xl flex justify-between items-start">
-                <div>
-                  <p className="text-white font-black text-lg">🎉 ¡Portal empresa activado!</p>
-                  <p className="text-indigo-200 text-sm font-bold">{portalActivadoInfo.nombre}</p>
-                  <p className="text-indigo-300 text-[11px]">NIT: {portalActivadoInfo.nit}{portalActivadoInfo.dv ? `-${portalActivadoInfo.dv}` : ""}</p>
-                </div>
-                <button onClick={() => setPortalActivadoInfo(null)} className="text-indigo-200 hover:text-white text-xl font-black">✕</button>
-              </div>
-              <div className="p-5 space-y-4 overflow-y-auto max-h-[75vh]">
-                <div className="bg-indigo-50 border-2 border-indigo-400 rounded-xl p-4 text-center">
-                  <p className="text-[10px] font-black text-indigo-600 uppercase tracking-wider mb-2">🔑 Código de acceso exclusivo</p>
-                  <p className="text-3xl font-black text-indigo-900 tracking-[0.25em] font-mono bg-white border border-indigo-200 rounded-lg py-2">{portalActivadoInfo.portalCode}</p>
-                </div>
-                <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3">
-                  <p className="text-[10px] font-black text-emerald-700 uppercase mb-2">🔗 Enlace directo</p>
-                  <div className="flex items-center gap-2">
-                    <p className="text-[10px] text-emerald-800 font-mono bg-white border border-emerald-200 rounded-lg px-2 py-1.5 flex-1 truncate">{portalUrl}</p>
-                    <button onClick={() => navigator.clipboard?.writeText(portalUrl).then(() => showAlert("✅ Enlace copiado."))}
-                      className="px-3 py-1.5 bg-emerald-600 text-white text-[10px] font-black rounded-lg hover:bg-emerald-700">📋 Copiar</button>
-                  </div>
-                </div>
-                <div className="flex gap-2">
-                  <button onClick={() => { setPortalActivadoInfo(null); if (setPortalEmpresaCodigo) setPortalEmpresaCodigo(portalActivadoInfo.portalCode); goTo("portalempresa"); }}
-                    className="flex-1 py-2.5 bg-indigo-100 text-indigo-700 text-xs font-black rounded-xl hover:bg-indigo-200">🌐 Vista previa del portal</button>
-                  <button onClick={() => setPortalActivadoInfo(null)} className="flex-1 py-2.5 bg-gray-100 text-gray-600 text-xs font-black rounded-xl hover:bg-gray-200">✓ Cerrar</button>
-                </div>
-              </div>
-            </div>
-          </div>
-        );
-      })()}
+      {/* Modals */}
+      {renderModal()}
+      {renderDetail()}
     </div>
   );
 }
