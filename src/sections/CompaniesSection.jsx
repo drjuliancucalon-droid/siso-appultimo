@@ -3,7 +3,8 @@ import {
   Building2,
   LogOut,
 } from 'lucide-react';
-import { _secretariaPuede } from '../shared/data/planConfig';
+import { _secretariaPuede, _secretariaMedicoAsignado } from '../shared/data/planConfig';
+import { _sha256 } from '../shared/lib/crypto';
 import InputGroup from '../components/ui/InputGroup';
 
 export default function CompaniesSection({ ctx }) {

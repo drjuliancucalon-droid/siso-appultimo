@@ -16,6 +16,8 @@ import { CIE11Badge } from '../shared/components/CIE11Badge';
 import DoctorSignature from '../components/ui/DoctorSignature';
 import BrandLogo from '../components/ui/BrandLogo';
 import ConsentimientoModal from '../components/modals/ConsentimientoModal';
+import { TURNO_LIST, NORMAL_DESCRIPTIONS_SYSTEMS } from '../shared/data/catalogs';
+import { DEFAULT_RECOMENDACIONES_SELECTED } from '../shared/data/recomendaciones';
 
 export default function HistoriaOcupacional({ ctx }) {
   const {

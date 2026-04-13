@@ -16,6 +16,8 @@ import {
   Shield,
 } from 'lucide-react';
 import { _secretariaPuede } from '../shared/data/planConfig';
+import { _generarCertificadoHTMLNormalizado } from '../shared/lib/printUtils';
+import { _safeLogoUrl, _sanitize } from '../shared/lib/security';
 import BrandLogo from '../components/ui/BrandLogo';
 
 export default function ReporteSection({ ctx }) {

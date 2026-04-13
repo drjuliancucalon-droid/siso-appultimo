@@ -18,7 +18,12 @@ import {
   Shield,
 } from 'lucide-react';
 import LicenciasTab from '../components/panels/LicenciasTab';
-import { _sbSet } from '../shared/lib/supabase';
+import { _sbSet, _sbDelete, _sbGetAll, _compKey, _compKeyCloud, _patKeyCloud } from '../shared/lib/supabase';
+import { _sha256, _pbkdf2Hash } from '../shared/lib/crypto';
+import { _totpGenSecret, _totpGetQRCodeUrl } from '../shared/lib/totp';
+import { ORG_DEFAULT_ID, SECRETARIA_PERMISOS_DEFAULT, _isAdminEmpresa } from '../shared/data/planConfig';
+import { DEFAULT_DOCTOR_DATA } from '../shared/data/catalogs';
+import { _validarContrasena } from '../shared/lib/security';
 
 export default function UsersSection({ ctx }) {
   const {
