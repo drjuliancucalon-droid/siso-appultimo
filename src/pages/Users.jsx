@@ -1,4 +1,5 @@
-﻿import React from "react";
+﻿import { X } from 'lucide-react';
+import React from "react";
 import {
   Activity, Banknote, FileSignature, GraduationCap, HardDrive,
   Lock, LogOut, Pencil, Receipt, Save, Shield, Trash2,
