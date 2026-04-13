@@ -1,8 +1,8 @@
-import React from "react";
+﻿import React from "react";
 import {
   AlertTriangle, BarChart3, Building2, Clock, Eye, FileCheck, FileSearch,
   FileText, HardDrive, Heart, Receipt, Shield, Stethoscope, Trash2,
-  UserCheck, Users, Lock
+  UserCheck, Users,
 } from "lucide-react";
 import {
   _canUse, _isAdmin, _isAdminEmpresa, _isAdminOrEmpresa,
@@ -17,8 +17,6 @@ const DashboardPage = (props) => {
     activeDoctorData, savedBillsList, orgsList,
     cajaMovimientos, setCajaTab,
     renderNavbar, goTo, showAlert,
-    medicoTurnoActivo, handleNewOccupHistory, handleNewGeneralHistory,
-    openPatient, setUserEditId, setEditForm, setActiveUserMgmtTab,
   } = props;
 
   return (
@@ -26,7 +24,7 @@ const DashboardPage = (props) => {
   {renderNavbar()}
   <div className="max-w-6xl mx-auto p-8">
     <div className="mb-8">
-      {/* Î“Ã¶Ã‡Î“Ã¶Ã‡ IPS: Banner de empresa cuando el usuario tiene empresaId Î“Ã¶Ã‡Î“Ã¶Ã‡ */}
+      {/* ΓöÇΓöÇ IPS: Banner de empresa cuando el usuario tiene empresaId ΓöÇΓöÇ */}
       {currentUser?.empresaId &&
         (() => {
           const _miEmpBanner = companies.find(
@@ -43,12 +41,12 @@ const DashboardPage = (props) => {
                     {_miEmpBanner?.nombre || "IPS"}
                   </p>
                   <p className="text-teal-100 text-xs">
-                    NIT: {_miEmpBanner?.nit || "Î“Ã‡Ã¶"} â”¬â•–{" "}
-                    {_miEmpBanner?.ciudad || ""} â”¬â•–{" "}
+                    NIT: {_miEmpBanner?.nit || "ΓÇö"} ┬╖{" "}
+                    {_miEmpBanner?.ciudad || ""} ┬╖{" "}
                     {currentUser.role === "admin_empresa"
                       ? "Admin IPS"
                       : currentUser.role === "medico"
-                      ? "Mâ”œâŒdico IPS"
+                      ? "M├⌐dico IPS"
                       : "Secretaria IPS"}
                   </p>
                 </div>
@@ -60,7 +58,7 @@ const DashboardPage = (props) => {
         <h2 className="text-2xl font-black text-gray-800">
           {currentUser?.empresaId ? "Panel IPS" : "Panel Principal"}
         </h2>
-        {/* FASE 2: Indicador mâ”œâŒdico de turno */}
+        {/* FASE 2: Indicador m├⌐dico de turno */}
         {_isAdmin(currentUser?.role) && (
           <div className="flex items-center gap-2">
             {medicoTurnoActivo ? (
@@ -70,11 +68,11 @@ const DashboardPage = (props) => {
                   setTimeout(() => setActiveUserMgmtTab("reasignacion"), 50)
                 }
                 className="flex items-center gap-2 bg-green-50 border border-green-200 rounded-xl px-3 py-1.5 cursor-pointer hover:bg-green-100 transition"
-                title="Click para cambiar mâ”œâŒdico de turno"
+                title="Click para cambiar m├⌐dico de turno"
               >
                 <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
                 <span className="text-xs font-black text-green-700">
-                  â‰¡Æ’âŒâ•‘ Turno:{" "}
+                  ≡ƒ⌐║ Turno:{" "}
                   {usersList.find((u) => u.user === medicoTurnoActivo)
                     ?.name || medicoTurnoActivo}
                 </span>
@@ -88,7 +86,7 @@ const DashboardPage = (props) => {
                 className="flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-xl px-3 py-1.5 cursor-pointer hover:bg-amber-100 transition"
               >
                 <span className="text-xs text-amber-600 font-bold">
-                  Î“ÃœÃ¡âˆ©â••Ã… Sin mâ”œâŒdico de turno
+                  ΓÜá∩╕Å Sin m├⌐dico de turno
                 </span>
               </div>
             )}
@@ -99,11 +97,11 @@ const DashboardPage = (props) => {
         {getSpanishDate(null)} -- {currentUser?.name}
         {currentUser?.role === "super_admin" && (
           <span className="ml-2 text-purple-600 font-bold">
-            Î“Â¡Ã‰ Super Admin â”¬â•– {orgsList.length} orgs
+            Γ¡É Super Admin ┬╖ {orgsList.length} orgs
           </span>
         )}
       </p>
-      {/* Î“Ã¶Ã‡Î“Ã¶Ã‡ PLAN STATUS BANNER Î“Ã¶Ã‡Î“Ã¶Ã‡ */}
+      {/* ΓöÇΓöÇ PLAN STATUS BANNER ΓöÇΓöÇ */}
       {(() => {
         const plan = PLAN_CONFIG[currentUser?.license || "libre"];
         const hcUsadas = _contarHC(patientsList, currentUser?.user);
@@ -134,7 +132,7 @@ const DashboardPage = (props) => {
             <span className={`font-black text-${col}-700 text-sm`}>
               {plan.label}
             </span>
-            <span className="text-gray-400 text-xs">â”¬â•–</span>
+            <span className="text-gray-400 text-xs">┬╖</span>
             {plan.maxHC < 9999 ? (
               <span
                 className={`text-xs font-bold ${
@@ -145,16 +143,16 @@ const DashboardPage = (props) => {
                     : "text-gray-600"
                 }`}
               >
-                â‰¡Æ’Ã´Ã¯ {hcUsadas}/{plan.maxHC} HC {pct >= 80 && "Î“ÃœÃ¡âˆ©â••Ã…"}
+                ≡ƒôï {hcUsadas}/{plan.maxHC} HC {pct >= 80 && "ΓÜá∩╕Å"}
               </span>
             ) : (
               <span className="text-xs text-gray-500">
-                â‰¡Æ’Ã´Ã¯ HC ilimitadas
+                ≡ƒôï HC ilimitadas
               </span>
             )}
             {isExpiring !== false && isExpiring >= 0 && (
               <span className="text-xs font-bold text-amber-600">
-                Î“Ã…â–‘ Vence en {isExpiring}d
+                ΓÅ░ Vence en {isExpiring}d
               </span>
             )}
             {plan.price === 0 && (
@@ -162,7 +160,7 @@ const DashboardPage = (props) => {
                 onClick={() => goTo("planes")}
                 className={`ml-auto text-xs font-black bg-${col}-600 text-white px-3 py-1 rounded-lg hover:opacity-90 transition`}
               >
-                Î“Â¼Ã¥âˆ©â••Ã… Ver planes
+                Γ¼å∩╕Å Ver planes
               </button>
             )}
           </div>
@@ -172,7 +170,7 @@ const DashboardPage = (props) => {
     {/* Stats Cards */}
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
       {(() => {
-        // Î“Ã¶Ã‡Î“Ã¶Ã‡ IPS: scope stats to empresa patients Î“Ã¶Ã‡Î“Ã¶Ã‡
+        // ΓöÇΓöÇ IPS: scope stats to empresa patients ΓöÇΓöÇ
         const _scopedPats = currentUser?.empresaId
           ? patientsList.filter((p) => {
               const _scEmp = companies.find(
@@ -214,12 +212,13 @@ const DashboardPage = (props) => {
             ).length,
             color: "blue",
             icon: Lock,
+          },
           ...(_isAdminOrEmpresa(currentUser?.role)
             ? [
                 {
                   label: currentUser?.empresaId
-                    ? "Mâ”œâŒdicos IPS"
-                    : "Mâ”œâŒdicos activos",
+                    ? "M├⌐dicos IPS"
+                    : "M├⌐dicos activos",
                   value: currentUser?.empresaId
                     ? usersList.filter(
                         (u) =>
@@ -282,7 +281,7 @@ const DashboardPage = (props) => {
         </div>
       ))}
     </div>
-    {/* Î“Ã¶Ã‡Î“Ã¶Ã‡ ACCIONES PRINCIPALES Î“Ã¶Ã‡Î“Ã¶Ã‡ */}
+    {/* ΓöÇΓöÇ ACCIONES PRINCIPALES ΓöÇΓöÇ */}
     {["medico", "administrador", "secretaria", "admin_empresa", "super_admin"].includes(
       currentUser?.role
     ) && (
@@ -301,7 +300,7 @@ const DashboardPage = (props) => {
               Nueva HC Ocupacional
             </h3>
             <p className="text-emerald-100 text-[11px] mt-0.5">
-              Evaluaciâ”œâ”‚n mâ”œâŒdica del trabajo
+              Evaluaci├│n m├⌐dica del trabajo
             </p>
           </div>
         </button>
@@ -326,12 +325,12 @@ const DashboardPage = (props) => {
       </div>
     )}
 
-    {/* Î“Ã¶Ã‡Î“Ã¶Ã‡ Mâ”œÃ´DULOS AGRUPADOS Î“Ã¶Ã‡Î“Ã¶Ã‡ */}
+    {/* ΓöÇΓöÇ M├ôDULOS AGRUPADOS ΓöÇΓöÇ */}
     <div className="space-y-4 mb-6">
-      {/* Gestiâ”œâ”‚n Clâ”œÂ¡nica */}
+      {/* Gesti├│n Cl├¡nica */}
       <div>
         <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">
-          â‰¡Æ’âŒâ•‘ Gestiâ”œâ”‚n Clâ”œÂ¡nica
+          ≡ƒ⌐║ Gesti├│n Cl├¡nica
         </p>
         <div className="grid grid-cols-3 gap-2">
           <button
@@ -355,7 +354,7 @@ const DashboardPage = (props) => {
             className="bg-white border border-gray-100 rounded-xl p-3 flex items-center gap-2.5 hover:border-blue-200 hover:bg-blue-50/40 transition group shadow-sm"
           >
             <div className="bg-blue-50 p-2 rounded-lg group-hover:bg-blue-100 transition flex-shrink-0 text-base leading-none flex items-center justify-center w-8 h-8">
-              â‰¡Æ’Ã¹Ã´âˆ©â••Ã…
+              ≡ƒùô∩╕Å
             </div>
             <div className="text-left min-w-0">
               <p className="font-black text-gray-800 text-xs leading-tight">
@@ -385,10 +384,10 @@ const DashboardPage = (props) => {
         </div>
       </div>
 
-      {/* Administraciâ”œâ”‚n */}
+      {/* Administraci├│n */}
       <div>
         <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">
-          â‰¡Æ’Ã†â• Administraciâ”œâ”‚n
+          ≡ƒÆ╝ Administraci├│n
         </p>
         <div className="grid grid-cols-3 gap-2">
           <button
@@ -440,7 +439,7 @@ const DashboardPage = (props) => {
               </p>
               <p className="text-[10px] text-gray-400 truncate">
                 {currentUser?.role === "admin_empresa"
-                  ? "Mâ”œâŒdicos IPS"
+                  ? "M├⌐dicos IPS"
                   : "Accesos"}
               </p>
             </div>
@@ -458,7 +457,7 @@ const DashboardPage = (props) => {
                   Mi Empresa
                 </p>
                 <p className="text-[10px] text-gray-400 truncate">
-                  Logo â”¬â•– NIT â”¬â•– IPS
+                  Logo ┬╖ NIT ┬╖ IPS
                 </p>
               </div>
             </button>
@@ -468,14 +467,14 @@ const DashboardPage = (props) => {
               className="bg-white border border-gray-100 rounded-xl p-3 flex items-center gap-2.5 hover:border-indigo-200 hover:bg-indigo-50/40 transition group shadow-sm"
             >
               <div className="bg-indigo-50 p-2 rounded-lg group-hover:bg-indigo-100 transition flex-shrink-0 text-base leading-none flex items-center justify-center w-8 h-8">
-                â‰¡Æ’Ã†â•
+                ≡ƒÆ╝
               </div>
               <div className="text-left min-w-0">
                 <p className="font-black text-gray-800 text-xs leading-tight">
                   Portafolio
                 </p>
                 <p className="text-[10px] text-gray-400 truncate">
-                  Precios â”¬â•– Servicios
+                  Precios ┬╖ Servicios
                 </p>
               </div>
             </button>
@@ -486,7 +485,7 @@ const DashboardPage = (props) => {
       {/* Financiero y Reportes */}
       <div>
         <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">
-          â‰¡Æ’Ã†â–‘ Financiero & Reportes
+          ≡ƒÆ░ Financiero & Reportes
         </p>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
           <button
@@ -494,7 +493,7 @@ const DashboardPage = (props) => {
               _canUse("factura_basica", currentUser)
                 ? goTo("bill")
                 : showAlert(
-                    "â‰¡Æ’Ã¶Ã† Cuentas de Cobro estâ”œÃ­ disponible en el plan â‰¡Æ’Ã®â–’ Starter ($45.000/mes).\n\nMenâ”œâ•‘ Î“Ã¥Ã† Î“Â¡Ã‰ Ver Planes"
+                    "≡ƒöÆ Cuentas de Cobro est├í disponible en el plan ≡ƒî▒ Starter ($45.000/mes).\n\nMen├║ ΓåÆ Γ¡É Ver Planes"
                   )
             }
             className="bg-white border border-gray-100 rounded-xl p-3 flex items-center gap-2.5 hover:border-orange-200 hover:bg-orange-50/40 transition group shadow-sm"
@@ -519,12 +518,12 @@ const DashboardPage = (props) => {
                 Cuentas de Cobro{" "}
                 {!_canUse("factura_basica", currentUser) && (
                   <span className="text-[8px] bg-amber-100 text-amber-700 px-0.5 rounded">
-                    â‰¡Æ’Ã¶Ã†
+                    ≡ƒöÆ
                   </span>
                 )}
               </p>
               <p className="text-[10px] text-gray-400 truncate">
-                Facturaciâ”œâ”‚n
+                Facturaci├│n
               </p>
             </div>
           </button>
@@ -535,14 +534,14 @@ const DashboardPage = (props) => {
               className="bg-white border border-gray-100 rounded-xl p-3 flex items-center gap-2.5 hover:border-green-200 hover:bg-green-50/40 transition group shadow-sm"
             >
               <div className="bg-green-50 p-2 rounded-lg group-hover:bg-green-100 transition flex-shrink-0 text-base leading-none flex items-center justify-center w-8 h-8">
-                â‰¡Æ’Ã†â–‘
+                ≡ƒÆ░
               </div>
               <div className="text-left min-w-0">
                 <p className="font-black text-gray-800 text-xs leading-tight">
-                  Mâ”œâ”‚dulo Financiero
+                  M├│dulo Financiero
                 </p>
                 <p className="text-[10px] text-gray-400 truncate">
-                  Caja â”¬â•– Cuentas
+                  Caja ┬╖ Cuentas
                 </p>
               </div>
             </button>
@@ -551,7 +550,7 @@ const DashboardPage = (props) => {
             onClick={() =>
               _canUse("reportes_basicos", currentUser)
                 ? goTo("reporte")
-                : showAlert("â‰¡Æ’Ã¶Ã† Reportes disponible en plan Starter+")
+                : showAlert("≡ƒöÆ Reportes disponible en plan Starter+")
             }
             className="bg-white border border-gray-100 rounded-xl p-3 flex items-center gap-2.5 hover:border-indigo-200 hover:bg-indigo-50/40 transition group shadow-sm"
           >
@@ -569,12 +568,12 @@ const DashboardPage = (props) => {
                 Reportes{" "}
                 {!_canUse("reportes_basicos", currentUser) && (
                   <span className="text-[8px] bg-amber-100 text-amber-700 px-0.5 rounded">
-                    â‰¡Æ’Ã¶Ã†
+                    ≡ƒöÆ
                   </span>
                 )}
               </p>
               <p className="text-[10px] text-gray-400 truncate">
-                Diagnâ”œâ”‚stico
+                Diagn├│stico
               </p>
             </div>
           </button>
@@ -583,7 +582,7 @@ const DashboardPage = (props) => {
               _canUse("propuestas", currentUser)
                 ? goTo("propuestas")
                 : showAlert(
-                    "â‰¡Æ’Ã¶Ã† Propuestas Econâ”œâ”‚micas estâ”œÃ­ disponible en el plan â‰¡Æ’Ã®â–’ Starter ($45.000/mes).\n\nMenâ”œâ•‘ Î“Ã¥Ã† Î“Â¡Ã‰ Ver Planes"
+                    "≡ƒöÆ Propuestas Econ├│micas est├í disponible en el plan ≡ƒî▒ Starter ($45.000/mes).\n\nMen├║ ΓåÆ Γ¡É Ver Planes"
                   )
             }
             className="bg-white border border-gray-100 rounded-xl p-3 flex items-center gap-2.5 hover:border-teal-200 hover:bg-teal-50/40 transition group shadow-sm"
@@ -608,7 +607,7 @@ const DashboardPage = (props) => {
                 Propuestas{" "}
                 {!_canUse("propuestas", currentUser) && (
                   <span className="text-[8px] bg-amber-100 text-amber-700 px-0.5 rounded">
-                    â‰¡Æ’Ã¶Ã†
+                    ≡ƒöÆ
                   </span>
                 )}
               </p>
@@ -630,7 +629,7 @@ const DashboardPage = (props) => {
                   Contabilidad
                 </p>
                 <p className="text-[10px] text-gray-400 truncate">
-                  P&L â”¬â•– KPIs â”¬â•– Fiscal
+                  P&L ┬╖ KPIs ┬╖ Fiscal
                 </p>
               </div>
             </button>
@@ -638,10 +637,10 @@ const DashboardPage = (props) => {
         </div>
       </div>
 
-      {/* Mâ”œâ”‚dulos Especializados */}
+      {/* M├│dulos Especializados */}
       <div>
         <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">
-          Î“ÃœÃ­ Mâ”œâ”‚dulos Especializados
+          ΓÜí M├│dulos Especializados
         </p>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
           <button
@@ -649,7 +648,7 @@ const DashboardPage = (props) => {
               _canUse("sve_starter", currentUser)
                 ? goTo("sve")
                 : showAlert(
-                    "â‰¡Æ’Ã¶Ã† SVE estâ”œÃ­ disponible en el plan â‰¡Æ’Ã®â–’ Starter ($45.000/mes, 2 programas) o Î“Â¡Ã‰ Pro ($79.000/mes, 7 programas).\n\nMenâ”œâ•‘ Î“Ã¥Ã† Î“Â¡Ã‰ Ver Planes"
+                    "≡ƒöÆ SVE est├í disponible en el plan ≡ƒî▒ Starter ($45.000/mes, 2 programas) o Γ¡É Pro ($79.000/mes, 7 programas).\n\nMen├║ ΓåÆ Γ¡É Ver Planes"
                   )
             }
             className="bg-white border border-gray-100 rounded-xl p-3 flex items-center gap-2.5 hover:border-teal-200 hover:bg-teal-50/40 transition group shadow-sm"
@@ -674,12 +673,12 @@ const DashboardPage = (props) => {
                 SVE{" "}
                 {!_canUse("sve_starter", currentUser) && (
                   <span className="text-[8px] bg-amber-100 text-amber-700 px-0.5 rounded">
-                    â‰¡Æ’Ã¶Ã†
+                    ≡ƒöÆ
                   </span>
                 )}
               </p>
               <p className="text-[10px] text-gray-400 truncate">
-                Vigilancia epidemiolâ”œâ”‚gica
+                Vigilancia epidemiol├│gica
               </p>
             </div>
           </button>
@@ -688,7 +687,7 @@ const DashboardPage = (props) => {
               _canUse("arl", currentUser)
                 ? goTo("arl")
                 : showAlert(
-                    "â‰¡Æ’Ã¶Ã† Mâ”œâ”‚dulo ARL estâ”œÃ­ disponible en el plan Î“Â¡Ã‰ Pro ($79.000/mes).\n\nMenâ”œâ•‘ Î“Ã¥Ã† Î“Â¡Ã‰ Ver Planes"
+                    "≡ƒöÆ M├│dulo ARL est├í disponible en el plan Γ¡É Pro ($79.000/mes).\n\nMen├║ ΓåÆ Γ¡É Ver Planes"
                   )
             }
             className="bg-white border border-gray-100 rounded-xl p-3 flex items-center gap-2.5 hover:border-red-200 hover:bg-red-50/40 transition group shadow-sm"
@@ -708,10 +707,10 @@ const DashboardPage = (props) => {
             </div>
             <div className="text-left min-w-0">
               <p className="font-black text-gray-800 text-xs leading-tight">
-                Mâ”œâ”‚dulo ARL{" "}
+                M├│dulo ARL{" "}
                 {!_canUse("arl", currentUser) && (
                   <span className="text-[8px] bg-amber-100 text-amber-700 px-0.5 rounded">
-                    â‰¡Æ’Ã¶Ã†
+                    ≡ƒöÆ
                   </span>
                 )}
               </p>
@@ -725,14 +724,14 @@ const DashboardPage = (props) => {
             className="bg-white border border-gray-100 rounded-xl p-3 flex items-center gap-2.5 hover:border-indigo-200 hover:bg-indigo-50/40 transition group shadow-sm"
           >
             <div className="bg-indigo-50 p-2 rounded-lg group-hover:bg-indigo-100 transition flex-shrink-0 text-base leading-none flex items-center justify-center w-8 h-8">
-              â‰¡Æ’Ã†â•
+              ≡ƒÆ╝
             </div>
             <div className="text-left min-w-0">
               <p className="font-black text-gray-800 text-xs leading-tight">
                 Portafolio
               </p>
               <p className="text-[10px] text-gray-400 truncate">
-                Precios â”¬â•– Servicios
+                Precios ┬╖ Servicios
               </p>
             </div>
           </button>
@@ -742,7 +741,7 @@ const DashboardPage = (props) => {
       {/* Portales y Acceso Externo */}
       <div>
         <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">
-          â‰¡Æ’Ã®Ã‰ Portales & Acceso Externo
+          ≡ƒîÉ Portales & Acceso Externo
         </p>
         <div className="grid grid-cols-3 gap-2">
           <button
@@ -757,7 +756,7 @@ const DashboardPage = (props) => {
                 Portal Trabajador
               </p>
               <p className="text-[10px] text-gray-400 truncate">
-                Consulta câ”œâ”‚digo
+                Consulta c├│digo
               </p>
             </div>
           </button>
@@ -800,7 +799,7 @@ const DashboardPage = (props) => {
       {currentUser?.role === "super_admin" && (
         <div>
           <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">
-            Î“Â¡Ã‰ Super Admin
+            Γ¡É Super Admin
           </p>
           <button
             onClick={() => goTo("superadmin")}
@@ -808,12 +807,12 @@ const DashboardPage = (props) => {
           >
             <div className="absolute top-0 right-0 w-24 h-24 bg-white/5 rounded-full -translate-y-8 translate-x-8" />
             <div className="bg-purple-500/40 p-2.5 rounded-xl flex-shrink-0 relative">
-              <span className="text-xl">Î“Â¡Ã‰</span>
+              <span className="text-xl">Γ¡É</span>
             </div>
             <div className="relative">
               <p className="font-black text-white text-sm">Panel Global</p>
               <p className="text-purple-200 text-[11px]">
-                Super Admin â”¬â•– {orgsList.length} organizaciones
+                Super Admin ┬╖ {orgsList.length} organizaciones
               </p>
             </div>
           </button>
@@ -846,14 +845,14 @@ const DashboardPage = (props) => {
         const alertas = [
           ...conveniosAlerta.map((c) => ({
             tipo: "amber",
-            msg: `Î“ÃœÃ¡âˆ©â••Ã… Convenio prâ”œâ”‚ximo a vencer: ${c.nombre} (${c.convenioVencimiento})`,
+            msg: `ΓÜá∩╕Å Convenio pr├│ximo a vencer: ${c.nombre} (${c.convenioVencimiento})`,
             accion: () => goTo("companies"),
           })),
           ...(cuentasPend.length > 5
             ? [
                 {
                   tipo: "red",
-                  msg: `â‰¡Æ’Ã†â”‚ ${
+                  msg: `≡ƒÆ│ ${
                     cuentasPend.length
                   } cuentas de cobro pendientes por $ ${cuentasPend
                     .reduce((s, b) => s + Number(b.amount || 0), 0)
@@ -869,14 +868,14 @@ const DashboardPage = (props) => {
             ? [
                 {
                   tipo: "blue",
-                  msg: `â‰¡Æ’Ã´Ã¯ ${hcAbiertas.length} HCs sin cerrar`,
+                  msg: `≡ƒôï ${hcAbiertas.length} HCs sin cerrar`,
                   accion: () => {},
                 },
               ]
             : []),
           ...medsinFirma.map((m) => ({
             tipo: "purple",
-            msg: `Î“Â£Ã¬âˆ©â••Ã… ${m.name || m.user} no tiene firma digital cargada`,
+            msg: `Γ£ì∩╕Å ${m.name || m.user} no tiene firma digital cargada`,
             accion: () => goTo("users"),
           })),
         ];
@@ -897,14 +896,14 @@ const DashboardPage = (props) => {
                 <span
                   className={`text-[10px] text-${a.tipo}-600 font-black`}
                 >
-                  Ver Î“Ã¥Ã†
+                  Ver ΓåÆ
                 </span>
               </div>
             ))}
           </div>
         );
       })()}
-    {/* Î“Ã¶Ã‡Î“Ã¶Ã‡ PRODUCTIVIDAD POR Mâ”œÃ«DICO - admin + admin_empresa (FASE 5) Î“Ã¶Ã‡Î“Ã¶Ã‡ */}
+    {/* ΓöÇΓöÇ PRODUCTIVIDAD POR M├ëDICO - admin + admin_empresa (FASE 5) ΓöÇΓöÇ */}
     {_isAdminOrEmpresa(currentUser?.role) &&
       (() => {
         const medicosActivos = usersList.filter(
@@ -937,7 +936,7 @@ const DashboardPage = (props) => {
           <div className="mb-4 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
             <div className="bg-gray-800 px-4 py-3 flex items-center justify-between">
               <h3 className="text-white font-black text-sm flex items-center gap-2">
-                â‰¡Æ’Ã´Ã¨ Productividad por Mâ”œâŒdico{" "}
+                ≡ƒôè Productividad por M├⌐dico{" "}
                 <span className="text-gray-400 font-normal text-xs">
                   (mes actual)
                 </span>
@@ -949,7 +948,7 @@ const DashboardPage = (props) => {
                 }}
                 className="text-[10px] text-gray-300 hover:text-white font-black"
               >
-                Ver detalle Î“Ã¥Ã†
+                Ver detalle ΓåÆ
               </button>
             </div>
             <div className="overflow-x-auto">
@@ -957,7 +956,7 @@ const DashboardPage = (props) => {
                 <thead className="bg-gray-100 text-gray-600">
                   <tr>
                     {[
-                      "Mâ”œâŒdico",
+                      "M├⌐dico",
                       "Atenciones",
                       "HCs cerradas",
                       "HCs abiertas",
@@ -1081,7 +1080,7 @@ const DashboardPage = (props) => {
                       {p.nombres}
                     </div>
                     <div className="text-[10px] text-gray-400">
-                      {p.docNumero} â”¬â•– {p.cargo || "Sin cargo"}
+                      {p.docNumero} ┬╖ {p.cargo || "Sin cargo"}
                     </div>
                   </td>
                   <td className="p-3">
@@ -1122,7 +1121,7 @@ const DashboardPage = (props) => {
                         onClick={() => {
                           if (!canViewPatient(p)) {
                             showAlert(
-                              "Î“Â¢Ã¶ Solo puede acceder a historias creadas por usted."
+                              "Γ¢ö Solo puede acceder a historias creadas por usted."
                             );
                             return;
                           }
@@ -1170,7 +1169,7 @@ const DashboardPage = (props) => {
                                 a.click();
                                 URL.revokeObjectURL(url);
                                 showAlert(
-                                  "Î“Â£Ã  Preservado.\nSHA-256: " +
+                                  "Γ£à Preservado.\nSHA-256: " +
                                     pkg.hashSHA256.substring(0, 16) +
                                     "..."
                                 );
@@ -1179,7 +1178,7 @@ const DashboardPage = (props) => {
                               }
                             }}
                             className="p-1.5 bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 border border-purple-200"
-                            title="Preservar HC 20 aâ”œâ–’os (Res.1995/1999)"
+                            title="Preservar HC 20 a├▒os (Res.1995/1999)"
                           >
                             <HardDrive className="w-3.5 h-3.5" />
                           </button>
@@ -1228,7 +1227,7 @@ const DashboardPage = (props) => {
                   colSpan="6"
                   className="p-8 text-center text-gray-400 text-sm"
                 >
-                  No hay registros aâ”œâ•‘n. Cree una nueva historia clâ”œÂ¡nica.
+                  No hay registros a├║n. Cree una nueva historia cl├¡nica.
                 </td>
               </tr>
             )}
