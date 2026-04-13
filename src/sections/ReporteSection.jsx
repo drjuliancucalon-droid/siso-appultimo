@@ -22,7 +22,6 @@ import BrandLogo from '../components/ui/BrandLogo';
 
 export default function ReporteSection({ ctx }) {
   const {
-    TABS,
     _isAdmin,
     renderNavbar,
     activeDoctorData,
@@ -371,7 +370,7 @@ export default function ReporteSection({ ctx }) {
             </button>
           </div>
 
-          {/* ── TABS: Estadísticas | Certificados por empresa ── */}
+          {/* ── []: Estadísticas | Certificados por empresa ── */}
           {selectedCompanyReport && (
             <div className="flex gap-1 mb-6 border-b border-gray-200 no-print">
               {[
