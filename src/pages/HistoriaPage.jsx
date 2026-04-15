@@ -1,17 +1,26 @@
+// src/pages/HistoriaPage.jsx — Historia Clínica wrapper
+// OccupationalHC has both named and default export — use default
 import React from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import OccupationalHC from '../modules/clinical/components/OccupationalHC';
+import { useAuthStore } from '../stores/authStore';
+import { useAIStore } from '../stores/aiStore';
 import { Stethoscope } from 'lucide-react';
 
 export default function HistoriaPage() {
   const { id } = useParams();
+  const navigate = useNavigate();
+  const { currentUser } = useAuthStore();
+  const aiConfig = useAIStore((s) => s.getConfig());
+
   return (
-    <div className="p-6 max-w-7xl mx-auto">
-      <div className="flex items-center gap-3 mb-6">
-        <Stethoscope className="w-6 h-6 text-blue-600" />
-        <h1 className="text-2xl font-bold text-gray-800">Historia Clínica Ocupacional</h1>
-      </div>
-      <OccupationalHC patientId={id} />
+    <div className="p-4 max-w-7xl mx-auto">
+      <OccupationalHC
+        patientId={id}
+        currentUser={currentUser}
+        aiConfig={aiConfig}
+        onBack={() => navigate('/patients')}
+      />
     </div>
   );
 }
