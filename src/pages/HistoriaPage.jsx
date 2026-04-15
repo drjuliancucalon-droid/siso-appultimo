@@ -7,7 +7,7 @@ import { useClinicalRecord } from '../modules/clinical/hooks/useClinicalRecord';
 import { useAuthStore } from '../stores/authStore';
 import { useAIStore } from '../stores/aiStore';
 import { useBackendData, useBackendObject } from '../hooks/useBackendData';
-import { callAIWithFailover } from '../modules/ai/services/aiAnalysis';
+import { analyzeHC, generateRestrictions, generateRecommendations, suggestDiagnosis, suggestExams } from '../modules/ai/services/aiAnalysis';
 import { useSaveData } from '../hooks/useSaveData';
 import { printHC } from '../lib/printService';
 import { Stethoscope, Loader2, ArrowLeft, Save, CheckCircle, Printer } from 'lucide-react';
@@ -82,22 +82,61 @@ export default function HistoriaPage() {
       alert('Configura una API Key de IA primero (Gemini, Groq, Together o OpenRouter)');
       return;
     }
-    const setLoading = type === 'reco' ? setIsGeneratingReco : type === 'restr' ? setIsGeneratingRestr : setIsGenerating;
+
+    // Determine which loading state and AI function to use
+    let setLoading;
+    let aiFn;
+
+    switch (type) {
+      case 'reco':
+        setLoading = setIsGeneratingReco;
+        aiFn = () => generateRecommendations(clinical.data, aiConfig);
+        break;
+      case 'restr':
+        setLoading = setIsGeneratingRestr;
+        aiFn = () => generateRestrictions(clinical.data, aiConfig);
+        break;
+      case 'diagnosis':
+        setLoading = setIsGenerating;
+        aiFn = () => suggestDiagnosis(clinical.data, aiConfig);
+        break;
+      case 'exams':
+        setLoading = setIsGenerating;
+        aiFn = () => suggestExams(clinical.data, aiConfig);
+        break;
+      default:
+        // Full analysis
+        setLoading = setIsGenerating;
+        aiFn = () => analyzeHC(clinical.data, aiConfig);
+        break;
+    }
+
     setLoading(true);
     try {
-      const result = await callAIWithFailover(
-        `Analiza esta HC: ${JSON.stringify(clinical.data)}`,
-        undefined,
-        aiConfig
-      );
-      // The AI module handles the rest
+      const result = await aiFn();
+
+      // Update clinical data based on result type
+      if (type === 'reco' && typeof result === 'string') {
+        clinical.setData({ recomendaciones: result });
+      } else if (type === 'restr' && typeof result === 'string') {
+        clinical.setData({ restricciones: result });
+      } else if (type === 'diagnosis' && Array.isArray(result)) {
+        const updates = {};
+        if (result[0]) updates.diagnostico1 = `${result[0].code} - ${result[0].description}`;
+        if (result[1]) updates.diagnostico2 = `${result[1].code} - ${result[1].description}`;
+        if (result[2]) updates.diagnostico3 = `${result[2].code} - ${result[2].description}`;
+        clinical.setData(updates);
+      } else if (typeof result === 'string') {
+        clinical.setData({ analisis: result });
+      }
+
       return result;
     } catch (err) {
       alert('Error IA: ' + err.message);
     } finally {
       setLoading(false);
     }
-  }, [aiConfig, clinical.data]);
+  }, [aiConfig, clinical]);
 
   // Consent modal state
   const [showConsentModal, setShowConsentModal] = useState(false);

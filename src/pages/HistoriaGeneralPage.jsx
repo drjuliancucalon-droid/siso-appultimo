@@ -7,7 +7,7 @@ import { useAuthStore } from '../stores/authStore';
 import { useAIStore } from '../stores/aiStore';
 import { useBackendData, useBackendObject } from '../hooks/useBackendData';
 import { useSaveData } from '../hooks/useSaveData';
-import { callAIWithFailover } from '../modules/ai/services/aiAnalysis';
+import { analyzeGeneralHC, suggestDiagnosis } from '../modules/ai/services/aiAnalysis';
 import { printHC } from '../lib/printService';
 import { initialGeneralPatientState } from '../shared/data/initialStates';
 import { ArrowLeft, Save, Printer, Loader2, CheckCircle, Stethoscope } from 'lucide-react';
@@ -34,19 +34,27 @@ export default function HistoriaGeneralPage() {
     else alert('❌ Error al guardar');
   }, [data, save, currentUser, doctor]);
 
-  // AI
-  const onGenerateAI = useCallback(async () => {
+  // AI — dispatches by type
+  const onGenerateAI = useCallback(async (type) => {
     if (!aiConfig.keys || !Object.values(aiConfig.keys).some((k) => k?.trim())) {
       alert('Configura una API Key de IA primero'); return;
     }
     setIsGenerating(true);
     try {
-      const result = await callAIWithFailover(
-        `Analiza esta historia clínica general:\n${JSON.stringify(data)}`,
-        'Eres un médico general colombiano. Genera un análisis clínico con diagnósticos y plan de manejo.',
-        aiConfig
-      );
-      setData((prev) => ({ ...prev, analisis: result }));
+      if (type === 'diagnosis') {
+        const result = await suggestDiagnosis(data, aiConfig);
+        if (Array.isArray(result)) {
+          const updates = {};
+          if (result[0]) updates.diagnostico1 = `${result[0].code} - ${result[0].description}`;
+          if (result[1]) updates.diagnostico2 = `${result[1].code} - ${result[1].description}`;
+          if (result[2]) updates.diagnostico3 = `${result[2].code} - ${result[2].description}`;
+          setData((prev) => ({ ...prev, ...updates }));
+        }
+      } else {
+        // Default: full general analysis
+        const result = await analyzeGeneralHC(data, aiConfig);
+        setData((prev) => ({ ...prev, analisis: result }));
+      }
     } catch (err) { alert('Error IA: ' + err.message); }
     finally { setIsGenerating(false); }
   }, [aiConfig, data]);
