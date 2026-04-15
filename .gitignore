@@ -1,9 +1,43 @@
+# Dependencies
 node_modules/
+.yarn/
+
+# Build output
 dist/
+build/
+
+# Vite cache
+.vite/
+
+# Environment variables (NEVER commit these)
 .env
 .env.local
-.env.*.local
+.env.production
+.env.staging
+backend/.env
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
 *.log
 npm-debug.log*
-.DS_Store
+yarn-debug.log*
+yarn-error.log*
+
+# Testing
 coverage/
+.nyc_output/
+
+# Temp
+*.tmp
+*.bak
