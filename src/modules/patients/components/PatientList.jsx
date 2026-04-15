@@ -42,8 +42,8 @@ export const PatientList = ({ onSelect, pacientes: pacientesExternos }) => {
       const q = busqueda.toLowerCase();
       const coincideBusqueda =
         !busqueda ||
-        (p.nombre || p.paciente || '').toLowerCase().includes(q) ||
-        (p.documento || '').toLowerCase().includes(q);
+        (p.nombres || p.nombre || p.paciente || '').toLowerCase().includes(q) ||
+        (p.docNumero || p.documento || '').toLowerCase().includes(q);
       const coincideEmpresa =
         !filtroEmpresa || (p.empresa || p.empresaNombre || '') === filtroEmpresa;
       const coincideTipo =
@@ -134,7 +134,7 @@ export const PatientList = ({ onSelect, pacientes: pacientesExternos }) => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {filtrados.map((p) => (
             <div
-              key={p.id || p.documento || Math.random()}
+              key={p.id || p.docNumero || p.documento || Math.random()}
               onClick={() => onSelect && onSelect(p)}
               className={`bg-white border rounded-xl p-4 hover:shadow-md transition ${
                 onSelect ? 'cursor-pointer' : ''
@@ -146,8 +146,8 @@ export const PatientList = ({ onSelect, pacientes: pacientesExternos }) => {
                     <User className="w-5 h-5 text-teal-600" />
                   </div>
                   <div>
-                    <p className="font-semibold text-gray-800 text-sm">{p.nombre || p.paciente || 'Sin nombre'}</p>
-                    <p className="text-xs text-gray-500">CC {p.documento || 'N/A'}</p>
+                    <p className="font-semibold text-gray-800 text-sm">{p.nombres || p.nombre || p.paciente || 'Sin nombre'}</p>
+                    <p className="text-xs text-gray-500">{p.docTipo || 'CC'} {p.docNumero || p.documento || 'N/A'}</p>
                   </div>
                 </div>
                 {(p.concepto || p.conceptoAptitud) && (
