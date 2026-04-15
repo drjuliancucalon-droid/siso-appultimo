@@ -3,6 +3,7 @@
 // Full-width content area (no sidebar stealing space)
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
+import { ErrorBoundary } from '../components/ErrorBoundary';
 import { useAuthStore } from '../stores/authStore';
 import { useUIStore } from '../stores/uiStore';
 import {
@@ -322,7 +323,9 @@ export default function Layout() {
 
       {/* ═══ MAIN CONTENT — Full width ═══ */}
       <main className="flex-1 overflow-y-auto bg-gray-50">
-        <Outlet />
+        <ErrorBoundary>
+          <Outlet />
+        </ErrorBoundary>
       </main>
     </div>
   );

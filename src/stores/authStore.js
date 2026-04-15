@@ -16,6 +16,7 @@ export const useAuthStore = create(
       token: null,
       refreshToken: null,
       isAuthenticated: false,
+      isLocalAuth: false,
       loginAttempts: 0,
       blockedUntil: null,
       lastActivity: null,
@@ -68,10 +69,13 @@ export const useAuthStore = create(
       },
 
       // Temporary login for transition period (uses local auth like monolith)
+      // Sets isLocalAuth=true so data hooks skip backend and go straight to Supabase
       loginLocal: (user) => {
         set({
           currentUser: user,
           isAuthenticated: true,
+          isLocalAuth: true, // Flag: skip backend API calls, use Supabase direct
+          token: null,
           loginAttempts: 0,
           blockedUntil: null,
           lastActivity: Date.now(),

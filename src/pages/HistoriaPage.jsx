@@ -1,6 +1,6 @@
 // src/pages/HistoriaPage.jsx — Historia Clínica Ocupacional wrapper
 // Provides all required props to OccupationalHC using hooks + stores
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { OccupationalHC } from '../modules/clinical/components/OccupationalHC';
 import { useClinicalRecord } from '../modules/clinical/hooks/useClinicalRecord';
@@ -31,15 +31,17 @@ export default function HistoriaPage() {
     showAlert: (msg) => alert(msg),
   });
 
-  // Initialize with patient data if we have an id
+  // Initialize with patient data if we have an id (only once)
+  const initDone = useRef(false);
   React.useEffect(() => {
-    if (id && patients.length > 0 && !clinical.data?.docNumero) {
+    if (id && patients.length > 0 && !initDone.current) {
       const patient = patients.find((p) => p.docNumero === id || p.id === id);
       if (patient) {
         clinical.initNewRecord('ocupacional', patient);
+        initDone.current = true;
       }
     }
-  }, [id, patients]);
+  }, [id, patients.length]);
 
   // Patient search suggestions
   const [patientSuggestions, setPatientSuggestions] = useState([]);

@@ -1,7 +1,19 @@
 // src/hooks/useBackendData.js — Hook to fetch data from backend API
-// Falls back to localStorage if backend is unavailable
+// Falls back to Supabase direct → localStorage if backend is unavailable
+// Skips backend entirely when isLocalAuth=true (no JWT token)
 import { useState, useEffect } from 'react';
 import { apiClient } from '../lib/apiClient';
+
+// Read auth state without hook (avoids React hook rules in async context)
+const getAuthState = () => {
+  try {
+    const stored = JSON.parse(localStorage.getItem('siso-auth') || '{}');
+    return {
+      isLocalAuth: stored?.state?.isLocalAuth ?? true,
+      token: stored?.state?.token || null,
+    };
+  } catch { return { isLocalAuth: true, token: null }; }
+};
 
 /**
  * Fetch data from backend with localStorage fallback
@@ -22,22 +34,21 @@ export function useBackendData(endpoint, localStorageKey, dataField) {
       setLoading(true);
       setError(null);
 
-      // Try backend first (requires valid JWT)
-      try {
-        const result = await apiClient.get(endpoint);
-        if (!cancelled && result[dataField]) {
-          const items = result[dataField] || [];
-          setData(items);
-          setSource('backend');
-          // Also save to localStorage as cache
-          try { localStorage.setItem(localStorageKey, JSON.stringify(items)); } catch {}
-          setLoading(false);
-          return;
-        }
-      } catch (err) {
-        // 401 = no token or expired — expected when using loginLocal
-        if (!err.message?.includes('401')) {
-          console.warn(`Backend ${endpoint} failed:`, err.message);
+      // Try backend first (requires valid JWT) — skip if using local auth
+      const { isLocalAuth, token } = getAuthState();
+      if (!isLocalAuth && token) {
+        try {
+          const result = await apiClient.get(endpoint);
+          if (!cancelled && result[dataField]) {
+            const items = result[dataField] || [];
+            setData(items);
+            setSource('backend');
+            try { localStorage.setItem(localStorageKey, JSON.stringify(items)); } catch {}
+            setLoading(false);
+            return;
+          }
+        } catch (err) {
+          // Silent fail — will try Supabase direct next
         }
       }
 
@@ -110,15 +121,18 @@ export function useBackendObject(endpoint, localStorageKey, dataField) {
     async function fetchData() {
       setLoading(true);
 
-      // Try backend
-      try {
-        const result = await apiClient.get(endpoint);
-        if (!cancelled && result[dataField] !== undefined) {
-          setData(result[dataField] || null);
-          setLoading(false);
-          return;
-        }
-      } catch {}
+      // Try backend (skip if local auth)
+      const { isLocalAuth: isLocal, token: tk } = getAuthState();
+      if (!isLocal && tk) {
+        try {
+          const result = await apiClient.get(endpoint);
+          if (!cancelled && result[dataField] !== undefined) {
+            setData(result[dataField] || null);
+            setLoading(false);
+            return;
+          }
+        } catch {}
+      }
 
       // Try Supabase direct (transition)
       try {

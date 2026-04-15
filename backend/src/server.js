@@ -33,10 +33,10 @@ app.use(rateLimit({
   message: { message: 'Demasiadas solicitudes. Intenta en un momento.' },
 }));
 
-// Login: stricter — 10 attempts per 15 minutes
+// Login: stricter — 30 attempts per 15 minutes (increased for dev)
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 10,
+  max: 30,
   standardHeaders: true,
   legacyHeaders: false,
   message: { message: 'Demasiados intentos de login. Intenta en 15 minutos.' },

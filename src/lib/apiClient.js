@@ -37,20 +37,16 @@ class ApiClient {
       },
     });
 
-    // Handle 401 — token expired
+    // Handle 401 — token expired (only attempt refresh if we have a token)
     if (response.status === 401) {
-      // Try refresh token
-      const refreshed = await this._tryRefresh();
-      if (refreshed) {
-        // Retry original request with new token
-        return this._fetch(path, options);
+      const stored = JSON.parse(localStorage.getItem('siso-auth') || '{}');
+      const hasToken = !!stored?.state?.token;
+      if (hasToken) {
+        const refreshed = await this._tryRefresh();
+        if (refreshed) return this._fetch(path, options);
       }
-      // Refresh failed — force logout
-      try {
-        const { useAuthStore } = await import('../stores/authStore');
-        useAuthStore.getState().logout();
-      } catch (e) {}
-      throw new Error('Sesión expirada. Por favor inicia sesión nuevamente.');
+      // Don't force logout on 401 — just throw error for the hook to handle
+      throw new Error(`Error 401: ${response.statusText}`);
     }
 
     if (!response.ok) {
