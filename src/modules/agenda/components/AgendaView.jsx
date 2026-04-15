@@ -8,6 +8,7 @@ const STATUS_CONFIG = {
   espera: { label: 'En espera', color: 'bg-yellow-100 text-yellow-800', icon: Clock },
   atendiendo: { label: 'Atendiendo', color: 'bg-blue-100 text-blue-800', icon: User },
   atendido: { label: 'Atendido', color: 'bg-green-100 text-green-800', icon: CheckCircle },
+  no_asistio: { label: 'No asistió', color: 'bg-red-100 text-red-800', icon: Clock },
 };
 
 export const AgendaView = ({ currentUser }) => {

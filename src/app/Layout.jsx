@@ -29,7 +29,12 @@ const NAV_ITEMS = [
   { path: '/telemedicine', icon: Video, label: 'Telemedicina' },
   { path: '/users', icon: Settings, label: 'Usuarios', roles: ['administrador', 'super_admin'] },
   { path: '/planes', icon: CreditCard, label: 'Planes', roles: ['administrador', 'super_admin'] },
+  { path: '/cotizaciones', icon: DollarSign, label: 'Cotizaciones', roles: ['medico', 'administrador', 'super_admin'] },
+  { path: '/portafolio', icon: Briefcase, label: 'Portafolio', roles: ['administrador', 'super_admin'] },
+  { path: '/contabilidad', icon: Calculator, label: 'Contabilidad', roles: ['medico', 'administrador', 'super_admin'] },
+  { path: '/mensajes', icon: MessageCircle, label: 'Mensajes' },
   { path: '/habeas-data', icon: ShieldCheck, label: 'Habeas Data' },
+  { path: '/config/ips', icon: Building2, label: 'Perfil IPS', roles: ['administrador', 'super_admin'] },
   { path: '/settings', icon: Settings, label: 'Config', roles: ['administrador', 'super_admin'] },
 ];
 
