@@ -8,7 +8,8 @@ import { useAuthStore } from '../stores/authStore';
 import { useAIStore } from '../stores/aiStore';
 import { useBackendData, useBackendObject } from '../hooks/useBackendData';
 import { callAIWithFailover } from '../modules/ai/services/aiAnalysis';
-import { Stethoscope, Loader2, ArrowLeft } from 'lucide-react';
+import { useSaveData } from '../hooks/useSaveData';
+import { Stethoscope, Loader2, ArrowLeft, Save, CheckCircle } from 'lucide-react';
 
 export default function HistoriaPage() {
   const { id } = useParams(); // patient docNumero if editing
@@ -102,6 +103,20 @@ export default function HistoriaPage() {
   const [showRecomendacionesPanel, setShowRecomendacionesPanel] = useState(false);
   const [showRestriccionesPanel, setShowRestriccionesPanel] = useState(false);
 
+  // Save HC
+  const { save, saving, lastSaveStatus } = useSaveData();
+
+  const handleSaveHC = useCallback(async () => {
+    const record = clinical.saveRecord();
+    const userId = currentUser?.user || 'drcucalon';
+    const result = await save('/write/hc/save', record, `siso_patients_${userId}`);
+    if (result.ok) {
+      alert('✅ Historia clínica guardada correctamente');
+    } else {
+      alert('❌ Error al guardar. Los datos se guardaron localmente.');
+    }
+  }, [clinical, save, currentUser]);
+
   // Doctor data
   const activeDoctorData = doctor || {
     nombre: currentUser?.nombre || currentUser?.user || 'Médico',
@@ -119,6 +134,23 @@ export default function HistoriaPage() {
         <ArrowLeft className="w-4 h-4" />
         Volver a pacientes
       </button>
+
+      {/* Save button — floating */}
+      <div className="fixed bottom-6 right-6 z-40 flex items-center gap-2">
+        {lastSaveStatus === 'ok' && (
+          <span className="bg-emerald-100 text-emerald-700 text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1 shadow-sm">
+            <CheckCircle className="w-3.5 h-3.5" /> Guardado
+          </span>
+        )}
+        <button
+          onClick={handleSaveHC}
+          disabled={saving}
+          className="bg-gradient-to-r from-emerald-600 to-teal-500 text-white px-5 py-3 rounded-xl font-bold shadow-lg hover:opacity-90 transition-all disabled:opacity-50 flex items-center gap-2"
+        >
+          {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+          {saving ? 'Guardando...' : 'Guardar HC'}
+        </button>
+      </div>
 
       <OccupationalHC
         data={clinical.data}
