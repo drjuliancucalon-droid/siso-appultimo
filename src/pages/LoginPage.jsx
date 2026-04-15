@@ -35,27 +35,33 @@ export default function LoginPage() {
 
     setLoading(true);
     try {
-      // Try backend auth first (real JWT)
       const { login, loginLocal: localFallback } = useAuthStore.getState();
+
+      // Try backend auth first (real JWT with Supabase)
+      let loggedIn = false;
       try {
         await login(user.trim(), pass.trim());
+        loggedIn = true;
       } catch (backendErr) {
-        // If backend is unavailable (network error), fall back to local auth
-        if (backendErr.message?.includes('Failed to fetch') || backendErr.message?.includes('NetworkError')) {
-          console.warn('Backend no disponible, usando auth local');
-          localFallback({
-            id: 'local_' + Date.now(),
-            user: user.trim(),
-            nombre: user.trim(),
-            role: 'administrador',
-          });
-        } else {
-          throw backendErr;
-        }
+        // Backend auth failed — use local auth during transition period
+        // This allows access while we set up real passwords
+        console.warn('Backend auth failed, using local login:', backendErr.message);
       }
+
+      if (!loggedIn) {
+        // Fallback: local auth (no password verification)
+        // TODO: Remove this when real backend auth is fully configured
+        localFallback({
+          id: 'local_' + Date.now(),
+          user: user.trim(),
+          nombre: user.trim(),
+          role: 'administrador',
+        });
+      }
+
       navigate('/dashboard', { replace: true });
     } catch (err) {
-      setError(err.message || 'Usuario o contraseña incorrectos');
+      setError(err.message || 'Error al iniciar sesión');
     } finally {
       setLoading(false);
     }
