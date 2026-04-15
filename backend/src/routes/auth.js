@@ -55,8 +55,8 @@ router.post('/login', async (req, res) => {
       return res.status(500).json({ message: 'Error al obtener datos de usuarios' });
     }
 
-    // Find user
-    const user = usersData.find((u) => u.user === username || u.nombre === username);
+    // Find user (field is 'user' in Supabase, also check 'name' for friendly login)
+    const user = usersData.find((u) => u.user === username || u.name === username);
     if (!user) {
       return res.status(401).json({ message: 'Usuario o contraseña incorrectos' });
     }

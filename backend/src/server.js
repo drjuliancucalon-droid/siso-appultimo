@@ -15,7 +15,9 @@ const app = express();
 
 // ── Security middleware ──────────────────────────
 app.use(helmet());
-app.use(cors({ origin: config.corsOrigin, credentials: true }));
+// Accept both 5173 and 5174 (Vite may use alternate port)
+const corsOrigins = [config.corsOrigin, config.corsOrigin.replace(':5173', ':5174')].filter(Boolean);
+app.use(cors({ origin: corsOrigins, credentials: true }));
 app.use(express.json({ limit: '10mb' }));
 
 // ── Rate limiting ────────────────────────────────

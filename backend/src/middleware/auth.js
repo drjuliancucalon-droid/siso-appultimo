@@ -48,7 +48,7 @@ export function generateTokens(user) {
   const payload = {
     id: user.id,
     user: user.user,
-    nombre: user.nombre,
+    nombre: user.name || user.nombre || user.user,
     role: user.role,
     empresaId: user.empresaId || null,
   };

@@ -35,16 +35,27 @@ export default function LoginPage() {
 
     setLoading(true);
     try {
-      // TODO: When backend is connected, use authStore.login() with real JWT
-      loginLocal({
-        id: 'local_' + Date.now(),
-        user: user.trim(),
-        nombre: user.trim(),
-        role: 'administrador',
-      });
+      // Try backend auth first (real JWT)
+      const { login, loginLocal: localFallback } = useAuthStore.getState();
+      try {
+        await login(user.trim(), pass.trim());
+      } catch (backendErr) {
+        // If backend is unavailable (network error), fall back to local auth
+        if (backendErr.message?.includes('Failed to fetch') || backendErr.message?.includes('NetworkError')) {
+          console.warn('Backend no disponible, usando auth local');
+          localFallback({
+            id: 'local_' + Date.now(),
+            user: user.trim(),
+            nombre: user.trim(),
+            role: 'administrador',
+          });
+        } else {
+          throw backendErr;
+        }
+      }
       navigate('/dashboard', { replace: true });
     } catch (err) {
-      setError(err.message || 'Error al iniciar sesión');
+      setError(err.message || 'Usuario o contraseña incorrectos');
     } finally {
       setLoading(false);
     }

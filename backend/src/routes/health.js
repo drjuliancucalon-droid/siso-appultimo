@@ -14,7 +14,7 @@ router.get('/', (req, res) => {
     version: '2.0.0',
     timestamp: new Date().toISOString(),
     environment: config.nodeEnv,
-    supabase: !!config.supabase.url,
+    supabase: !!(config.supabase.url && config.supabase.url.length > 10),
     aiProviders: aiProviders.length,
   });
 });
