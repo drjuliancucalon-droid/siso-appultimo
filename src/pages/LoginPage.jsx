@@ -1,8 +1,9 @@
-// src/pages/LoginPage.jsx — Login page connecting to auth module
+// src/pages/LoginPage.jsx — Login page with ocupasalud original color scheme
+// Palette: emerald-600 → teal-500 gradient (from monolith BrandLogo + LoginForm)
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
-import { Stethoscope, Eye, EyeOff, AlertCircle, Loader2 } from 'lucide-react';
+import { Stethoscope, Eye, EyeOff, AlertCircle, Loader2, Shield } from 'lucide-react';
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -13,7 +14,6 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // If already authenticated, redirect
   React.useEffect(() => {
     if (isAuthenticated) navigate('/dashboard', { replace: true });
   }, [isAuthenticated, navigate]);
@@ -22,7 +22,6 @@ export default function LoginPage() {
     e.preventDefault();
     setError('');
 
-    // Check if blocked
     if (blockedUntil && Date.now() < blockedUntil) {
       const minLeft = Math.ceil((blockedUntil - Date.now()) / 60000);
       setError(`Cuenta bloqueada temporalmente. Intenta en ${minLeft} minuto(s).`);
@@ -36,14 +35,12 @@ export default function LoginPage() {
 
     setLoading(true);
     try {
-      // TODO: When backend is ready, use authStore.login() instead
-      // For now, use local auth (transition period)
-      // This simulates the monolith's auth flow
+      // TODO: When backend is connected, use authStore.login() with real JWT
       loginLocal({
         id: 'local_' + Date.now(),
         user: user.trim(),
         nombre: user.trim(),
-        role: 'administrador', // Default for development
+        role: 'administrador',
       });
       navigate('/dashboard', { replace: true });
     } catch (err) {
@@ -54,23 +51,36 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-teal-50 px-4">
-      <div className="w-full max-w-md">
-        {/* Logo */}
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 via-white to-teal-50 px-4">
+      {/* Background decoration */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-emerald-100 rounded-full opacity-40 blur-3xl" />
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-teal-100 rounded-full opacity-40 blur-3xl" />
+      </div>
+
+      <div className="w-full max-w-md relative z-10">
+        {/* Logo — matches BrandLogo.jsx from monolith */}
         <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-teal-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
-            <Stethoscope className="w-8 h-8 text-white" />
+          <div className="w-16 h-16 bg-gradient-to-tr from-emerald-700 to-teal-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+            <div className="flex flex-col items-center leading-none">
+              <Stethoscope className="w-6 h-6 text-white mb-0.5" strokeWidth={2.5} />
+              <span className="text-[9px] font-black text-white/90 tracking-tighter">SISO</span>
+            </div>
           </div>
-          <h1 className="text-2xl font-bold text-gray-800">OcupaSalud Pro</h1>
-          <p className="text-gray-500 text-sm mt-1">Sistema Integral de Salud Ocupacional</p>
+          <h1 className="text-2xl font-black text-gray-800 tracking-tight">OCUPASALUD</h1>
+          <div className="h-0.5 w-12 bg-gradient-to-r from-emerald-500 to-teal-400 mx-auto my-2 rounded-full" />
+          <p className="text-gray-500 text-sm">Sistema Integral de Salud Ocupacional</p>
         </div>
 
-        {/* Form */}
+        {/* Form card */}
         <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
-          <h2 className="text-lg font-semibold text-gray-800 mb-6">Iniciar Sesión</h2>
+          <div className="flex items-center gap-2 mb-6">
+            <Shield className="w-4 h-4 text-emerald-600" />
+            <h2 className="text-lg font-bold text-gray-800">Iniciar Sesión</h2>
+          </div>
 
           {error && (
-            <div className="flex items-center gap-2 bg-red-50 text-red-700 px-4 py-3 rounded-lg mb-4 text-sm">
+            <div className="flex items-center gap-2 bg-red-50 text-red-700 px-4 py-3 rounded-xl mb-4 text-sm border border-red-100">
               <AlertCircle className="w-4 h-4 flex-shrink-0" />
               <span>{error}</span>
             </div>
@@ -83,7 +93,7 @@ export default function LoginPage() {
                 type="text"
                 value={user}
                 onChange={(e) => setUser(e.target.value)}
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400 outline-none transition-colors"
                 placeholder="Tu usuario"
                 autoComplete="username"
                 disabled={loading}
@@ -97,7 +107,7 @@ export default function LoginPage() {
                   type={showPass ? 'text' : 'password'}
                   value={pass}
                   onChange={(e) => setPass(e.target.value)}
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors pr-10"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400 outline-none transition-colors pr-10"
                   placeholder="Tu contraseña"
                   autoComplete="current-password"
                   disabled={loading}
@@ -105,7 +115,7 @@ export default function LoginPage() {
                 <button
                   type="button"
                   onClick={() => setShowPass(!showPass)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-emerald-600 transition-colors"
                   tabIndex={-1}
                 >
                   {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -116,7 +126,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg font-medium hover:from-blue-700 hover:to-blue-800 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+              className="w-full py-3 bg-gradient-to-r from-emerald-600 to-teal-500 text-white rounded-xl font-black text-sm hover:opacity-90 focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 transition-all disabled:opacity-50 shadow-lg flex items-center justify-center gap-2"
             >
               {loading ? (
                 <>
@@ -124,20 +134,20 @@ export default function LoginPage() {
                   Verificando...
                 </>
               ) : (
-                'Ingresar'
+                'Iniciar Sesión'
               )}
             </button>
           </form>
 
           {loginAttempts > 0 && (
             <p className="text-xs text-orange-600 mt-3 text-center">
-              Intentos fallidos: {loginAttempts}/5
+              ⚠️ Intentos fallidos: {loginAttempts}/5
             </p>
           )}
         </div>
 
         <p className="text-center text-xs text-gray-400 mt-6">
-          SISO OcupaSalud Pro v2.0 — Sistema de Información en Salud Ocupacional
+          SISO OcupaSalud Pro v2.0 — Res. 1843/2025 · Decreto 1072/2015
         </p>
       </div>
     </div>
