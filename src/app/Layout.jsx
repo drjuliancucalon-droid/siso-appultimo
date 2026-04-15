@@ -1,27 +1,29 @@
-// src/app/Layout.jsx — Main layout with sidebar navigation
-// Color scheme: emerald/teal gradient (matches ocupasalud original)
-import React, { useState } from 'react';
+// src/app/Layout.jsx — Layout replicating ocupasalud original distribution
+// Top header with brand + sync + user, horizontal tab navigation below
+// Full-width content area (no sidebar stealing space)
+import React, { useState, useRef, useEffect } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
 import { useUIStore } from '../stores/uiStore';
 import {
-  LayoutDashboard, Users, Building2, Calendar, FileText, 
-  Receipt, DollarSign, BarChart3, Shield, Video, 
-  CreditCard, LogOut, Menu, X, Brain, ChevronDown,
-  Stethoscope, Bell, Settings, Activity
+  LayoutDashboard, Users, Building2, Calendar, FileText,
+  Receipt, DollarSign, BarChart3, Shield, Video,
+  CreditCard, LogOut, Menu, X, Stethoscope, Activity,
+  Cloud, CloudOff, Settings, ChevronLeft, ChevronRight,
+  Bell
 } from 'lucide-react';
 
 const NAV_ITEMS = [
-  { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard', roles: null },
-  { path: '/patients', icon: Users, label: 'Pacientes', roles: null },
-  { path: '/hc/new', icon: Stethoscope, label: 'Historia Clínica', roles: ['medico', 'administrador', 'super_admin'] },
-  { path: '/companies', icon: Building2, label: 'Empresas', roles: null },
-  { path: '/agenda', icon: Calendar, label: 'Agenda', roles: null },
-  { path: '/billing', icon: Receipt, label: 'Facturación', roles: ['administrador', 'super_admin'] },
-  { path: '/caja', icon: DollarSign, label: 'Caja', roles: null },
-  { path: '/reports', icon: BarChart3, label: 'Reportes', roles: null },
-  { path: '/sgsst', icon: Shield, label: 'SG-SST', roles: null },
-  { path: '/telemedicine', icon: Video, label: 'Telemedicina', roles: null },
+  { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+  { path: '/hc/new', icon: Stethoscope, label: 'HC', roles: ['medico', 'administrador', 'super_admin'] },
+  { path: '/patients', icon: Users, label: 'Pacientes' },
+  { path: '/companies', icon: Building2, label: 'Empresas' },
+  { path: '/agenda', icon: Calendar, label: 'Agenda' },
+  { path: '/billing', icon: Receipt, label: 'Facturación', roles: ['administrador', 'super_admin', 'medico'] },
+  { path: '/caja', icon: DollarSign, label: 'Caja' },
+  { path: '/reports', icon: BarChart3, label: 'Reportes' },
+  { path: '/sgsst', icon: Shield, label: 'SG-SST' },
+  { path: '/telemedicine', icon: Video, label: 'Telemedicina' },
   { path: '/users', icon: Settings, label: 'Usuarios', roles: ['administrador', 'super_admin'] },
   { path: '/planes', icon: CreditCard, label: 'Planes', roles: ['administrador', 'super_admin'] },
 ];
@@ -30,13 +32,11 @@ export default function Layout() {
   const navigate = useNavigate();
   const location = useLocation();
   const { currentUser, logout } = useAuthStore();
-  const { sidebarOpen, toggleSidebar } = useUIStore();
+  const { syncStatus } = useUIStore();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
-  const handleLogout = () => {
-    logout();
-    navigate('/login', { replace: true });
-  };
+  const tabsRef = useRef(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
 
   const filteredNav = NAV_ITEMS.filter((item) => {
     if (!item.roles) return true;
@@ -45,7 +45,12 @@ export default function Layout() {
 
   const isActive = (path) => location.pathname === path || location.pathname.startsWith(path + '/');
 
-  // Get initials for avatar
+  const handleLogout = () => {
+    logout();
+    navigate('/login', { replace: true });
+  };
+
+  // Initials for avatar (matches BrandLogo.jsx from monolith)
   const getInitials = () => {
     const name = currentUser?.nombre || currentUser?.user || '';
     const parts = name.trim().split(/\s+/);
@@ -53,127 +58,206 @@ export default function Layout() {
     return name.substring(0, 2).toUpperCase() || 'DR';
   };
 
+  // Tab scroll management
+  const checkScroll = () => {
+    const el = tabsRef.current;
+    if (!el) return;
+    setCanScrollLeft(el.scrollLeft > 5);
+    setCanScrollRight(el.scrollLeft < el.scrollWidth - el.clientWidth - 5);
+  };
+
+  useEffect(() => {
+    checkScroll();
+    window.addEventListener('resize', checkScroll);
+    return () => window.removeEventListener('resize', checkScroll);
+  }, []);
+
+  const scrollTabs = (dir) => {
+    const el = tabsRef.current;
+    if (!el) return;
+    el.scrollBy({ left: dir * 200, behavior: 'smooth' });
+    setTimeout(checkScroll, 300);
+  };
+
+  // Scroll active tab into view
+  useEffect(() => {
+    const el = tabsRef.current;
+    if (!el) return;
+    const activeBtn = el.querySelector('[data-active="true"]');
+    if (activeBtn) {
+      activeBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+      setTimeout(checkScroll, 300);
+    }
+  }, [location.pathname]);
+
+  const syncIcon = syncStatus === 'ok' || syncStatus === 'idle'
+    ? <Cloud className="w-3.5 h-3.5" />
+    : <CloudOff className="w-3.5 h-3.5" />;
+  const syncColor = syncStatus === 'ok' || syncStatus === 'idle'
+    ? 'text-emerald-400'
+    : syncStatus === 'syncing' ? 'text-yellow-400' : 'text-red-400';
+  const syncText = syncStatus === 'ok' ? 'Sincronizado' : syncStatus === 'syncing' ? 'Sincronizando...' : syncStatus === 'error' ? 'Error sync' : 'Local';
+
   return (
-    <div className="flex h-screen bg-gray-50 overflow-hidden">
-      {/* ── Sidebar ─────────────────────────────── */}
-      <aside className={`
-        ${sidebarOpen ? 'w-64' : 'w-16'} 
-        bg-gradient-to-b from-emerald-900 via-emerald-800 to-teal-900 text-white 
-        transition-all duration-300 flex-shrink-0
-        hidden lg:flex flex-col
-      `}>
-        {/* Brand */}
-        <div className="p-4 border-b border-emerald-700/50">
+    <div className="flex flex-col h-screen bg-gray-50 overflow-hidden">
+      {/* ═══ TOP HEADER — Brand + Sync + User ═══ */}
+      <header className="bg-gradient-to-r from-emerald-900 via-emerald-800 to-teal-900 text-white flex-shrink-0">
+        <div className="flex items-center justify-between px-4 py-2.5">
+          {/* Left: Brand logo (matches BrandLogo.jsx) */}
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-tr from-emerald-700 to-teal-500 rounded-xl flex items-center justify-center flex-shrink-0 shadow-md">
-              <div className="flex flex-col items-center leading-none">
-                <Stethoscope className="w-3.5 h-3.5 mb-0.5" strokeWidth={2.5} />
-                <span className="text-[8px] font-black tracking-tighter">{getInitials()}</span>
+            {/* Mobile menu button */}
+            <button
+              onClick={() => setMobileMenuOpen(true)}
+              className="lg:hidden text-emerald-300 hover:text-white mr-1"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
+
+            <div className="flex items-center gap-2.5">
+              <div className="h-9 w-9 bg-gradient-to-tr from-emerald-700 to-teal-500 rounded-xl flex items-center justify-center shadow-md flex-shrink-0">
+                <div className="flex flex-col items-center leading-none">
+                  <Stethoscope className="w-3 h-3 mb-0.5" strokeWidth={2.5} />
+                  <span className="text-[7px] font-black tracking-tighter">{getInitials()}</span>
+                </div>
+              </div>
+              <div className="hidden sm:block">
+                <p className="text-[10px] font-black text-white uppercase leading-tight tracking-wide">
+                  {currentUser?.nombre || 'MÉDICO'}
+                </p>
+                <div className="h-[2px] w-7 bg-gradient-to-r from-emerald-400 to-teal-300 my-0.5 rounded-full" />
+                <p className="text-[8px] font-bold text-emerald-300 uppercase">
+                  {currentUser?.titulo || 'Salud Ocupacional'}
+                </p>
               </div>
             </div>
-            {sidebarOpen && (
-              <div className="min-w-0">
-                <h1 className="font-black text-sm truncate tracking-tight">OCUPASALUD</h1>
-                <div className="h-0.5 w-8 bg-gradient-to-r from-emerald-400 to-teal-300 my-0.5 rounded-full" />
-                <p className="text-[10px] font-bold text-emerald-300 truncate uppercase">Sistema SST Pro</p>
+          </div>
+
+          {/* Center: Sync indicator */}
+          <div className={`hidden md:flex items-center gap-1.5 ${syncColor} text-xs`}>
+            {syncIcon}
+            <span className="font-medium">{syncText}</span>
+          </div>
+
+          {/* Right: User info + logout */}
+          <div className="flex items-center gap-3">
+            {/* Sync mobile */}
+            <div className={`md:hidden flex items-center ${syncColor}`}>
+              {syncIcon}
+            </div>
+
+            <div className="hidden sm:flex items-center gap-2">
+              <div className="text-right">
+                <p className="text-xs font-bold text-white leading-tight">{currentUser?.user || 'usuario'}</p>
+                <p className="text-[10px] text-emerald-300 capitalize">{currentUser?.role || 'Sin rol'}</p>
               </div>
-            )}
+              <div className="w-8 h-8 bg-emerald-600/60 rounded-lg flex items-center justify-center">
+                <span className="text-[10px] font-black">{getInitials()}</span>
+              </div>
+            </div>
+
+            <button
+              onClick={handleLogout}
+              className="text-emerald-400 hover:text-white transition-colors p-1.5 hover:bg-emerald-700/50 rounded-lg"
+              title="Cerrar sesión"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
           </div>
         </div>
+      </header>
 
-        {/* Nav items */}
-        <nav className="flex-1 py-3 overflow-y-auto">
-          {filteredNav.map((item) => (
-            <button
-              key={item.path}
-              onClick={() => navigate(item.path)}
-              className={`
-                w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-all duration-200
-                ${isActive(item.path)
-                  ? 'bg-emerald-600/40 text-white border-r-3 border-teal-400 font-bold'
-                  : 'text-emerald-200/80 hover:bg-emerald-700/40 hover:text-white'
-                }
-              `}
-              title={!sidebarOpen ? item.label : undefined}
-            >
-              <item.icon className={`w-5 h-5 flex-shrink-0 ${isActive(item.path) ? 'text-teal-300' : ''}`} />
-              {sidebarOpen && <span className="truncate">{item.label}</span>}
-            </button>
-          ))}
-        </nav>
+      {/* ═══ HORIZONTAL TAB NAVIGATION ═══ */}
+      <nav className="bg-gradient-to-r from-emerald-800 to-teal-800 flex-shrink-0 relative border-t border-emerald-700/30">
+        {/* Scroll left button */}
+        {canScrollLeft && (
+          <button
+            onClick={() => scrollTabs(-1)}
+            className="absolute left-0 top-0 bottom-0 z-10 px-1.5 bg-gradient-to-r from-emerald-800 via-emerald-800/95 to-transparent text-emerald-300 hover:text-white"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </button>
+        )}
 
-        {/* Sync status indicator */}
-        <div className="px-4 py-2 border-t border-emerald-700/50">
-          {sidebarOpen && (
-            <div className="flex items-center gap-2 text-xs text-emerald-400">
-              <Activity className="w-3 h-3" />
-              <span>v2.0 — Modular</span>
-            </div>
-          )}
-        </div>
-
-        {/* User footer */}
-        <div className="p-4 border-t border-emerald-700/50">
-          {sidebarOpen ? (
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 min-w-0">
-                <div className="w-8 h-8 bg-emerald-600 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <span className="text-xs font-black">{getInitials()}</span>
-                </div>
-                <div className="min-w-0">
-                  <p className="text-sm font-bold truncate">{currentUser?.nombre || currentUser?.user || 'Usuario'}</p>
-                  <p className="text-[10px] text-emerald-300 truncate capitalize">{currentUser?.role || 'Sin rol'}</p>
-                </div>
-              </div>
-              <button onClick={handleLogout} className="text-emerald-400 hover:text-white p-1 transition-colors" title="Cerrar sesión">
-                <LogOut className="w-4 h-4" />
-              </button>
-            </div>
-          ) : (
-            <button onClick={handleLogout} className="text-emerald-400 hover:text-white mx-auto block transition-colors" title="Cerrar sesión">
-              <LogOut className="w-5 h-5" />
-            </button>
-          )}
-        </div>
-
-        {/* Collapse toggle */}
-        <button
-          onClick={toggleSidebar}
-          className="p-3 border-t border-emerald-700/50 text-emerald-400 hover:text-white hover:bg-emerald-700/40 transition-colors"
+        {/* Tabs container */}
+        <div
+          ref={tabsRef}
+          onScroll={checkScroll}
+          className="flex overflow-x-auto scrollbar-hide px-2 gap-0.5"
+          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
-          <Menu className="w-5 h-5 mx-auto" />
-        </button>
-      </aside>
+          {filteredNav.map((item) => {
+            const active = isActive(item.path);
+            return (
+              <button
+                key={item.path}
+                data-active={active}
+                onClick={() => navigate(item.path)}
+                className={`
+                  flex items-center gap-1.5 px-3 py-2 text-xs font-semibold whitespace-nowrap
+                  transition-all duration-200 rounded-t-lg mt-1 flex-shrink-0
+                  ${active
+                    ? 'bg-gray-50 text-emerald-800 shadow-sm'
+                    : 'text-emerald-200/80 hover:text-white hover:bg-emerald-700/40'
+                  }
+                `}
+              >
+                <item.icon className={`w-3.5 h-3.5 ${active ? 'text-emerald-600' : ''}`} />
+                <span className="hidden sm:inline">{item.label}</span>
+              </button>
+            );
+          })}
+        </div>
 
-      {/* ── Mobile menu overlay ─────────────────── */}
+        {/* Scroll right button */}
+        {canScrollRight && (
+          <button
+            onClick={() => scrollTabs(1)}
+            className="absolute right-0 top-0 bottom-0 z-10 px-1.5 bg-gradient-to-l from-teal-800 via-teal-800/95 to-transparent text-emerald-300 hover:text-white"
+          >
+            <ChevronRight className="w-4 h-4" />
+          </button>
+        )}
+      </nav>
+
+      {/* ═══ MOBILE MENU OVERLAY ═══ */}
       {mobileMenuOpen && (
         <div className="fixed inset-0 z-50 lg:hidden">
           <div className="fixed inset-0 bg-black/50" onClick={() => setMobileMenuOpen(false)} />
-          <div className="fixed left-0 top-0 bottom-0 w-64 bg-gradient-to-b from-emerald-900 to-teal-900 text-white z-50 overflow-y-auto">
+          <div className="fixed left-0 top-0 bottom-0 w-72 bg-gradient-to-b from-emerald-900 to-teal-900 text-white z-50 overflow-y-auto shadow-2xl">
             <div className="flex items-center justify-between p-4 border-b border-emerald-700/50">
               <div className="flex items-center gap-2">
-                <Stethoscope className="w-5 h-5 text-teal-300" />
-                <h1 className="font-black text-sm">OCUPASALUD</h1>
+                <div className="h-8 w-8 bg-gradient-to-tr from-emerald-700 to-teal-500 rounded-xl flex items-center justify-center">
+                  <Stethoscope className="w-4 h-4" />
+                </div>
+                <div>
+                  <p className="text-xs font-black uppercase">{currentUser?.nombre || 'OCUPASALUD'}</p>
+                  <p className="text-[9px] text-emerald-300">{currentUser?.role || 'Pro'}</p>
+                </div>
               </div>
               <button onClick={() => setMobileMenuOpen(false)} className="text-emerald-300 hover:text-white">
                 <X className="w-5 h-5" />
               </button>
             </div>
+
             <nav className="py-3">
               {filteredNav.map((item) => (
                 <button
                   key={item.path}
                   onClick={() => { navigate(item.path); setMobileMenuOpen(false); }}
-                  className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors
-                    ${isActive(item.path) ? 'bg-emerald-600/40 text-white font-bold' : 'text-emerald-200/80 hover:bg-emerald-700/40'}`}
+                  className={`w-full flex items-center gap-3 px-5 py-3 text-sm transition-colors
+                    ${isActive(item.path)
+                      ? 'bg-emerald-600/40 text-white font-bold border-l-3 border-teal-400'
+                      : 'text-emerald-200/80 hover:bg-emerald-700/40 hover:text-white'
+                    }`}
                 >
-                  <item.icon className="w-5 h-5" />
+                  <item.icon className={`w-5 h-5 ${isActive(item.path) ? 'text-teal-300' : ''}`} />
                   <span>{item.label}</span>
                 </button>
               ))}
             </nav>
-            <div className="p-4 border-t border-emerald-700/50">
-              <button onClick={handleLogout} className="flex items-center gap-2 text-emerald-300 hover:text-white text-sm">
+
+            <div className="p-4 border-t border-emerald-700/50 mt-auto">
+              <button onClick={handleLogout} className="flex items-center gap-2 text-emerald-300 hover:text-white text-sm w-full py-2">
                 <LogOut className="w-4 h-4" /> Cerrar sesión
               </button>
             </div>
@@ -181,24 +265,9 @@ export default function Layout() {
         </div>
       )}
 
-      {/* ── Main content ────────────────────────── */}
-      <main className="flex-1 flex flex-col overflow-hidden">
-        {/* Top bar (mobile) */}
-        <header className="lg:hidden bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between shadow-sm">
-          <button onClick={() => setMobileMenuOpen(true)} className="text-emerald-700">
-            <Menu className="w-6 h-6" />
-          </button>
-          <div className="flex items-center gap-2">
-            <Stethoscope className="w-5 h-5 text-emerald-600" />
-            <h1 className="font-black text-sm text-gray-800">OCUPASALUD</h1>
-          </div>
-          <div className="w-6" />
-        </header>
-
-        {/* Page content */}
-        <div className="flex-1 overflow-y-auto bg-gray-50">
-          <Outlet />
-        </div>
+      {/* ═══ MAIN CONTENT — Full width ═══ */}
+      <main className="flex-1 overflow-y-auto bg-gray-50">
+        <Outlet />
       </main>
     </div>
   );
