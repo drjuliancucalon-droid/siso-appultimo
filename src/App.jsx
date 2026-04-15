@@ -22,10 +22,11 @@ const TelemedicinePage = React.lazy(() => import('./pages/TelemedicinePage'));
 const WorkerPortalPage = React.lazy(() => import('./pages/WorkerPortalPage'));
 const PlanesPage = React.lazy(() => import('./pages/PlanesPage'));
 const CajaPage = React.lazy(() => import('./pages/CajaPage'));
-// Sprint 1: HC General + Certificado + Verificación
+// Sprint 1: HC General + Certificado + Verificación + Portal Empresa
 const HistoriaGeneralPage = React.lazy(() => import('./pages/HistoriaGeneralPage'));
 const CertificadoPage = React.lazy(() => import('./pages/CertificadoPage'));
 const VerificacionPage = React.lazy(() => import('./pages/VerificacionPage'));
+const PortalEmpresaPage = React.lazy(() => import('./pages/PortalEmpresaPage'));
 
 // ── React Query client ───────────────────────────────────────────
 const queryClient = new QueryClient({
@@ -133,6 +134,7 @@ export default function App() {
               <Route path="reports" element={<ReportsPage />} />
               <Route path="sgsst" element={<SGSSTPage />} />
               <Route path="telemedicine" element={<TelemedicinePage />} />
+              <Route path="portal-empresa" element={<PortalEmpresaPage />} />
               <Route path="planes" element={<PlanesPage />} />
             </Route>
 
