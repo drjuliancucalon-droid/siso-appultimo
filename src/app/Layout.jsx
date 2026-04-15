@@ -16,7 +16,8 @@ import { useBackendObject } from '../hooks/useBackendData';
 
 const NAV_ITEMS = [
   { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-  { path: '/hc/new', icon: Stethoscope, label: 'HC', roles: ['medico', 'administrador', 'super_admin'] },
+  { path: '/hc/new', icon: Stethoscope, label: 'HC Ocup.', roles: ['medico', 'administrador', 'super_admin'] },
+  { path: '/hc/general', icon: FileText, label: 'HC General', roles: ['medico', 'administrador', 'super_admin'] },
   { path: '/patients', icon: Users, label: 'Pacientes' },
   { path: '/companies', icon: Building2, label: 'Empresas' },
   { path: '/agenda', icon: Calendar, label: 'Agenda' },

@@ -22,6 +22,10 @@ const TelemedicinePage = React.lazy(() => import('./pages/TelemedicinePage'));
 const WorkerPortalPage = React.lazy(() => import('./pages/WorkerPortalPage'));
 const PlanesPage = React.lazy(() => import('./pages/PlanesPage'));
 const CajaPage = React.lazy(() => import('./pages/CajaPage'));
+// Sprint 1: HC General + Certificado + Verificación
+const HistoriaGeneralPage = React.lazy(() => import('./pages/HistoriaGeneralPage'));
+const CertificadoPage = React.lazy(() => import('./pages/CertificadoPage'));
+const VerificacionPage = React.lazy(() => import('./pages/VerificacionPage'));
 
 // ── React Query client ───────────────────────────────────────────
 const queryClient = new QueryClient({
@@ -101,6 +105,8 @@ export default function App() {
             {/* Public routes */}
             <Route path="/login" element={<Login />} />
             <Route path="/portal/:code" element={<WorkerPortalPage />} />
+            <Route path="/verificar" element={<VerificacionPage />} />
+            <Route path="/verificar/:codigo" element={<VerificacionPage />} />
 
             {/* Protected routes inside Layout */}
             <Route path="/" element={
@@ -113,6 +119,8 @@ export default function App() {
               <Route path="patients" element={<Patients />} />
               <Route path="patients/:id/hc" element={<HistoriaClinica />} />
               <Route path="hc/new" element={<HistoriaClinica />} />
+              <Route path="hc/general" element={<HistoriaGeneralPage />} />
+              <Route path="patients/:id/certificado" element={<CertificadoPage />} />
               <Route path="companies" element={<Companies />} />
               <Route path="users" element={
                 <ProtectedRoute roles={['super_admin', 'administrador']}>
