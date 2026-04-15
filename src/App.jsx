@@ -30,12 +30,14 @@ const PortalEmpresaPage = React.lazy(() => import('./pages/PortalEmpresaPage'));
 // Sprint 3: Habeas Data + Settings (Backup)
 const HabeasDataPage = React.lazy(() => import('./pages/HabeasDataPage'));
 const SettingsPage = React.lazy(() => import('./pages/SettingsPage'));
-// Sprint 4-5: Secondary modules
+// Sprint 4: Secondary modules
 const CotizacionesPage = React.lazy(() => import('./pages/CotizacionesPage'));
 const ConfigIPSPage = React.lazy(() => import('./pages/ConfigIPSPage'));
-const MensajesPage = React.lazy(() => import('./pages/MensajesPage'));
 const PortafolioPage = React.lazy(() => import('./pages/PortafolioPage'));
 const ContabilidadPage = React.lazy(() => import('./pages/ContabilidadPage'));
+// Sprint 5: Admin + Messages
+const SuperAdminPage = React.lazy(() => import('./pages/SuperAdminPage'));
+const MensajesPage = React.lazy(() => import('./pages/MensajesPage'));
 
 // ── React Query client ───────────────────────────────────────────
 const queryClient = new QueryClient({
@@ -145,7 +147,6 @@ export default function App() {
               <Route path="telemedicine" element={<TelemedicinePage />} />
               <Route path="portal-empresa" element={<PortalEmpresaPage />} />
               <Route path="habeas-data" element={<HabeasDataPage />} />
-              <Route path="backup" element={<BackupPage />} />
               <Route path="cotizaciones" element={<CotizacionesPage />} />
               <Route path="config/ips" element={<ConfigIPSPage />} />
               <Route path="mensajes" element={<MensajesPage />} />
@@ -157,13 +158,11 @@ export default function App() {
                 </ProtectedRoute>
               } />
               <Route path="planes" element={<PlanesPage />} />
-              {/* Sprint 4: Secondary modules */}
-              <Route path="cotizaciones" element={<CotizacionesPage />} />
-              <Route path="portafolio" element={<PortafolioPage />} />
-              <Route path="contabilidad" element={<ContabilidadPage />} />
-              <Route path="config/ips" element={<ConfigIPSPage />} />
-              {/* Sprint 5: Admin + Messages */}
-              <Route path="mensajes" element={<MensajesPage />} />
+              <Route path="admin" element={
+                <ProtectedRoute roles={['super_admin', 'administrador']}>
+                  <SuperAdminPage />
+                </ProtectedRoute>
+              } />
             </Route>
 
             {/* 404 */}

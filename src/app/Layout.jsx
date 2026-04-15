@@ -11,7 +11,7 @@ import {
   CreditCard, LogOut, Menu, X, Stethoscope, Activity,
   Cloud, CloudOff, Settings, ChevronLeft, ChevronRight,
   Bell, RefreshCw, ShieldCheck, Briefcase, Calculator,
-  MessageCircle
+  MessageCircle, Crown
 } from 'lucide-react';
 import { useBackendObject } from '../hooks/useBackendData';
 
@@ -35,6 +35,7 @@ const NAV_ITEMS = [
   { path: '/mensajes', icon: MessageCircle, label: 'Mensajes' },
   { path: '/habeas-data', icon: ShieldCheck, label: 'Habeas Data' },
   { path: '/config/ips', icon: Building2, label: 'Perfil IPS', roles: ['administrador', 'super_admin'] },
+  { path: '/admin', icon: Crown, label: 'Super Admin', roles: ['super_admin'] },
   { path: '/settings', icon: Settings, label: 'Config', roles: ['administrador', 'super_admin'] },
 ];
 
