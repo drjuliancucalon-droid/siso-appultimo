@@ -9,7 +9,8 @@ import { useAIStore } from '../stores/aiStore';
 import { useBackendData, useBackendObject } from '../hooks/useBackendData';
 import { callAIWithFailover } from '../modules/ai/services/aiAnalysis';
 import { useSaveData } from '../hooks/useSaveData';
-import { Stethoscope, Loader2, ArrowLeft, Save, CheckCircle } from 'lucide-react';
+import { printHC } from '../lib/printService';
+import { Stethoscope, Loader2, ArrowLeft, Save, CheckCircle, Printer } from 'lucide-react';
 
 export default function HistoriaPage() {
   const { id } = useParams(); // patient docNumero if editing
@@ -135,13 +136,21 @@ export default function HistoriaPage() {
         Volver a pacientes
       </button>
 
-      {/* Save button — floating */}
+      {/* Action buttons — floating */}
       <div className="fixed bottom-6 right-6 z-40 flex items-center gap-2">
         {lastSaveStatus === 'ok' && (
-          <span className="bg-emerald-100 text-emerald-700 text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1 shadow-sm">
+          <span className="bg-emerald-100 text-emerald-700 text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1 shadow-sm animate-pulse">
             <CheckCircle className="w-3.5 h-3.5" /> Guardado
           </span>
         )}
+        <button
+          onClick={() => printHC(clinical.data, activeDoctorData)}
+          className="bg-white text-emerald-700 border-2 border-emerald-300 px-4 py-3 rounded-xl font-bold shadow-lg hover:bg-emerald-50 transition-all flex items-center gap-2"
+          title="Imprimir HC"
+        >
+          <Printer className="w-4 h-4" />
+          <span className="hidden sm:inline">Imprimir</span>
+        </button>
         <button
           onClick={handleSaveHC}
           disabled={saving}

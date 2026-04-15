@@ -12,6 +12,7 @@ import authRouter from './routes/auth.js';
 import aiRouter from './routes/ai.js';
 import dataRouter from './routes/data.js';
 import writeRouter from './routes/write.js';
+import adminRouter from './routes/admin.js';
 
 const app = express();
 
@@ -56,6 +57,7 @@ app.use('/api/auth', loginLimiter, authRouter);
 app.use('/api/ai', aiLimiter, aiRouter);
 app.use('/api/data', dataRouter);
 app.use('/api/write', writeRouter);
+app.use('/api/admin', adminRouter);
 
 // ── 404 handler ──────────────────────────────────
 app.use('/api/{*path}', (req, res) => {
