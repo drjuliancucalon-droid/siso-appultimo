@@ -30,6 +30,10 @@ const PortalEmpresaPage = React.lazy(() => import('./pages/PortalEmpresaPage'));
 // Sprint 3: Habeas Data + Backup
 const HabeasDataPage = React.lazy(() => import('./pages/HabeasDataPage'));
 const BackupPage = React.lazy(() => import('./pages/BackupPage'));
+// Sprint 4-5: Secondary modules
+const CotizacionesPage = React.lazy(() => import('./pages/CotizacionesPage'));
+const ConfigIPSPage = React.lazy(() => import('./pages/ConfigIPSPage'));
+const MensajesPage = React.lazy(() => import('./pages/MensajesPage'));
 
 // ── React Query client ───────────────────────────────────────────
 const queryClient = new QueryClient({
@@ -140,6 +144,9 @@ export default function App() {
               <Route path="portal-empresa" element={<PortalEmpresaPage />} />
               <Route path="habeas-data" element={<HabeasDataPage />} />
               <Route path="backup" element={<BackupPage />} />
+              <Route path="cotizaciones" element={<CotizacionesPage />} />
+              <Route path="config/ips" element={<ConfigIPSPage />} />
+              <Route path="mensajes" element={<MensajesPage />} />
               <Route path="planes" element={<PlanesPage />} />
             </Route>
 

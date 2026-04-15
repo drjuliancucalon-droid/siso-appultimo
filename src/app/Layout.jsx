@@ -1,7 +1,7 @@
 // src/app/Layout.jsx — Layout replicating ocupasalud original distribution
 // Top header with brand + sync + user, horizontal tab navigation below
 // Full-width content area (no sidebar stealing space)
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
 import { useUIStore } from '../stores/uiStore';
@@ -10,7 +10,7 @@ import {
   Receipt, DollarSign, BarChart3, Shield, Video,
   CreditCard, LogOut, Menu, X, Stethoscope, Activity,
   Cloud, CloudOff, Settings, ChevronLeft, ChevronRight,
-  Bell
+  Bell, RefreshCw, ShieldCheck
 } from 'lucide-react';
 import { useBackendObject } from '../hooks/useBackendData';
 
@@ -28,18 +28,50 @@ const NAV_ITEMS = [
   { path: '/telemedicine', icon: Video, label: 'Telemedicina' },
   { path: '/users', icon: Settings, label: 'Usuarios', roles: ['administrador', 'super_admin'] },
   { path: '/planes', icon: CreditCard, label: 'Planes', roles: ['administrador', 'super_admin'] },
+  { path: '/habeas-data', icon: ShieldCheck, label: 'Habeas Data' },
+  { path: '/settings', icon: Settings, label: 'Config', roles: ['administrador', 'super_admin'] },
 ];
 
 export default function Layout() {
   const navigate = useNavigate();
   const location = useLocation();
   const { currentUser, logout } = useAuthStore();
-  const { syncStatus } = useUIStore();
+  const { syncStatus, setSyncStatus } = useUIStore();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
   const { data: doctor } = useBackendObject('/data/doctor', 'siso_doctor_data', 'doctor');
   const tabsRef = useRef(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
+
+  // Sync handler
+  const handleManualSync = useCallback(async () => {
+    if (isSyncing) return;
+    setIsSyncing(true);
+    setSyncStatus('syncing');
+    try {
+      // Force re-fetch by clearing cached data timestamps
+      // This triggers useBackendData hooks to refetch
+      const keysToRefresh = ['siso_db_patients', 'siso_companies', 'siso_doctor_data', 'siso_agenda', 'siso_bills'];
+      for (const key of keysToRefresh) {
+        const stored = localStorage.getItem(key);
+        if (stored) {
+          try {
+            const parsed = JSON.parse(stored);
+            if (parsed._lastSync) {
+              parsed._lastSync = null; // Force refetch
+              localStorage.setItem(key, JSON.stringify(parsed));
+            }
+          } catch { /* skip non-JSON */ }
+        }
+      }
+      // Reload the page to trigger all hooks
+      window.location.reload();
+    } catch {
+      setSyncStatus('error');
+      setIsSyncing(false);
+    }
+  }, [isSyncing, setSyncStatus]);
 
   const filteredNav = NAV_ITEMS.filter((item) => {
     if (!item.roles) return true;
