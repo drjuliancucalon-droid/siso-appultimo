@@ -10,7 +10,8 @@ import {
   Receipt, DollarSign, BarChart3, Shield, Video,
   CreditCard, LogOut, Menu, X, Stethoscope, Activity,
   Cloud, CloudOff, Settings, ChevronLeft, ChevronRight,
-  Bell, RefreshCw, ShieldCheck
+  Bell, RefreshCw, ShieldCheck, Briefcase, Calculator,
+  MessageCircle
 } from 'lucide-react';
 import { useBackendObject } from '../hooks/useBackendData';
 
