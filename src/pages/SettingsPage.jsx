@@ -1,7 +1,7 @@
 // src/pages/SettingsPage.jsx
-// Sprint 3.6: Backup/Restore + General Settings
+// Sprint 3.6: Settings with Backup/Restore + AI Config
 import React, { useState, useCallback, useRef } from 'react';
-import { Download, Upload, Settings, Database, AlertTriangle, CheckCircle, Loader2, Shield } from 'lucide-react';
+import { Settings, Download, Upload, AlertCircle, CheckCircle, Loader2, Database, Shield, Key } from 'lucide-react';
 
 const BACKUP_KEYS = [
   'siso_db_patients',
@@ -10,50 +10,44 @@ const BACKUP_KEYS = [
   'siso_agenda',
   'siso_bills',
   'siso_habeas_data_requests',
-  'siso_ai_config',
 ];
 
+const getAllLocalStorageData = () => {
+  const data = {};
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (key.startsWith('siso_') || key.startsWith('auth_')) {
+      try {
+        data[key] = JSON.parse(localStorage.getItem(key));
+      } catch {
+        data[key] = localStorage.getItem(key);
+      }
+    }
+  }
+  return data;
+};
+
 export default function SettingsPage() {
-  const [exporting, setExporting] = useState(false);
-  const [importing, setImporting] = useState(false);
+  const [backupStatus, setBackupStatus] = useState(null); // 'exporting' | 'importing' | 'success' | 'error'
+  const [statusMsg, setStatusMsg] = useState('');
   const [importProgress, setImportProgress] = useState(0);
-  const [lastBackup, setLastBackup] = useState(null);
   const fileInputRef = useRef(null);
 
-  // Export backup
-  const handleExportBackup = useCallback(async () => {
-    setExporting(true);
+  // ── Export Backup ──
+  const handleExport = useCallback(() => {
+    setBackupStatus('exporting');
+    setStatusMsg('Preparando backup...');
     try {
+      const data = getAllLocalStorageData();
       const backup = {
-        meta: {
+        _meta: {
           version: '2.0',
           app: 'SISO OcupaSalud Pro',
-          exportDate: new Date().toISOString(),
-          exportedBy: 'manual',
+          exportedAt: new Date().toISOString(),
+          keyCount: Object.keys(data).length,
         },
-        data: {},
+        data,
       };
-
-      // Collect all localStorage keys matching siso_*
-      const allKeys = [];
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key && (key.startsWith('siso_') || BACKUP_KEYS.includes(key))) {
-          allKeys.push(key);
-        }
-      }
-
-      for (const key of allKeys) {
-        try {
-          const raw = localStorage.getItem(key);
-          backup.data[key] = JSON.parse(raw);
-        } catch {
-          backup.data[key] = localStorage.getItem(key);
-        }
-      }
-
-      backup.meta.totalKeys = Object.keys(backup.data).length;
-
       const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -61,172 +55,162 @@ export default function SettingsPage() {
       a.download = `siso_backup_${new Date().toISOString().split('T')[0]}.json`;
       a.click();
       URL.revokeObjectURL(url);
-
-      setLastBackup(new Date().toISOString());
-      alert(`✅ Backup exportado correctamente (${Object.keys(backup.data).length} claves)`);
+      setBackupStatus('success');
+      setStatusMsg(`✅ Backup exportado: ${Object.keys(data).length} claves`);
     } catch (err) {
-      alert('❌ Error al exportar: ' + err.message);
-    } finally {
-      setExporting(false);
+      setBackupStatus('error');
+      setStatusMsg(`❌ Error: ${err.message}`);
     }
   }, []);
 
-  // Import backup
-  const handleImportBackup = useCallback((e) => {
-    const file = e.target.files?.[0];
+  // ── Import Backup ──
+  const handleImport = useCallback((event) => {
+    const file = event.target.files?.[0];
     if (!file) return;
 
-    setImporting(true);
+    setBackupStatus('importing');
+    setStatusMsg('Leyendo archivo...');
     setImportProgress(0);
 
     const reader = new FileReader();
-    reader.onload = (ev) => {
+    reader.onload = (e) => {
       try {
-        const backup = JSON.parse(ev.target.result);
+        const backup = JSON.parse(e.target.result);
 
         // Validate structure
-        if (!backup.meta || !backup.data) {
-          throw new Error('Archivo de backup inválido: falta meta o data');
-        }
-
-        if (backup.meta.app !== 'SISO OcupaSalud Pro') {
-          throw new Error('Este backup no es de SISO OcupaSalud Pro');
+        if (!backup._meta || !backup.data) {
+          throw new Error('Formato de backup inválido. Debe tener _meta y data.');
         }
 
         const keys = Object.keys(backup.data);
-        const confirmMsg = `¿Importar backup del ${new Date(backup.meta.exportDate).toLocaleDateString('es-CO')}?\n\n` +
-          `Versión: ${backup.meta.version}\n` +
-          `Claves: ${keys.length}\n\n` +
-          `⚠️ ESTO SOBRESCRIBIRÁ LOS DATOS ACTUALES`;
+        if (keys.length === 0) {
+          throw new Error('El backup está vacío.');
+        }
 
-        if (!confirm(confirmMsg)) {
-          setImporting(false);
+        if (!confirm(`¿Importar backup de ${backup._meta.exportedAt}?\nContiene ${keys.length} claves.\n\n⚠️ Esto REEMPLAZARÁ los datos actuales.`)) {
+          setBackupStatus(null);
           return;
         }
 
-        // Import key by key with progress
-        let imported = 0;
-        for (const [key, value] of Object.entries(backup.data)) {
-          try {
-            const serialized = typeof value === 'string' ? value : JSON.stringify(value);
-            localStorage.setItem(key, serialized);
-            imported++;
-            setImportProgress(Math.round((imported / keys.length) * 100));
-          } catch (err) {
-            console.warn(`Error importing key ${key}:`, err);
-          }
-        }
+        // Import key by key
+        keys.forEach((key, idx) => {
+          const value = backup.data[key];
+          localStorage.setItem(key, typeof value === 'string' ? value : JSON.stringify(value));
+          setImportProgress(Math.round(((idx + 1) / keys.length) * 100));
+        });
 
-        alert(`✅ Backup importado correctamente (${imported}/${keys.length} claves). Recargue la página para ver los cambios.`);
+        setBackupStatus('success');
+        setStatusMsg(`✅ Importadas ${keys.length} claves. Recarga la página para ver los cambios.`);
       } catch (err) {
-        alert('❌ Error al importar: ' + err.message);
-      } finally {
-        setImporting(false);
-        setImportProgress(0);
-        if (fileInputRef.current) fileInputRef.current.value = '';
+        setBackupStatus('error');
+        setStatusMsg(`❌ Error: ${err.message}`);
       }
     };
-
+    reader.onerror = () => {
+      setBackupStatus('error');
+      setStatusMsg('❌ Error al leer el archivo');
+    };
     reader.readAsText(file);
+    event.target.value = '';
   }, []);
 
   return (
     <div className="p-4 max-w-4xl mx-auto">
+      {/* Header */}
       <div className="flex items-center gap-3 mb-6">
-        <Settings className="w-7 h-7 text-emerald-600" />
+        <div className="bg-emerald-100 p-2.5 rounded-xl">
+          <Settings className="w-6 h-6 text-emerald-700" />
+        </div>
         <div>
-          <h1 className="text-xl font-black text-gray-800">Configuración</h1>
+          <h1 className="text-lg font-black text-gray-800">Configuración</h1>
           <p className="text-xs text-gray-500">Backup, restauración y ajustes del sistema</p>
         </div>
       </div>
 
-      {/* Backup section */}
-      <div className="bg-white border rounded-xl p-5 shadow-sm mb-6">
-        <div className="flex items-center gap-2 mb-4">
-          <Database className="w-5 h-5 text-emerald-600" />
-          <h2 className="text-sm font-black text-gray-800 uppercase">Backup y Restauración</h2>
-        </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Backup/Restore Card */}
+        <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+          <div className="flex items-center gap-2 mb-4">
+            <Database className="w-5 h-5 text-emerald-600" />
+            <h2 className="text-sm font-black text-gray-800">Backup y Restauración</h2>
+          </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {/* Export */}
-          <div className="border border-emerald-200 rounded-xl p-4 bg-emerald-50/50">
-            <h3 className="text-sm font-bold text-emerald-800 mb-2 flex items-center gap-2">
-              <Download className="w-4 h-4" /> Exportar Backup
-            </h3>
-            <p className="text-xs text-gray-600 mb-3">
-              Descarga un archivo JSON con todos los datos almacenados localmente
-              (pacientes, empresas, agenda, facturas, configuración).
-            </p>
+          <p className="text-xs text-gray-500 mb-4">
+            Exporta o importa todos los datos del sistema en formato JSON.
+            El backup incluye pacientes, empresas, agenda, facturación y configuración.
+          </p>
+
+          <div className="flex gap-3 mb-4">
             <button
-              onClick={handleExportBackup}
-              disabled={exporting}
-              className="flex items-center gap-2 bg-emerald-600 text-white px-4 py-2 rounded-lg font-bold text-xs hover:bg-emerald-700 disabled:opacity-50 shadow-sm w-full justify-center"
+              onClick={handleExport}
+              disabled={backupStatus === 'exporting'}
+              className="flex-1 flex items-center justify-center gap-2 bg-emerald-600 text-white px-4 py-3 rounded-lg text-xs font-bold hover:bg-emerald-700 disabled:opacity-50"
             >
-              {exporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
-              {exporting ? 'Exportando...' : 'Exportar Backup'}
+              {backupStatus === 'exporting' ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+              Exportar Backup
             </button>
-            {lastBackup && (
-              <p className="text-[10px] text-emerald-600 mt-2 flex items-center gap-1">
-                <CheckCircle className="w-3 h-3" /> Último: {new Date(lastBackup).toLocaleString('es-CO')}
-              </p>
-            )}
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={backupStatus === 'importing'}
+              className="flex-1 flex items-center justify-center gap-2 bg-white text-emerald-700 border-2 border-emerald-300 px-4 py-3 rounded-lg text-xs font-bold hover:bg-emerald-50 disabled:opacity-50"
+            >
+              {backupStatus === 'importing' ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+              Importar Backup
+            </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".json"
+              onChange={handleImport}
+              className="hidden"
+            />
           </div>
 
-          {/* Import */}
-          <div className="border border-amber-200 rounded-xl p-4 bg-amber-50/50">
-            <h3 className="text-sm font-bold text-amber-800 mb-2 flex items-center gap-2">
-              <Upload className="w-4 h-4" /> Importar Backup
-            </h3>
-            <p className="text-xs text-gray-600 mb-3">
-              Selecciona un archivo JSON de backup para restaurar los datos.
-              <span className="text-red-600 font-bold"> Los datos actuales serán sobrescritos.</span>
-            </p>
-            <label className="flex items-center gap-2 bg-amber-600 text-white px-4 py-2 rounded-lg font-bold text-xs hover:bg-amber-700 cursor-pointer shadow-sm w-full justify-center">
-              {importing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
-              {importing ? `Importando... ${importProgress}%` : 'Seleccionar Archivo'}
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept=".json"
-                onChange={handleImportBackup}
-                className="hidden"
-                disabled={importing}
-              />
-            </label>
-            {importing && (
-              <div className="mt-2">
-                <div className="w-full bg-gray-200 rounded-full h-1.5">
-                  <div
-                    className="bg-amber-500 h-1.5 rounded-full transition-all duration-300"
-                    style={{ width: `${importProgress}%` }}
-                  />
+          {/* Progress */}
+          {backupStatus === 'importing' && (
+            <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
+              <div className="bg-emerald-600 h-2 rounded-full transition-all" style={{ width: `${importProgress}%` }} />
+            </div>
+          )}
+
+          {/* Status message */}
+          {statusMsg && (
+            <div className={`flex items-center gap-2 text-xs p-2 rounded-lg ${
+              backupStatus === 'success' ? 'bg-green-50 text-green-700' :
+              backupStatus === 'error' ? 'bg-red-50 text-red-700' :
+              'bg-blue-50 text-blue-700'
+            }`}>
+              {backupStatus === 'success' ? <CheckCircle className="w-3.5 h-3.5" /> :
+               backupStatus === 'error' ? <AlertCircle className="w-3.5 h-3.5" /> :
+               <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+              {statusMsg}
+            </div>
+          )}
+        </div>
+
+        {/* Data info card */}
+        <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+          <div className="flex items-center gap-2 mb-4">
+            <Shield className="w-5 h-5 text-emerald-600" />
+            <h2 className="text-sm font-black text-gray-800">Datos del Sistema</h2>
+          </div>
+          <div className="space-y-2">
+            {BACKUP_KEYS.map((key) => {
+              let count = '—';
+              try {
+                const val = JSON.parse(localStorage.getItem(key) || 'null');
+                if (Array.isArray(val)) count = `${val.length} registros`;
+                else if (val && typeof val === 'object') count = 'Configurado';
+                else count = 'Vacío';
+              } catch { count = 'N/A'; }
+              return (
+                <div key={key} className="flex justify-between items-center py-1.5 border-b border-gray-100 last:border-0">
+                  <span className="text-xs font-medium text-gray-600">{key.replace('siso_', '').replace(/_/g, ' ')}</span>
+                  <span className="text-xs text-emerald-700 font-bold">{count}</span>
                 </div>
-              </div>
-            )}
+              );
+            })}
           </div>
-        </div>
-
-        {/* Warning */}
-        <div className="mt-4 flex items-start gap-2 bg-yellow-50 border border-yellow-200 rounded-lg p-3">
-          <AlertTriangle className="w-4 h-4 text-yellow-600 flex-shrink-0 mt-0.5" />
-          <div className="text-xs text-yellow-700">
-            <strong>Importante:</strong> Los backups contienen datos sensibles de pacientes protegidos por la Ley 1581/2012.
-            Almacene los archivos de backup en un lugar seguro y no los comparta con terceros no autorizados.
-          </div>
-        </div>
-      </div>
-
-      {/* Data privacy section */}
-      <div className="bg-white border rounded-xl p-5 shadow-sm">
-        <div className="flex items-center gap-2 mb-4">
-          <Shield className="w-5 h-5 text-emerald-600" />
-          <h2 className="text-sm font-black text-gray-800 uppercase">Privacidad y Seguridad</h2>
-        </div>
-        <div className="space-y-2 text-xs text-gray-600">
-          <p>• Los datos se almacenan localmente y en Supabase con cifrado en tránsito (TLS 1.3).</p>
-          <p>• Las API Keys de IA se almacenan solo en el navegador local (localStorage).</p>
-          <p>• Se cumplen los requisitos de la Res. 1995/1999 (historia clínica) y Ley 1581/2012 (datos personales).</p>
-          <p>• Las sesiones expiran automáticamente después de 30 minutos de inactividad.</p>
         </div>
       </div>
     </div>

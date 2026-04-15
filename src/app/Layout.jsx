@@ -170,10 +170,20 @@ export default function Layout() {
             </div>
           </div>
 
-          {/* Center: Sync indicator */}
-          <div className={`hidden md:flex items-center gap-1.5 ${syncColor} text-xs`}>
-            {syncIcon}
-            <span className="font-medium">{syncText}</span>
+          {/* Center: Sync indicator + sync button */}
+          <div className={`hidden md:flex items-center gap-2 text-xs`}>
+            <div className={`flex items-center gap-1.5 ${syncColor}`}>
+              {syncIcon}
+              <span className="font-medium">{isSyncing ? 'Sincronizando...' : syncText}</span>
+            </div>
+            <button
+              onClick={handleManualSync}
+              disabled={isSyncing}
+              className="text-emerald-400 hover:text-white transition-colors p-1 hover:bg-emerald-700/50 rounded-lg disabled:opacity-50"
+              title="Sincronizar ahora"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
+            </button>
           </div>
 
           {/* Right: User info + logout */}

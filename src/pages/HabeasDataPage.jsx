@@ -1,248 +1,201 @@
 // src/pages/HabeasDataPage.jsx
-// Sprint 3.5: Habeas Data requests (Ley 1581/2012)
-// ARCO rights: Consulta, Rectificación, Supresión, Revocatoria
+// Sprint 3.5: Habeas Data — Solicitudes ARCO (Ley 1581/2012)
+// Consulta, Rectificación, Supresión, Revocatoria
 import React, { useState, useCallback, useEffect } from 'react';
-import { ShieldCheck, Send, FileText, Clock, CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
+import { Shield, Plus, Clock, CheckCircle, AlertCircle, FileText, Search, Trash2 } from 'lucide-react';
+import { InputGroup } from '../shared/components/ui/InputGroup';
+import { SelectGroup } from '../shared/components/ui/SelectGroup';
+import { TextAreaGroup } from '../shared/components/ui/TextAreaGroup';
 
-const SOLICITUD_TYPES = [
-  { value: 'consulta', label: 'Consulta', desc: 'Conocer qué datos personales se almacenan' },
-  { value: 'rectificacion', label: 'Rectificación', desc: 'Corregir datos inexactos o incompletos' },
-  { value: 'supresion', label: 'Supresión', desc: 'Eliminar datos personales' },
-  { value: 'revocatoria', label: 'Revocatoria', desc: 'Revocar autorización de tratamiento de datos' },
-];
-
-const STATUS_COLORS = {
-  pendiente: { bg: 'bg-yellow-50', text: 'text-yellow-700', icon: Clock },
-  en_proceso: { bg: 'bg-blue-50', text: 'text-blue-700', icon: AlertTriangle },
-  completada: { bg: 'bg-green-50', text: 'text-green-700', icon: CheckCircle },
-  rechazada: { bg: 'bg-red-50', text: 'text-red-700', icon: XCircle },
+const SOLICITUD_TYPES = ['Consulta', 'Rectificación', 'Supresión', 'Revocatoria'];
+const STATUS_MAP = {
+  Pendiente: { color: 'bg-yellow-100 text-yellow-800', icon: Clock },
+  'En proceso': { color: 'bg-blue-100 text-blue-800', icon: Clock },
+  Resuelta: { color: 'bg-green-100 text-green-800', icon: CheckCircle },
+  Rechazada: { color: 'bg-red-100 text-red-800', icon: AlertCircle },
 };
 
 const STORAGE_KEY = 'siso_habeas_data_requests';
 
+const loadRequests = () => {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); } catch { return []; }
+};
+
+const saveRequests = (reqs) => localStorage.setItem(STORAGE_KEY, JSON.stringify(reqs));
+
 export default function HabeasDataPage() {
-  const [requests, setRequests] = useState([]);
+  const [requests, setRequests] = useState(loadRequests);
+  const [showForm, setShowForm] = useState(false);
+  const [filter, setFilter] = useState('');
   const [form, setForm] = useState({
-    tipo: 'consulta',
-    nombreTitular: '',
+    tipo: 'Consulta',
+    nombres: '',
     docTipo: 'CC',
     docNumero: '',
     email: '',
-    telefono: '',
+    celular: '',
     descripcion: '',
   });
 
-  // Load from localStorage
-  useEffect(() => {
-    try {
-      const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-      setRequests(stored);
-    } catch { /* empty */ }
-  }, []);
+  useEffect(() => { saveRequests(requests); }, [requests]);
 
-  const saveRequests = useCallback((updated) => {
-    setRequests(updated);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-  }, []);
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setForm((p) => ({ ...p, [name]: value }));
+  };
 
-  const handleSubmit = useCallback((e) => {
-    e.preventDefault();
-
-    if (!form.nombreTitular.trim() || !form.docNumero.trim() || !form.descripcion.trim()) {
-      alert('Complete todos los campos requeridos (nombre, documento y descripción).');
+  const handleSubmit = useCallback(() => {
+    if (!form.nombres || !form.docNumero || !form.descripcion) {
+      alert('Complete nombre, documento y descripción');
       return;
     }
-
-    const newRequest = {
+    const newReq = {
       ...form,
       id: `hd_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
-      estado: 'pendiente',
+      estado: 'Pendiente',
       fechaCreacion: new Date().toISOString(),
       fechaRespuesta: null,
       respuesta: '',
     };
+    setRequests((prev) => [newReq, ...prev]);
+    setForm({ tipo: 'Consulta', nombres: '', docTipo: 'CC', docNumero: '', email: '', celular: '', descripcion: '' });
+    setShowForm(false);
+    alert('✅ Solicitud registrada correctamente');
+  }, [form]);
 
-    saveRequests([newRequest, ...requests]);
-    setForm({
-      tipo: 'consulta',
-      nombreTitular: '',
-      docTipo: 'CC',
-      docNumero: '',
-      email: '',
-      telefono: '',
-      descripcion: '',
-    });
-    alert('✅ Solicitud registrada correctamente. Será procesada en los términos de la Ley 1581/2012.');
-  }, [form, requests, saveRequests]);
+  const handleStatusChange = useCallback((id, newStatus) => {
+    setRequests((prev) => prev.map((r) =>
+      r.id === id ? { ...r, estado: newStatus, fechaRespuesta: newStatus === 'Resuelta' || newStatus === 'Rechazada' ? new Date().toISOString() : r.fechaRespuesta } : r
+    ));
+  }, []);
 
   const handleDelete = useCallback((id) => {
     if (!confirm('¿Eliminar esta solicitud?')) return;
-    saveRequests(requests.filter((r) => r.id !== id));
-  }, [requests, saveRequests]);
+    setRequests((prev) => prev.filter((r) => r.id !== id));
+  }, []);
+
+  const filteredRequests = requests.filter((r) =>
+    !filter ||
+    r.nombres.toLowerCase().includes(filter.toLowerCase()) ||
+    r.docNumero.includes(filter) ||
+    r.tipo.toLowerCase().includes(filter.toLowerCase())
+  );
 
   return (
     <div className="p-4 max-w-5xl mx-auto">
-      <div className="flex items-center gap-3 mb-6">
-        <ShieldCheck className="w-7 h-7 text-emerald-600" />
-        <div>
-          <h1 className="text-xl font-black text-gray-800">Habeas Data</h1>
-          <p className="text-xs text-gray-500">Gestión de solicitudes ARCO — Ley 1581/2012 · Decreto 1377/2013</p>
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-3">
+          <div className="bg-emerald-100 p-2.5 rounded-xl">
+            <Shield className="w-6 h-6 text-emerald-700" />
+          </div>
+          <div>
+            <h1 className="text-lg font-black text-gray-800">Habeas Data</h1>
+            <p className="text-xs text-gray-500">Solicitudes ARCO — Ley 1581/2012 · Decreto 1377/2013</p>
+          </div>
         </div>
-      </div>
-
-      {/* Info banner */}
-      <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 mb-6">
-        <h3 className="text-sm font-bold text-emerald-800 mb-1">Derechos del Titular de Datos Personales</h3>
-        <p className="text-xs text-emerald-700">
-          Según la Ley 1581 de 2012 (Ley de Protección de Datos Personales), todo titular tiene derecho a:
-          <strong> Consultar, Rectificar, Suprimir</strong> sus datos personales y <strong>Revocar</strong> la autorización
-          otorgada para su tratamiento. Plazo máximo de respuesta: 10 días hábiles (consultas) o 15 días hábiles (reclamos).
-        </p>
+        <button
+          onClick={() => setShowForm(!showForm)}
+          className="flex items-center gap-1.5 bg-emerald-600 text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-emerald-700"
+        >
+          <Plus className="w-4 h-4" /> Nueva Solicitud
+        </button>
       </div>
 
       {/* Form */}
-      <form onSubmit={handleSubmit} className="bg-white border rounded-xl p-5 shadow-sm mb-6 space-y-4">
-        <h2 className="text-sm font-black text-gray-800 uppercase flex items-center gap-2">
-          <Send className="w-4 h-4 text-emerald-600" />
-          Nueva Solicitud
-        </h2>
-
-        {/* Type selection */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-          {SOLICITUD_TYPES.map((type) => (
-            <button
-              key={type.value}
-              type="button"
-              onClick={() => setForm((p) => ({ ...p, tipo: type.value }))}
-              className={`p-3 rounded-lg border text-left transition-all ${
-                form.tipo === type.value
-                  ? 'border-emerald-500 bg-emerald-50 ring-2 ring-emerald-300'
-                  : 'border-gray-200 hover:border-emerald-300'
-              }`}
-            >
-              <p className="text-xs font-bold text-gray-800">{type.label}</p>
-              <p className="text-[10px] text-gray-500 mt-0.5">{type.desc}</p>
+      {showForm && (
+        <div className="bg-white border border-emerald-200 rounded-xl p-5 mb-6 shadow-sm">
+          <h2 className="text-sm font-black text-gray-800 mb-3 flex items-center gap-2">
+            <FileText className="w-4 h-4 text-emerald-600" /> Registrar Solicitud
+          </h2>
+          <div className="flex flex-wrap -mx-1.5">
+            <SelectGroup label="Tipo de solicitud" name="tipo" value={form.tipo} onChange={handleChange} options={SOLICITUD_TYPES} width="w-1/3" />
+            <InputGroup label="Nombre completo" name="nombres" value={form.nombres} onChange={handleChange} width="w-2/3" required />
+          </div>
+          <div className="flex flex-wrap -mx-1.5">
+            <SelectGroup label="Tipo documento" name="docTipo" value={form.docTipo} onChange={handleChange} options={['CC', 'CE', 'TI', 'PA', 'RC']} width="w-1/4" />
+            <InputGroup label="Número documento" name="docNumero" value={form.docNumero} onChange={handleChange} width="w-1/4" required />
+            <InputGroup label="Email" name="email" value={form.email} onChange={handleChange} type="email" width="w-1/4" />
+            <InputGroup label="Celular" name="celular" value={form.celular} onChange={handleChange} width="w-1/4" />
+          </div>
+          <TextAreaGroup label="Descripción de la solicitud" name="descripcion" value={form.descripcion} onChange={handleChange} rows={4} placeholder="Describa su solicitud en detalle..." />
+          <div className="flex gap-2 mt-2">
+            <button onClick={handleSubmit} className="bg-emerald-600 text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-emerald-700">
+              Registrar Solicitud
             </button>
-          ))}
-        </div>
-
-        {/* Patient identification */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <div>
-            <label className="block text-[10px] font-bold text-gray-600 mb-0.5 uppercase">Nombre Completo *</label>
-            <input
-              type="text"
-              value={form.nombreTitular}
-              onChange={(e) => setForm((p) => ({ ...p, nombreTitular: e.target.value }))}
-              className="w-full p-1.5 border border-gray-200 rounded focus:ring-2 focus:ring-emerald-400 outline-none text-xs"
-              placeholder="Nombre del titular"
-              required
-            />
-          </div>
-          <div className="flex gap-2">
-            <div className="w-24">
-              <label className="block text-[10px] font-bold text-gray-600 mb-0.5 uppercase">Tipo Doc</label>
-              <select
-                value={form.docTipo}
-                onChange={(e) => setForm((p) => ({ ...p, docTipo: e.target.value }))}
-                className="w-full p-1.5 border border-gray-200 rounded focus:ring-2 focus:ring-emerald-400 outline-none text-xs bg-white"
-              >
-                <option value="CC">CC</option>
-                <option value="TI">TI</option>
-                <option value="CE">CE</option>
-                <option value="PA">PA</option>
-              </select>
-            </div>
-            <div className="flex-1">
-              <label className="block text-[10px] font-bold text-gray-600 mb-0.5 uppercase">Nro. Documento *</label>
-              <input
-                type="text"
-                value={form.docNumero}
-                onChange={(e) => setForm((p) => ({ ...p, docNumero: e.target.value }))}
-                className="w-full p-1.5 border border-gray-200 rounded focus:ring-2 focus:ring-emerald-400 outline-none text-xs"
-                required
-              />
-            </div>
-          </div>
-          <div>
-            <label className="block text-[10px] font-bold text-gray-600 mb-0.5 uppercase">Email</label>
-            <input
-              type="email"
-              value={form.email}
-              onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))}
-              className="w-full p-1.5 border border-gray-200 rounded focus:ring-2 focus:ring-emerald-400 outline-none text-xs"
-              placeholder="correo@ejemplo.com"
-            />
+            <button onClick={() => setShowForm(false)} className="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg text-xs font-bold hover:bg-gray-300">
+              Cancelar
+            </button>
           </div>
         </div>
+      )}
 
-        {/* Description */}
-        <div>
-          <label className="block text-[10px] font-bold text-gray-600 mb-0.5 uppercase">Descripción de la Solicitud *</label>
-          <textarea
-            value={form.descripcion}
-            onChange={(e) => setForm((p) => ({ ...p, descripcion: e.target.value }))}
-            rows={4}
-            className="w-full p-1.5 border border-gray-200 rounded focus:ring-2 focus:ring-emerald-400 outline-none text-xs resize-none"
-            placeholder="Describa detalladamente su solicitud..."
-            required
-          />
-        </div>
-
-        <button
-          type="submit"
-          className="flex items-center gap-2 bg-gradient-to-r from-emerald-600 to-teal-500 text-white px-5 py-2 rounded-lg font-bold text-sm hover:opacity-90 shadow-sm"
-        >
-          <Send className="w-4 h-4" /> Enviar Solicitud
-        </button>
-      </form>
+      {/* Search */}
+      <div className="flex items-center border border-gray-200 rounded-lg overflow-hidden mb-4 bg-white">
+        <Search className="w-4 h-4 text-gray-400 ml-3" />
+        <input
+          value={filter}
+          onChange={(e) => setFilter(e.target.value)}
+          placeholder="Buscar por nombre, documento o tipo..."
+          className="flex-1 p-2 text-xs outline-none"
+        />
+      </div>
 
       {/* Requests list */}
-      <div>
-        <h2 className="text-sm font-black text-gray-800 uppercase mb-3 flex items-center gap-2">
-          <FileText className="w-4 h-4 text-emerald-600" />
-          Solicitudes Registradas ({requests.length})
-        </h2>
-
-        {requests.length === 0 ? (
-          <div className="text-center py-12 text-gray-400">
-            <ShieldCheck className="w-12 h-12 mx-auto mb-3 opacity-30" />
-            <p className="text-sm">No hay solicitudes registradas</p>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {requests.map((req) => {
-              const statusConfig = STATUS_COLORS[req.estado] || STATUS_COLORS.pendiente;
-              const StatusIcon = statusConfig.icon;
-              const typeLabel = SOLICITUD_TYPES.find((t) => t.value === req.tipo)?.label || req.tipo;
-
-              return (
-                <div key={req.id} className="bg-white border rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="text-xs font-bold bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full">{typeLabel}</span>
-                        <span className={`text-xs font-bold px-2 py-0.5 rounded-full flex items-center gap-1 ${statusConfig.bg} ${statusConfig.text}`}>
-                          <StatusIcon className="w-3 h-3" />
-                          {req.estado.replace('_', ' ')}
-                        </span>
-                      </div>
-                      <p className="text-sm font-bold text-gray-800">{req.nombreTitular}</p>
-                      <p className="text-xs text-gray-500">{req.docTipo} {req.docNumero} • {new Date(req.fechaCreacion).toLocaleDateString('es-CO')}</p>
-                      <p className="text-xs text-gray-600 mt-1 line-clamp-2">{req.descripcion}</p>
+      {filteredRequests.length > 0 ? (
+        <div className="space-y-3">
+          {filteredRequests.map((req) => {
+            const statusInfo = STATUS_MAP[req.estado] || STATUS_MAP.Pendiente;
+            const StatusIcon = statusInfo.icon;
+            return (
+              <div key={req.id} className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${statusInfo.color}`}>
+                        <StatusIcon className="w-3 h-3 inline mr-0.5" />
+                        {req.estado}
+                      </span>
+                      <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">{req.tipo}</span>
+                      <span className="text-[10px] text-gray-400">{new Date(req.fechaCreacion).toLocaleDateString('es-CO')}</span>
                     </div>
-                    <button
-                      onClick={() => handleDelete(req.id)}
-                      className="text-xs text-red-500 hover:text-red-700 font-medium"
+                    <p className="text-sm font-bold text-gray-800">{req.nombres}</p>
+                    <p className="text-xs text-gray-500">{req.docTipo} {req.docNumero} {req.email ? `· ${req.email}` : ''}</p>
+                    <p className="text-xs text-gray-600 mt-1">{req.descripcion}</p>
+                  </div>
+                  <div className="flex items-center gap-1 ml-3">
+                    <select
+                      value={req.estado}
+                      onChange={(e) => handleStatusChange(req.id, e.target.value)}
+                      className="text-[10px] border border-gray-200 rounded px-1 py-0.5"
                     >
-                      Eliminar
+                      <option>Pendiente</option>
+                      <option>En proceso</option>
+                      <option>Resuelta</option>
+                      <option>Rechazada</option>
+                    </select>
+                    <button onClick={() => handleDelete(req.id)} className="p-1 text-red-400 hover:text-red-600">
+                      <Trash2 className="w-3.5 h-3.5" />
                     </button>
                   </div>
                 </div>
-              );
-            })}
-          </div>
-        )}
+              </div>
+            );
+          })}
+        </div>
+      ) : (
+        <div className="text-center py-12 text-gray-400">
+          <Shield className="w-12 h-12 mx-auto mb-3 opacity-30" />
+          <p className="text-sm font-medium">No hay solicitudes registradas</p>
+          <p className="text-xs">Las solicitudes de Habeas Data aparecerán aquí</p>
+        </div>
+      )}
+
+      {/* Legal notice */}
+      <div className="mt-8 bg-emerald-50 border border-emerald-200 rounded-xl p-4 text-xs text-emerald-800">
+        <p className="font-bold mb-1">📜 Marco Legal</p>
+        <p>Ley 1581 de 2012 (Protección de Datos Personales) · Decreto 1377 de 2013 · Decreto Único Reglamentario 1074 de 2015.</p>
+        <p className="mt-1">Los titulares tienen derecho a conocer, actualizar, rectificar y suprimir sus datos personales. El responsable del tratamiento debe atender las solicitudes dentro de los 15 días hábiles siguientes a la recepción.</p>
       </div>
     </div>
   );
