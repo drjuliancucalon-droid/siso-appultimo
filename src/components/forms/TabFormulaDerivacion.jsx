@@ -2,7 +2,7 @@
 import React from 'react';
 import { DERIVACIONES_CATALOG } from '../../data/catalogos.js';
 import MedicamentoAutocomplete from '../ui/MedicamentoAutocomplete.jsx';
-import { _generarCertificadoHTMLNormalizado } from '../../utils/normativa.js';
+import { _generarCertificadoHTMLNormalizado } from '../../shared/lib/printUtils.js';
 import { Pill, Share2, Printer, Plus, Trash2, Search } from 'lucide-react';
 
 const TabFormulaDerivacion = ({
@@ -1018,3 +1018,5 @@ body{padding-top:52px;}
 };
 
 export default TabFormulaDerivacion;
+
+

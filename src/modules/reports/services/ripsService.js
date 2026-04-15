@@ -1,8 +1,8 @@
-/**
- * RIPS Service - Generación RIPS JSON (Resolución 2275/2023)
- * Registro Individual de Prestación de Servicios de Salud
+﻿/**
+ * RIPS Service - GeneraciÃ³n RIPS JSON (ResoluciÃ³n 2275/2023)
+ * Registro Individual de PrestaciÃ³n de Servicios de Salud
  */
-import { validarRIPSPaciente, generarRIPSJson, descargarRIPSJson } from '../../../shared/lib/normativa';
+import { validarRIPSPaciente, _generarRIPSJson as generarRIPSJson, _descargarRIPSJson as descargarRIPSJson } from '../../../shared/lib/normativa';
 
 export const generateRIPSBatch = (patients, doctorData, periodo) => {
   return generarRIPSJson ? generarRIPSJson(patients, doctorData, periodo) : null;
@@ -29,7 +29,7 @@ export const downloadRIPSBatch = (patients, doctorData, periodo) => {
       fechaConsulta: p.fechaExamen || '',
       codigoDiagnosticoPrincipal: (p.diagnostico1 || '').split(' ')[0] || '',
       tipoConsulta: p.tipoExamen === 'INGRESO' ? '01' : '02',
-      finalidad: '10', // Valoración integral
+      finalidad: '10', // ValoraciÃ³n integral
       causaExterna: '13', // Enfermedad profesional / AT
     })),
     totalRegistros: patients.length,
@@ -55,3 +55,4 @@ export const validateRIPSPatient = (patient) => {
   if (!patient.fechaNacimiento) errors.push('Fecha nacimiento requerida');
   return { valid: errors.length === 0, errors };
 };
+
