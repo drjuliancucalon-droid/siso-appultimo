@@ -1,25 +1,153 @@
-// src/pages/HistoriaPage.jsx — Historia Clínica wrapper
-// OccupationalHC has both named and default export — use default
-import React from 'react';
+// src/pages/HistoriaPage.jsx — Historia Clínica Ocupacional wrapper
+// Provides all required props to OccupationalHC using hooks + stores
+import React, { useState, useCallback, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import OccupationalHC from '../modules/clinical/components/OccupationalHC';
+import { OccupationalHC } from '../modules/clinical/components/OccupationalHC';
+import { useClinicalRecord } from '../modules/clinical/hooks/useClinicalRecord';
 import { useAuthStore } from '../stores/authStore';
 import { useAIStore } from '../stores/aiStore';
-import { Stethoscope } from 'lucide-react';
+import { useBackendData, useBackendObject } from '../hooks/useBackendData';
+import { callAIWithFailover } from '../modules/ai/services/aiAnalysis';
+import { Stethoscope, Loader2, ArrowLeft } from 'lucide-react';
 
 export default function HistoriaPage() {
-  const { id } = useParams();
+  const { id } = useParams(); // patient docNumero if editing
   const navigate = useNavigate();
   const { currentUser } = useAuthStore();
   const aiConfig = useAIStore((s) => s.getConfig());
+  
+  // Load real data
+  const { data: patients } = useBackendData('/data/patients', 'siso_db_patients', 'patients');
+  const { data: companies } = useBackendData('/data/companies', 'siso_companies', 'companies');
+  const { data: doctor } = useBackendObject('/data/doctor', 'siso_doctor_data', 'doctor');
+
+  // Clinical record hook
+  const clinical = useClinicalRecord({
+    currentUser,
+    patients,
+    setPatients: () => {}, // Read-only for now
+    showAlert: (msg) => alert(msg),
+  });
+
+  // Initialize with patient data if we have an id
+  React.useEffect(() => {
+    if (id && patients.length > 0 && !clinical.data?.docNumero) {
+      const patient = patients.find((p) => p.docNumero === id || p.id === id);
+      if (patient) {
+        clinical.initNewRecord('ocupacional', patient);
+      }
+    }
+  }, [id, patients]);
+
+  // Patient search suggestions
+  const [patientSuggestions, setPatientSuggestions] = useState([]);
+
+  const handleNameChange = useCallback((value) => {
+    clinical.setData({ nombres: value });
+    if (value.length >= 2) {
+      const matches = patients.filter((p) =>
+        (p.nombres || '').toLowerCase().includes(value.toLowerCase()) ||
+        (p.docNumero || '').includes(value)
+      ).slice(0, 5);
+      setPatientSuggestions(matches);
+    } else {
+      setPatientSuggestions([]);
+    }
+  }, [patients, clinical]);
+
+  const selectPatientSuggestion = useCallback((patient) => {
+    clinical.initNewRecord('ocupacional', patient);
+    setPatientSuggestions([]);
+    // Load history
+    clinical.loadPatientHistory(patient.docNumero);
+  }, [clinical]);
+
+  const handleCompanySelect = useCallback((empresaId) => {
+    const company = companies.find((c) => c.id === empresaId);
+    clinical.setData({
+      empresaId,
+      empresaNombre: company?.razonSocial || company?.nombre || '',
+    });
+  }, [companies, clinical]);
+
+  // AI generation
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [isGeneratingReco, setIsGeneratingReco] = useState(false);
+  const [isGeneratingRestr, setIsGeneratingRestr] = useState(false);
+
+  const onGenerateAI = useCallback(async (type) => {
+    if (!aiConfig.keys || !Object.values(aiConfig.keys).some((k) => k?.trim())) {
+      alert('Configura una API Key de IA primero (Gemini, Groq, Together o OpenRouter)');
+      return;
+    }
+    const setLoading = type === 'reco' ? setIsGeneratingReco : type === 'restr' ? setIsGeneratingRestr : setIsGenerating;
+    setLoading(true);
+    try {
+      const result = await callAIWithFailover(
+        `Analiza esta HC: ${JSON.stringify(clinical.data)}`,
+        undefined,
+        aiConfig
+      );
+      // The AI module handles the rest
+      return result;
+    } catch (err) {
+      alert('Error IA: ' + err.message);
+    } finally {
+      setLoading(false);
+    }
+  }, [aiConfig, clinical.data]);
+
+  // Consent modal state
+  const [showConsentModal, setShowConsentModal] = useState(false);
+  const [showRecomendacionesPanel, setShowRecomendacionesPanel] = useState(false);
+  const [showRestriccionesPanel, setShowRestriccionesPanel] = useState(false);
+
+  // Doctor data
+  const activeDoctorData = doctor || {
+    nombre: currentUser?.nombre || currentUser?.user || 'Médico',
+    licencia: '',
+    titulo: 'Médico Especialista en Salud Ocupacional',
+  };
 
   return (
     <div className="p-4 max-w-7xl mx-auto">
+      {/* Back button */}
+      <button
+        onClick={() => navigate('/patients')}
+        className="flex items-center gap-2 text-sm text-emerald-700 hover:text-emerald-900 mb-4 transition-colors"
+      >
+        <ArrowLeft className="w-4 h-4" />
+        Volver a pacientes
+      </button>
+
       <OccupationalHC
-        patientId={id}
+        data={clinical.data}
+        setData={clinical.setData}
+        companies={companies}
         currentUser={currentUser}
         aiConfig={aiConfig}
-        onBack={() => navigate('/patients')}
+        activeDoctorData={activeDoctorData}
+        activeSignature={null}
+        onGenerateAI={onGenerateAI}
+        onOpenConsent={() => setShowConsentModal(true)}
+        onOpenHistory={() => {}}
+        onOpenRecommendations={() => setShowRecomendacionesPanel(true)}
+        onOpenRestrictions={() => setShowRestriccionesPanel(true)}
+        handleChange={(field, value) => clinical.setData({ [field]: value })}
+        handleCompanySelect={handleCompanySelect}
+        handleNameChange={handleNameChange}
+        patientSuggestions={patientSuggestions}
+        selectPatientSuggestion={selectPatientSuggestion}
+        historyNotification={clinical.historyNotification}
+        isGenerating={isGenerating}
+        isGeneratingReco={isGeneratingReco}
+        isGeneratingRestr={isGeneratingRestr}
+        showConsentModal={showConsentModal}
+        setShowConsentModal={setShowConsentModal}
+        showRecomendacionesPanel={showRecomendacionesPanel}
+        setShowRecomendacionesPanel={setShowRecomendacionesPanel}
+        showRestriccionesPanel={showRestriccionesPanel}
+        setShowRestriccionesPanel={setShowRestriccionesPanel}
       />
     </div>
   );

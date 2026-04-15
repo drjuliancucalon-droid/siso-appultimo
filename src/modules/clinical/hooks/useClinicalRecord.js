@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef } from 'react';
-import { INITIAL_HC_STATE } from '../../../shared/data/initialStates';
+import { initialOccupPatientState as INITIAL_HC_STATE } from '../../../shared/data/initialStates';
 
 /**
  * useClinicalRecord - Hook para manejo de historias clínicas
