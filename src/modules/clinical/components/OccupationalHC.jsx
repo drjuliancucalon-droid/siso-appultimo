@@ -99,12 +99,13 @@ export const OccupationalHC = ({
   setShowRestriccionesPanel,
 }) => {
   // ── Internal handlers ──────────────────────────────────────────────────
-  const handleChange = externalHandleChange || useCallback((e) => {
+  const _internalHandleChange = useCallback((e) => {
     const { name, value, type, checked } = e.target;
     setData((prev) => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
   }, [setData]);
+  const handleChange = externalHandleChange || _internalHandleChange;
 
-  const handleCompanySelect = externalCompanySelect || useCallback((e) => {
+  const _internalCompanySelect = useCallback((e) => {
     const compId = e.target.value;
     if (compId === 'particular') {
       setData((prev) => ({ ...prev, empresaId: 'particular', empresaNombre: 'PARTICULAR / INDEPENDIENTE' }));
@@ -122,6 +123,7 @@ export const OccupationalHC = ({
       }
     }
   }, [companies, setData]);
+  const handleCompanySelect = externalCompanySelect || _internalCompanySelect;
 
   const handleNameChange = externalNameChange || handleChange;
 
