@@ -1,5 +1,5 @@
 import React from 'react';
-import CompanyList from '../modules/companies/components/CompanyList';
+import { CompanyList } from '../modules/companies/components/CompanyList';
 import { Building2 } from 'lucide-react';
 
 export default function CompaniesPage() {

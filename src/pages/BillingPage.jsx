@@ -1,5 +1,5 @@
 import React from 'react';
-import BillGenerator from '../modules/billing/components/BillGenerator';
+import { BillGenerator } from '../modules/billing/components/BillGenerator';
 import { Receipt } from 'lucide-react';
 
 export default function BillingPage() {

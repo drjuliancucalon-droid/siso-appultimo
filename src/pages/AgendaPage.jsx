@@ -1,5 +1,5 @@
 import React from 'react';
-import AgendaView from '../modules/agenda/components/AgendaView';
+import { AgendaView } from '../modules/agenda/components/AgendaView';
 import { Calendar } from 'lucide-react';
 
 export default function AgendaPage() {

@@ -1,5 +1,5 @@
 import React from 'react';
-import LicenseManager from '../modules/users/components/LicenseManager';
+import { LicenseManager } from '../modules/users/components/LicenseManager';
 import { CreditCard } from 'lucide-react';
 
 export default function PlanesPage() {

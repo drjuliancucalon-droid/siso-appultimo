@@ -1,5 +1,5 @@
 import React from 'react';
-import UserList from '../modules/users/components/UserList';
+import { UserList } from '../modules/users/components/UserList';
 import { Settings } from 'lucide-react';
 
 export default function UsersPage() {

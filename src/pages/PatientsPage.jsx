@@ -1,5 +1,5 @@
 import React from 'react';
-import PatientList from '../modules/patients/components/PatientList';
+import { PatientList } from '../modules/patients/components/PatientList';
 import { Users } from 'lucide-react';
 
 export default function PatientsPage() {

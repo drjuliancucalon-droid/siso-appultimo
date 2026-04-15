@@ -1,5 +1,5 @@
 import React from 'react';
-import AnalyticsDashboard from '../modules/reports/components/AnalyticsDashboard';
+import { AnalyticsDashboard } from '../modules/reports/components/AnalyticsDashboard';
 import { BarChart3 } from 'lucide-react';
 
 export default function ReportsPage() {

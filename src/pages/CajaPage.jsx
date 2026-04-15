@@ -1,5 +1,5 @@
 import React from 'react';
-import CashBox from '../modules/billing/components/CashBox';
+import { CashBox } from '../modules/billing/components/CashBox';
 import { DollarSign } from 'lucide-react';
 
 export default function CajaPage() {

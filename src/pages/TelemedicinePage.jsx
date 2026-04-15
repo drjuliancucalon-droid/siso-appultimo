@@ -1,5 +1,5 @@
 import React from 'react';
-import VideoConsult from '../modules/telemedicine/components/VideoConsult';
+import { VideoConsult } from '../modules/telemedicine/components/VideoConsult';
 import { Video } from 'lucide-react';
 
 export default function TelemedicinePage() {
