@@ -12,6 +12,7 @@ import {
   Cloud, CloudOff, Settings, ChevronLeft, ChevronRight,
   Bell
 } from 'lucide-react';
+import { useBackendObject } from '../hooks/useBackendData';
 
 const NAV_ITEMS = [
   { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
@@ -34,6 +35,7 @@ export default function Layout() {
   const { currentUser, logout } = useAuthStore();
   const { syncStatus } = useUIStore();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { data: doctor } = useBackendObject('/data/doctor', 'siso_doctor_data', 'doctor');
   const tabsRef = useRef(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
@@ -51,11 +53,11 @@ export default function Layout() {
   };
 
   // Initials for avatar (matches BrandLogo.jsx from monolith)
+  const doctorName = doctor?.nombre || currentUser?.nombre || currentUser?.user || '';
   const getInitials = () => {
-    const name = currentUser?.nombre || currentUser?.user || '';
-    const parts = name.trim().split(/\s+/);
+    const parts = doctorName.trim().split(/\s+/);
     if (parts.length >= 2) return `${parts[0][0]}${parts[parts.length > 2 ? 2 : 1][0]}`.toUpperCase();
-    return name.substring(0, 2).toUpperCase() || 'DR';
+    return doctorName.substring(0, 2).toUpperCase() || 'DR';
   };
 
   // Tab scroll management
@@ -122,12 +124,15 @@ export default function Layout() {
               </div>
               <div className="hidden sm:block">
                 <p className="text-[10px] font-black text-white uppercase leading-tight tracking-wide">
-                  {currentUser?.nombre || 'MÉDICO'}
+                  {doctorName || 'MÉDICO'}
                 </p>
                 <div className="h-[2px] w-7 bg-gradient-to-r from-emerald-400 to-teal-300 my-0.5 rounded-full" />
                 <p className="text-[8px] font-bold text-emerald-300 uppercase">
-                  {currentUser?.titulo || 'Salud Ocupacional'}
+                  {doctor?.titulo || 'Salud Ocupacional'}
                 </p>
+                {doctor?.licencia && (
+                  <p className="text-[7px] text-emerald-400">RM: {doctor.licencia}</p>
+                )}
               </div>
             </div>
           </div>

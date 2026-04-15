@@ -10,6 +10,7 @@ import { requireAuth } from './middleware/auth.js';
 import healthRouter from './routes/health.js';
 import authRouter from './routes/auth.js';
 import aiRouter from './routes/ai.js';
+import dataRouter from './routes/data.js';
 
 const app = express();
 
@@ -52,15 +53,7 @@ const aiLimiter = rateLimit({
 app.use('/api/health', healthRouter);
 app.use('/api/auth', loginLimiter, authRouter);
 app.use('/api/ai', aiLimiter, aiRouter);
-
-// ── Protected data routes (placeholder — Fase 3) ─
-app.get('/api/patients', requireAuth, (req, res) => {
-  res.json({ message: 'Endpoint de pacientes — pendiente de implementación', user: req.user.nombre });
-});
-
-app.get('/api/companies', requireAuth, (req, res) => {
-  res.json({ message: 'Endpoint de empresas — pendiente de implementación', user: req.user.nombre });
-});
+app.use('/api/data', dataRouter);
 
 // ── 404 handler ──────────────────────────────────
 app.use('/api/{*path}', (req, res) => {
