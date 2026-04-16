@@ -3,7 +3,7 @@ import React from 'react';
 import { DERIVACIONES_CATALOG, SPECIALTIES_LIST } from '../../data/catalogos.js';
 import MedicamentoAutocomplete from '../ui/MedicamentoAutocomplete.jsx';
 import { _generarCertificadoHTMLNormalizado } from '../../shared/lib/printUtils.js';
-import { Pill, Share2, Printer, Plus, Trash2, Search } from 'lucide-react';
+import { Pill, Share2, Printer, Plus, Trash2, Search, X } from 'lucide-react';
 import BrandLogo from '../ui/BrandLogo.jsx';
 import DoctorSignature from '../ui/DoctorSignature';
 
