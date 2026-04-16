@@ -1,5 +1,5 @@
-﻿// src/pages/HistoriaPage.jsx â€” HC Ocupacional with action tabs (like ocupasalud)
-// Tabs: Formulario | Certificado | FÃ³rmula | DerivaciÃ³n | ExÃ¡menes | Adjuntos | Incapacidad | EvoluciÃ³n
+// src/pages/HistoriaPage.jsx — HC Ocupacional with action tabs (like ocupasalud)
+// Tabs: Formulario | Certificado | Fórmula | Derivación | Exámenes | Adjuntos | Incapacidad | Evolución
 // Action buttons: Imprimir | RIPS | FHIR | RDA | Cerrar HC | Carnet
 import React, { useReducer, useCallback, useRef, useMemo, Suspense } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
@@ -16,16 +16,16 @@ import {
   Download
 } from 'lucide-react';
 
-// Static imports — tabs load with the page (fixes lucide-react chunk-splitting bug)
-import OccupationalHC from '../modules/clinical/components/OccupationalHC';
-import { CertificateView } from '../modules/clinical/components/CertificateView';
-import TabFormulaDerivacion from '../components/forms/TabFormulaDerivacion';
-import { PrescriptionTab } from '../modules/clinical/components/PrescriptionTab';
-import { ExamRequestTab } from '../modules/clinical/components/ExamRequestTab';
-import { AttachmentsTab } from '../modules/clinical/components/AttachmentsTab';
-import { DisabilityTab } from '../modules/clinical/components/DisabilityTab';
-import { EvolucionModal } from '../modules/clinical/components/EvolucionModal';
-import { AIConfigPanel } from '../modules/ai/components/AIConfigPanel';
+// Lazy load all components
+const OccupationalHC = React.lazy(() => import('../modules/clinical/components/OccupationalHC'));
+const CertificateView = React.lazy(() => import('../modules/clinical/components/CertificateView').then(m => ({ default: m.CertificateView || m.default })));
+const TabFormulaDerivacion = React.lazy(() => import('../components/forms/TabFormulaDerivacion').then(m => ({ default: m.TabFormulaDerivacion || m.default })));
+const PrescriptionTab = React.lazy(() => import('../modules/clinical/components/PrescriptionTab').then(m => ({ default: m.PrescriptionTab || m.default })));
+const ExamRequestTab = React.lazy(() => import('../modules/clinical/components/ExamRequestTab').then(m => ({ default: m.ExamRequestTab || m.default })));
+const AttachmentsTab = React.lazy(() => import('../modules/clinical/components/AttachmentsTab').then(m => ({ default: m.AttachmentsTab || m.default })));
+const DisabilityTab = React.lazy(() => import('../modules/clinical/components/DisabilityTab').then(m => ({ default: m.DisabilityTab || m.default })));
+const EvolucionModal = React.lazy(() => import('../modules/clinical/components/EvolucionModal').then(m => ({ default: m.EvolucionModal || m.default })));
+const AIConfigPanel = React.lazy(() => import('../modules/ai/components/AIConfigPanel').then(m => ({ default: m.AIConfigPanel || m.default })));
 
 // Error boundary
 class HCErrorBoundary extends React.Component {
@@ -36,7 +36,7 @@ class HCErrorBoundary extends React.Component {
     if (this.state.error) return (
       <div className="bg-amber-50 border border-amber-200 rounded-xl p-6 mt-4">
         <AlertTriangle className="w-5 h-5 text-amber-500 mb-2" />
-        <h3 className="font-bold text-amber-800">Error en este mÃ³dulo</h3>
+        <h3 className="font-bold text-amber-800">Error en este módulo</h3>
         <p className="text-sm text-amber-700 mt-2">{this.state.error.message}</p>
         <button onClick={() => this.setState({ error: null })} className="mt-3 px-3 py-1.5 bg-amber-600 text-white rounded-lg text-sm font-bold">Reintentar</button>
       </div>
@@ -49,12 +49,12 @@ class HCErrorBoundary extends React.Component {
 const HC_TABS = [
   { id: 'form', label: 'HC', icon: Stethoscope, color: 'emerald' },
   { id: 'certificado', label: 'Certificado', icon: FileText, color: 'blue' },
-  { id: 'formula', label: 'FÃ³rmula', icon: Pill, color: 'purple' },
-  { id: 'derivacion', label: 'DerivaciÃ³n', icon: GitBranch, color: 'indigo' },
-  { id: 'examenes', label: 'ExÃ¡menes', icon: TestTube, color: 'teal' },
+  { id: 'formula', label: 'Fórmula', icon: Pill, color: 'purple' },
+  { id: 'derivacion', label: 'Derivación', icon: GitBranch, color: 'indigo' },
+  { id: 'examenes', label: 'Exámenes', icon: TestTube, color: 'teal' },
   { id: 'adjuntos', label: 'Adjuntos', icon: Paperclip, color: 'orange' },
   { id: 'incapacidad', label: 'Incapacidad', icon: Hospital, color: 'red' },
-  { id: 'evolucion', label: 'EvoluciÃ³n', icon: ClipboardList, color: 'violet' },
+  { id: 'evolucion', label: 'Evolución', icon: ClipboardList, color: 'violet' },
 ];
 
 function hcReducer(state, action) {
@@ -89,7 +89,7 @@ export default function HistoriaPage() {
 
   // Save (declared BEFORE auto-save effect to avoid TDZ)
   const { save, saving, lastSaveStatus } = useSaveData();
-  const activeDoctorData = useMemo(() => doctor || { nombre: currentUser?.nombre || 'Mï¿½dico', licencia: '' }, [doctor]);
+  const activeDoctorData = useMemo(() => doctor || { nombre: currentUser?.nombre || 'M�dico', licencia: '' }, [doctor]);
 
   // P10 FIX: Dirty tracking
   const [isDirty, setIsDirty] = React.useState(false);
@@ -149,10 +149,10 @@ export default function HistoriaPage() {
     }
 
     setIsDirty(false);
-    if (result.ok) alert('âœ… HC guardada'); else alert('âŒ Error al guardar');
+    if (result.ok) alert('✅ HC guardada'); else alert('❌ Error al guardar');
   }, [data, save, currentUser, companies]);
 
-  // AI â€” Full integration (P1-P5 fixes: restrictions, recommendations, parseAIJSON)
+  // AI — Full integration (P1-P5 fixes: restrictions, recommendations, parseAIJSON)
   const [isGenerating, setIsGenerating] = React.useState(false);
   const [isGeneratingRestr, setIsGeneratingRestr] = React.useState(false);
   const [isGeneratingReco, setIsGeneratingReco] = React.useState(false);
@@ -165,13 +165,13 @@ export default function HistoriaPage() {
       const result = await apiClient.post('/api/ai/analyze', { prompt, systemPrompt, preferredProvider: aiConfig?.activeProvider });
       if (result?.result) return result.result;
     } catch {
-      // Backend not available â€” fallback to direct call (development mode)
+      // Backend not available — fallback to direct call (development mode)
     }
     const { callAIWithFailover } = await import('../modules/ai/services/aiAnalysis');
     return callAIWithFailover(prompt, systemPrompt, aiConfig);
   }, [aiConfig]);
 
-  // P5 FIX: Main AI analysis â€” generates analysis + tries to fill concept/restrictions/recommendations
+  // P5 FIX: Main AI analysis — generates analysis + tries to fill concept/restrictions/recommendations
   const onGenerateAI = useCallback(async () => {
     setIsGenerating(true);
     try {
@@ -188,7 +188,7 @@ export default function HistoriaPage() {
           ...(parsed.recomendaciones && { recomendaciones: parsed.recomendaciones }),
         });
       } catch {
-        // Not JSON â€” just set as text analysis
+        // Not JSON — just set as text analysis
         dispatch({ analisis: result });
       }
     } catch (e) { alert('Error IA: ' + e.message); }
@@ -217,9 +217,9 @@ export default function HistoriaPage() {
     finally { setIsGeneratingReco(false); }
   }, [data, aiConfig]);
 
-  // Close HC â€” Full implementation matching ocupasalud (F15-F19)
+  // Close HC — Full implementation matching ocupasalud (F15-F19)
   const handleCloseHC = useCallback(async () => {
-    if (!confirm('Â¿Cerrar esta Historia ClÃ­nica? Una vez cerrada no se puede editar.')) return;
+    if (!confirm('¿Cerrar esta Historia Clínica? Una vez cerrada no se puede editar.')) return;
 
     const now = new Date();
     const code = `SISO-${now.toISOString().split('T')[0].replace(/-/g, '')}-${Date.now().toString().slice(-8)}-${Math.random().toString(16).slice(2, 18).toUpperCase()}`;
@@ -242,7 +242,7 @@ export default function HistoriaPage() {
     };
     dispatch(closeData);
 
-    // F15: Auto-billing â€” genera movimiento en caja
+    // F15: Auto-billing — genera movimiento en caja
     try {
       const company = companies.find(c => c.id === data.empresaId);
       const tipoExamen = data.tipoExamen || 'PERIODICO';
@@ -251,7 +251,7 @@ export default function HistoriaPage() {
       const movimiento = {
         id: `mov_${Date.now()}`,
         tipo: 'ingreso',
-        concepto: `HC ${tipoExamen} â€” ${data.nombres || 'Paciente'}`,
+        concepto: `HC ${tipoExamen} — ${data.nombres || 'Paciente'}`,
         monto: tarifa,
         empresa: company?.nombre || 'Particular',
         empresaId: data.empresaId,
@@ -265,7 +265,7 @@ export default function HistoriaPage() {
       await save('/write/caja/add', movimiento, `siso_caja_movs_${userId}`);
     } catch (e) { console.warn('Auto-billing failed:', e.message); }
 
-    // F17-F18: Portal pÃºblico indexing
+    // F17-F18: Portal público indexing
     try {
       const portalData = {
         nombres: data.nombres,
@@ -290,7 +290,7 @@ export default function HistoriaPage() {
     await save('/write/hc/save', toSave, `siso_patients_${userId}`);
     setIsDirty(false);
 
-    alert(`âœ… HC Cerrada\nCÃ³digo: ${code}\nHash: ${hcHash.substring(0, 16)}...`);
+    alert(`✅ HC Cerrada\nCódigo: ${code}\nHash: ${hcHash.substring(0, 16)}...`);
   }, [data, companies, currentUser, activeDoctorData, save]);
 
   // RIPS
@@ -326,7 +326,7 @@ export default function HistoriaPage() {
     certificado: true, historia: true, formula: false, derivacion: false, examenes: false,
   });
 
-  // F4: Descargar/Enviar con combinaciÃ³n multi-documento
+  // F4: Descargar/Enviar con combinación multi-documento
   const handleEnviar = useCallback(async () => {
     const { generateHCPrintHTML, openPrintWindow } = await import('../lib/printService');
     const selected = Object.entries(enviarChecklist).filter(([_, v]) => v).map(([k]) => k);
@@ -344,11 +344,11 @@ export default function HistoriaPage() {
     }
     // Combine with page breaks
     const combined = sections.join('<div style="page-break-before:always"></div>');
-    const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>OcupaSalud â€” ${data.nombres || 'Paciente'}</title>
+    const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>OcupaSalud — ${data.nombres || 'Paciente'}</title>
       <style>@media print { body { margin: 0; } .no-print { display: none; } }</style></head>
       <body>${combined}
       <div class="no-print" style="text-align:center;padding:20px;border-top:2px solid #10b981;margin-top:20px;">
-        <button onclick="window.print()" style="padding:8px 24px;background:#10b981;color:white;border:none;border-radius:8px;font-weight:bold;cursor:pointer;margin:4px;">ðŸ–¨ï¸ Imprimir / PDF</button>
+        <button onclick="window.print()" style="padding:8px 24px;background:#10b981;color:white;border:none;border-radius:8px;font-weight:bold;cursor:pointer;margin:4px;">🖨️ Imprimir / PDF</button>
         <button onclick="window.close()" style="padding:8px 24px;background:#6b7280;color:white;border:none;border-radius:8px;font-weight:bold;cursor:pointer;margin:4px;">Cerrar</button>
       </div></body></html>`;
     openPrintWindow(html);
@@ -364,7 +364,7 @@ export default function HistoriaPage() {
         <ArrowLeft className="w-4 h-4" /> Volver a pacientes
       </button>
 
-      {/* â•â•â• ACTION BAR â€” matches ocupasalud â•â•â• */}
+      {/* ═══ ACTION BAR — matches ocupasalud ═══ */}
       <div className="bg-white border border-gray-200 rounded-xl p-2 mb-3 shadow-sm">
         {/* Tab row */}
         <div className="flex gap-1 overflow-x-auto pb-2 border-b border-gray-100 mb-2" style={{ scrollbarWidth: 'none' }}>
@@ -394,7 +394,7 @@ export default function HistoriaPage() {
           </button>
           {lastSaveStatus === 'ok' && <span className="text-[10px] text-emerald-600 font-bold flex items-center gap-0.5"><CheckCircle className="w-3 h-3" />OK</span>}
           <button onClick={onGenerateAI} disabled={isGenerating} className="flex items-center gap-1 px-2.5 py-1.5 text-[10px] font-bold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 rounded-lg whitespace-nowrap">
-            {isGenerating ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />} AnÃ¡lisis IA
+            {isGenerating ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />} Análisis IA
           </button>
           <button onClick={onGenerateRestrictions} disabled={isGeneratingRestr} className="flex items-center gap-1 px-2.5 py-1.5 text-[10px] font-bold text-amber-700 bg-amber-50 hover:bg-amber-100 rounded-lg whitespace-nowrap">
             {isGeneratingRestr ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />} Restricciones IA
@@ -403,9 +403,9 @@ export default function HistoriaPage() {
             {isGeneratingReco ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />} Recomendaciones IA
           </button>
           <button onClick={() => setShowAIConfig(true)} className="flex items-center gap-1 px-2.5 py-1.5 text-[10px] font-bold text-gray-600 bg-gray-50 hover:bg-gray-100 rounded-lg whitespace-nowrap">
-            <Settings className="w-3 h-3" /> âš™ï¸ Config IA
+            <Settings className="w-3 h-3" /> ⚙️ Config IA
           </button>
-          {isDirty && <span className="text-[10px] text-amber-600 font-bold flex items-center gap-0.5">âš ï¸ Sin guardar</span>}
+          {isDirty && <span className="text-[10px] text-amber-600 font-bold flex items-center gap-0.5">⚠️ Sin guardar</span>}
           <button onClick={handleRIPS} className="flex items-center gap-1 px-2.5 py-1.5 text-[10px] font-bold text-gray-600 bg-gray-50 hover:bg-gray-100 rounded-lg whitespace-nowrap">
             <Database className="w-3 h-3" /> RIPS
           </button>
@@ -414,27 +414,27 @@ export default function HistoriaPage() {
           </button>
           <div className="relative">
             <button onClick={() => setShowEnviarPanel(!showEnviarPanel)} className="flex items-center gap-1 px-2.5 py-1.5 text-[10px] font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg whitespace-nowrap">
-              <Download className="w-3 h-3" /> ðŸ“¤ Enviar
+              <Download className="w-3 h-3" /> 📤 Enviar
             </button>
             {showEnviarPanel && (
               <div className="absolute top-full right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-xl p-3 z-50 w-64">
                 <p className="text-xs font-black text-gray-800 mb-2">Seleccionar documentos:</p>
                 {[
                   { key: 'certificado', label: 'Certificado Ocupacional', has: !!data.conceptoAptitud },
-                  { key: 'historia', label: 'Historia ClÃ­nica', has: true },
-                  { key: 'formula', label: 'FÃ³rmula MÃ©dica', has: !!(data.medicamentos?.length) },
+                  { key: 'historia', label: 'Historia Clínica', has: true },
+                  { key: 'formula', label: 'Fórmula Médica', has: !!(data.medicamentos?.length) },
                   { key: 'derivacion', label: 'Derivaciones', has: !!(data.derivaciones?.length) },
-                  { key: 'examenes', label: 'Solicitud ExÃ¡menes', has: !!(data.examenesSolicitados?.length) },
+                  { key: 'examenes', label: 'Solicitud Exámenes', has: !!(data.examenesSolicitados?.length) },
                 ].map(({ key, label, has }) => (
                   <label key={key} className="flex items-center gap-2 text-xs py-1 cursor-pointer">
                     <input type="checkbox" checked={enviarChecklist[key]} onChange={(e) => setEnviarChecklist(prev => ({ ...prev, [key]: e.target.checked }))} className="w-3.5 h-3.5 accent-emerald-600" />
                     <span className={has ? 'text-gray-700' : 'text-gray-400'}>{label}</span>
-                    <span className="ml-auto text-[9px]">{has ? 'âœ…' : 'Sin datos'}</span>
+                    <span className="ml-auto text-[9px]">{has ? '✅' : 'Sin datos'}</span>
                   </label>
                 ))}
                 <div className="flex gap-1 mt-2 pt-2 border-t">
-                  <button onClick={handleEnviar} className="flex-1 px-2 py-1.5 text-[10px] font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg">ðŸ–¨ï¸ Generar</button>
-                  <button onClick={() => setShowEnviarPanel(false)} className="px-2 py-1.5 text-[10px] font-bold text-gray-600 bg-gray-100 rounded-lg">âœ•</button>
+                  <button onClick={handleEnviar} className="flex-1 px-2 py-1.5 text-[10px] font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg">🖨️ Generar</button>
+                  <button onClick={() => setShowEnviarPanel(false)} className="px-2 py-1.5 text-[10px] font-bold text-gray-600 bg-gray-100 rounded-lg">✕</button>
                 </div>
               </div>
             )}
@@ -444,15 +444,15 @@ export default function HistoriaPage() {
           </button>
           {data.estadoHistoria === 'Cerrada' && (
             <span className="flex items-center gap-1 px-2.5 py-1.5 text-[10px] font-bold text-red-700 bg-red-100 rounded-lg whitespace-nowrap">
-              ðŸ”’ Cerrada â€” {data.codigoVerificacion}
+              🔒 Cerrada — {data.codigoVerificacion}
             </span>
           )}
         </div>
       </div>
 
-      {/* â•â•â• TAB CONTENT â•â•â• */}
+      {/* ═══ TAB CONTENT ═══ */}
       <HCErrorBoundary>
-        
+        <Suspense fallback={<TabLoader />}>
           {activeTab === 'form' && (
             <OccupationalHC
               data={data} setData={setData} companies={companies} currentUser={currentUser}
@@ -508,12 +508,12 @@ export default function HistoriaPage() {
           {activeTab === 'evolucion' && (
             <EvolucionModal patientId={data.docNumero || data.id} patientName={data.nombres} doctorData={activeDoctorData} onClose={() => setActiveTab('form')} />
           )}
-        
+        </Suspense>
       </HCErrorBoundary>
 
-      {/* AI Configuration Panel â€” like ocupasalud's AIConfigPanel */}
+      {/* AI Configuration Panel — like ocupasalud's AIConfigPanel */}
       {showAIConfig && (
-        
+        <Suspense fallback={null}>
           <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setShowAIConfig(false)}>
             <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
               <AIConfigPanel
@@ -532,7 +532,7 @@ export default function HistoriaPage() {
               />
             </div>
           </div>
-        
+        </Suspense>
       )}
     </div>
   );

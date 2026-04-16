@@ -1,4 +1,4 @@
-﻿// src/pages/HistoriaGeneralPage.jsx â€” HC General with action tabs
+// src/pages/HistoriaGeneralPage.jsx — HC General with action tabs
 import React, { useReducer, useCallback, useMemo, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
@@ -12,14 +12,13 @@ import {
   FileText, Pill, TestTube, Paperclip, Hospital, Sparkles, ClipboardList, Settings
 } from 'lucide-react';
 
-// Static imports — tabs load with the page (fixes lucide chunk-splitting bug)
-import { GeneralHC } from '../modules/clinical/components/GeneralHC';
-import TabFormulaDerivacion from '../components/forms/TabFormulaDerivacion';
-import { ExamRequestTab } from '../modules/clinical/components/ExamRequestTab';
-import { AttachmentsTab } from '../modules/clinical/components/AttachmentsTab';
-import { DisabilityTab } from '../modules/clinical/components/DisabilityTab';
-import { AIConfigPanel } from '../modules/ai/components/AIConfigPanel';
-import { EvolucionModal } from '../modules/clinical/components/EvolucionModal';
+const GeneralHC = React.lazy(() => import('../modules/clinical/components/GeneralHC').then(m => ({ default: m.GeneralHC || m.default })));
+const TabFormulaDerivacion = React.lazy(() => import('../components/forms/TabFormulaDerivacion').then(m => ({ default: m.TabFormulaDerivacion || m.default })));
+const ExamRequestTab = React.lazy(() => import('../modules/clinical/components/ExamRequestTab').then(m => ({ default: m.ExamRequestTab || m.default })));
+const AttachmentsTab = React.lazy(() => import('../modules/clinical/components/AttachmentsTab').then(m => ({ default: m.AttachmentsTab || m.default })));
+const DisabilityTab = React.lazy(() => import('../modules/clinical/components/DisabilityTab').then(m => ({ default: m.DisabilityTab || m.default })));
+const AIConfigPanel = React.lazy(() => import('../modules/ai/components/AIConfigPanel').then(m => ({ default: m.AIConfigPanel || m.default })));
+const EvolucionModal = React.lazy(() => import('../modules/clinical/components/EvolucionModal').then(m => ({ default: m.EvolucionModal || m.default })));
 
 class HCErrorBoundary extends React.Component {
   constructor(props) { super(props); this.state = { error: null }; }
@@ -28,7 +27,7 @@ class HCErrorBoundary extends React.Component {
     if (this.state.error) return (
       <div className="bg-amber-50 border border-amber-200 rounded-xl p-6 mt-4">
         <AlertTriangle className="w-5 h-5 text-amber-500 mb-2" />
-        <h3 className="font-bold text-amber-800">Error en este mÃ³dulo</h3>
+        <h3 className="font-bold text-amber-800">Error en este módulo</h3>
         <p className="text-sm text-amber-700 mt-2">{this.state.error.message}</p>
         <button onClick={() => this.setState({ error: null })} className="mt-3 px-3 py-1.5 bg-amber-600 text-white rounded-lg text-sm font-bold">Reintentar</button>
       </div>
@@ -39,11 +38,11 @@ class HCErrorBoundary extends React.Component {
 
 const TABS = [
   { id: 'form', label: 'HC General', icon: FileText, color: 'teal' },
-  { id: 'formula', label: 'FÃ³rmula', icon: Pill, color: 'purple' },
-  { id: 'examenes', label: 'ExÃ¡menes', icon: TestTube, color: 'blue' },
+  { id: 'formula', label: 'Fórmula', icon: Pill, color: 'purple' },
+  { id: 'examenes', label: 'Exámenes', icon: TestTube, color: 'blue' },
   { id: 'adjuntos', label: 'Adjuntos', icon: Paperclip, color: 'orange' },
   { id: 'incapacidad', label: 'Incapacidad', icon: Hospital, color: 'red' },
-  { id: 'evolucion', label: 'EvoluciÃ³n', icon: ClipboardList, color: 'violet' },
+  { id: 'evolucion', label: 'Evolución', icon: ClipboardList, color: 'violet' },
 ];
 
 function hcReducer(state, action) {
@@ -72,7 +71,7 @@ export default function HistoriaGeneralPage() {
     const toSave = { ...data, medicoId: userId, fechaModificacion: new Date().toISOString() };
     if (!toSave.id) { toSave.id = `hcg_${Date.now()}_${Math.random().toString(36).slice(2,8)}`; toSave.fechaCreacion = new Date().toISOString(); }
     const result = await save('/write/hc/save', toSave, `siso_patients_${userId}`);
-    if (result.ok) alert('âœ… HC General guardada'); else alert('âŒ Error al guardar');
+    if (result.ok) alert('✅ HC General guardada'); else alert('❌ Error al guardar');
   }, [data, save, currentUser]);
 
   // P3/P5 FIX: Full AI integration for General HC
@@ -118,7 +117,7 @@ export default function HistoriaGeneralPage() {
     finally { setIsGeneratingReco(false); }
   }, [data, aiConfig]);
 
-  const activeDoctorData = useMemo(() => doctor || { nombre: currentUser?.nombre || 'MÃ©dico', licencia: '' }, [doctor]);
+  const activeDoctorData = useMemo(() => doctor || { nombre: currentUser?.nombre || 'Médico', licencia: '' }, [doctor]);
 
   return (
     <div className="p-4 max-w-7xl mx-auto">
@@ -154,17 +153,17 @@ export default function HistoriaGeneralPage() {
 
       {/* Tab content */}
       <HCErrorBoundary>
-        
+        <Suspense fallback={<div className="flex items-center justify-center py-12"><Loader2 className="w-6 h-6 text-emerald-500 animate-spin" /></div>}>
           {activeTab === 'form' && <GeneralHC data={data} setData={setData} activeDoctorData={activeDoctorData} activeSignature={null} patientsList={patients} currentUser={currentUser} onGenerateAI={onGenerateAI} onGenerateRestrictions={onGenerateRestrictions} onGenerateRecommendations={onGenerateRecommendations} isGenerating={isGenerating} isGeneratingRestr={isGeneratingRestr} isGeneratingReco={isGeneratingReco} historyNotification={null} />}
           {activeTab === 'formula' && <TabFormulaDerivacion data={data} setData={setData} tipo="formula" doctorData={activeDoctorData} />}
           {activeTab === 'examenes' && <ExamRequestTab patientData={data} doctorData={activeDoctorData} />}
           {activeTab === 'adjuntos' && <AttachmentsTab patientId={data.docNumero} />}
           {activeTab === 'incapacidad' && <DisabilityTab patientData={data} doctorData={activeDoctorData} />}
           {activeTab === 'evolucion' && <EvolucionModal patientId={data.docNumero || data.id} patientName={data.nombres} doctorData={activeDoctorData} onClose={() => setActiveTab('form')} />}
-        
+        </Suspense>
       </HCErrorBoundary>
       {showAIConfig && (
-        
+        <Suspense fallback={null}>
           <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setShowAIConfig(false)}>
             <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
               <AIConfigPanel
@@ -179,7 +178,7 @@ export default function HistoriaGeneralPage() {
               />
             </div>
           </div>
-        
+        </Suspense>
       )}
     </div>
   );
