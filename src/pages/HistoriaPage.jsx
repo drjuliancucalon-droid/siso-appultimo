@@ -86,6 +86,31 @@ export default function HistoriaPage() {
     }
   }, [id, patients.length]);
 
+  // P10 FIX: Dirty tracking
+  const [isDirty, setIsDirty] = React.useState(false);
+  const prevDataRef = useRef(JSON.stringify(data));
+  React.useEffect(() => {
+    const current = JSON.stringify(data);
+    if (current !== prevDataRef.current) {
+      setIsDirty(true);
+      prevDataRef.current = current;
+    }
+  }, [data]);
+
+  // P9 FIX: Auto-save every 60 seconds
+  React.useEffect(() => {
+    const interval = setInterval(() => {
+      if (isDirty && data.nombres) {
+        const userId = currentUser?.user || 'drcucalon';
+        const toSave = { ...data, medicoId: userId, fechaModificacion: new Date().toISOString(), autoSaved: true };
+        save('/write/hc/save', toSave, `siso_patients_${userId}`).then((r) => {
+          if (r.ok) { setIsDirty(false); console.log('[AutoSave] HC guardada'); }
+        }).catch(() => {});
+      }
+    }, 60000);
+    return () => clearInterval(interval);
+  }, [isDirty, data, currentUser, save]);
+
   // Save
   const { save, saving, lastSaveStatus } = useSaveData();
   const handleSave = useCallback(async () => {
@@ -96,16 +121,69 @@ export default function HistoriaPage() {
     if (result.ok) alert('✅ HC guardada'); else alert('❌ Error al guardar');
   }, [data, save, currentUser]);
 
-  // AI
+  // AI — Full integration (P1-P5 fixes: restrictions, recommendations, parseAIJSON)
   const [isGenerating, setIsGenerating] = React.useState(false);
+  const [isGeneratingRestr, setIsGeneratingRestr] = React.useState(false);
+  const [isGeneratingReco, setIsGeneratingReco] = React.useState(false);
+
+  // Helper: try backend proxy first, fallback to direct AI call
+  const callAI = useCallback(async (prompt, systemPrompt) => {
+    // P1 FIX: Try backend /api/ai/analyze first (keys safe on server)
+    try {
+      const { apiClient } = await import('../lib/apiClient');
+      const result = await apiClient.post('/api/ai/analyze', { prompt, systemPrompt, preferredProvider: aiConfig?.activeProvider });
+      if (result?.result) return result.result;
+    } catch {
+      // Backend not available — fallback to direct call (development mode)
+    }
+    const { callAIWithFailover } = await import('../modules/ai/services/aiAnalysis');
+    return callAIWithFailover(prompt, systemPrompt, aiConfig);
+  }, [aiConfig]);
+
+  // P5 FIX: Main AI analysis — generates analysis + tries to fill concept/restrictions/recommendations
   const onGenerateAI = useCallback(async () => {
     setIsGenerating(true);
     try {
-      const { callAIWithFailover } = await import('../modules/ai/services/aiAnalysis');
-      const result = await callAIWithFailover(`Analiza esta HC ocupacional:\n${JSON.stringify(data)}`, undefined, aiConfig);
-      dispatch({ analisis: result });
+      const { analyzeHC } = await import('../modules/ai/services/aiAnalysis');
+      const result = await analyzeHC(data, aiConfig);
+      // Try to parse structured response
+      try {
+        const { parseAIJSON } = await import('../shared/lib/aiProviders');
+        const parsed = parseAIJSON(result);
+        dispatch({
+          analisis: parsed.analisis || parsed.resumen || result,
+          ...(parsed.conceptoAptitud && { conceptoAptitud: parsed.conceptoAptitud }),
+          ...(parsed.restricciones && { restricciones: parsed.restricciones }),
+          ...(parsed.recomendaciones && { recomendaciones: parsed.recomendaciones }),
+        });
+      } catch {
+        // Not JSON — just set as text analysis
+        dispatch({ analisis: result });
+      }
     } catch (e) { alert('Error IA: ' + e.message); }
     finally { setIsGenerating(false); }
+  }, [data, aiConfig]);
+
+  // P2 FIX: Generate restrictions with AI
+  const onGenerateRestrictions = useCallback(async () => {
+    setIsGeneratingRestr(true);
+    try {
+      const { generateRestrictions } = await import('../modules/ai/services/aiAnalysis');
+      const result = await generateRestrictions(data, aiConfig);
+      dispatch({ restriccionesTexto: result, restricciones: result });
+    } catch (e) { alert('Error IA Restricciones: ' + e.message); }
+    finally { setIsGeneratingRestr(false); }
+  }, [data, aiConfig]);
+
+  // P2 FIX: Generate recommendations with AI
+  const onGenerateRecommendations = useCallback(async () => {
+    setIsGeneratingReco(true);
+    try {
+      const { generateRecommendations } = await import('../modules/ai/services/aiAnalysis');
+      const result = await generateRecommendations(data, aiConfig);
+      dispatch({ recomendacionesTexto: result, recomendaciones: result });
+    } catch (e) { alert('Error IA Recomendaciones: ' + e.message); }
+    finally { setIsGeneratingReco(false); }
   }, [data, aiConfig]);
 
   // Close HC
@@ -183,8 +261,15 @@ export default function HistoriaPage() {
           </button>
           {lastSaveStatus === 'ok' && <span className="text-[10px] text-emerald-600 font-bold flex items-center gap-0.5"><CheckCircle className="w-3 h-3" />OK</span>}
           <button onClick={onGenerateAI} disabled={isGenerating} className="flex items-center gap-1 px-2.5 py-1.5 text-[10px] font-bold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 rounded-lg whitespace-nowrap">
-            {isGenerating ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />} IA
+            {isGenerating ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />} Análisis IA
           </button>
+          <button onClick={onGenerateRestrictions} disabled={isGeneratingRestr} className="flex items-center gap-1 px-2.5 py-1.5 text-[10px] font-bold text-amber-700 bg-amber-50 hover:bg-amber-100 rounded-lg whitespace-nowrap">
+            {isGeneratingRestr ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />} Restricciones IA
+          </button>
+          <button onClick={onGenerateRecommendations} disabled={isGeneratingReco} className="flex items-center gap-1 px-2.5 py-1.5 text-[10px] font-bold text-teal-700 bg-teal-50 hover:bg-teal-100 rounded-lg whitespace-nowrap">
+            {isGeneratingReco ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />} Recomendaciones IA
+          </button>
+          {isDirty && <span className="text-[10px] text-amber-600 font-bold flex items-center gap-0.5">⚠️ Sin guardar</span>}
           <button onClick={handleRIPS} className="flex items-center gap-1 px-2.5 py-1.5 text-[10px] font-bold text-gray-600 bg-gray-50 hover:bg-gray-100 rounded-lg whitespace-nowrap">
             <Database className="w-3 h-3" /> RIPS
           </button>
@@ -209,13 +294,31 @@ export default function HistoriaPage() {
             <OccupationalHC
               data={data} setData={setData} companies={companies} currentUser={currentUser}
               aiConfig={aiConfig} activeDoctorData={activeDoctorData} activeSignature={null}
-              onGenerateAI={onGenerateAI} onOpenConsent={() => setShowConsentModal(true)}
+              onGenerateAI={onGenerateAI}
+              onGenerateRestrictions={onGenerateRestrictions}
+              onGenerateRecommendations={onGenerateRecommendations}
+              onOpenConsent={() => setShowConsentModal(true)}
               onOpenHistory={() => {}} onOpenRecommendations={() => setShowRecomendacionesPanel(true)}
               onOpenRestrictions={() => setShowRestriccionesPanel(true)}
-              handleChange={null} handleCompanySelect={null} handleNameChange={null}
+              handleChange={null}
+              handleCompanySelect={(e) => {
+                const compId = e.target.value;
+                const comp = companies.find(c => c.id === compId);
+                if (comp) {
+                  dispatch({
+                    empresaId: compId, empresaNombre: comp.nombre,
+                    ...(comp.arl && { arl: comp.arl }),
+                    ...(comp.actividadEconomica && { actividadEconomica: comp.actividadEconomica }),
+                    ...(comp.claseRiesgo && { nivelRiesgoARL: comp.claseRiesgo }),
+                  });
+                } else {
+                  dispatch({ empresaId: 'particular', empresaNombre: '' });
+                }
+              }}
+              handleNameChange={null}
               patientSuggestions={[]} selectPatientSuggestion={() => {}}
               historyNotification={null} isGenerating={isGenerating}
-              isGeneratingReco={false} isGeneratingRestr={false}
+              isGeneratingReco={isGeneratingReco} isGeneratingRestr={isGeneratingRestr}
               showConsentModal={showConsentModal} setShowConsentModal={setShowConsentModal}
               showRecomendacionesPanel={showRecomendacionesPanel} setShowRecomendacionesPanel={setShowRecomendacionesPanel}
               showRestriccionesPanel={showRestriccionesPanel} setShowRestriccionesPanel={setShowRestriccionesPanel}

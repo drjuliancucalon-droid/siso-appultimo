@@ -60,6 +60,8 @@ export default function HistoriaGeneralPage() {
   const setData = useCallback((updates) => dispatch(updates), []);
   const [activeTab, setActiveTab] = React.useState('form');
   const [isGenerating, setIsGenerating] = React.useState(false);
+  const [isGeneratingRestr, setIsGeneratingRestr] = React.useState(false);
+  const [isGeneratingReco, setIsGeneratingReco] = React.useState(false);
 
   const { save, saving, lastSaveStatus } = useSaveData();
   const handleSave = useCallback(async () => {
@@ -70,14 +72,47 @@ export default function HistoriaGeneralPage() {
     if (result.ok) alert('✅ HC General guardada'); else alert('❌ Error al guardar');
   }, [data, save, currentUser]);
 
+  // P3/P5 FIX: Full AI integration for General HC
   const onGenerateAI = useCallback(async () => {
     setIsGenerating(true);
     try {
-      const { callAIWithFailover } = await import('../modules/ai/services/aiAnalysis');
-      const result = await callAIWithFailover(`Analiza esta HC general:\n${JSON.stringify(data)}`, 'Eres un médico general colombiano experto.', aiConfig);
-      dispatch({ analisis: result });
+      const { analyzeGeneralHC } = await import('../modules/ai/services/aiAnalysis');
+      const result = await analyzeGeneralHC(data, aiConfig);
+      try {
+        const { parseAIJSON } = await import('../shared/lib/aiProviders');
+        const parsed = parseAIJSON(result);
+        dispatch({
+          analisis: parsed.analisis || parsed.resumen || result,
+          ...(parsed.diagnosticos && { diagnosticos: parsed.diagnosticos }),
+          ...(parsed.planManejo && { planManejo: parsed.planManejo }),
+          ...(parsed.recomendaciones && { recomendaciones: parsed.recomendaciones }),
+        });
+      } catch {
+        dispatch({ analisis: result });
+      }
     } catch (e) { alert('Error IA: ' + e.message); }
     finally { setIsGenerating(false); }
+  }, [data, aiConfig]);
+
+  // P3 FIX: Restrictions and recommendations AI for General HC
+  const onGenerateRestrictions = useCallback(async () => {
+    setIsGeneratingRestr(true);
+    try {
+      const { generateRestrictions } = await import('../modules/ai/services/aiAnalysis');
+      const result = await generateRestrictions(data, aiConfig);
+      dispatch({ restriccionesTexto: result, restricciones: result });
+    } catch (e) { alert('Error IA: ' + e.message); }
+    finally { setIsGeneratingRestr(false); }
+  }, [data, aiConfig]);
+
+  const onGenerateRecommendations = useCallback(async () => {
+    setIsGeneratingReco(true);
+    try {
+      const { generateRecommendations } = await import('../modules/ai/services/aiAnalysis');
+      const result = await generateRecommendations(data, aiConfig);
+      dispatch({ recomendacionesTexto: result, recomendaciones: result });
+    } catch (e) { alert('Error IA: ' + e.message); }
+    finally { setIsGeneratingReco(false); }
   }, [data, aiConfig]);
 
   const activeDoctorData = useMemo(() => doctor || { nombre: currentUser?.nombre || 'Médico', licencia: '' }, [doctor]);
@@ -116,7 +151,7 @@ export default function HistoriaGeneralPage() {
       {/* Tab content */}
       <HCErrorBoundary>
         <Suspense fallback={<div className="flex items-center justify-center py-12"><Loader2 className="w-6 h-6 text-emerald-500 animate-spin" /></div>}>
-          {activeTab === 'form' && <GeneralHC data={data} setData={setData} activeDoctorData={activeDoctorData} activeSignature={null} patientsList={patients} currentUser={currentUser} onGenerateAI={onGenerateAI} isGenerating={isGenerating} historyNotification={null} />}
+          {activeTab === 'form' && <GeneralHC data={data} setData={setData} activeDoctorData={activeDoctorData} activeSignature={null} patientsList={patients} currentUser={currentUser} onGenerateAI={onGenerateAI} onGenerateRestrictions={onGenerateRestrictions} onGenerateRecommendations={onGenerateRecommendations} isGenerating={isGenerating} isGeneratingRestr={isGeneratingRestr} isGeneratingReco={isGeneratingReco} historyNotification={null} />}
           {activeTab === 'formula' && <TabFormulaDerivacion data={data} setData={setData} tipo="formula" doctorData={activeDoctorData} />}
           {activeTab === 'examenes' && <ExamRequestTab patientData={data} doctorData={activeDoctorData} />}
           {activeTab === 'adjuntos' && <AttachmentsTab patientId={data.docNumero} />}
