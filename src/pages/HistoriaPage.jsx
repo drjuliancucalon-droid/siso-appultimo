@@ -88,6 +88,7 @@ export default function HistoriaPage() {
 
   // Save (declared BEFORE auto-save effect to avoid TDZ)
   const { save, saving, lastSaveStatus } = useSaveData();
+  const activeDoctorData = useMemo(() => doctor || { nombre: currentUser?.nombre || 'Médico', licencia: '' }, [doctor]);
 
   // P10 FIX: Dirty tracking
   const [isDirty, setIsDirty] = React.useState(false);
@@ -352,7 +353,7 @@ export default function HistoriaPage() {
     setShowEnviarPanel(false);
   }, [data, activeDoctorData, enviarChecklist]);
 
-  const activeDoctorData = useMemo(() => doctor || { nombre: currentUser?.nombre || 'MÃ©dico', licencia: '' }, [doctor]);
+
 
   return (
     <div className="p-4 max-w-7xl mx-auto">
