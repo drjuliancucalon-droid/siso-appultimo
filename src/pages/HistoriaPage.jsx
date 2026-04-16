@@ -12,7 +12,7 @@ import { initialOccupPatientState } from '../shared/data/initialStates';
 import {
   ArrowLeft, Save, Printer, Loader2, CheckCircle, AlertTriangle,
   Stethoscope, FileText, Pill, GitBranch, TestTube, Paperclip,
-  Hospital, Sparkles, Database, Heart, Lock, CreditCard, ClipboardList,
+  Hospital, Sparkles, Database, Heart, Lock, CreditCard, ClipboardList, Settings,
   Download
 } from 'lucide-react';
 
@@ -25,6 +25,7 @@ const ExamRequestTab = React.lazy(() => import('../modules/clinical/components/E
 const AttachmentsTab = React.lazy(() => import('../modules/clinical/components/AttachmentsTab').then(m => ({ default: m.AttachmentsTab || m.default })));
 const DisabilityTab = React.lazy(() => import('../modules/clinical/components/DisabilityTab').then(m => ({ default: m.DisabilityTab || m.default })));
 const EvolucionModal = React.lazy(() => import('../modules/clinical/components/EvolucionModal').then(m => ({ default: m.EvolucionModal || m.default })));
+const AIConfigPanel = React.lazy(() => import('../modules/ai/components/AIConfigPanel').then(m => ({ default: m.AIConfigPanel || m.default })));
 
 // Error boundary
 class HCErrorBoundary extends React.Component {
@@ -88,7 +89,7 @@ export default function HistoriaPage() {
 
   // Save (declared BEFORE auto-save effect to avoid TDZ)
   const { save, saving, lastSaveStatus } = useSaveData();
-  const activeDoctorData = useMemo(() => doctor || { nombre: currentUser?.nombre || 'M�dico', licencia: '' }, [doctor]);
+  const activeDoctorData = useMemo(() => doctor || { nombre: currentUser?.nombre || 'M�dico', licencia: '' }, [doctor]);
 
   // P10 FIX: Dirty tracking
   const [isDirty, setIsDirty] = React.useState(false);
@@ -320,6 +321,7 @@ export default function HistoriaPage() {
   const [showRecomendacionesPanel, setShowRecomendacionesPanel] = React.useState(false);
   const [showRestriccionesPanel, setShowRestriccionesPanel] = React.useState(false);
   const [showEnviarPanel, setShowEnviarPanel] = React.useState(false);
+  const [showAIConfig, setShowAIConfig] = React.useState(false);
   const [enviarChecklist, setEnviarChecklist] = React.useState({
     certificado: true, historia: true, formula: false, derivacion: false, examenes: false,
   });
@@ -399,6 +401,9 @@ export default function HistoriaPage() {
           </button>
           <button onClick={onGenerateRecommendations} disabled={isGeneratingReco} className="flex items-center gap-1 px-2.5 py-1.5 text-[10px] font-bold text-teal-700 bg-teal-50 hover:bg-teal-100 rounded-lg whitespace-nowrap">
             {isGeneratingReco ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />} Recomendaciones IA
+          </button>
+          <button onClick={() => setShowAIConfig(true)} className="flex items-center gap-1 px-2.5 py-1.5 text-[10px] font-bold text-gray-600 bg-gray-50 hover:bg-gray-100 rounded-lg whitespace-nowrap">
+            <Settings className="w-3 h-3" /> ⚙️ Config IA
           </button>
           {isDirty && <span className="text-[10px] text-amber-600 font-bold flex items-center gap-0.5">⚠️ Sin guardar</span>}
           <button onClick={handleRIPS} className="flex items-center gap-1 px-2.5 py-1.5 text-[10px] font-bold text-gray-600 bg-gray-50 hover:bg-gray-100 rounded-lg whitespace-nowrap">
@@ -505,6 +510,30 @@ export default function HistoriaPage() {
           )}
         </Suspense>
       </HCErrorBoundary>
+
+      {/* AI Configuration Panel — like ocupasalud's AIConfigPanel */}
+      {showAIConfig && (
+        <Suspense fallback={null}>
+          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setShowAIConfig(false)}>
+            <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+              <AIConfigPanel
+                aiConfig={aiConfig}
+                onSave={(newConfig) => {
+                  const store = useAIStore.getState();
+                  if (newConfig.activeProvider) store.setActiveProvider(newConfig.activeProvider);
+                  if (newConfig.keys) {
+                    Object.entries(newConfig.keys).forEach(([provider, key]) => {
+                      store.setKey(provider, key);
+                    });
+                  }
+                  setShowAIConfig(false);
+                }}
+                onClose={() => setShowAIConfig(false)}
+              />
+            </div>
+          </div>
+        </Suspense>
+      )}
     </div>
   );
 }

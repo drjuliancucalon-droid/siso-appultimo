@@ -9,7 +9,7 @@ import { printHC } from '../lib/printService';
 import { initialGeneralPatientState } from '../shared/data/initialStates';
 import {
   ArrowLeft, Save, Printer, Loader2, CheckCircle, AlertTriangle,
-  FileText, Pill, TestTube, Paperclip, Hospital, Sparkles, ClipboardList
+  FileText, Pill, TestTube, Paperclip, Hospital, Sparkles, ClipboardList, Settings
 } from 'lucide-react';
 
 const GeneralHC = React.lazy(() => import('../modules/clinical/components/GeneralHC').then(m => ({ default: m.GeneralHC || m.default })));
@@ -17,6 +17,7 @@ const TabFormulaDerivacion = React.lazy(() => import('../components/forms/TabFor
 const ExamRequestTab = React.lazy(() => import('../modules/clinical/components/ExamRequestTab').then(m => ({ default: m.ExamRequestTab || m.default })));
 const AttachmentsTab = React.lazy(() => import('../modules/clinical/components/AttachmentsTab').then(m => ({ default: m.AttachmentsTab || m.default })));
 const DisabilityTab = React.lazy(() => import('../modules/clinical/components/DisabilityTab').then(m => ({ default: m.DisabilityTab || m.default })));
+const AIConfigPanel = React.lazy(() => import('../modules/ai/components/AIConfigPanel').then(m => ({ default: m.AIConfigPanel || m.default })));
 const EvolucionModal = React.lazy(() => import('../modules/clinical/components/EvolucionModal').then(m => ({ default: m.EvolucionModal || m.default })));
 
 class HCErrorBoundary extends React.Component {
@@ -59,6 +60,7 @@ export default function HistoriaGeneralPage() {
   const [data, dispatch] = useReducer(hcReducer, { ...initialGeneralPatientState, tipoHistoria: 'general', fechaExamen: new Date().toISOString().split('T')[0] });
   const setData = useCallback((updates) => dispatch(updates), []);
   const [activeTab, setActiveTab] = React.useState('form');
+  const [showAIConfig, setShowAIConfig] = React.useState(false);
   const [isGenerating, setIsGenerating] = React.useState(false);
   const [isGeneratingRestr, setIsGeneratingRestr] = React.useState(false);
   const [isGeneratingReco, setIsGeneratingReco] = React.useState(false);
@@ -145,6 +147,7 @@ export default function HistoriaGeneralPage() {
           <button onClick={onGenerateAI} disabled={isGenerating} className="flex items-center gap-1 px-2.5 py-1.5 text-[10px] font-bold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 rounded-lg whitespace-nowrap">
             {isGenerating ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />} IA
           </button>
+          <button onClick={() => setShowAIConfig(true)} className="flex items-center gap-1 px-2.5 py-1.5 text-[10px] font-bold text-gray-600 bg-gray-50 hover:bg-gray-100 rounded-lg whitespace-nowrap"><Settings className="w-3 h-3" /> ?? Config IA</button>
         </div>
       </div>
 
@@ -159,6 +162,24 @@ export default function HistoriaGeneralPage() {
           {activeTab === 'evolucion' && <EvolucionModal patientId={data.docNumero || data.id} patientName={data.nombres} doctorData={activeDoctorData} onClose={() => setActiveTab('form')} />}
         </Suspense>
       </HCErrorBoundary>
+      {showAIConfig && (
+        <Suspense fallback={null}>
+          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setShowAIConfig(false)}>
+            <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+              <AIConfigPanel
+                aiConfig={aiConfig}
+                onSave={(newConfig) => {
+                  const store = useAIStore.getState();
+                  if (newConfig.activeProvider) store.setActiveProvider(newConfig.activeProvider);
+                  if (newConfig.keys) Object.entries(newConfig.keys).forEach(([p, k]) => store.setKey(p, k));
+                  setShowAIConfig(false);
+                }}
+                onClose={() => setShowAIConfig(false)}
+              />
+            </div>
+          </div>
+        </Suspense>
+      )}
     </div>
   );
 }
