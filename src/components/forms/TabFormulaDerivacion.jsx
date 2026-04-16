@@ -1,4 +1,4 @@
-?// src/components/forms/TabFormulaDerivacion.jsx
+// src/components/forms/TabFormulaDerivacion.jsx
 import React from 'react';
 import { DERIVACIONES_CATALOG, SPECIALTIES_LIST } from '../../data/catalogos.js';
 import MedicamentoAutocomplete from '../ui/MedicamentoAutocomplete.jsx';
