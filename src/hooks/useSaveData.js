@@ -2,8 +2,8 @@
 import { useState, useCallback } from 'react';
 import { apiClient } from '../lib/apiClient';
 
-const SB_URL = 'https://yqrrktrgoijgzccrxnpz.supabase.co';
-const SB_KEY = 'sb_publishable_K88qYuJ9wsWjQqnIhLVK7Q_NroFvPI7';
+const SB_URL = import.meta.env.VITE_SUPABASE_URL || '';
+const SB_KEY = import.meta.env.VITE_SUPABASE_KEY || '';
 const SB_HEADERS = {
   apikey: SB_KEY,
   Authorization: `Bearer ${SB_KEY}`,
