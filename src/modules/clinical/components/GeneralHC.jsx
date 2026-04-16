@@ -57,8 +57,12 @@ export const GeneralHC = ({
   currentUser,
   // Callbacks
   onGenerateAI,
+  onGenerateRestrictions,
+  onGenerateRecommendations,
   // State
   isGenerating = false,
+  isGeneratingRestr = false,
+  isGeneratingReco = false,
   historyNotification,
 }) => {
   const [genPatSearch, setGenPatSearch] = useState('');
@@ -596,6 +600,42 @@ export const GeneralHC = ({
               onChange={(e) => setData((p) => ({
                 ...p, plan: { ...p.plan, recomendaciones: e.target.value },
               }))} />
+          </div>
+
+          {/* P4 FIX: Restricciones y Recomendaciones con IA */}
+          <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 mt-3">
+            <div className="flex justify-between items-center mb-2">
+              <h3 className="text-xs font-black text-amber-800 uppercase">Restricciones M�dicas</h3>
+              {onGenerateRestrictions && (
+                <button type="button" onClick={onGenerateRestrictions} disabled={isGeneratingRestr}
+                  className="flex items-center gap-1 px-2 py-1 text-[10px] font-bold text-amber-700 bg-amber-100 hover:bg-amber-200 rounded-lg">
+                  {isGeneratingRestr ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
+                  Generar con IA
+                </button>
+              )}
+            </div>
+            <textarea rows={3} className="w-full text-xs p-2 border border-amber-300 rounded-lg"
+              placeholder="Restricciones m�dicas del paciente..."
+              value={data.restricciones || data.restriccionesTexto || ''}
+              onChange={(e) => setData((p) => ({ ...p, restricciones: e.target.value, restriccionesTexto: e.target.value }))}
+            />
+          </div>
+          <div className="bg-teal-50 border border-teal-200 rounded-xl p-3 mt-3">
+            <div className="flex justify-between items-center mb-2">
+              <h3 className="text-xs font-black text-teal-800 uppercase">Recomendaciones M�dicas</h3>
+              {onGenerateRecommendations && (
+                <button type="button" onClick={onGenerateRecommendations} disabled={isGeneratingReco}
+                  className="flex items-center gap-1 px-2 py-1 text-[10px] font-bold text-teal-700 bg-teal-100 hover:bg-teal-200 rounded-lg">
+                  {isGeneratingReco ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
+                  Generar con IA
+                </button>
+              )}
+            </div>
+            <textarea rows={3} className="w-full text-xs p-2 border border-teal-300 rounded-lg"
+              placeholder="Recomendaciones m�dicas..."
+              value={data.recomendaciones || data.recomendacionesTexto || ''}
+              onChange={(e) => setData((p) => ({ ...p, recomendaciones: e.target.value, recomendacionesTexto: e.target.value }))}
+            />
           </div>
         </div>
 

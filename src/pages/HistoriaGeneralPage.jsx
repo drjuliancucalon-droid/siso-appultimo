@@ -156,7 +156,7 @@ export default function HistoriaGeneralPage() {
           {activeTab === 'examenes' && <ExamRequestTab patientData={data} doctorData={activeDoctorData} />}
           {activeTab === 'adjuntos' && <AttachmentsTab patientId={data.docNumero} />}
           {activeTab === 'incapacidad' && <DisabilityTab patientData={data} doctorData={activeDoctorData} />}
-          {activeTab === 'evolucion' && <EvolucionModal patientData={data} doctorData={activeDoctorData} onSave={(ev) => dispatch({ evoluciones: [...(data.evoluciones || []), ev] })} />}
+          {activeTab === 'evolucion' && <EvolucionModal patientId={data.docNumero || data.id} patientName={data.nombres} doctorData={activeDoctorData} onClose={() => setActiveTab('form')} />}
         </Suspense>
       </HCErrorBoundary>
     </div>

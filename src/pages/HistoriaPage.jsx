@@ -343,7 +343,7 @@ export default function HistoriaPage() {
             <DisabilityTab patientData={data} doctorData={activeDoctorData} />
           )}
           {activeTab === 'evolucion' && (
-            <EvolucionModal patientData={data} doctorData={activeDoctorData} onSave={(ev) => dispatch({ evoluciones: [...(data.evoluciones || []), ev] })} />
+            <EvolucionModal patientId={data.docNumero || data.id} patientName={data.nombres} doctorData={activeDoctorData} onClose={() => setActiveTab('form')} />
           )}
         </Suspense>
       </HCErrorBoundary>
