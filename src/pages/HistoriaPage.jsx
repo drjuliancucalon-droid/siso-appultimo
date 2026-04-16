@@ -391,10 +391,10 @@ export default function HistoriaPage() {
           <CertificateView data={data} activeDoctorData={activeDoctorData} activeSignature={null} currentUser={currentUser} />
         )}
         {activeTab === 'formulaTab' && (
-          <TabFormulaDerivacion data={data} setData={setData} activeDoctorData={activeDoctorData} activeSignature={null} forceTab="formula" />
+          <TabFormulaDerivacion data={data} setData={setData} activeDoctorData={activeDoctorData} activeSignature={null} forceTab="formula" currentUser={currentUser} companies={companies} />
         )}
         {activeTab === 'derivacionTab' && (
-          <TabFormulaDerivacion data={data} setData={setData} activeDoctorData={activeDoctorData} activeSignature={null} forceTab="derivacion" />
+          <TabFormulaDerivacion data={data} setData={setData} activeDoctorData={activeDoctorData} activeSignature={null} forceTab="derivacion" currentUser={currentUser} companies={companies} />
         )}
         {activeTab === 'solicitudExamenes' && (
           <ExamRequestTab patientData={data} doctorData={activeDoctorData} />
