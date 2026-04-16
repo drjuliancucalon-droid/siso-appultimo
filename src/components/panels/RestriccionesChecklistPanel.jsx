@@ -1,7 +1,7 @@
-﻿// src/components/panels/RestriccionesChecklistPanel.jsx
+// src/components/panels/RestriccionesChecklistPanel.jsx
 import React, { useState } from 'react';
 import { RESTRICCIONES_CATALOG } from '../../data/catalogos.js';
-import { CheckSquare, Square, X } from 'lucide-react';
+import { CheckSquare, Square, X, AlertTriangle, Loader2, Sparkles } from 'lucide-react';
 
 const RestriccionesChecklistPanel = ({
   selected,
@@ -46,10 +46,10 @@ const RestriccionesChecklistPanel = ({
               <AlertTriangle className="w-5 h-5" />
               <div>
                 <h2 className="font-black text-base">
-                  Restricciones Médico-Laborales
+                  Restricciones M�dico-Laborales
                 </h2>
                 <p className="text-xs text-red-100">
-                  Seleccione por segmento · GTC-45 / GATISO
+                  Seleccione por segmento � GTC-45 / GATISO
                 </p>
               </div>
             </div>
@@ -173,8 +173,8 @@ const RestriccionesChecklistPanel = ({
           >
             <CheckSquare className="w-5 h-5" />
             {countSelected > 0
-              ? `✅ Aplicar ${countSelected} restricciones`
-              : "✅ Aplicar selección"}
+              ? `? Aplicar ${countSelected} restricciones`
+              : "? Aplicar selecci�n"}
           </button>
         </div>
       </div>

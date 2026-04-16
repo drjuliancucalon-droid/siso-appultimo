@@ -1,7 +1,7 @@
-﻿// src/components/panels/RecomendacionesChecklistPanel.jsx
+// src/components/panels/RecomendacionesChecklistPanel.jsx
 import React, { useState } from 'react';
 import { RECOMENDACIONES_CATALOG } from '../../data/catalogos.js';
-import { CheckSquare, Square, X, Sparkles } from 'lucide-react';
+import { CheckSquare, Square, X, Sparkles, ClipboardList, Loader2 } from 'lucide-react';
 
 const RecomendacionesChecklistPanel = ({
   selected,
@@ -33,9 +33,9 @@ const RecomendacionesChecklistPanel = ({
             <div className="flex items-center gap-3">
               <ClipboardList className="w-6 h-6" />
               <div>
-                <h2 className="text-lg font-black">Recomendaciones Médicas</h2>
+                <h2 className="text-lg font-black">Recomendaciones M�dicas</h2>
                 <p className="text-xs text-emerald-100">
-                  Checklist de Recomendaciones por Categoría
+                  Checklist de Recomendaciones por Categor�a
                 </p>
               </div>
             </div>
@@ -143,7 +143,7 @@ const RecomendacionesChecklistPanel = ({
             onClick={onApply || onClose}
             className="bg-emerald-600 text-white px-6 py-2 rounded-lg text-sm font-bold hover:bg-emerald-700"
           >
-            ✅ Aplicar {countSelected} Recomendaciones
+            ? Aplicar {countSelected} Recomendaciones
           </button>
         </div>
       </div>

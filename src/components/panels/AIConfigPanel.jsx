@@ -1,8 +1,8 @@
-﻿// src/components/panels/AIConfigPanel.jsx
+// src/components/panels/AIConfigPanel.jsx
 import React, { useState } from 'react';
 import { AI_PROVIDERS } from '../../utils/aiProviders.js';
 import { _ss } from '../../utils/storage.js';
-import { Eye, Lock, X, Sparkles, BrainCircuit, CheckCircle2, AlertCircle, GraduationCap, Shield } from 'lucide-react';
+import { Eye, Lock, X, Sparkles, BrainCircuit, CheckCircle2, AlertCircle, GraduationCap, Shield, Activity, Save } from 'lucide-react';
 
 const AIConfigPanel = ({ aiConfig, onSave, onClose }) => {
   const [cfg, setCfg] = useState(() => ({
@@ -15,70 +15,70 @@ const AIConfigPanel = ({ aiConfig, onSave, onClose }) => {
   const PROVIDER_INFO = {
     gemini: {
       label: "Google Gemini",
-      sub: "2.0 Flash · 1.5 Flash",
-      badge: "🟢 Gratis · Alta calidad",
+      sub: "2.0 Flash � 1.5 Flash",
+      badge: "?? Gratis � Alta calidad",
       badgeClass: "bg-blue-100 text-blue-800",
       link: "https://aistudio.google.com/apikey",
       color: "blue",
       steps: [
-        "1️⃣ Haz clic en el botón 'Obtener key →' de abajo",
-        "2️⃣ Inicia sesión con tu cuenta de Google (Gmail)",
-        "3️⃣ Aparecerá el panel de 'API Keys'. Clic en 'Create API Key'",
-        "4️⃣ Selecciona 'Create API key in new project' (es gratis)",
-        "5️⃣ Se genera una key que empieza con 'AIza...' → cópiala",
-        "6️⃣ Regresa aquí, pégala en el campo y presiona 'Probar'",
-        "💡 Tip: Gemini es el más recomendado por calidad y velocidad",
+        "1?? Haz clic en el bot�n 'Obtener key ?' de abajo",
+        "2?? Inicia sesi�n con tu cuenta de Google (Gmail)",
+        "3?? Aparecer� el panel de 'API Keys'. Clic en 'Create API Key'",
+        "4?? Selecciona 'Create API key in new project' (es gratis)",
+        "5?? Se genera una key que empieza con 'AIza...' ? c�piala",
+        "6?? Regresa aqu�, p�gala en el campo y presiona 'Probar'",
+        "?? Tip: Gemini es el m�s recomendado por calidad y velocidad",
       ],
     },
     groq: {
       label: "Groq",
-      sub: "Llama 3.3 70B · Ultra-rápido",
-      badge: "🟢 Gratis · Más rápido",
+      sub: "Llama 3.3 70B � Ultra-r�pido",
+      badge: "?? Gratis � M�s r�pido",
       badgeClass: "bg-green-100 text-green-800",
       link: "https://console.groq.com/keys",
       color: "green",
       steps: [
-        "1️⃣ Haz clic en el botón 'Obtener key →' de abajo",
-        "2️⃣ Crea cuenta gratis con Google o GitHub (botón 'Sign Up')",
-        "3️⃣ Una vez dentro, ya estarás en la sección 'API Keys'",
-        "4️⃣ Clic en 'Create API Key' → ponle cualquier nombre → 'Submit'",
-        "5️⃣ Copia la key que empieza con 'gsk_...'",
-        "6️⃣ Regresa aquí, pégala en el campo y presiona 'Probar'",
-        "💡 Tip: Groq es el más rápido pero tiene límite de 30 peticiones/minuto",
+        "1?? Haz clic en el bot�n 'Obtener key ?' de abajo",
+        "2?? Crea cuenta gratis con Google o GitHub (bot�n 'Sign Up')",
+        "3?? Una vez dentro, ya estar�s en la secci�n 'API Keys'",
+        "4?? Clic en 'Create API Key' ? ponle cualquier nombre ? 'Submit'",
+        "5?? Copia la key que empieza con 'gsk_...'",
+        "6?? Regresa aqu�, p�gala en el campo y presiona 'Probar'",
+        "?? Tip: Groq es el m�s r�pido pero tiene l�mite de 30 peticiones/minuto",
       ],
     },
     together: {
       label: "Together AI",
-      sub: "Llama 3.3 70B · Muy estable",
-      badge: "🟢 Gratis · Sin límite diario",
+      sub: "Llama 3.3 70B � Muy estable",
+      badge: "?? Gratis � Sin l�mite diario",
       badgeClass: "bg-teal-100 text-teal-800",
       link: "https://api.together.ai/settings/api-keys",
       color: "teal",
       steps: [
-        "1️⃣ Haz clic en el botón 'Obtener key →' de abajo",
-        "2️⃣ Clic en 'Sign Up' o 'Continue with Google' (cuenta gratis)",
-        "3️⃣ En el panel, ve a Settings → API Keys (menú izquierdo)",
-        "4️⃣ Clic en 'Create new API key' → ponle nombre → crear",
-        "5️⃣ Copia la key que aparece (solo se muestra una vez)",
-        "6️⃣ Regresa aquí, pégala en el campo y presiona 'Probar'",
-        "💡 Tip: Together AI no tiene límite diario. Ideal como respaldo",
+        "1?? Haz clic en el bot�n 'Obtener key ?' de abajo",
+        "2?? Clic en 'Sign Up' o 'Continue with Google' (cuenta gratis)",
+        "3?? En el panel, ve a Settings ? API Keys (men� izquierdo)",
+        "4?? Clic en 'Create new API key' ? ponle nombre ? crear",
+        "5?? Copia la key que aparece (solo se muestra una vez)",
+        "6?? Regresa aqu�, p�gala en el campo y presiona 'Probar'",
+        "?? Tip: Together AI no tiene l�mite diario. Ideal como respaldo",
       ],
     },
     openrouter: {
       label: "OpenRouter",
-      sub: "10 modelos free · Máximo respaldo",
-      badge: "🟢 Gratis · Multi-modelo",
+      sub: "10 modelos free � M�ximo respaldo",
+      badge: "?? Gratis � Multi-modelo",
       badgeClass: "bg-purple-100 text-purple-800",
       link: "https://openrouter.ai/keys",
       color: "purple",
       steps: [
-        "1️⃣ Haz clic en el botón 'Obtener key →' de abajo",
-        "2️⃣ Clic en 'Sign in' → usa tu cuenta de Google o GitHub",
-        "3️⃣ En el menú superior, clic en 'Keys'",
-        "4️⃣ Clic en 'Create Key' → ponle nombre → 'Create'",
-        "5️⃣ Copia la key que empieza con 'sk-or-...'",
-        "6️⃣ Regresa aquí, pégala en el campo y presiona 'Probar'",
-        "💡 Tip: OpenRouter da acceso a múltiples modelos con una sola key",
+        "1?? Haz clic en el bot�n 'Obtener key ?' de abajo",
+        "2?? Clic en 'Sign in' ? usa tu cuenta de Google o GitHub",
+        "3?? En el men� superior, clic en 'Keys'",
+        "4?? Clic en 'Create Key' ? ponle nombre ? 'Create'",
+        "5?? Copia la key que empieza con 'sk-or-...'",
+        "6?? Regresa aqu�, p�gala en el campo y presiona 'Probar'",
+        "?? Tip: OpenRouter da acceso a m�ltiples modelos con una sola key",
       ],
     },
   };
@@ -119,7 +119,7 @@ const AIConfigPanel = ({ aiConfig, onSave, onClose }) => {
         ...p,
         [providerKey]: {
           ok: false,
-          msg: "⚠️ Ingrese su API Key primero (ver pasos arriba)",
+          msg: "?? Ingrese su API Key primero (ver pasos arriba)",
         },
       }));
       setActiveGuide(providerKey);
@@ -127,13 +127,13 @@ const AIConfigPanel = ({ aiConfig, onSave, onClose }) => {
     }
     setTestStatus((p) => ({
       ...p,
-      [providerKey]: { ok: null, msg: "⏳ Probando conexión..." },
+      [providerKey]: { ok: null, msg: "? Probando conexi�n..." },
     }));
     try {
       const provider = AI_PROVIDERS[providerKey];
       const text = await provider.call(
         "Responde SOLO con la palabra: CONECTADO",
-        "Eres un asistente. Responde únicamente con la palabra CONECTADO.",
+        "Eres un asistente. Responde �nicamente con la palabra CONECTADO.",
         key.trim()
       );
       const ok = !!text && text.length > 0;
@@ -142,10 +142,10 @@ const AIConfigPanel = ({ aiConfig, onSave, onClose }) => {
         [providerKey]: {
           ok,
           msg: ok
-            ? `✅ ¡Funciona! Respuesta: "${text
+            ? `? �Funciona! Respuesta: "${text
                 .slice(0, 40)
                 .replace(/\n/g, " ")}"`
-            : "⚠️ Respuesta vacía",
+            : "?? Respuesta vac�a",
         },
       }));
     } catch (e) {
@@ -156,18 +156,18 @@ const AIConfigPanel = ({ aiConfig, onSave, onClose }) => {
         msg.includes("403") ||
         msg.includes("invalid") ||
         msg.includes("Invalid") ||
-        msg.includes("API Key inválida")
+        msg.includes("API Key inv�lida")
       )
         hint =
           providerKey === "together"
-            ? " → Key inválida. En api.together.ai copia SOLO la key del campo texto, NO el código Python."
-            : " → Key inválida: renuévala siguiendo los pasos.";
+            ? " ? Key inv�lida. En api.together.ai copia SOLO la key del campo texto, NO el c�digo Python."
+            : " ? Key inv�lida: renu�vala siguiendo los pasos.";
       else if (
         msg.includes("429") ||
         msg.includes("rate") ||
         msg.includes("limit")
       )
-        hint = " → Límite de uso alcanzado: crea una key nueva.";
+        hint = " ? L�mite de uso alcanzado: crea una key nueva.";
       else if (
         msg.includes("Failed to fetch") ||
         msg.includes("network") ||
@@ -175,12 +175,12 @@ const AIConfigPanel = ({ aiConfig, onSave, onClose }) => {
         msg.includes("CORS bloqueado")
       )
         hint =
-          " → CORS bloqueado: Groq no funciona desde este dominio. Usa Gemini u OpenRouter como proveedor principal.";
+          " ? CORS bloqueado: Groq no funciona desde este dominio. Usa Gemini u OpenRouter como proveedor principal.";
       else if (msg.includes("404"))
-        hint = " → Modelo no disponible, prueba otro proveedor.";
+        hint = " ? Modelo no disponible, prueba otro proveedor.";
       setTestStatus((p) => ({
         ...p,
-        [providerKey]: { ok: false, msg: `❌ ${msg.slice(0, 100)}${hint}` },
+        [providerKey]: { ok: false, msg: `? ${msg.slice(0, 100)}${hint}` },
       }));
     }
   };
@@ -203,7 +203,7 @@ const AIConfigPanel = ({ aiConfig, onSave, onClose }) => {
               <BrainCircuit className="w-6 h-6" />
               <div>
                 <h2 className="text-base font-black">
-                  Configuración de IA - 4 Proveedores Gratuitos
+                  Configuraci�n de IA - 4 Proveedores Gratuitos
                 </h2>
                 <p className="text-xs text-indigo-200">
                   Cada uno necesita su propia API Key gratuita (se obtiene en 2
@@ -221,25 +221,25 @@ const AIConfigPanel = ({ aiConfig, onSave, onClose }) => {
             {/* Estado general */}
             {anyWorking ? (
               <div className="bg-green-50 border border-green-300 rounded-xl p-3 text-xs text-green-800 flex gap-2 items-start">
-                <span className="text-base">✅</span>
+                <span className="text-base">?</span>
                 <div>
-                  <strong>¡Al menos un proveedor funciona!</strong> La IA está
-                  operativa. Guarda la configuración para usar los que funcionan
-                  como respaldo automático.
+                  <strong>�Al menos un proveedor funciona!</strong> La IA est�
+                  operativa. Guarda la configuraci�n para usar los que funcionan
+                  como respaldo autom�tico.
                 </div>
               </div>
             ) : (
               <div className="bg-amber-50 border border-amber-300 rounded-xl p-3 text-xs text-amber-900 flex gap-2 items-start">
-                <span className="text-base">⚡</span>
+                <span className="text-base">?</span>
                 <div>
                   <strong>
                     Las keys preconfiguradas pueden haber expirado
                   </strong>{" "}
-                  (son públicas y se agotan con el uso).
+                  (son p�blicas y se agotan con el uso).
                   <span className="block mt-1">
-                    Obtén tu propia key gratuita en cualquier proveedor - toma
+                    Obt�n tu propia key gratuita en cualquier proveedor - toma
                     solo 2 minutos. Haz clic en{" "}
-                    <strong>"📋 Cómo obtener"</strong> de cualquier proveedor
+                    <strong>"?? C�mo obtener"</strong> de cualquier proveedor
                     para ver los pasos.
                   </span>
                 </div>
@@ -248,7 +248,7 @@ const AIConfigPanel = ({ aiConfig, onSave, onClose }) => {
             {/* Selector proveedor activo */}
             <div>
               <p className="text-[10px] font-black text-gray-500 uppercase tracking-wide mb-1.5">
-                Proveedor principal (los demás son respaldo automático)
+                Proveedor principal (los dem�s son respaldo autom�tico)
               </p>
               <div className="grid grid-cols-2 gap-1.5">
                 {Object.entries(PROVIDER_INFO).map(([k, info]) => {
@@ -330,12 +330,12 @@ const AIConfigPanel = ({ aiConfig, onSave, onClose }) => {
                       </span>
                       {st?.ok === true && (
                         <span className="ml-1 text-[9px] font-bold text-green-600">
-                          ✅ Activa
+                          ? Activa
                         </span>
                       )}
                       {st?.ok === false && (
                         <span className="ml-1 text-[9px] font-bold text-red-600">
-                          ❌ Falla
+                          ? Falla
                         </span>
                       )}
                     </div>
@@ -349,7 +349,7 @@ const AIConfigPanel = ({ aiConfig, onSave, onClose }) => {
                             : "border-gray-300 text-gray-600 hover:bg-gray-100"
                         }`}
                       >
-                        📋 {isGuideOpen ? "Ocultar" : "Cómo obtener"}
+                        ?? {isGuideOpen ? "Ocultar" : "C�mo obtener"}
                       </button>
                       <a
                         href={info.link}
@@ -357,11 +357,11 @@ const AIConfigPanel = ({ aiConfig, onSave, onClose }) => {
                         rel="noopener noreferrer"
                         className={`text-[9px] px-2 py-1 rounded-lg font-bold ${c.btn} text-white`}
                       >
-                        🔗 Obtener key
+                        ?? Obtener key
                       </a>
                     </div>
                   </div>
-                  {/* Guía paso a paso */}
+                  {/* Gu�a paso a paso */}
                   {isGuideOpen && (
                     <div className={`p-3 border-t ${c.bg}`}>
                       <p
@@ -390,7 +390,7 @@ const AIConfigPanel = ({ aiConfig, onSave, onClose }) => {
                     <div className="relative flex gap-1.5">
                       <input
                         type={showKey[k] ? "text" : "password"}
-                        placeholder={`Pega aquí tu API Key de ${info.label}...`}
+                        placeholder={`Pega aqu� tu API Key de ${info.label}...`}
                         value={cfg.keys?.[k] || ""}
                         onChange={(e) =>
                           setCfg((p) => ({
@@ -407,7 +407,7 @@ const AIConfigPanel = ({ aiConfig, onSave, onClose }) => {
                         }
                         className="absolute right-20 top-1.5 text-gray-400 hover:text-gray-600 text-[10px]"
                       >
-                        {showKey[k] ? "🙈" : "👁"}
+                        {showKey[k] ? "??" : "??"}
                       </button>
                       <button
                         type="button"
@@ -451,7 +451,7 @@ const AIConfigPanel = ({ aiConfig, onSave, onClose }) => {
             }}
             className="flex-1 py-2 bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-indigo-700 flex items-center justify-center gap-2"
           >
-            <Save className="w-4 h-4" /> Guardar Configuración
+            <Save className="w-4 h-4" /> Guardar Configuraci�n
           </button>
         </div>
       </div>

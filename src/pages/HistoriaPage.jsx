@@ -23,7 +23,7 @@ import {
 // Each component is bundled with this page chunk
 import OccupationalHC from '../modules/clinical/components/OccupationalHC';
 import { CertificateView } from '../modules/clinical/components/CertificateView';
-import TabFormulaDerivacion from '../modules/clinical/components/PrescriptionTab';
+import TabFormulaDerivacion from '../components/forms/TabFormulaDerivacion';
 import { ExamRequestTab } from '../modules/clinical/components/ExamRequestTab';
 import { AttachmentsTab } from '../modules/clinical/components/AttachmentsTab';
 import { DisabilityTab } from '../modules/clinical/components/DisabilityTab';
