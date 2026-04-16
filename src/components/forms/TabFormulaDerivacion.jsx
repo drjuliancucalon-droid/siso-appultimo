@@ -1,6 +1,6 @@
 // src/components/forms/TabFormulaDerivacion.jsx
 import React from 'react';
-import { DERIVACIONES_CATALOG } from '../../data/catalogos.js';
+import { DERIVACIONES_CATALOG, SPECIALTIES_LIST } from '../../data/catalogos.js';
 import MedicamentoAutocomplete from '../ui/MedicamentoAutocomplete.jsx';
 import { _generarCertificadoHTMLNormalizado } from '../../shared/lib/printUtils.js';
 import { Pill, Share2, Printer, Plus, Trash2, Search } from 'lucide-react';
@@ -100,8 +100,8 @@ const TabFormulaDerivacion = ({
         ).slice(0, 15)
       : [];
   const today = new Date().toISOString().split("T")[0];
-  // -- Genera ventana de impresión premium con HTML nativo ------------------
-  // No captura innerHTML (pierde íconos). Genera HTML directamente del state.
+  // -- Genera ventana de impresiï¿½n premium con HTML nativo ------------------
+  // No captura innerHTML (pierde ï¿½conos). Genera HTML directamente del state.
   const buildPrintHeader = (titleDoc, accentColor) => {
     const fechaDoc =
       data.fechaExamen ||
@@ -130,7 +130,7 @@ const TabFormulaDerivacion = ({
       ? accentColor
       : "#059669";
 
-    // -- PASO 2: Cabecera IPS — columna izquierda muestra empresa si hay empresaId --
+    // -- PASO 2: Cabecera IPS ï¿½ columna izquierda muestra empresa si hay empresaId --
     const miIPS = currentUser?.empresaId
       ? companies.find((c) => c.id === currentUser.empresaId)
       : null;
@@ -161,7 +161,7 @@ const TabFormulaDerivacion = ({
             ${
               ipsDir
                 ? `<p style="font-size:7.5pt;color:#555;margin:1px 0;">${ipsDir}${
-                    ipsCiudad ? " · " + ipsCiudad : ""
+                    ipsCiudad ? " ï¿½ " + ipsCiudad : ""
                   }</p>`
                 : ""
             }
@@ -197,7 +197,7 @@ const TabFormulaDerivacion = ({
           <p style="font-size:13pt;font-weight:900;color:${accentSafe};text-transform:uppercase;margin:2px 0;">${_sanitize(
       titleDoc
     )}</p>
-          <p style="font-size:7pt;color:#888;margin:2px 0;">Res. 1995&#x2F;1999 · Res. 1843&#x2F;2025</p>
+          <p style="font-size:7pt;color:#888;margin:2px 0;">Res. 1995&#x2F;1999 ï¿½ Res. 1843&#x2F;2025</p>
           <p style="font-size:8pt;font-weight:700;color:#333;margin:5px 0 2px 0;">Fecha: ${_sanitize(
             fechaDoc
           )}</p>
@@ -205,7 +205,7 @@ const TabFormulaDerivacion = ({
         </div>
         <div style="width:32%;text-align:right;padding-left:8px;">
           <p style="font-size:10.5pt;font-weight:900;color:${accentSafe};text-transform:uppercase;margin:0 0 3px 0;">${pNombre}</p>
-          <p style="font-size:7.5pt;color:#444;margin:1px 0;">${pDocTipo}: <b>${pDocNum}</b> &nbsp;|&nbsp; Edad: <b>${pEdad} años</b></p>
+          <p style="font-size:7.5pt;color:#444;margin:1px 0;">${pDocTipo}: <b>${pDocNum}</b> &nbsp;|&nbsp; Edad: <b>${pEdad} aï¿½os</b></p>
           <p style="font-size:7.5pt;color:#444;margin:1px 0;">Sexo: ${pGenero} &nbsp;|&nbsp; EPS: <b>${pEps}</b></p>
           <p style="font-size:7.5pt;color:#444;margin:1px 0;">ARL: <b>${pArl}</b> &nbsp;|&nbsp; AFP: ${pAfp}</p>
           <p style="font-size:7.5pt;color:#444;margin:1px 0;">Empresa: <b>${pEmpresa}</b></p>
@@ -232,7 +232,7 @@ const TabFormulaDerivacion = ({
     const w = window.open("", "_blank", "width=600,height=700");
     if (!w) return;
     const accent = "#059669";
-    const header = buildPrintHeader("Prescripción Individual", accent);
+    const header = buildPrintHeader("Prescripciï¿½n Individual", accent);
     const singleMedHtml = `
       <div class="med-card" style="display:flex;gap:10px;align-items:flex-start;margin-bottom:10px;">
         <span class="med-num">${idx + 1}</span>
@@ -244,9 +244,9 @@ const TabFormulaDerivacion = ({
     )})</span></p>
           <p style="font-size:9.5pt;color:#374151;margin:2px 0;"><b>Dosis:</b> ${_sanitize(
             med.dosis || "--"
-          )} &nbsp;·&nbsp; <b>Frecuencia:</b> ${_sanitize(
+          )} &nbsp;ï¿½&nbsp; <b>Frecuencia:</b> ${_sanitize(
       med.frecuencia || "--"
-    )} &nbsp;·&nbsp; <b>Duración:</b> ${_sanitize(med.duracion || "--")}</p>
+    )} &nbsp;ï¿½&nbsp; <b>Duraciï¿½n:</b> ${_sanitize(med.duracion || "--")}</p>
           ${
             med.indicaciones
               ? `<p style="font-size:9pt;color:#92400e;font-style:italic;margin:4px 0;">? ${_sanitize(
@@ -257,7 +257,7 @@ const TabFormulaDerivacion = ({
         </div>
       </div>
       <div style="background:#ecfdf5;border:1px solid #a7f3d0;border-radius:4px;padding:8px 12px;margin-top:8px;">
-        <p style="font-size:8.5pt;"><b>Diagnóstico:</b> ${_sanitize(
+        <p style="font-size:8.5pt;"><b>Diagnï¿½stico:</b> ${_sanitize(
           data.diagnosticoPrincipal ||
             (data.diagnosticos || [])[0]?.descripcion ||
             "--"
@@ -345,9 +345,9 @@ body{padding-top:52px;}
                 )}</span></p>
             <p style="font-size:8.5pt;color:#374151;margin:1px 0;"><b>Dosis:</b> ${_sanitize(
               m.dosis || "--"
-            )} &nbsp;·&nbsp; <b>Frec.:</b> ${_sanitize(
+            )} &nbsp;ï¿½&nbsp; <b>Frec.:</b> ${_sanitize(
                   m.frecuencia || "--"
-                )} &nbsp;·&nbsp; <b>Duración:</b> ${_sanitize(
+                )} &nbsp;ï¿½&nbsp; <b>Duraciï¿½n:</b> ${_sanitize(
                   m.duracion || "--"
                 )}</p>
             ${
@@ -373,16 +373,16 @@ body{padding-top:52px;}
       );
       const planMeds =
         !meds.length && data.plan?.medicamentos
-          ? `<div style="margin-top:10px;"><p style="font-weight:700;font-size:8.5pt;color:#374151;border-bottom:1px solid #d1d5db;padding-bottom:3px;margin-bottom:5px;">PRESCRIPCIÓN</p><p style="font-size:8.5pt;white-space:pre-wrap;">${_sanitize(
+          ? `<div style="margin-top:10px;"><p style="font-weight:700;font-size:8.5pt;color:#374151;border-bottom:1px solid #d1d5db;padding-bottom:3px;margin-bottom:5px;">PRESCRIPCIï¿½N</p><p style="font-size:8.5pt;white-space:pre-wrap;">${_sanitize(
               data.plan.medicamentos
             )}</p></div>`
           : "";
       bodyHtml = `
         <div style="background:#ecfdf5;border:1px solid #a7f3d0;border-radius:4px;padding:10px 12px;margin-bottom:12px;">
-          <p class="section-title" style="color:#065f46;">&#128138; Prescripción Médica</p>
+          <p class="section-title" style="color:#065f46;">&#128138; Prescripciï¿½n Mï¿½dica</p>
           ${medsHtml}${planMeds}
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;border-top:1px solid #a7f3d0;padding-top:8px;">
-            <p style="font-size:8.5pt;"><b>Diagnóstico:</b> ${dx}</p>
+            <p style="font-size:8.5pt;"><b>Diagnï¿½stico:</b> ${dx}</p>
             <p style="font-size:8.5pt;"><b>Control en:</b> ${control}</p>
           </div>
         </div>
@@ -520,31 +520,31 @@ body{padding-top:52px;}
         <div className="w-1/3 text-center">
           <h1 className="text-sm font-black text-gray-800 uppercase">
             {activeSubTab === "formula"
-              ? "Fórmula Médica"
-              : "Derivación / Interconsulta"}
+              ? "Fï¿½rmula Mï¿½dica"
+              : "Derivaciï¿½n / Interconsulta"}
           </h1>
           <p className="text-[9px] text-gray-500">
-            Res. 1995/1999 · Res. 1843/2025
+            Res. 1995/1999 ï¿½ Res. 1843/2025
           </p>
         </div>
         <div className="w-1/3 text-right text-[9px] text-gray-500">
           <p className="font-black text-gray-800 text-[10px]">{data.nombres}</p>
           <p>
-            {data.docTipo || "CC"}: {data.docNumero} · {data.edad} años
+            {data.docTipo || "CC"}: {data.docNumero} ï¿½ {data.edad} aï¿½os
           </p>
           <p>Empresa: {data.empresaNombre || "--"}</p>
           <p>Cargo: {data.cargo || "--"}</p>
           <p>
-            EPS: {data.eps || "--"} · ARL: {data.arl || "--"}
+            EPS: {data.eps || "--"} ï¿½ ARL: {data.arl || "--"}
           </p>
           <p>Fecha: {data.fechaExamen || today}</p>
         </div>
       </div>
-      {/* Tabs + botones de impresión individual */}
+      {/* Tabs + botones de impresiï¿½n individual */}
       <div className="flex gap-2 mb-4 no-print flex-wrap items-center justify-between">
         <div className="flex gap-2">
           {[
-            { k: "formula", l: "?? Fórmula Médica" },
+            { k: "formula", l: "?? Fï¿½rmula Mï¿½dica" },
             { k: "derivacion", l: "?? Derivaciones" },
           ].map((t) => (
             <button
@@ -563,37 +563,37 @@ body{padding-top:52px;}
         <div className="flex gap-2">
           {activeSubTab === "formula" && (
             <button
-              onClick={() => openPrintWindow("formula", "Fórmula Médica")}
+              onClick={() => openPrintWindow("formula", "Fï¿½rmula Mï¿½dica")}
               className="flex items-center gap-1 bg-emerald-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-emerald-700"
             >
-              <Printer className="w-3 h-3" /> Imprimir Fórmula
+              <Printer className="w-3 h-3" /> Imprimir Fï¿½rmula
             </button>
           )}
           {activeSubTab === "derivacion" && (
             <button
               onClick={() =>
-                openPrintWindow("derivacion", "Derivación / Interconsulta")
+                openPrintWindow("derivacion", "Derivaciï¿½n / Interconsulta")
               }
               className="flex items-center gap-1 bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-blue-700"
             >
-              <Printer className="w-3 h-3" /> Imprimir Derivación
+              <Printer className="w-3 h-3" /> Imprimir Derivaciï¿½n
             </button>
           )}
         </div>
       </div>
-      {/* -- FÓRMULA -- */}
+      {/* -- Fï¿½RMULA -- */}
       <div
         id="print-formula-sec"
         className={activeSubTab !== "formula" ? "hidden print:block" : ""}
       >
         <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 mb-3 print:bg-transparent print:border-gray-300">
           <h3 className="font-black text-emerald-900 text-xs uppercase mb-3 flex items-center gap-2">
-            <Pill className="w-4 h-4" /> Prescripción Médica
+            <Pill className="w-4 h-4" /> Prescripciï¿½n Mï¿½dica
           </h3>
           {/* Input nuevo medicamento */}
           <div className="no-print mb-3 bg-white p-3 rounded-lg border border-emerald-100 space-y-2">
             <p className="text-[10px] font-bold text-gray-600 uppercase">
-              Agregar Medicamento a la Fórmula
+              Agregar Medicamento a la Fï¿½rmula
             </p>
             <div className="grid grid-cols-2 gap-2">
               <div>
@@ -612,12 +612,12 @@ body{padding-top:52px;}
                       dosis: p.dosis || s.dosis || "",
                     }))
                   }
-                  placeholder="Buscar por nombre genérico o comercial..."
+                  placeholder="Buscar por nombre genï¿½rico o comercial..."
                 />
               </div>
               <div>
                 <label className="block text-[10px] font-bold text-gray-500 mb-0.5">
-                  Presentación
+                  Presentaciï¿½n
                 </label>
                 <input
                   value={newMed.presentacion}
@@ -656,14 +656,14 @@ body{padding-top:52px;}
               </div>
               <div>
                 <label className="block text-[10px] font-bold text-gray-500 mb-0.5">
-                  Duración
+                  Duraciï¿½n
                 </label>
                 <input
                   value={newMed.duracion}
                   onChange={(e) =>
                     setNewMed((p) => ({ ...p, duracion: e.target.value }))
                   }
-                  placeholder="Ej: 7 días"
+                  placeholder="Ej: 7 dï¿½as"
                   className="w-full p-1.5 border rounded text-xs"
                 />
               </div>
@@ -686,7 +686,7 @@ body{padding-top:52px;}
               type="button"
               className="w-full bg-emerald-600 text-white py-1.5 rounded-lg text-xs font-bold hover:bg-emerald-700 flex items-center justify-center gap-1"
             >
-              <Plus className="w-3 h-3" /> Agregar a la Fórmula
+              <Plus className="w-3 h-3" /> Agregar a la Fï¿½rmula
             </button>
           </div>
           {/* Lista */}
@@ -708,8 +708,8 @@ body{padding-top:52px;}
                       </span>
                     </p>
                     <p className="text-xs text-gray-700 mt-0.5">
-                      <b>Dosis:</b> {med.dosis}&nbsp;·&nbsp;<b>Frec:</b>{" "}
-                      {med.frecuencia}&nbsp;·&nbsp;<b>Dur:</b> {med.duracion}
+                      <b>Dosis:</b> {med.dosis}&nbsp;ï¿½&nbsp;<b>Frec:</b>{" "}
+                      {med.frecuencia}&nbsp;ï¿½&nbsp;<b>Dur:</b> {med.duracion}
                     </p>
                     {med.indicaciones && (
                       <p className="text-[10px] text-amber-700 mt-0.5 italic">
@@ -737,13 +737,13 @@ body{padding-top:52px;}
             </div>
           ) : (
             <p className="text-center text-gray-400 text-xs italic py-3">
-              Sin medicamentos en la fórmula.
+              Sin medicamentos en la fï¿½rmula.
             </p>
           )}
           <div className="mt-3 grid grid-cols-2 gap-2">
             <div>
               <label className="block text-[10px] font-bold text-gray-600 mb-0.5 uppercase">
-                Diagnóstico
+                Diagnï¿½stico
               </label>
               <input
                 value={data.diagnosticoPrincipal || ""}
@@ -763,13 +763,13 @@ body{padding-top:52px;}
                     frecuenciaSeguimiento: e.target.value,
                   }))
                 }
-                placeholder="Ej: 15 días"
+                placeholder="Ej: 15 dï¿½as"
                 className="w-full p-1.5 border-b border-gray-300 text-xs outline-none"
               />
             </div>
           </div>
         </div>
-        {/* Firma fórmula - solo impresión */}
+        {/* Firma fï¿½rmula - solo impresiï¿½n */}
         <div className="hidden print:flex mt-8 justify-between items-end px-2 signature-block">
           <div className="text-center w-2/5 pt-8 border-t-2 border-gray-800">
             <p className="text-[10px] font-bold">
@@ -797,15 +797,15 @@ body{padding-top:52px;}
           <h3 className="font-black text-blue-900 text-xs uppercase mb-3 flex items-center gap-2">
             <Share2 className="w-4 h-4" /> Derivaciones / Interconsultas
           </h3>
-          {/* Formulario agregar derivación */}
+          {/* Formulario agregar derivaciï¿½n */}
           <div
             className="no-print mb-3 bg-white p-3 rounded-lg border border-blue-100"
             ref={derivRef}
           >
             <p className="text-[10px] font-bold text-gray-600 uppercase mb-2">
-              Agregar Derivación
+              Agregar Derivaciï¿½n
             </p>
-            {/* Barra de búsqueda interactiva de especialidades */}
+            {/* Barra de bï¿½squeda interactiva de especialidades */}
             <div className="relative mb-2">
               <Search className="absolute left-2.5 top-2 w-3.5 h-3.5 text-blue-400 pointer-events-none" />
               <input
@@ -904,7 +904,7 @@ body{padding-top:52px;}
               </div>
               <div className="col-span-2">
                 <label className="block text-[10px] font-bold text-gray-500 mb-0.5">
-                  Motivo de la derivación{" "}
+                  Motivo de la derivaciï¿½n{" "}
                   <span className="text-red-500">*</span>
                 </label>
                 <textarea
@@ -913,7 +913,7 @@ body{padding-top:52px;}
                   onChange={(e) =>
                     setNewDeriv((p) => ({ ...p, motivo: e.target.value }))
                   }
-                  placeholder="Describa el motivo clínico de la derivación..."
+                  placeholder="Describa el motivo clï¿½nico de la derivaciï¿½n..."
                   className="w-full p-1.5 border rounded text-xs resize-none"
                 />
               </div>
@@ -929,7 +929,7 @@ body{padding-top:52px;}
                       observaciones: e.target.value,
                     }))
                   }
-                  placeholder="Antecedentes relevantes, información adicional..."
+                  placeholder="Antecedentes relevantes, informaciï¿½n adicional..."
                   className="w-full p-1.5 border rounded text-xs"
                 />
               </div>
@@ -939,7 +939,7 @@ body{padding-top:52px;}
               type="button"
               className="w-full bg-blue-600 text-white py-1.5 rounded-lg text-xs font-bold hover:bg-blue-700 flex items-center justify-center gap-1 mt-2"
             >
-              <Plus className="w-3 h-3" /> Agregar Derivación
+              <Plus className="w-3 h-3" /> Agregar Derivaciï¿½n
             </button>
           </div>
           {/* Lista derivaciones */}
@@ -996,7 +996,7 @@ body{padding-top:52px;}
             </p>
           )}
         </div>
-        {/* Firma derivación - solo impresión */}
+        {/* Firma derivaciï¿½n - solo impresiï¿½n */}
         <div className="hidden print:flex mt-8 justify-between items-end px-2 signature-block">
           <div className="text-center w-2/5 pt-8 border-t-2 border-gray-800">
             <p className="text-[10px] font-bold">
