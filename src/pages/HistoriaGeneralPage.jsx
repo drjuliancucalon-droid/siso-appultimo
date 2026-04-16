@@ -142,41 +142,88 @@ export default function HistoriaGeneralPage() {
   // ═══ RENDER ═══
   return (
     <div className="p-4 max-w-7xl mx-auto">
-      <button onClick={() => navigate('/patients')} className="flex items-center gap-2 text-sm text-blue-700 hover:text-blue-900 mb-3">
-        <ArrowLeft className="w-4 h-4" /> Volver
-      </button>
+      
+      {/* --- VOLVER A PACIENTES --- */}
+      <div className="flex items-center justify-between mb-4">
+        <button onClick={() => navigate('/patients')} className="flex items-center gap-2 text-sm font-semibold text-gray-500 hover:text-emerald-700 transition-colors">
+          <ArrowLeft className="w-4 h-4" /> Volver a Pacientes
+        </button>
+      </div>
 
-      {/* Action bar */}
-      <div className="bg-white border border-gray-200 rounded-xl p-2 mb-3 shadow-sm">
-        <div className="flex gap-1 overflow-x-auto pb-2 border-b border-gray-100 mb-2" style={{ scrollbarWidth: 'none' }}>
-          {TABS.map((tab) => (
-            <button key={tab.id} onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg whitespace-nowrap transition-all flex-shrink-0 ${
-                activeTab === tab.id ? `bg-${tab.color}-100 text-${tab.color}-800 shadow-sm` : 'text-gray-500 hover:bg-gray-100'
-              }`}>
-              <tab.icon className="w-3.5 h-3.5" /> {tab.label}
-            </button>
-          ))}
+      {/* --- PATIENT HEADER & TABS --- */}
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 mb-6 overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-100 flex flex-col sm:flex-row sm:justify-between sm:items-center bg-slate-50/50 gap-3">
+          <div>
+            <h2 className="text-xl font-black text-gray-800">{data.nombres || "Nuevo Paciente"} {data.apellidos || ""}</h2>
+            <div className="flex items-center gap-2 mt-1">
+              <span className="text-xs font-bold px-2 py-0.5 bg-gray-200 text-gray-700 rounded">{data.docTipo || "CC"} {data.docNumero || "---"}</span>
+              <span className="text-xs text-gray-500 font-medium">{data.empresaNombre || "Sin empresa"}</span>
+            </div>
+          </div>
+          {data.estadoHistoria === 'Cerrada' && (
+            <span className="flex items-center gap-1.5 text-xs font-bold text-red-700 bg-red-50 border border-red-100 px-3 py-1.5 rounded-xl">
+              <Lock className="w-3.5 h-3.5" /> Cerrada: {data.codigoVerificacion}
+            </span>
+          )}
         </div>
-        <div className="flex gap-1 flex-wrap">
-          <button onClick={() => printHC(data, activeDoctorData)} className="flex items-center gap-1 px-2.5 py-1.5 text-[10px] font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg">
-            <Printer className="w-3 h-3" /> Imprimir
-          </button>
-          <button onClick={handleSave} disabled={saving} className="flex items-center gap-1 px-2.5 py-1.5 text-[10px] font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg">
-            {saving ? <Loader2 className="w-3 h-3 animate-spin" /> : <Save className="w-3 h-3" />} Guardar
-          </button>
-          {lastSaveStatus === 'ok' && <span className="text-[10px] text-emerald-600 font-bold flex items-center gap-0.5"><CheckCircle className="w-3 h-3" />OK</span>}
-          <button onClick={onGenerateAI} disabled={isGenerating} className="flex items-center gap-1 px-2.5 py-1.5 text-[10px] font-bold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 rounded-lg">
-            {isGenerating ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />} IA
-          </button>
-          <button onClick={() => setShowAIConfig(true)} className="flex items-center gap-1 px-2.5 py-1.5 text-[10px] font-bold text-gray-600 bg-gray-50 hover:bg-gray-100 rounded-lg">
-            <Settings className="w-3 h-3" /> Config IA
-          </button>
-          {isDirty && <span className="text-[10px] text-amber-600 font-bold">⚠️ Sin guardar</span>}
+
+        {/* Modern Segmented Tabs */}
+        <div className="p-3 bg-white">
+          <div className="flex gap-1 overflow-x-auto p-1.5 bg-gray-100 rounded-xl" style={{ scrollbarWidth: 'none' }}>
+            {TABS.map((tab) => (
+              <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center justify-center gap-2 px-5 py-2 text-[11px] uppercase tracking-wider font-black rounded-lg whitespace-nowrap transition-all flex-shrink-0 ${
+                  activeTab === tab.id 
+                    ? `bg-white text-${tab.color}-700 shadow-sm ring-1 ring-gray-900/5` 
+                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'
+                }`}>
+                <tab.icon className={`w-4 h-4 ${activeTab === tab.id ? 'text-' + tab.color + '-600' : 'opacity-50'}`} /> 
+                {tab.label}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
-      {/* Tab content */}
+      {/* --- STICKY ACTION BAR --- */}
+      <div className="sticky top-4 z-30 flex flex-wrap items-center justify-between gap-3 bg-white/90 backdrop-blur-md border border-gray-200 rounded-2xl p-3 mb-6 shadow-sm print:hidden">
+        {/* Left: Primary Actions */}
+        <div className="flex items-center gap-3">
+          <button onClick={handleSave} disabled={saving} className="flex items-center gap-2 px-6 py-2.5 text-xs font-black text-white bg-emerald-600 hover:bg-emerald-700 active:scale-95 rounded-xl shadow-sm transition-all disabled:opacity-50">
+            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} {data.id ? 'Guardar Cambios' : 'Crear Historia'}
+          </button>
+          {lastSaveStatus === 'ok' && <span className="text-xs text-emerald-600 font-bold flex items-center gap-1.5"><CheckCircle className="w-4 h-4" /> OK</span>}
+          {isDirty && <span className="text-[10px] uppercase tracking-wider text-amber-600 font-black flex items-center gap-1.5 px-3 py-1 bg-amber-50 rounded-lg animate-pulse"><AlertTriangle className="w-3.5 h-3.5" /> Sin guardar</span>}
+        </div>
+
+        {/* Right: Secondary Actions */}
+        <div className="flex items-center gap-2 flex-wrap justify-end">
+          {/* AI Group */}
+          <div className="flex bg-indigo-50/50 rounded-xl p-1 border border-indigo-100 hidden sm:flex">
+            
+            <button onClick={onGenerateAI} disabled={isGenerating} className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold text-indigo-700 hover:bg-white rounded-lg transition-colors">
+              {isGenerating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />} IA General
+            </button>
+            <button onClick={() => setShowAIConfig(true)} className="flex items-center justify-center w-8 h-8 text-gray-500 hover:bg-white hover:text-gray-800 rounded-lg transition-colors" title="Configuraci�n IA">
+              <Settings className="w-4 h-4" />
+            </button>
+      
+          </div>
+
+          <div className="h-6 w-px bg-gray-200 mx-1 hidden sm:block"></div>
+
+          <button onClick={() => printHC(data, activeDoctorData)} className="flex items-center gap-1.5 px-4 py-2 text-[11px] uppercase tracking-wider font-black text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 rounded-xl transition-colors shadow-sm">
+            <Printer className="w-3.5 h-3.5 text-gray-500" /> Imprimir
+          </button>
+          
+          
+
+          
+        </div>
+      </div>
+
+      {/* --- TAB CONTENT --- */}
+
       <HCErrorBoundary>
         {activeTab === 'form' && (
           <GeneralHC data={data} setData={setData} activeDoctorData={activeDoctorData} activeSignature={null}
