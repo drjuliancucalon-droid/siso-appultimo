@@ -591,3 +591,139 @@ export function printCarnet(patientData, doctorData) {
 
   openPrintWindow(`Carnet — ${patientData.nombres || 'Trabajador'}`, html, { width: 500, height: 400 });
 }
+
+// ═══ _printHCClean — 18 sections HC Ocupacional (from ocupasalud L17519) ════
+// silentMode: if true, stores HTML in window._lastHCCleanStyles/Body without opening window
+export function _printHCClean(data, doctorData, silentMode = false) {
+  const html = generateHCPrintHTML(data, doctorData);
+  if (silentMode) {
+    if (typeof window !== 'undefined') {
+      window._lastHCCleanBody = html;
+      window._lastHCCleanStyles = PrintStyles;
+    }
+    return html;
+  }
+  openPrintWindow(`HC Ocupacional — ${data.nombres || 'Paciente'}`, html);
+}
+
+// ═══ PrintStyles — @media print CSS rules (from ocupasalud L7803) ════════════
+export const PrintStyles = `
+  @media print {
+    *, *::before, *::after { overflow: visible !important; }
+    body { margin: 0; padding: 0; font-size: 10pt; }
+    .no-print, .no-print * { display: none !important; }
+    .ai-label-print-hide { display: none !important; }
+    .print\\:block { display: block !important; }
+    .print\\:flex { display: flex !important; }
+    .print\\:hidden { display: none !important; }
+    .print\\:shadow-none { box-shadow: none !important; }
+    .print\\:border-black { border-color: #000 !important; }
+    .print\\:border-gray-300 { border-color: #d1d5db !important; }
+    .print\\:bg-transparent { background: transparent !important; }
+    .print\\:border-none { border: none !important; }
+    .print\\:mb-1 { margin-bottom: 0.25rem !important; }
+    table { page-break-inside: auto; }
+    thead { display: table-header-group; }
+    tr { page-break-inside: avoid; }
+    .carta-visual { width: 100% !important; padding: 0.5cm !important; box-shadow: none !important; }
+    .print-section-break { page-break-before: always; }
+    .signature-block { page-break-inside: avoid; }
+    [data-report-content] { display: grid !important; }
+    @page { size: letter; margin: 1cm; }
+  }
+`;
+
+// ═══ printSection — HC General modular print (from ocupasalud L47460) ════════
+// Generates professional HTML for individual sections of HC General
+export function printSection(sectionType, data, doctorData) {
+  const header = `
+    <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #3b82f6;padding-bottom:8px;margin-bottom:12px;">
+      <div>
+        <p style="font-size:11px;font-weight:900;text-transform:uppercase;">${_sanitize(doctorData?.nombre || 'MÉDICO')}</p>
+        <p style="font-size:9px;color:#6b7280;">${_sanitize(doctorData?.titulo || 'Medicina General')}</p>
+        <p style="font-size:9px;color:#059669;font-weight:700;">RM: ${_sanitize(doctorData?.licencia || '--')}</p>
+      </div>
+      <div style="text-align:right;">
+        <p style="font-size:10px;font-weight:900;">${_sanitize(data.nombres || 'Paciente')}</p>
+        <p style="font-size:9px;color:#6b7280;">CC: ${_sanitize(data.docNumero || '--')} · ${_sanitize(data.edad || '--')} años</p>
+        <p style="font-size:9px;color:#6b7280;">Fecha: ${date(data.fechaExamen)}</p>
+      </div>
+    </div>
+  `;
+
+  const firma = `
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-top:40px;padding-top:12px;">
+      <div style="text-align:center;width:40%;border-top:2px solid #1f2937;padding-top:4px;">
+        <p style="font-size:10px;font-weight:700;">Firma del Paciente</p>
+      </div>
+      <div style="text-align:center;width:40%;">
+        <div style="border-top:2px solid #1f2937;padding-top:4px;">
+          <p style="font-size:10px;font-weight:900;text-transform:uppercase;">${_sanitize(doctorData?.nombre || '')}</p>
+          <p style="font-size:9px;color:#6b7280;">${_sanitize(doctorData?.titulo || '')}</p>
+          <p style="font-size:9px;color:#059669;font-weight:700;">RM: ${_sanitize(doctorData?.licencia || '--')}</p>
+        </div>
+      </div>
+    </div>
+  `;
+
+  let body = '';
+
+  if (sectionType === 'gn-prescripcion') {
+    const meds = data.formulaMedicamentos || [];
+    body = `
+      <h2 style="text-align:center;font-size:13px;font-weight:900;text-transform:uppercase;margin-bottom:12px;">Fórmula Médica</h2>
+      <table style="width:100%;border-collapse:collapse;font-size:10px;">
+        <thead><tr style="background:#f3f4f6;">
+          <th style="border:1px solid #d1d5db;padding:4px;text-align:left;">Medicamento</th>
+          <th style="border:1px solid #d1d5db;padding:4px;">Dosis</th>
+          <th style="border:1px solid #d1d5db;padding:4px;">Vía</th>
+          <th style="border:1px solid #d1d5db;padding:4px;">Frecuencia</th>
+          <th style="border:1px solid #d1d5db;padding:4px;">Duración</th>
+        </tr></thead>
+        <tbody>
+          ${meds.map(m => `<tr>
+            <td style="border:1px solid #d1d5db;padding:4px;font-weight:700;">${_sanitize(m.nombre || m.medicamento || '')}</td>
+            <td style="border:1px solid #d1d5db;padding:4px;text-align:center;">${_sanitize(m.dosis || '')}</td>
+            <td style="border:1px solid #d1d5db;padding:4px;text-align:center;">${_sanitize(m.via || 'Oral')}</td>
+            <td style="border:1px solid #d1d5db;padding:4px;text-align:center;">${_sanitize(m.frecuencia || '')}</td>
+            <td style="border:1px solid #d1d5db;padding:4px;text-align:center;">${_sanitize(m.duracion || '')}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+      <p style="font-size:9px;color:#6b7280;margin-top:8px;">Diagnóstico: ${_sanitize(data.diagnosticoPrincipal || '--')}</p>
+    `;
+  } else if (sectionType === 'gn-examenes') {
+    body = `
+      <h2 style="text-align:center;font-size:13px;font-weight:900;text-transform:uppercase;margin-bottom:12px;">Exámenes y Recomendaciones</h2>
+      <div style="font-size:10px;">
+        <p><strong>Diagnósticos:</strong> ${_sanitize(data.diagnosticoPrincipal || '--')}</p>
+        <p style="margin-top:8px;"><strong>Plan de Manejo:</strong></p>
+        <p>${_sanitize(data.plan?.conducta || data.planManejo || '--')}</p>
+        <p style="margin-top:8px;"><strong>Recomendaciones:</strong></p>
+        <p>${_sanitize(data.plan?.recomendaciones || data.recomendaciones || '--')}</p>
+      </div>
+    `;
+  } else if (sectionType === 'gn-derivaciones') {
+    const derivs = data.derivaciones || [];
+    body = `
+      <h2 style="text-align:center;font-size:13px;font-weight:900;text-transform:uppercase;margin-bottom:12px;">Derivaciones / Interconsultas</h2>
+      <table style="width:100%;border-collapse:collapse;font-size:10px;">
+        <thead><tr style="background:#f3f4f6;">
+          <th style="border:1px solid #d1d5db;padding:4px;text-align:left;">Especialidad</th>
+          <th style="border:1px solid #d1d5db;padding:4px;">Motivo</th>
+          <th style="border:1px solid #d1d5db;padding:4px;">Prioridad</th>
+        </tr></thead>
+        <tbody>
+          ${derivs.map(d => `<tr>
+            <td style="border:1px solid #d1d5db;padding:4px;font-weight:700;">${_sanitize(d.especialidad || '')}</td>
+            <td style="border:1px solid #d1d5db;padding:4px;">${_sanitize(d.motivo || '')}</td>
+            <td style="border:1px solid #d1d5db;padding:4px;text-align:center;">${_sanitize(d.prioridad || 'Normal')}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    `;
+  }
+
+  const fullHtml = `${header}${body}${firma}`;
+  openPrintWindow(`${sectionType} — ${data.nombres || 'Paciente'}`, fullHtml);
+}

@@ -6,9 +6,10 @@ import { useAuthStore } from '../stores/authStore';
 import { useAIStore } from '../stores/aiStore';
 import { useBackendData, useBackendObject } from '../hooks/useBackendData';
 import { useSaveData } from '../hooks/useSaveData';
-import { printHC, generateHCPrintHTML, openPrintWindow } from '../lib/printService';
+import { printHC, generateHCPrintHTML, openPrintWindow, _printHCClean, PrintStyles, printSection } from '../lib/printService';
 import { initialOccupPatientState } from '../shared/data/initialStates';
 import { _sha256 } from '../shared/lib/crypto';
+import { _generarCertificadoHTMLNormalizado } from '../shared/lib/printUtils';
 
 // Lucide icons — imported ONCE at page level
 import {
@@ -271,12 +272,43 @@ export default function HistoriaPage() {
     certificado: true, historia: true, formula: false, derivacion: false, examenes: false,
   });
 
-  // ═══ Enviar multi-doc ═══
+  // ═══ Enviar multi-doc (F4-F5: combinación con page-break) ═══
   const handleEnviar = useCallback(() => {
-    const html = generateHCPrintHTML(data, activeDoctorData);
-    openPrintWindow(html);
+    const selected = Object.entries(enviarChecklist).filter(([_, v]) => v).map(([k]) => k);
+    if (selected.length === 0) { alert('Selecciona al menos un documento'); return; }
+
+    const sections = [];
+    if (enviarChecklist.certificado) {
+      try {
+        const certHtml = _generarCertificadoHTMLNormalizado(data, activeDoctorData, null, null);
+        if (certHtml) sections.push(certHtml);
+      } catch { sections.push('<p>Certificado no disponible</p>'); }
+    }
+    if (enviarChecklist.historia) {
+      _printHCClean(data, activeDoctorData, true); // silentMode → window._lastHCCleanBody
+      if (typeof window !== 'undefined' && window._lastHCCleanBody) {
+        sections.push(window._lastHCCleanBody);
+      } else {
+        sections.push(generateHCPrintHTML(data, activeDoctorData));
+      }
+    }
+    if (enviarChecklist.formula && (data.formulaMedicamentos || []).length > 0) {
+      sections.push('<h2 style="text-align:center;font-weight:900;">Fórmula Médica</h2>' + 
+        (data.formulaMedicamentos || []).map(m => `<p>• ${m.nombre || m.medicamento || ''} — ${m.dosis || ''} — ${m.via || 'Oral'} — ${m.frecuencia || ''} — ${m.duracion || ''}</p>`).join(''));
+    }
+    if (enviarChecklist.derivacion && (data.derivaciones || []).length > 0) {
+      sections.push('<h2 style="text-align:center;font-weight:900;">Derivaciones</h2>' +
+        (data.derivaciones || []).map(d => `<p>• ${d.especialidad || ''} — ${d.motivo || ''} — Prioridad: ${d.prioridad || 'Normal'}</p>`).join(''));
+    }
+    if (enviarChecklist.examenes && (data.examenesSolicitados || []).length > 0) {
+      sections.push('<h2 style="text-align:center;font-weight:900;">Solicitud de Exámenes</h2>' +
+        (data.examenesSolicitados || []).map(e => `<p>• ${e.nombre || e.examen || ''} — ${e.justificacion || ''}</p>`).join(''));
+    }
+
+    const combined = sections.join('<div style="page-break-before:always"></div>');
+    openPrintWindow(`OcupaSalud — ${data.nombres || 'Paciente'}`, combined);
     setShowEnviarPanel(false);
-  }, [data, activeDoctorData]);
+  }, [data, activeDoctorData, enviarChecklist]);
 
   // ═══ RENDER ═══
   return (
