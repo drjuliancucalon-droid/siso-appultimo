@@ -10,7 +10,7 @@ import { printHC } from '../lib/printService';
 import { initialGeneralPatientState } from '../shared/data/initialStates';
 import {
   ArrowLeft, Save, Printer, Loader2, CheckCircle, AlertTriangle,
-  FileText, Pill, TestTube, Paperclip, Hospital, Sparkles, ClipboardList, Settings, Lock
+  FileText, Pill, GitBranch, TestTube, Paperclip, Hospital, Sparkles, ClipboardList, Settings, Lock
 } from 'lucide-react';
 
 // ═══ STATIC IMPORTS ═══
@@ -43,6 +43,7 @@ class HCErrorBoundary extends React.Component {
 const TABS = [
   { id: 'form', label: 'HC General', icon: FileText, color: 'blue' },
   { id: 'formulaTab', label: 'Fórmula', icon: Pill, color: 'purple' },
+  { id: 'derivacionTab', label: 'Derivaciu00f3n', icon: GitBranch, color: 'indigo' },
   { id: 'examenes', label: 'Exámenes', icon: TestTube, color: 'teal' },
   { id: 'adjuntos', label: 'Adjuntos', icon: Paperclip, color: 'orange' },
   { id: 'incapacidad', label: 'Incapacidad', icon: Hospital, color: 'red' },
@@ -185,7 +186,10 @@ export default function HistoriaGeneralPage() {
             historyNotification={null} />
         )}
         {activeTab === 'formulaTab' && (
-          <TabFormulaDerivacion data={data} setData={setData} activeDoctorData={activeDoctorData} activeSignature={null} forceTab="formula" />
+          <TabFormulaDerivacion data={data} setData={setData} activeDoctorData={activeDoctorData} activeSignature={null} forceTab="formula" currentUser={currentUser} companies={[]} />
+        )}
+        {activeTab === 'derivacionTab' && (
+          <TabFormulaDerivacion data={data} setData={setData} activeDoctorData={activeDoctorData} activeSignature={null} forceTab="derivacion" currentUser={currentUser} companies={[]} />
         )}
         {activeTab === 'examenes' && <ExamRequestTab patientData={data} doctorData={activeDoctorData} />}
         {activeTab === 'adjuntos' && <AttachmentsTab patientId={data.docNumero} />}
