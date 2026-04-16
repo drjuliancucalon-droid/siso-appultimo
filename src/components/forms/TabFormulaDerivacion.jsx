@@ -3,7 +3,13 @@ import React from 'react';
 import { DERIVACIONES_CATALOG, SPECIALTIES_LIST } from '../../data/catalogos.js';
 import MedicamentoAutocomplete from '../ui/MedicamentoAutocomplete.jsx';
 import { _generarCertificadoHTMLNormalizado } from '../../shared/lib/printUtils.js';
-import { Pill, Share2, Printer, Plus, Trash2, Search, X } from 'lucide-react';
+import { Pill } from 'lucide-react';
+import { Share2 } from 'lucide-react';
+import { Printer } from 'lucide-react';
+import { Plus } from 'lucide-react';
+import { Trash2 } from 'lucide-react';
+import { Search } from 'lucide-react';
+import { X } from 'lucide-react';
 import BrandLogo from '../ui/BrandLogo.jsx';
 import DoctorSignature from '../ui/DoctorSignature';
 
