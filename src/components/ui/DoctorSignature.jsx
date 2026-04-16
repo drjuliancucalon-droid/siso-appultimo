@@ -1,8 +1,13 @@
 ﻿// src/components/ui/DoctorSignature.jsx
 import React from 'react';
 
+const DEFAULT_DOCTOR_DATA_FALLBACK = {
+  nombre: 'Nombre del Profesional', titulo: 'Especialista SST',
+  cedula: '--', licencia: '--', celular: '', ciudad: ''
+};
+
 const DoctorSignature = ({ signature, data, showData = true }) => {
-  const doc = data || DEFAULT_DOCTOR_DATA;
+  const doc = data || DEFAULT_DOCTOR_DATA_FALLBACK;
   return (
     <div className="flex flex-col items-center justify-center w-full">
       <div className="h-16 w-52 flex items-center justify-center mb-0.5">

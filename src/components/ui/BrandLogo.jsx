@@ -1,8 +1,14 @@
 ﻿// src/components/ui/BrandLogo.jsx
 import React from 'react';
+import { Stethoscope } from 'lucide-react';
+
+const DEFAULT_DOCTOR_DATA_FALLBACK = {
+  nombre: 'MÉDICO', titulo: 'Salud Ocupacional',
+  licencia: '--', ciudad: ''
+};
 
 const BrandLogo = ({ data }) => {
-  const doc = data || DEFAULT_DOCTOR_DATA;
+  const doc = data || DEFAULT_DOCTOR_DATA_FALLBACK;
   const parts = (doc.nombre || "").trim().split(/\s+/);
   const initials =
     parts.length >= 2
