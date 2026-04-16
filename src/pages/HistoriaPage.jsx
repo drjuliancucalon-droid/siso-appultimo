@@ -86,6 +86,9 @@ export default function HistoriaPage() {
     }
   }, [id, patients.length]);
 
+  // Save (declared BEFORE auto-save effect to avoid TDZ)
+  const { save, saving, lastSaveStatus } = useSaveData();
+
   // P10 FIX: Dirty tracking
   const [isDirty, setIsDirty] = React.useState(false);
   const prevDataRef = useRef(JSON.stringify(data));
@@ -110,9 +113,6 @@ export default function HistoriaPage() {
     }, 60000);
     return () => clearInterval(interval);
   }, [isDirty, data, currentUser, save]);
-
-  // Save
-  const { save, saving, lastSaveStatus } = useSaveData();
   const handleSave = useCallback(async () => {
     const userId = currentUser?.user || 'drcucalon';
     const isNew = !data.id;
