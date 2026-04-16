@@ -19,6 +19,10 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks(id) {
+          // Lucide icons in a shared vendor chunk (fixes "Plus is not defined" in lazy chunks)
+          if (id.includes('lucide-react')) {
+            return 'vendor-lucide';
+          }
           if (sgsstModules.some(m => id.includes(m.replace(/\//g, '\\')) || id.includes(m))) {
             return 'sgsst';
           }
