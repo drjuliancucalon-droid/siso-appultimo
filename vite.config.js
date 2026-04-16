@@ -1,31 +1,28 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
-const sgsstModules = [
-  'src/modules/sgsst/components/SSTDashboard',
-  'src/modules/sgsst/components/PolicyGenerator',
-  'src/modules/sgsst/components/RiskMatrix',
-  'src/modules/sgsst/components/AnnualPlan',
-  'src/modules/sgsst/components/TrainingModule',
-  'src/modules/sgsst/components/AccidentInvestigation',
-  'src/modules/sgsst/components/InspectionChecklist',
-  'src/modules/sgsst/components/DocumentRepository',
-];
-
 export default defineConfig({
   plugins: [react()],
   build: {
     outDir: 'dist',
+    // Disable automatic chunk splitting for shared modules
+    // This ensures TabFormulaDerivacion, DoctorSignature, etc. stay in the page chunk
+    // that imports them, not in a separate shared chunk
     rollupOptions: {
       output: {
         manualChunks(id) {
-          // Lucide icons in a shared vendor chunk (fixes "Plus is not defined" in lazy chunks)
-          if (id.includes('lucide-react')) {
-            return 'vendor-lucide';
-          }
-          if (sgsstModules.some(m => id.includes(m.replace(/\//g, '\\')) || id.includes(m))) {
-            return 'sgsst';
-          }
+          // SGSST goes to its own chunk (it's a big independent module)
+          if (id.includes('modules/sgsst')) return 'sgsst';
+          // lucide-react as shared vendor
+          if (id.includes('lucide-react')) return 'vendor-lucide';
+          // TabFormulaDerivacion MUST stay with HistoriaPage
+          if (id.includes('TabFormulaDerivacion')) return 'hc-clinical';
+          // All clinical components in one chunk
+          if (id.includes('modules/clinical')) return 'hc-clinical';
+          // UI components used by HC
+          if (id.includes('components/ui/DoctorSignature') ||
+              id.includes('components/ui/BrandLogo') ||
+              id.includes('components/panels/')) return 'hc-clinical';
         }
       }
     }

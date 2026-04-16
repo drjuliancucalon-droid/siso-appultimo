@@ -22,12 +22,15 @@ import {
 // Each component is bundled with this page chunk
 import OccupationalHC from '../modules/clinical/components/OccupationalHC';
 import { CertificateView } from '../modules/clinical/components/CertificateView';
-import TabFormulaDerivacion from '../components/forms/TabFormulaDerivacion';
+import TabFormulaDerivacion from '../modules/clinical/components/PrescriptionTab';
 import { ExamRequestTab } from '../modules/clinical/components/ExamRequestTab';
 import { AttachmentsTab } from '../modules/clinical/components/AttachmentsTab';
 import { DisabilityTab } from '../modules/clinical/components/DisabilityTab';
 import { EvolucionModal } from '../modules/clinical/components/EvolucionModal';
 import { AIConfigPanel } from '../modules/ai/components/AIConfigPanel';
+import RestriccionesChecklistPanel from '../components/panels/RestriccionesChecklistPanel';
+import RecomendacionesChecklistPanel from '../components/panels/RecomendacionesChecklistPanel';
+import ConsentimientoModal from '../components/modals/ConsentimientoModal';
 
 // ═══ Error Boundary ═══
 class HCErrorBoundary extends React.Component {
@@ -409,6 +412,27 @@ export default function HistoriaPage() {
           <EvolucionModal patientId={data.docNumero || data.id} patientName={data.nombres} doctorData={activeDoctorData} onClose={() => setActiveTab('form')} />
         )}
       </HCErrorBoundary>
+
+      {/* ═══ Panels: Restricciones, Recomendaciones, Consentimiento ═══ */}
+      {showRestriccionesPanel && (
+        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4" onClick={() => setShowRestriccionesPanel(false)}>
+          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <RestriccionesChecklistPanel data={data} setData={setData} onClose={() => setShowRestriccionesPanel(false)} isGenerating={isGeneratingRestr} />
+          </div>
+        </div>
+      )}
+      {showRecomendacionesPanel && (
+        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4" onClick={() => setShowRecomendacionesPanel(false)}>
+          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <RecomendacionesChecklistPanel data={data} setData={setData} onClose={() => setShowRecomendacionesPanel(false)} isGenerating={isGeneratingReco} />
+          </div>
+        </div>
+      )}
+      {showConsentModal && (
+        <ConsentimientoModal data={data} estadoCerrada={data.estadoHistoria === 'Cerrada'}
+          onCerrar={() => setShowConsentModal(false)}
+          onConfirmar={(campos) => { dispatch(campos); setShowConsentModal(false); }} />
+      )}
 
       {/* ═══ AI Config Modal ═══ */}
       {showAIConfig && (

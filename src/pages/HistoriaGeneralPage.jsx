@@ -15,7 +15,7 @@ import {
 
 // ═══ STATIC IMPORTS ═══
 import { GeneralHC } from '../modules/clinical/components/GeneralHC';
-import TabFormulaDerivacion from '../components/forms/TabFormulaDerivacion';
+import TabFormulaDerivacion from '../modules/clinical/components/PrescriptionTab';
 import { ExamRequestTab } from '../modules/clinical/components/ExamRequestTab';
 import { AttachmentsTab } from '../modules/clinical/components/AttachmentsTab';
 import { DisabilityTab } from '../modules/clinical/components/DisabilityTab';
