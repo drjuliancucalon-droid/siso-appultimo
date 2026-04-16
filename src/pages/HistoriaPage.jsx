@@ -320,6 +320,9 @@ export default function HistoriaPage() {
         <button onClick={() => navigate('/patients')} className="flex items-center gap-2 text-sm font-semibold text-gray-500 hover:text-emerald-700 transition-colors">
           <ArrowLeft className="w-4 h-4" /> Volver a Pacientes
         </button>
+        <button onClick={() => navigate('/hc/general')} className="flex items-center gap-1.5 text-xs font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 px-4 py-2 rounded-xl transition-all shadow-sm">
+          <Stethoscope className="w-4 h-4" /> Ingresar a HC General
+        </button>
       </div>
 
       {/* --- PATIENT HEADER & TABS --- */}
@@ -392,6 +395,14 @@ export default function HistoriaPage() {
 
           <button onClick={() => printHC(data, activeDoctorData)} className="flex items-center gap-1.5 px-4 py-2 text-[11px] uppercase tracking-wider font-black text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 rounded-xl transition-colors shadow-sm">
             <Printer className="w-3.5 h-3.5 text-gray-500" /> Imprimir
+          </button>
+          
+          <button onClick={handleRIPS} className="hidden lg:flex items-center gap-1.5 px-4 py-2 text-[11px] uppercase tracking-wider font-black text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 rounded-xl transition-colors shadow-sm">
+            <Database className="w-3.5 h-3.5 text-blue-500" /> RIPS
+          </button>
+          
+          <button onClick={handleFHIR} className="hidden lg:flex items-center gap-1.5 px-4 py-2 text-[11px] uppercase tracking-wider font-black text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 rounded-xl transition-colors shadow-sm">
+            <Heart className="w-3.5 h-3.5 text-red-500" /> FHIR
           </button>
           
           
