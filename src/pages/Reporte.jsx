@@ -957,6 +957,168 @@ export default function Reporte({
   );
 
   // ═══════════════════════════════════════════════════════════════════════
+  // RENDER: MÓDULO FINANCIERO
+  // ═══════════════════════════════════════════════════════════════════════
+  const renderFinanciero = () => {
+    const totalPacientes = filteredPatients.length;
+    const precioUnitario = precioPorPaciente || 35000;
+    const totalAPagar = totalPacientes * precioUnitario;
+    
+    // Generar cuenta de cobro
+    const generarCuentaCobro = () => {
+      const empresa = companies.find(c => c.id === selectedCompanyReport);
+      const cuenta = {
+        numero: `CC-${Date.now()}`,
+        fecha: new Date().toISOString().split('T')[0],
+        empresa: empresa?.nombre || 'Varias empresas',
+        nit: empresa?.nit || 'N/A',
+        cantidad: totalPacientes,
+        precioUnitario: precioUnitario,
+        total: totalAPagar,
+        concepto: 'Servicios de Medicina Ocupacional - Exámenes Ocupacionales',
+        periodo: `${reportStartDate || '...'} a ${reportEndDate || '...'}`,
+      };
+      return cuenta;
+    };
+
+    const cuenta = generarCuentaCobro();
+
+    return (
+      <div className="space-y-6">
+        {/* Resumen financiero */}
+        <div className="bg-orange-50 border border-orange-200 rounded-xl p-4">
+          <p className="font-black text-orange-800 flex items-center gap-2">
+            <DollarSign className="w-4 h-4" /> Módulo Financiero - Cuenta de Cobro
+          </p>
+          <p className="text-xs text-orange-600 mt-1">
+            Cálculo automático basado en pacientes evaluados en el período seleccionado
+          </p>
+        </div>
+
+        {/* Cards de cálculo */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="bg-white border border-gray-200 rounded-xl p-5 text-center">
+            <Users className="w-8 h-8 text-blue-600 mx-auto mb-2" />
+            <p className="text-3xl font-black text-gray-800">{totalPacientes}</p>
+            <p className="text-xs font-bold text-gray-500">Pacientes Evaluados</p>
+          </div>
+          <div className="bg-white border border-gray-200 rounded-xl p-5 text-center">
+            <FileText className="w-8 h-8 text-emerald-600 mx-auto mb-2" />
+            <p className="text-3xl font-black text-gray-800">${precioUnitario.toLocaleString('es-CO')}</p>
+            <p className="text-xs font-bold text-gray-500">Precio por Paciente</p>
+          </div>
+          <div className="bg-white border border-orange-200 rounded-xl p-5 text-center">
+            <DollarSign className="w-8 h-8 text-orange-600 mx-auto mb-2" />
+            <p className="text-3xl font-black text-orange-600">${totalAPagar.toLocaleString('es-CO')}</p>
+            <p className="text-xs font-bold text-orange-500">Total a Cobrar</p>
+          </div>
+        </div>
+
+        {/* Precio por paciente - editable */}
+        <div className="bg-white border border-gray-200 rounded-xl p-5">
+          <label className="text-sm font-bold text-gray-700 block mb-2">
+            💰 Precio por paciente ($):
+          </label>
+          <input 
+            type="number" 
+            value={precioPorPaciente || 35000}
+            onChange={e => setPrecioPorPaciente?.(parseInt(e.target.value) || 0)}
+            className="w-full p-3 border border-gray-200 rounded-lg text-sm font-bold"
+            placeholder="35000"
+          />
+          <p className="text-xs text-gray-400 mt-2">
+            Valor por defecto: $35,000 por examen ocupacional
+          </p>
+        </div>
+
+        {/* Vista previa de cuenta de cobro */}
+        <div className="bg-white border border-gray-200 rounded-xl p-5">
+          <h3 className="font-black text-sm text-gray-800 mb-4 flex items-center gap-2">
+            <FileText className="w-4 h-4 text-gray-600" /> Vista Previa - Cuenta de Cobro
+          </h3>
+          
+          <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 font-mono text-xs">
+            <div className="border-b border-gray-300 pb-2 mb-2">
+              <p className="font-black text-lg">CUENTA DE COBRO</p>
+              <p className="text-gray-500">No. {cuenta.numero}</p>
+            </div>
+            
+            <div className="space-y-2">
+              <div className="flex justify-between">
+                <span className="text-gray-600">Fecha:</span>
+                <span className="font-bold">{cuenta.fecha}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">Empresa:</span>
+                <span className="font-bold">{cuenta.empresa}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">NIT:</span>
+                <span className="font-bold">{cuenta.nit}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">Período:</span>
+                <span className="font-bold">{cuenta.periodo}</span>
+              </div>
+              <div className="border-t border-gray-300 pt-2 mt-2">
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Cantidad de exámenes:</span>
+                  <span className="font-bold">{cuenta.cantidad}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Valor unitario:</span>
+                  <span className="font-bold">${cuenta.precioUnitario.toLocaleString('es-CO')}</span>
+                </div>
+                <div className="flex justify-between border-t border-gray-300 pt-2 mt-2">
+                  <span className="font-black text-gray-800">TOTAL A COBRAR:</span>
+                  <span className="font-black text-orange-600 text-lg">${cuenta.total.toLocaleString('es-CO')}</span>
+                </div>
+              </div>
+              <div className="border-t border-gray-300 pt-2 mt-2">
+                <p className="text-gray-600">Concepto:</p>
+                <p className="font-bold">{cuenta.concepto}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex gap-3 mt-4">
+            <button 
+              onClick={() => {
+                const contenido = `
+CUENTA DE COBRO No. ${cuenta.numero}
+Fecha: ${cuenta.fecha}
+
+Empresa: ${cuenta.empresa}
+NIT: ${cuenta.nit}
+Período: ${cuenta.periodo}
+
+Cantidad de exámenes: ${cuenta.cantidad}
+Valor unitario: $${cuenta.precioUnitario.toLocaleString('es-CO')}
+
+TOTAL A COBRAR: $${cuenta.total.toLocaleString('es-CO')}
+
+Concepto: ${cuenta.concepto}
+                `.trim();
+                const blob = new Blob([contenido], { type: 'text/plain;charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `cuenta_cobro_${cuenta.numero}.txt`;
+                a.click();
+                URL.revokeObjectURL(url);
+                showAlert?.('✅ Cuenta de cobro exportada.');
+              }}
+              className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-blue-100 text-blue-700 rounded-xl font-bold text-sm hover:bg-blue-200"
+            >
+              <Download className="w-4 h-4" /> Descargar Cuenta de Cobro
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // ═══════════════════════════════════════════════════════════════════════
   // MAIN RENDER
   // ═══════════════════════════════════════════════════════════════════════
   return (
@@ -1026,6 +1188,7 @@ export default function Reporte({
           { id: 'sve', label: 'Indicadores SVE', icon: Shield },
           { id: 'ia', label: 'Informe IA', icon: Brain },
           { id: 'certificados', label: 'Certificados', icon: FileCheck },
+          { id: 'financiero', label: 'Financiero', icon: DollarSign },
         ].map(tab => (
           <button key={tab.id} onClick={() => setActiveTab(tab.id)}
             className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold whitespace-nowrap transition ${
@@ -1053,6 +1216,7 @@ export default function Reporte({
       )}
       {activeTab === 'ia' && renderAIReport()}
       {activeTab === 'certificados' && renderCertificados()}
+      {activeTab === 'financiero' && renderFinanciero()}
     </div>
   );
 }
