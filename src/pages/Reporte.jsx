@@ -114,7 +114,82 @@ export default function Reporte({
       else byAge['60+']++;
     });
 
-    return { total, byTipo, byConcepto, topDiag, byGender, byAge };
+    // By escolaridad
+    const byEscolaridad = {};
+    filteredPatients.forEach(p => {
+      const esc = p.escolaridad || 'No registrada';
+      byEscolaridad[esc] = (byEscolaridad[esc] || 0) + 1;
+    });
+
+    // By estado civil
+    const byEstadoCivil = {};
+    filteredPatients.forEach(p => {
+      const ec = p.estadoCivil || 'No registrado';
+      byEstadoCivil[ec] = (byEstadoCivil[ec] || 0) + 1;
+    });
+
+    // By estrato
+    const byEstrato = {};
+    filteredPatients.forEach(p => {
+      const est = p.estrato || 'No registrado';
+      byEstrato[est] = (byEstrato[est] || 0) + 1;
+    });
+
+    // By zona residencia
+    const byZona = {};
+    filteredPatients.forEach(p => {
+      const zona = p.zonaResidencia || 'No registrada';
+      byZona[zona] = (byZona[zona] || 0) + 1;
+    });
+
+    // By cargo
+    const byCargo = {};
+    filteredPatients.forEach(p => {
+      const cargo = p.cargo || 'No registrado';
+      byCargo[cargo] = (byCargo[cargo] || 0) + 1;
+    });
+
+    // By tipo contrato
+    const byContrato = {};
+    filteredPatients.forEach(p => {
+      const tc = p.tipoContrato || 'No registrado';
+      byContrato[tc] = (byContrato[tc] || 0) + 1;
+    });
+
+    // By turno
+    const byTurno = {};
+    filteredPatients.forEach(p => {
+      const turno = p.turnoTrabajo || 'No registrado';
+      byTurno[turno] = (byTurno[turno] || 0) + 1;
+    });
+
+    // By riesgos ocupacionales
+    const byRiesgos = { 'Físicos': 0, 'Químicos': 0, 'Biológicos': 0, 'Mecánicos': 0, 'Biomecánicos': 0, 'Psicosocial': 0, 'Seguridad': 0, 'Locativos': 0 };
+    filteredPatients.forEach(p => {
+      const riesgos = p.riesgos || {};
+      if (riesgos.fisicos) byRiesgos['Físicos']++;
+      if (riesgos.quimicos) byRiesgos['Químicos']++;
+      if (riesgos.biologicos) byRiesgos['Biológicos']++;
+      if (riesgos.mecanicos) byRiesgos['Mecánicos']++;
+      if (riesgos.biomecanicos) byRiesgos['Biomecánicos']++;
+      if (riesgos.psicosocial) byRiesgos['Psicosocial']++;
+      if (riesgos.seguridad) byRiesgos['Seguridad']++;
+      if (riesgos.locativos) byRiesgos['Locativos']++;
+    });
+
+    // By estilos de vida
+    const byEstilos = { 'Fumadores': 0, 'Alcohol': 0, 'Deporte': 0 };
+    filteredPatients.forEach(p => {
+      if ((p.habitos?.fuma || p.fuma || '').toLowerCase().includes('si')) byEstilos['Fumadores']++;
+      if ((p.habitos?.alcohol || p.alcohol || '').toLowerCase().includes('si')) byEstilos['Alcohol']++;
+      if ((p.habitos?.deporte || p.deporte || '').toLowerCase().includes('si')) byEstilos['Deporte']++;
+    });
+
+    return { 
+      total, byTipo, byConcepto, topDiag, byGender, byAge, 
+      byEscolaridad, byEstadoCivil, byEstrato, byZona, 
+      byCargo, byContrato, byTurno, byRiesgos, byEstilos 
+    };
   }, [filteredPatients]);
 
   // ── SVE Indicators ──────────────────────────────────────────────────

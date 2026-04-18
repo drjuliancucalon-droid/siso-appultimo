@@ -2,6 +2,6 @@
 import React from 'react';
 import Companies from './Companies';
 
-export default function CompaniesPage() {
-  return <Companies />;
+export default function CompaniesPage(props) {
+  return <Companies {...props} />;
 }

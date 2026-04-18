@@ -1,8 +1,11 @@
-// src/pages/BackupPage.jsx — Backup & Restore
-// Sprint 3.6: Export/import all data as JSON
-import React, { useState } from 'react';
-import { Download, Upload, Loader2, CheckCircle, AlertCircle, Database } from 'lucide-react';
+// src/pages/BackupPage.jsx — Backup & Restore + RIPS
+// T-03: Completar Backup - Automático + RIPS
+import React, { useState, useEffect } from 'react';
+import { Download, Upload, Loader2, CheckCircle, AlertCircle, Database, Clock, FileText, Settings } from 'lucide-react';
 import { useBackendData } from '../hooks/useBackendData';
+
+const SB_URL = 'https://yqrrktrgoijgzccrxnpz.supabase.co';
+const SB_KEY = 'sb_publishable_K88qYuJ9wsWjQqnIhLVK7Q_NroFvPI7';
 
 const BACKUP_KEYS = [
   { key: 'siso_patients_drcucalon', label: 'Pacientes' },
@@ -11,7 +14,99 @@ const BACKUP_KEYS = [
   { key: 'siso_agendados_drcucalon', label: 'Agenda' },
   { key: 'siso_saved_bills_drcucalon', label: 'Facturas' },
   { key: 'siso_audit_log', label: 'Auditoría' },
+  { key: 'siso_caja_movs_drcucalon', label: 'Caja' },
+  { key: 'siso_atenciones', label: 'Atenciones' },
 ];
+
+// T-03: Historial de backups
+const BACKUP_HISTORY_KEY = 'siso_backup_history';
+
+const loadBackupHistory = () => {
+  try { return JSON.parse(localStorage.getItem(BACKUP_HISTORY_KEY) || '[]'); } catch { return []; }
+};
+
+const saveBackupToHistory = (backupInfo) => {
+  const history = loadBackupHistory();
+  const newEntry = { ...backupInfo, id: `bk_${Date.now()}`, fecha: new Date().toISOString() };
+  const updated = [newEntry, ...history].slice(0, 20); // Mantener últimos 20
+  localStorage.setItem(BACKUP_HISTORY_KEY, JSON.stringify(updated));
+};
+
+// T-03: Generar RIPS (monolito líneas 47000+)
+const generateRIPS = (patients, doctor) => {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  
+  // AF - Datos de afiliación
+  const AF = patients.map(p => ({
+    tipoDocumentoIdentificacion: p.docTipo || 'CC',
+    numeroIdentificacion: p.docNumero || '',
+    codigoEPS: p.eps?.substring(0, 6) || 'N/A',
+    tipoAfiliado: p.tipoContrato?.toUpperCase().includes('DEPENDIENTE') ? 'C' : 'I',
+    primerApellido: p.apellidos?.split(' ')[0] || '',
+    segundoApellido: p.apellidos?.split(' ').slice(1).join(' ') || '',
+    primerNombre: p.nombres?.split(' ')[0] || '',
+    segundoNombre: p.nombres?.split(' ').slice(1).join(' ') || '',
+    fechaNacimiento: p.fechaNacimiento || '',
+    sexo: p.genero === 'Masculino' ? 'M' : p.genero === 'Femenino' ? 'F' : 'I',
+    direccion: p.residencia || '',
+    telefono: p.celular || p.telefono || '',
+    codigoMunicipio: '19001', // Popayán por defecto
+  }));
+
+  // AD - Datos de atención
+  const AD = patients.map((p, i) => ({
+    numeroFactura: `F${year}${month}${String(i + 1).padStart(6, '0')}`,
+    codigoPrestador: doctor?.licencia?.substring(0, 12) || 'SISO001',
+    NitPrestador: doctor?.nit || '000000000',
+    fechaAtencion: p.fechaExamen || now.toISOString().split('T')[0],
+    codigoDiagnosticoPrincipal: p.diagnostico1?.substring(0, 4) || 'Z10.0',
+    diagnosticoPrincipal: p.diagnostico1 || '',
+    tipoDiagnosticoPrincipal: '1', // Principal
+    causaMotivoAtencion: p.motivoConsulta || '',
+    tipoDocumentoIdentificacion: p.docTipo || 'CC',
+    numeroIdentificacion: p.docNumero || '',
+    vrServicio: p.costo || 35000,
+    vrCup: p.costo || 35000,
+    vrTotal: p.costo || 35000,
+  }));
+
+  // AC - Consulta
+  const AC = patients.map((p, i) => ({
+    codigoPrestador: doctor?.licencia?.substring(0, 12) || 'SISO001',
+    fechaAtencion: p.fechaExamen || now.toISOString().split('T')[0],
+    tipoDocumentoIdentificacion: p.docTipo || 'CC',
+    numeroIdentificacion: p.docNumero || '',
+    sexo: p.genero === 'Masculino' ? 'M' : p.genero === 'Femenino' ? 'F' : 'I',
+    edad: parseInt(p.edad) || 0,
+    unidadMedidaEdad: 1, // Años
+    codigoDiagnosticoPrincipal: p.diagnostico1?.substring(0, 4) || 'Z10.0',
+    tipoDiagnosticoPrincipal: '1',
+    objetivo: p.tipoExamen || 'Ocupacional',
+    causaMotivoAtencion: p.motivoConsulta || '',
+    codigoProcedimiento: '890101',
+    vrProcedimiento: 35000,
+  }));
+
+  // AN - Otros servicios
+  const AN = [];
+
+  // AU - AutORIZACIONES
+  const AU = [];
+
+  // AT - Resumen de atención
+  const AT = {
+    numeroRegistros: patients.length,
+    vrTotal: patients.reduce((sum, p) => sum + (parseInt(p.costo) || 35000), 0),
+    fechaGeneracion: now.toISOString(),
+    codigoPrestador: doctor?.licencia?.substring(0, 12) || 'SISO001',
+    NitPrestador: doctor?.nit || '000000000',
+    nombrePrestador: doctor?.nombre || 'OcupaSalud',
+  };
+
+  return { AF, AD, AC, AN, AU, AT };
+};
 
 export default function BackupPage() {
   const [exporting, setExporting] = useState(false);
@@ -118,6 +213,71 @@ export default function BackupPage() {
             {importing ? 'Importando...' : 'Seleccionar archivo'}
             <input type="file" accept=".json" onChange={handleImport} className="hidden" disabled={importing} />
           </label>
+        </div>
+      </div>
+
+      {/* T-03: Export RIPS */}
+      <div className="mt-6 bg-blue-50 border border-blue-200 rounded-xl p-4">
+        <div className="flex items-center gap-2 mb-3">
+          <FileText className="w-4 h-4 text-blue-600" />
+          <h3 className="font-bold text-blue-800 text-sm">Exportar RIPS (Ministerio de Salud)</h3>
+        </div>
+        <p className="text-xs text-blue-600 mb-3">Genera archivos RIPS para reporte obligatorio al Ministerio (Res. 3374/2000)</p>
+        <button 
+          onClick={async () => {
+            try {
+              // Get patients data
+              const res = await fetch(`${SB_URL}/rest/v1/siso_store?key=eq.siso_patients_drcucalon&select=value`, {
+                headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` }
+              });
+              const rows = await res.json();
+              const patients = rows?.[0]?.value || [];
+              
+              // Get doctor data
+              const docRes = await fetch(`${SB_URL}/rest/v1/siso_store?key=eq.siso_doctor_data&select=value`, {
+                headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` }
+              });
+              const docRows = await docRes.json();
+              const doctor = docRows?.[0]?.value || {};
+              
+              const rips = generateRIPS(patients, doctor);
+              
+              // Download each file
+              const downloadFile = (data, filename) => {
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                a.click();
+                URL.revokeObjectURL(url);
+              };
+              
+              downloadFile(rips.AF, `RIPS_AF_${new Date().toISOString().split('T')[0]}.json`);
+              setTimeout(() => downloadFile(rips.AD, `RIPS_AD_${new Date().toISOString().split('T')[0]}.json`), 500);
+              setTimeout(() => downloadFile(rips.AC, `RIPS_AC_${new Date().toISOString().split('T')[0]}.json`), 1000);
+              setTimeout(() => downloadFile(rips.AT, `RIPS_AT_${new Date().toISOString().split('T')[0]}.json`), 1500);
+              
+              setStatus({ type: 'ok', msg: `RIPS exportados: ${patients.length} registros` });
+            } catch (err) {
+              setStatus({ type: 'error', msg: 'Error exportando RIPS: ' + err.message });
+            }
+          }}
+          className="px-4 py-2 bg-blue-600 text-white rounded-lg text-xs font-bold hover:bg-blue-700"
+        >
+          <FileText className="w-3.5 h-3.5 inline mr-1" />
+          Exportar RIPS (AF, AD, AC, AT)
+        </button>
+      </div>
+
+      {/* T-03: Historial de backups */}
+      <div className="mt-4 bg-gray-50 border border-gray-200 rounded-xl p-4">
+        <div className="flex items-center gap-2 mb-3">
+          <Clock className="w-4 h-4 text-gray-600" />
+          <h3 className="font-bold text-gray-700 text-sm">Historial de Backups</h3>
+        </div>
+        <div className="text-xs text-gray-500 italic">
+          Funcionalidad de historial en desarrollo - se guardará automáticamente al exportar
         </div>
       </div>
 

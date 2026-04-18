@@ -1,21 +1,94 @@
+// B-07: Telemedicine - Sala de espera + flujo completo (monolito líneas 30966-31800)
 import React, { useState, useEffect, useRef } from 'react';
-import { Video, Clock, Play, Square, Link2, Copy, CheckCircle, FileText } from 'lucide-react';
+import { Video, Clock, Play, Square, Link2, Copy, CheckCircle, FileText, Phone, PhoneOff, Users, Plus } from 'lucide-react';
 import { sp, _ls } from '../../../shared/lib/storage';
 
 const STORAGE_KEY = 'siso_teleconsultas';
+const TELE_SALA_KEY = 'siso_teleSala';
+const TELE_ESPERA_KEY = 'siso_teleEspera';
 
 const STATUS_CONFIG = {
   programada: { label: 'Programada', color: 'bg-yellow-100 text-yellow-800' },
   en_curso: { label: 'En curso', color: 'bg-green-100 text-green-800' },
   finalizada: { label: 'Finalizada', color: 'bg-gray-100 text-gray-600' },
+  esperando: { label: 'En espera', color: 'bg-blue-100 text-blue-800' },
 };
 
 const generarRoomUrl = (consultaId) => {
   return `https://ocupasalud.daily.co/room-${consultaId}`;
 };
 
-export const VideoConsult = () => {
+// B-07: Generar sala Jitsi (monolito handleIniciarSala)
+const generarSalaJitsi = (medicoId) => {
+  const jitsiRoom = `siso-${medicoId}-${Date.now()}`;
+  const linkPublico = `https://meet.jit.si/${jitsiRoom}`;
+  return { room: jitsiRoom, link: linkPublico };
+};
+
+export const VideoConsult = ({ currentUser }) => {
   const [consultas, setConsultas] = useState([]);
+  
+  // B-07: Estado de sala de telemedicine
+  const [teleSala, setTeleSala] = useState(() => sp(TELE_SALA_KEY, { activa: false, room: null, link: null, iniciada: null }));
+  const [teleEspera, setTeleEspera] = useState(() => sp(TELE_ESPERA_KEY, []));
+  const [consultaActiva, setConsultaActiva] = useState(null);
+
+  // B-07: Guardar estado de sala
+  useEffect(() => {
+    _ls.setItem(TELE_SALA_KEY, JSON.stringify(teleSala));
+  }, [teleSala]);
+
+  useEffect(() => {
+    _ls.setItem(TELE_ESPERA_KEY, JSON.stringify(teleEspera));
+  }, [teleEspera]);
+
+  // B-07: Iniciar sala de telemedicine (monolito handleIniciarSala)
+  const handleIniciarSala = () => {
+    const userId = currentUser?.user || 'medico';
+    const { room, link } = generarSalaJitsi(userId);
+    setTeleSala({
+      activa: true,
+      room,
+      link,
+      iniciada: new Date().toISOString(),
+    });
+  };
+
+  // B-07: Cerrar sala (monolito handleCerrarSala)
+  const handleCerrarSala = () => {
+    // Marcar todos los pendientes como no atendidos
+    const actualizados = teleEspera.map(p => ({ ...p, estado: 'no_atendido' }));
+    setTeleEspera(actualizados);
+    setTeleSala({ activa: false, room: null, link: null, iniciada: null });
+    setConsultaActiva(null);
+  };
+
+  // B-07: Iniciar consulta con paciente específico (monolito handleIniciarConsulta)
+  const handleIniciarConsulta = (pacienteId) => {
+    const paciente = teleEspera.find(p => p.id === pacienteId);
+    if (!paciente) return;
+    
+    // Cambiar estado a en_consulta
+    setTeleEspera(prev => prev.map(p => 
+      p.id === pacienteId ? { ...p, estado: 'en_consulta' } : p
+    ));
+    setConsultaActiva(paciente);
+  };
+
+  // B-07: Agregar paciente a sala de espera
+  const handleAgregarEspera = (paciente) => {
+    const nuevo = {
+      id: 'te_' + Date.now(),
+      nombre: paciente.nombre || 'Paciente',
+      email: paciente.email || '',
+      empresa: paciente.empresa || '',
+      tipoConsulta: paciente.tipo || 'General',
+      horaIngreso: new Date().toISOString(),
+      estado: 'esperando',
+      linkAcceso: teleSala.link,
+    };
+    setTeleEspera(prev => [...prev, nuevo]);
+  };
   const [filtro, setFiltro] = useState('todas');
   const [copiado, setCopiado] = useState('');
   const [notasEdit, setNotasEdit] = useState({});

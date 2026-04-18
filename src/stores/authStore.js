@@ -129,14 +129,40 @@ export const useAuthStore = create(
         return currentUser?.role === 'secretaria';
       },
 
-      canAccess: (feature) => {
+      canAccess: (feature, usersList = []) => {
         const { currentUser } = get();
         if (!currentUser) return false;
-        if (currentUser.role === 'super_admin' || currentUser.role === 'administrador') return true;
-        if (currentUser.role === 'secretaria') {
-          return !!(currentUser.permisosSecretaria || {})[feature];
+        const role = currentUser.role;
+        if (['super_admin', 'administrador', 'admin_empresa'].includes(role)) return true;
+        if (role === 'medico') return true;
+        if (role === 'secretaria') {
+          const SECRETARIA_PERMISOS_DEFAULT = {
+            agenda: false, bill: false, propuestas: false, telemedicina: false,
+            empresas: false, pacientes_lista: false, reporte: false, sve: false,
+            caja: false, adjuntos: false, cuentas_cobro: false, pacientes_crear: false,
+          };
+          const userObj = usersList?.find(u => u.user === currentUser.user || u.id === currentUser.id);
+          const permisos = userObj?.secretariaPermisos || currentUser?.secretariaPermisos || SECRETARIA_PERMISOS_DEFAULT;
+          return permisos[feature] === true;
         }
-        return true;
+        return false;
+      },
+
+      canUse: (feature) => {
+        const { currentUser } = get();
+        if (!currentUser) return false;
+        const PLAN_CONFIG = {
+          libre: { price: 0, features: ['agenda_basica', 'historias_basicas', 'backup_local'], hcLimit: 30 },
+          basico: { price: 49000, features: ['agenda_basica', 'historias_basicas', 'backup_local', 'reportes', 'telemedicina_basica', 'propuestas'], hcLimit: 200 },
+          pro: { price: 79000, features: ['todo'], hcLimit: Infinity },
+          empresarial: { price: 0, features: ['todo', 'multi_org'], hcLimit: Infinity },
+        };
+        const plan = currentUser.license || 'libre';
+        const cfg = PLAN_CONFIG[plan] || PLAN_CONFIG.libre;
+        if (cfg.price > 0 && currentUser.licenseExpiry) {
+          if (new Date(currentUser.licenseExpiry) < new Date()) return false;
+        }
+        return cfg.features.includes('todo') || cfg.features.includes(feature);
       },
     }),
     {

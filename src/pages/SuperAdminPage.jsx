@@ -1,13 +1,17 @@
 // src/pages/SuperAdminPage.jsx — Super Admin multi-org management
-// Sprint 7: Organization management
+// T-05: Completar SuperAdmin - Métricas globales + Logs auditoría
 import React, { useState } from 'react';
-import { Shield, Plus, Building2, Users, Edit2, Trash2, CheckCircle, XCircle } from 'lucide-react';
+import { Shield, Plus, Building2, Users, Edit2, Trash2, CheckCircle, XCircle, BarChart3, Clock, Activity, Database } from 'lucide-react';
 import { useAuthStore } from '../stores/authStore';
 import { useBackendData } from '../hooks/useBackendData';
 
 const STORAGE_KEY = 'siso_orgs';
 const load = () => { try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); } catch { return []; } };
 const persist = (d) => { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(d)); } catch {} };
+
+// T-05: Cargar logs de auditoría
+const AUDIT_LOG_KEY = 'siso_audit_log';
+const loadAuditLog = () => { try { return JSON.parse(localStorage.getItem(AUDIT_LOG_KEY) || '[]'); } catch { return []; } };
 
 const PLANS = [
   { id: 'libre', label: '🆓 Libre', color: 'bg-gray-100 text-gray-700' },
@@ -111,10 +115,69 @@ export default function SuperAdminPage() {
                   <button onClick={() => deleteOrg(org.id)} className="p-2 text-red-400 hover:bg-red-50 rounded-lg"><Trash2 className="w-4 h-4" /></button>
                 </div>
               </div>
-              {org.adminUser && <p className="text-xs text-gray-400 mt-2">Admin: {org.adminUser} | Creada: {new Date(org.createdAt).toLocaleDateString('es-CO')}</p>}
+      {org.adminUser && <p className="text-xs text-gray-400 mt-2">Admin: {org.adminUser} | Creada: {new Date(org.createdAt).toLocaleDateString('es-CO')}</p>}
             </div>
           );
         })}
+      </div>
+
+      {/* T-05: Métricas globales */}
+      <div className="mt-8 bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-200 rounded-xl p-5">
+        <div className="flex items-center gap-2 mb-4">
+          <BarChart3 className="w-5 h-5 text-indigo-600" />
+          <h3 className="font-black text-indigo-800">Métricas Globales</h3>
+        </div>
+        <p className="text-xs text-indigo-600 mb-4">Estadísticas consolidadas de todas las organizaciones</p>
+        
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="bg-white rounded-xl p-4 text-center">
+            <Activity className="w-6 h-6 text-emerald-500 mx-auto mb-2" />
+            <p className="text-xl font-black text-gray-800">{users.length}</p>
+            <p className="text-[10px] text-gray-500">Usuarios activos</p>
+          </div>
+          <div className="bg-white rounded-xl p-4 text-center">
+            <Users className="w-6 h-6 text-blue-500 mx-auto mb-2" />
+            <p className="text-xl font-black text-gray-800">—</p>
+            <p className="text-[10px] text-gray-500">Pacientes total</p>
+          </div>
+          <div className="bg-white rounded-xl p-4 text-center">
+            <Database className="w-6 h-6 text-purple-500 mx-auto mb-2" />
+            <p className="text-xl font-black text-gray-800">—</p>
+            <p className="text-[10px] text-gray-500">HC generadas</p>
+          </div>
+          <div className="bg-white rounded-xl p-4 text-center">
+            <Building2 className="w-6 h-6 text-orange-500 mx-auto mb-2" />
+            <p className="text-xl font-black text-gray-800">{orgs.filter(o => o.activa).length}</p>
+            <p className="text-[10px] text-gray-500">Empresas activas</p>
+          </div>
+        </div>
+      </div>
+
+      {/* T-05: Logs de auditoría (Res. 1888/2025) */}
+      <div className="mt-4 bg-amber-50 border border-amber-200 rounded-xl p-5">
+        <div className="flex items-center gap-2 mb-4">
+          <Clock className="w-5 h-5 text-amber-600" />
+          <h3 className="font-black text-amber-800">Logs de Auditoría (Res. 1888/2025)</h3>
+        </div>
+        <p className="text-xs text-amber-600 mb-4">Registro de acciones críticas del sistema</p>
+        
+        <div className="bg-white rounded-xl p-4">
+          <div className="text-xs text-gray-500 italic text-center py-4">
+            Los logs de auditoría se almacenan automáticamente cuando se realizan acciones críticas (crear HC, modificar datos de pacientes, cambios de configuración, etc.)
+          </div>
+          <div className="flex gap-2 mt-3">
+            <button 
+              onClick={() => {
+                const logs = loadAuditLog();
+                alert(`Total de logs: ${logs.length}\n\n(Los logs se muestran en la consola)`);
+                console.log('Audit logs:', logs);
+              }}
+              className="px-3 py-1.5 bg-amber-600 text-white rounded-lg text-xs font-bold hover:bg-amber-700"
+            >
+              Ver logs en consola
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -551,6 +551,90 @@ export default function Caja({
           </div>
         </div>
       )}
+
+      {/* T-01: Sección de Liquidación */}
+      <div className="mt-6 bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-200 rounded-xl p-5">
+        <div className="flex items-center gap-2 mb-4">
+          <FileText className="w-5 h-5 text-indigo-600" />
+          <h3 className="font-black text-indigo-800">Generar Liquidación</h3>
+        </div>
+        <p className="text-xs text-indigo-600 mb-3">Genera documento de liquidación para servicios de salud ocupacional</p>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <button 
+            onClick={() => {
+              // Generar liquidación - combina ingresos del período
+              const liq = {
+                titulo: 'LIQUIDACIÓN DE SERVICIOS',
+                fecha: today,
+                periodo: cajaFiltroPeriodo || 'hoy',
+                ingresos: stats.ingresos,
+                egresos: stats.egresos,
+                saldo: stats.saldo,
+                movimientos: filteredMovimientos,
+                generadoPor: currentUser?.user || 'Sistema',
+              };
+              const blob = new Blob([JSON.stringify(liq, null, 2)], { type: 'application/json' });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = `liquidacion_${today}.json`;
+              a.click();
+              URL.revokeObjectURL(url);
+              showAlert?.('✅ Liquidación exportada');
+            }}
+            className="px-4 py-2.5 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700"
+          >
+            <FileText className="w-3.5 h-3.5 inline mr-1" />
+            Exportar Liquidación (JSON)
+          </button>
+          
+          <button 
+            onClick={() => {
+              // Generar Cuenta de Cobro
+              const cxc = {
+                numero: `CC-${Date.now()}`,
+                fecha: today,
+                concepto: 'Servicios de Salud Ocupacional',
+                items: filteredMovimientos.filter(m => m.tipo === 'ingreso').map(m => ({
+                  descripcion: m.concepto,
+                  cantidad: 1,
+                  vrUnitario: m.monto,
+                  vrTotal: m.monto,
+                })),
+                subtotal: stats.ingresos,
+                iva: Math.round(stats.ingresos * 0.19),
+                total: Math.round(stats.ingresos * 1.19),
+              };
+              const blob = new Blob([JSON.stringify(cxc, null, 2)], { type: 'application/json' });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = `cuenta_cobro_${cxc.numero}.json`;
+              a.click();
+              URL.revokeObjectURL(url);
+              showAlert?.('✅ Cuenta de cobro exportada');
+            }}
+            className="px-4 py-2.5 bg-purple-600 text-white rounded-lg text-xs font-bold hover:bg-purple-700"
+          >
+            <DollarSign className="w-3.5 h-3.5 inline mr-1" />
+            Exportar Cuenta de Cobro
+          </button>
+        </div>
+      </div>
+
+      {/* T-01: Cuentas por Cobrar */}
+      <div className="mt-4 bg-red-50 border border-red-200 rounded-xl p-5">
+        <div className="flex items-center gap-2 mb-4">
+          <CreditCard className="w-5 h-5 text-red-600" />
+          <h3 className="font-black text-red-800">Cuentas por Cobrar</h3>
+        </div>
+        <p className="text-xs text-red-600 mb-3">Estado de cartera pendiente - empresas con saldo pendiente</p>
+        
+        <div className="text-center py-4 text-gray-500 text-xs italic">
+          Funcionalidad en desarrollo - conecta con módulo de facturación para mostrar cartera pendiente
+        </div>
+      </div>
     </div>
   );
 }

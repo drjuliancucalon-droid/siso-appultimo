@@ -1,7 +1,7 @@
 // src/App.jsx — New App Shell (v2)
 // React Router + Lazy Loading + Zustand stores
 // Replaces the 48K-line monolith with a clean router
-import React, { Suspense, useEffect } from 'react';
+import React, { Suspense, useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useAuthStore } from './stores/authStore';
@@ -35,9 +35,10 @@ const CotizacionesPage = React.lazy(() => import('./pages/CotizacionesPage'));
 const ConfigIPSPage = React.lazy(() => import('./pages/ConfigIPSPage'));
 const PortafolioPage = React.lazy(() => import('./pages/PortafolioPage'));
 const ContabilidadPage = React.lazy(() => import('./pages/ContabilidadPage'));
-// Sprint 5: Admin + Messages
+// Sprint 5: Admin + Messages + ARL
 const SuperAdminPage = React.lazy(() => import('./pages/SuperAdminPage'));
 const MensajesPage = React.lazy(() => import('./pages/MensajesPage'));
+const ARLPage = React.lazy(() => import('./pages/ARLPage'));
 
 // ── React Query client ───────────────────────────────────────────
 const queryClient = new QueryClient({
@@ -108,6 +109,13 @@ function SessionWatcher() {
 
 // ── Main App ─────────────────────────────────────────────────────
 export default function App() {
+  // Estados para Companies (incluye encuestas)
+  const [companiesTab, setCompaniesTab] = useState("lista");
+  const [editingCompany, setEditingCompany] = useState(null);
+  const [encuestas, setEncuestas] = useState(() => {
+    try { return JSON.parse(localStorage.getItem("siso_encuestas") || "[]"); } catch { return []; }
+  });
+
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
@@ -133,7 +141,13 @@ export default function App() {
               <Route path="hc/new" element={<HistoriaClinica />} />
               <Route path="hc/general" element={<HistoriaGeneralPage />} />
               <Route path="patients/:id/certificado" element={<CertificadoPage />} />
-              <Route path="companies" element={<Companies />} />
+              <Route path="companies" element={
+                <Companies 
+                  companiesTab={companiesTab} setCompaniesTab={setCompaniesTab}
+                  editingCompany={editingCompany} setEditingCompany={setEditingCompany}
+                  encuestas={encuestas} setEncuestas={setEncuestas}
+                />
+              } />
               <Route path="users" element={
                 <ProtectedRoute roles={['super_admin', 'administrador']}>
                   <UsersPage />
@@ -161,6 +175,11 @@ export default function App() {
               <Route path="admin" element={
                 <ProtectedRoute roles={['super_admin', 'administrador']}>
                   <SuperAdminPage />
+                </ProtectedRoute>
+              } />
+              <Route path="arl" element={
+                <ProtectedRoute roles={['super_admin', 'administrador', 'medico']}>
+                  <ARLPage />
                 </ProtectedRoute>
               } />
             </Route>

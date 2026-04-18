@@ -158,7 +158,13 @@ export default function HistoriaPage() {
   const [isGeneratingRestr, setIsGeneratingRestr] = useState(false);
   const [isGeneratingReco, setIsGeneratingReco] = useState(false);
 
+  // B-01: Plan gate para análisis IA (monolito línea 14912)
   const onGenerateAI = useCallback(async () => {
+    const { canUse } = useAuthStore.getState();
+    if (!canUse('ia_analisis')) {
+      alert('🔒 El análisis IA requiere plan Pro. Actualiza tu licencia.');
+      return;
+    }
     setIsGenerating(true);
     try {
       const { analyzeHC } = await import('../modules/ai/services/aiAnalysis');
@@ -168,9 +174,18 @@ export default function HistoriaPage() {
         const parsed = parseAIJSON(result);
         dispatch({
           analisis: parsed.analisis || parsed.resumen || result,
-          ...(parsed.conceptoAptitud && { conceptoAptitud: parsed.conceptoAptitud }),
-          ...(parsed.restricciones && { restricciones: parsed.restricciones }),
-          ...(parsed.recomendaciones && { recomendaciones: parsed.recomendaciones }),
+          analisisIA: parsed.analisisClinico || parsed.analisis || result, // B-01: análisis clínico ≥200 palabras
+          diagnostico1: parsed.diagnosticoPrincipal || parsed.dxPrincipal || data.diagnostico1,
+          diagnostico2: parsed.diagnosticoSecundario1 || parsed.dxSecundario1 || data.diagnostico2,
+          diagnostico3: parsed.diagnosticoSecundario2 || parsed.dxSecundario2 || data.diagnostico3,
+          vigencia: parsed.vigencia || data.vigencia,
+          recomendaciones: parsed.recomendaciones || data.recomendaciones,
+          analisisRestricciones: parsed.restriccionesTexto || parsed.restricciones || data.analisisRestricciones,
+          // B-01: derivaciones, exámenes, incapacidad, sveRecomendado
+          ...(parsed.derivaciones && { derivaciones: [...(data.derivaciones || []), ...parsed.derivaciones.map(d => ({ ...d, _fromAI: true }))] }),
+          ...(parsed.examenesSugeridos && { solicitudExamenes: [...(data.solicitudExamenes || []), ...parsed.examenesSugeridos.filter(e => !(data.solicitudExamenes || []).some(se => se.nombre === e)).map(e => ({ nombre: e, _fromAI: true }))] }),
+          ...(parsed.incapacidadSugerida?.aplica && { incapacidad: { dias: parsed.incapacidadSugerida.dias, motivo: parsed.incapacidadSugerida.motivo, diagnosticoCIE: parsed.incapacidadSugerida.diagnosticoCIE } }),
+          ...(parsed.sveRecomendado && { sveRecomendado: parsed.sveRecomendado.filter(s => s.toLowerCase().includes('si')).map(s => s.replace(/si\s*-?\s*/i, '').trim()) }),
         });
       } catch { dispatch({ analisis: result }); }
     } catch (e) { alert('Error IA: ' + e.message); }
@@ -195,49 +210,184 @@ export default function HistoriaPage() {
     finally { setIsGeneratingReco(false); }
   }, [data, aiConfig]);
 
-  // ═══ Close HC (full — hash + portal + billing) ═══
+  // B-02: handleCloseHC forense completo (monolito líneas 16185-16446)
   const handleCloseHC = useCallback(async () => {
+    // B-02.1: Validación de concepto de aptitud (monolito línea 16186)
+    if (!data.conceptoAptitud && data.tipoHistoria === 'ocupacional') {
+      alert('Debe generar el concepto de aptitud antes de cerrar.');
+      return;
+    }
     if (!confirm('¿Cerrar esta Historia Clínica? Una vez cerrada no se puede editar.')) return;
+    
     const now = new Date();
     const code = `SISO-${now.toISOString().split('T')[0].replace(/-/g, '')}-${Date.now().toString().slice(-8)}-${Math.random().toString(16).slice(2, 18).toUpperCase()}`;
     let hcHash = '';
     try { hcHash = await _sha256(JSON.stringify(data)); } catch { hcHash = 'hash-error'; }
 
     const userId = currentUser?.user || 'drcucalon';
+    const fechaFirma = now.toISOString();
+
+    // B-02.2: Objeto firmaDigital completo (monolito líneas 16200-16218)
+    const firmaDigital = {
+      hash: hcHash,
+      codigoQR: code,
+      firmadoPor: activeDoctorData?.nombre || currentUser?.nombre || userId,
+      medicoId: userId,
+      fechaFirma: fechaFirma,
+      ley: 'Ley 527/1999 - Decreto 2364/2012',
+      verificable: true,
+    };
+
     const closeData = {
-      estadoHistoria: 'Cerrada', codigoVerificacion: code, fechaCierre: now.toISOString(),
-      hashHC: hcHash, firmaMedico: activeDoctorData?.nombre || userId, firmaFecha: now.toISOString(),
+      estadoHistoria: 'Cerrada',
+      codigoVerificacion: code,
+      fechaCierre: now.toISOString(),
+      hashHC: hcHash,
+      firmaDigital: firmaDigital,
     };
     dispatch(closeData);
 
-    // Auto-billing
+    // B-02.7: Auto-billing con tarifa por tipo de examen (monolito líneas 16357-16436)
     try {
       const company = companies.find(c => c.id === data.empresaId);
-      const tarifa = company?.tarifaPeriodico || company?.tarifaConsulta || 35000;
+      // B-02.7: Tarifa específica por tipo de examen
+      const tipoExam = data.tipoExamen?.toUpperCase() || 'PERIODICO';
+      let tarifa = 35000;
+      if (tipoExam.includes('INGRESO')) tarifa = company?.tarifaIngreso || company?.tarifaPeriodico || 45000;
+      else if (tipoExam.includes('EGRESO') || tipoExam.includes('RETIRO')) tarifa = company?.tarifaEgreso || company?.tarifaPeriodico || 45000;
+      else tarifa = company?.tarifaPeriodico || company?.tarifaConsulta || 35000;
+      
       await save('/write/caja/add', {
-        id: `mov_${Date.now()}`, tipo: 'ingreso',
-        concepto: `HC ${data.tipoExamen || 'PERIODICO'} — ${data.nombres || 'Paciente'}`,
-        monto: tarifa, empresa: company?.nombre || 'Particular', paciente: data.nombres,
-        medicoId: userId, fecha: now.toISOString(), estado: 'pendiente', _autoGenerated: true,
+        id: `mov_${Date.now()}`,
+        tipo: 'ingreso',
+        concepto: `HC ${tipoExam} — ${data.nombres || 'Paciente'}`,
+        monto: tarifa,
+        empresa: company?.nombre || 'Particular',
+        paciente: data.nombres,
+        pacienteDoc: data.docNumero,
+        empresaId: company?.id,
+        empresaNit: company?.nit,
+        medicoId: userId,
+        fecha: now.toISOString(),
+        estado: 'pendiente',
+        formaPago: 'Por cobrar',
+        _autoGenerated: true,
+        codigoVerificacion: code,
       }, `siso_caja_movs_${userId}`);
     } catch {}
 
-    // Portal indexing
+    // B-02.3: portalData completo con checklists (monolito líneas 16235-16280)
     try {
       const portalData = {
-        nombres: data.nombres, docNumero: data.docNumero, conceptoAptitud: data.conceptoAptitud,
-        restricciones: data.restricciones, recomendaciones: data.recomendaciones,
-        tipoExamen: data.tipoExamen, fecha: now.toISOString(), codigo: code, hashHC: hcHash,
+        // Datos paciente
+        nombres: data.nombres,
+        apellidos: data.apellidos,
+        docTipo: data.docTipo,
+        docNumero: data.docNumero,
+        empresa: data.empresaNombre,
+        cargo: data.cargo,
+        tipoExamen: data.tipoExamen,
+        
+        // Concepto y vigencia
+        conceptoAptitud: data.conceptoAptitud,
+        vigencia: data.vigencia,
+        fechaExamen: data.fechaExamen,
+        
+        // Diagnósticos
+        diagnosticoPrincipal: data.diagnostico1,
+        diagnosticoSecundario1: data.diagnostico2,
+        diagnosticoSecundario2: data.diagnostico3,
+        
+        // Recomendaciones y restricciones (checklist)
+        restriccionesChecklist: data.analisisRestricciones || data.restricciones,
+        recomendacionesChecklist: data.recomendaciones,
+        recomendacionesMedicas: data.recomendaciones,
+        recomendacionesOcupacionales: data.recomendaciones,
+        
+        // Médico firmante
+        _doctorData: {
+          nombre: activeDoctorData?.nombre || '',
+          titulo: activeDoctorData?.titulo || '',
+          licencia: activeDoctorData?.licencia || '',
+          ciudad: activeDoctorData?.ciudad || '',
+          email: activeDoctorData?.email || '',
+          celular: activeDoctorData?.celular || '',
+        },
+        _firma: data._firmaDigital || null,
+        
+        // Metadata
+        fecha: now.toISOString(),
+        codigo: code,
+        hashHC: hcHash,
         medico: activeDoctorData?.nombre || userId,
+        medicoId: userId,
       };
+      
+      // B-02.4: Guardar con 3 claves (monolito líneas 16281-16303)
+      // Clave 1: por código QR
       await save('/write/portal/index', portalData, `siso_portal_${code}`);
+      // Clave 2: por cédula del paciente
       if (data.docNumero) await save('/write/portal/doc', portalData, `siso_portal_doc_${data.docNumero}`);
+      // Clave 3: por NIT de empresa (índice)
+      if (company?.nit) {
+        // Primero obtener el índice existente
+        const existingIndex = await save('/read/portal/empresa', null, `siso_portal_empresa_${company.nit}`).catch(() => null);
+        const docList = existingIndex?.documentos || [];
+        if (!docList.includes(data.docNumero)) {
+          docList.push(data.docNumero);
+          await save('/write/portal/empresa', { documentos: docList, empresa: company.nombre }, `siso_portal_empresa_${company.nit}`);
+        }
+      }
     } catch {}
 
+    // B-02.5: Auto-sincronización de agenda (monolito líneas 16307-16328)
+    if (data._agendaId) {
+      try {
+        const { data: agendados } = useBackendData('/data/agenda', 'siso_agendados', 'agendados');
+        const horaFin = new Date().toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' });
+        const updAg = (agendados || []).map(a => 
+          a.id === data._agendaId ? { ...a, estado: 'atendido', horaFin, vistoEn: now.toISOString() } : a
+        );
+        await save('/write/agenda/sync', updAg, 'siso_agendados');
+      } catch {}
+    }
+
+    // B-02.6: Registro en atencionesCerradas (monolito líneas 16330-16355)
+    try {
+      const nuevaAtencion = {
+        id: 'ac_' + Date.now(),
+        agendaId: data._agendaId,
+        pacienteId: data.id || data.docNumero,
+        nombre: data.nombres,
+        docNumero: data.docNumero,
+        empresa: data.empresaNombre,
+        cargo: data.cargo,
+        tipo: data.tipoHistoria,
+        tipoConsulta: data.tipoExamen,
+        conceptoAptitud: data.conceptoAptitud,
+        codigoVerificacion: code,
+        medicoId: userId,
+        medicoNombre: activeDoctorData?.nombre || userId,
+        fechaAtencion: data.fechaExamen,
+        horaInicio: data.horaInicio || now.toISOString(),
+        horaFin: now.toISOString(),
+        cerradaEn: now.toISOString(),
+        estadoHistoria: 'Cerrada',
+      };
+      // Guardar en lista de atenciones cerradas (mantener máx 100)
+      const { data: atenciones } = useBackendData('/data/atenciones', 'siso_atenciones', 'atenciones');
+      const updAC = [nuevaAtencion, ...(atenciones || [])].slice(0, 100);
+      await save('/write/atenciones/save', updAC, 'siso_atenciones');
+    } catch {}
+
+    // Guardar HC
     const toSave = { ...data, ...closeData, medicoId: userId, fechaModificacion: now.toISOString() };
     await save('/write/hc/save', toSave, `siso_patients_${userId}`);
     setIsDirty(false);
-    alert(`✅ HC Cerrada\nCódigo: ${code}\nHash: ${hcHash.substring(0, 16)}...`);
+
+    // B-02.8: Mensaje de cierre con hash abreviado (monolito líneas 15115-15135)
+    console.log('Cierre:', { code, hash: hcHash.substring(0, 20) });
+    alert(`✅ Historia cerrada y firmada digitalmente.\n📋 Código QR: ${code}\n🔐 Hash integridad: ${hcHash.substring(0, 20)}...\n⚖️ Válido: Ley 527/1999 - Decreto 2364/2012`);
   }, [data, companies, currentUser, activeDoctorData, save]);
 
   // ═══ RIPS ═══

@@ -21,6 +21,8 @@ export default function Companies({
   patientsList = [], currentUser, _sync, goTo, initialCompanyState,
   // Companies tab state from App
   companiesTab, setCompaniesTab, editingCompany, setEditingCompany,
+  // Encuestas
+  encuestas = [], setEncuestas,
   // IPS mode
   mode,
   ipsPerfilForm, setIpsPerfilForm,
@@ -172,6 +174,46 @@ export default function Companies({
       sedes: [...(prev.sedes || []), { ...sedeForm, id: 'SEDE-' + Date.now() }],
     }));
     setSedeForm?.({ nombre: '', ciudad: '', direccion: '' });
+  };
+
+  // ── Encuestas: Create ───────────────────────────────────────────────
+  const [newEncuesta, setNewEncuesta] = useState({ empresaId: '', empresaNombre: '', tipoExamen: 'INGRESO', fechaLimite: '' });
+  
+  const handleCrearEncuesta = () => {
+    if (!newEncuesta.empresaId || !newEncuesta.empresaNombre) {
+      showAlert?.('⚠️ Seleccione una empresa.');
+      return;
+    }
+    const token = Math.random().toString(36).substring(2, 10);
+    const enc = {
+      id: Date.now(),
+      token,
+      empresaId: newEncuesta.empresaId,
+      empresaNombre: newEncuesta.empresaNombre,
+      tipoExamen: newEncuesta.tipoExamen,
+      fechaLimite: newEncuesta.fechaLimite,
+      fechaCreacion: new Date().toISOString(),
+      respuestas: [],
+      estado: 'activa',
+    };
+    const updated = [...encuestas, enc];
+    setEncuestas?.(updated);
+    localStorage.setItem("siso_encuestas", JSON.stringify(updated));
+    const url = window.location.origin + window.location.pathname + "#encuesta?token=" + token;
+    showAlert?.("✅ Encuesta creada!\n\n📋 Link:\n" + url + "\n\nComparta este link con los trabajadores.");
+    setNewEncuesta({ empresaId: '', empresaNombre: '', tipoExamen: 'INGRESO', fechaLimite: '' });
+  };
+
+  // ── Encuestas: Ver respuestas ───────────────────────────────────────
+  const handleVerRespuestas = (enc) => {
+    showAlert?.(`📊 Encuesta: ${enc.empresaNombre}\n\nToken: ${enc.token}\nEstado: ${enc.estado}\nRespuestas: ${enc.respuestas?.length || 0}\n\n(En versión completa mostraría tabla de trabajadores)`);
+  };
+
+  // ── Copiar link ─────────────────────────────────────────────────────
+  const handleCopiarLink = (token) => {
+    const url = window.location.origin + window.location.pathname + "#encuesta?token=" + token;
+    navigator.clipboard?.writeText(url);
+    showAlert?.("📋 Link copiado al portapapeles:\n" + url);
   };
 
   // ── Remove sede ─────────────────────────────────────────────────────
@@ -794,6 +836,112 @@ export default function Companies({
       {/* Modals */}
       {renderModal()}
       {renderDetail()}
+
+      {/* ── SECCIÓN ENCUESTAS SOCIODEMOGRÁFICAS ── */}
+      <div className="bg-gradient-to-r from-teal-600 to-cyan-600 rounded-2xl p-6 text-white mt-8">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-lg font-black flex items-center gap-2">
+              📋 Encuestas Sociodemográficas
+            </h3>
+            <p className="text-teal-100 text-sm mt-1">{encuestas.length} encuestas creadas</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Crear nueva encuesta */}
+      <div className="bg-white border border-gray-200 rounded-xl p-5">
+        <h4 className="font-bold text-gray-800 mb-4 text-sm">Crear Nueva Encuesta</h4>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div>
+            <label className="text-xs font-bold text-gray-600 block mb-1">Empresa</label>
+            <select 
+              value={newEncuesta.empresaId}
+              onChange={e => {
+                const emp = companies.find(c => c.id === e.target.value);
+                setNewEncuesta({ ...newEncuesta, empresaId: e.target.value, empresaNombre: emp?.nombre || '' });
+              }}
+              className="w-full p-2.5 border border-gray-200 rounded-lg text-sm"
+            >
+              <option value="">Seleccionar empresa</option>
+              {companies.map(c => (
+                <option key={c.id} value={c.id}>{c.nombre}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="text-xs font-bold text-gray-600 block mb-1">Tipo Examen</label>
+            <select 
+              value={newEncuesta.tipoExamen}
+              onChange={e => setNewEncuesta({ ...newEncuesta, tipoExamen: e.target.value })}
+              className="w-full p-2.5 border border-gray-200 rounded-lg text-sm"
+            >
+              <option value="INGRESO">Ingreso</option>
+              <option value="PERIODICO">Periódico</option>
+              <option value="EGRESO">Egreso</option>
+              <option value="RETIRO">Retiro</option>
+            </select>
+          </div>
+          <div>
+            <label className="text-xs font-bold text-gray-600 block mb-1">Fecha Límite</label>
+            <input 
+              type="date" 
+              value={newEncuesta.fechaLimite}
+              onChange={e => setNewEncuesta({ ...newEncuesta, fechaLimite: e.target.value })}
+              className="w-full p-2.5 border border-gray-200 rounded-lg text-sm"
+            />
+          </div>
+          <div className="flex items-end">
+            <button 
+              onClick={handleCrearEncuesta}
+              className="w-full px-4 py-2.5 bg-teal-600 text-white rounded-lg text-sm font-bold hover:bg-teal-700"
+            >
+              🔗 Crear Link
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Lista de encuestas */}
+      {encuestas.length === 0 ? (
+        <div className="bg-gray-50 border border-gray-200 rounded-xl p-8 text-center">
+          <FileText className="w-10 h-10 text-gray-300 mx-auto mb-2" />
+          <p className="text-gray-500 text-sm">No hay encuestas creadas</p>
+          <p className="text-gray-400 text-xs">Cree una上方 para comenzar</p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {[...encuestas].reverse().map(enc => (
+            <div key={enc.id} className="bg-white border border-gray-200 rounded-xl p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-bold text-gray-800">{enc.empresaNombre}</p>
+                  <p className="text-xs text-gray-500">
+                    {enc.tipoExamen} · {enc.fechaCreacion?.split('T')[0]} · 
+                    <span className={`ml-1 font-bold ${enc.estado === 'activa' ? 'text-green-600' : 'text-gray-500'}`}>
+                      {enc.estado}
+                    </span>
+                  </p>
+                </div>
+                <div className="flex gap-2">
+                  <button 
+                    onClick={() => handleCopiarLink(enc.token)}
+                    className="px-3 py-1.5 bg-blue-100 text-blue-700 rounded-lg text-xs font-bold hover:bg-blue-200"
+                  >
+                    📋 Copiar Link
+                  </button>
+                  <button 
+                    onClick={() => handleVerRespuestas(enc)}
+                    className="px-3 py-1.5 bg-emerald-100 text-emerald-700 rounded-lg text-xs font-bold hover:bg-emerald-200"
+                  >
+                    👁️ Ver Respuestas ({enc.respuestas?.length || 0})
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

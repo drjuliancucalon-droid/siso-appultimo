@@ -62,6 +62,10 @@ export default function DashboardPage() {
           {doctor?.licencia && (
             <p className="text-emerald-200 text-xs mt-1">RM: {doctor.licencia}</p>
           )}
+          {/* Plan activo - como monolito */}
+          <p className="text-emerald-200 text-xs mt-1 flex items-center gap-1">
+            <Shield className="w-3 h-3" /> Plan: <span className="font-bold">Pro (HC ilimitadas)</span>
+          </p>
         </div>
       </div>
 
@@ -105,6 +109,174 @@ export default function DashboardPage() {
             <p className="text-xs text-gray-400 mt-1">{stat.sub}</p>
           </div>
         ))}
+      </div>
+
+      {/* ── KPIs ADICIONALES (como monolito) ── */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {(() => {
+          const hcCerradas = patients.filter(p => p.estadoHistoria === 'Cerrada' || p.estado === 'cerrada').length;
+          const hcAbiertas = patients.filter(p => p.estadoHistoria === 'Abierta' || p.estado === 'abierta' || !p.estadoHistoria).length;
+          const medicosActivos = 1; // Por ahora fijo
+          const conveniosPorVencer = companies.filter(c => {
+            if (!c.convenioVencimiento) return false;
+            const vence = new Date(c.convenioVencimiento);
+            const thirtyDays = new Date();
+            thirtyDays.setDate(thirtyDays.getDate() + 30);
+            return vence <= thirtyDays && vence >= new Date();
+          }).length;
+          return [
+            { icon: FileCheck, label: 'HC Cerradas', value: hcCerradas, sub: 'Completadas', color: 'text-green-600', bg: 'bg-green-50', border: 'border-green-100' },
+            { icon: FileText, label: 'HC Abiertas', value: hcAbiertas, sub: 'Pendientes', color: 'text-amber-600', bg: 'bg-amber-50', border: 'border-amber-100' },
+            { icon: Stethoscope, label: 'Médicos activos', value: medicosActivos, sub: 'En sistema', color: 'text-blue-600', bg: 'bg-blue-50', border: 'border-blue-100' },
+            { icon: Shield, label: 'Convenios por vencer', value: conveniosPorVencer, sub: 'Próximos 30 días', color: conveniosPorVencer > 0 ? 'text-red-600' : 'text-gray-600', bg: conveniosPorVencer > 0 ? 'bg-red-50' : 'bg-gray-50', border: conveniosPorVencer > 0 ? 'border-red-100' : 'border-gray-100' },
+          ].map((stat, i) => (
+            <div key={`kpi-${i}`} className={`bg-white rounded-xl p-5 shadow-sm border ${stat.border}`}>
+              <div className="flex items-center justify-between mb-3">
+                <div className={`${stat.bg} p-2.5 rounded-xl`}>
+                  <stat.icon className={`w-5 h-5 ${stat.color}`} />
+                </div>
+              </div>
+              <p className="text-2xl font-black text-gray-800">{stat.value}</p>
+              <p className="text-sm text-gray-600 font-medium">{stat.label}</p>
+              <p className="text-xs text-gray-400 mt-1">{stat.sub}</p>
+            </div>
+          ));
+        })()}
+      </div>
+
+      {/* ── ALERTAS (como monolito) ── */}
+      {(() => {
+        const hcAbiertas = patients.filter(p => p.estadoHistoria === 'Abierta' || p.estado === 'abierta' || !p.estadoHistoria).length;
+        const hasAlerts = hcAbiertas > 0;
+        if (!hasAlerts) return null;
+        return (
+          <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
+            <h3 className="font-bold text-amber-800 flex items-center gap-2 mb-2">
+              <AlertTriangle className="w-4 h-4" /> Alertas del Sistema
+            </h3>
+            <div className="space-y-1">
+              {hcAbiertas > 0 && (
+                <p className="text-sm text-amber-700">📋 {hcAbiertas} historia(s) clínica(s) sin cerrar</p>
+              )}
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* D-04: Últimos Pacientes (como monolito) */}
+      <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+        <h3 className="font-bold text-gray-800 mb-3 flex items-center gap-2">
+          <Users className="w-4 h-4 text-emerald-600" />
+          Últimos Pacientes Atendidos
+        </h3>
+        {patients && patients.length > 0 ? (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-gray-500 border-b text-xs">
+                  <th className="text-left py-2 px-2">Paciente</th>
+                  <th className="text-left py-2 px-2">Empresa</th>
+                  <th className="text-left py-2 px-2">Tipo</th>
+                  <th className="text-left py-2 px-2">Fecha</th>
+                  <th className="text-left py-2 px-2">Concepto</th>
+                </tr>
+              </thead>
+              <tbody>
+                {patients.slice(0, 5).map((p) => (
+                  <tr key={p.id} className="border-b hover:bg-gray-50">
+                    <td className="py-2 px-2 font-medium">{p.nombres || 'Sin nombre'}</td>
+                    <td className="py-2 px-2 text-gray-600">{p.empresaNombre || p.empresa || '-'}</td>
+                    <td className="py-2 px-2">
+                      <span className="px-2 py-0.5 bg-blue-50 text-blue-600 rounded text-xs">{p.tipoExamen || '-'}</span>
+                    </td>
+                    <td className="py-2 px-2 text-gray-500 text-xs">{p.fechaExamen || '-'}</td>
+                    <td className="py-2 px-2">
+                      <span className={`px-2 py-0.5 rounded text-xs ${
+                        p.conceptoAptitud?.includes('APTO') ? 'bg-green-50 text-green-600' :
+                        p.conceptoAptitud?.includes('NO APTO') ? 'bg-red-50 text-red-600' :
+                        'bg-yellow-50 text-yellow-600'
+                      }`}>
+                        {p.conceptoAptitud || '-'}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <p className="text-gray-400 text-sm">No hay pacientes registrados</p>
+        )}
+      </div>
+
+      {/* D-05: Próximas Citas (como monolito) */}
+      <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+        <h3 className="font-bold text-gray-800 mb-3 flex items-center gap-2">
+          <Calendar className="w-4 h-4 text-indigo-600" />
+          Citas de Hoy
+        </h3>
+        {agenda && agenda.length > 0 ? (
+          <ul className="space-y-2">
+            {agenda.filter(a => (a.fecha || '').startsWith(today)).slice(0, 5).map((a, i) => (
+              <li key={a.id || i} className="flex justify-between items-center text-sm p-2 bg-gray-50 rounded-lg">
+                <div className="flex items-center gap-3">
+                  <span className="font-bold text-indigo-600">{a.hora || '--:--'}</span>
+                  <span>{a.paciente || a.nombre || 'Sin nombre'}</span>
+                </div>
+                <span className="text-gray-500 text-xs">{a.empresa || a.empresaNombre || '-'}</span>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-gray-400 text-sm">No hay citas para hoy</p>
+        )}
+      </div>
+
+      {/* ── PRODUCTIVIDAD MÉDICA (como monolito) ── */}
+      <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+        <h3 className="font-bold text-gray-800 mb-3 flex items-center gap-2">
+          <TrendingUp className="w-4 h-4 text-purple-600" />
+          Productividad Médica
+        </h3>
+        {patients && patients.length > 0 ? (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-gray-500 border-b text-xs bg-gray-50">
+                  <th className="text-left py-2 px-3 font-bold">Médico</th>
+                  <th className="text-right py-2 px-3 font-bold">Atenciones</th>
+                  <th className="text-right py-2 px-3 font-bold">HC Cerradas</th>
+                  <th className="text-right py-2 px-3 font-bold">HC Abiertas</th>
+                  <th className="text-right py-2 px-3 font-bold">% Participación</th>
+                </tr>
+              </thead>
+              <tbody>
+                {(() => {
+                  const hcCerradas = patients.filter(p => p.estadoHistoria === 'Cerrada' || p.estado === 'cerrada').length;
+                  const hcAbiertas = patients.filter(p => p.estadoHistoria === 'Abierta' || p.estado === 'abierta' || !p.estadoHistoria).length;
+                  const atenciones = hcCerradas + hcAbiertas;
+                  const participacion = patients.length > 0 ? ((atenciones / patients.length) * 100).toFixed(1) : 0;
+                  const doctorName = doctor?.nombre || 'Dr. Julian Cucalon';
+                  return (
+                    <tr className="border-b hover:bg-gray-50">
+                      <td className="py-3 px-3 font-bold text-gray-800">{doctorName}</td>
+                      <td className="py-3 px-3 text-right font-bold text-indigo-600">{atenciones}</td>
+                      <td className="py-3 px-3 text-right font-bold text-green-600">{hcCerradas}</td>
+                      <td className="py-3 px-3 text-right font-bold text-amber-600">{hcAbiertas}</td>
+                      <td className="py-3 px-3 text-right">
+                        <span className="px-2 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-bold">
+                          {participacion}%
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })()}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <p className="text-gray-400 text-sm">Sin datos de productividad</p>
+        )}
       </div>
     </div>
   );

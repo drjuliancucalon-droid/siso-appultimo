@@ -8,51 +8,65 @@ import { Activity, AlertTriangle, TrendingUp, Download, Eye } from 'lucide-react
 export const SVEPrograms = ({ patients = [], companies = [] }) => {
   const [activeProgram, setActiveProgram] = useState('osteomuscular');
 
+  // B-08: 7 programas de Vigilancia Epidemiológica (monolito líneas 29367-30200)
+  const SVE_PROGRAMS = [
+    { id: 'osteomuscular', label: 'SVE Osteomuscular (DME)', icon: '🦴', norm: 'GATISO-DME · Res. 2844/2007 · GTC-45:2012' },
+    { id: 'psicosocial', label: 'SVE Psicosocial', icon: '🧠', norm: 'Res. 2764/2022 · Res. 2646/2008' },
+    { id: 'visual', label: 'SVE Visual', icon: '👁️', norm: 'Res. 1843/2025 · ICONTEC' },
+    { id: 'auditivo', label: 'SVE Auditivo / HNIR', icon: '👂', norm: 'GATISO-HNIR · Res. 8321/1983' },
+    { id: 'respiratorio', label: 'SVE Respiratorio', icon: '🫁', norm: 'GATISO-NEU · Res. 2400/1979' },
+    { id: 'neurologico', label: 'SVE Neurológico', icon: '🧪', norm: 'GATISO · Dec. 1072/2015' },
+    { id: 'dermatologico', label: 'SVE Dermatológico', icon: '🩹', norm: 'GATISO-DERM' },
+  ];
+
   const programs = useMemo(() => {
     const classify = (pat, condition) => patients.filter(condition);
     return {
       osteomuscular: {
-        label: 'SVE Osteomuscular (DME)',
-        icon: '🦴',
-        norm: 'GATISO-DME · GTC-45',
-        patients: classify(null, (p) => {
+        ...SVE_PROGRAMS[0],
+        pacientes: classify(null, (p) => {
           const dx = [p.diagnostico1, p.diagnostico2, p.diagnostico3].filter(Boolean).join(' ').toLowerCase();
           return dx.includes('lumbalgia') || dx.includes('tunel') || dx.includes('tendin') ||
-            dx.includes('epicondil') || dx.includes('cervicalgia') || dx.includes('osteomuscular');
-        }),
-      },
-      cardiovascular: {
-        label: 'SVE Cardiovascular',
-        icon: '❤️',
-        norm: 'GATISO-HTA',
-        patients: classify(null, (p) => {
-          const [sys] = (p.tensionArterial || '').split('/').map(Number);
-          const imc = parseFloat(p.imc) || 0;
-          return sys >= 140 || imc >= 30;
-        }),
-      },
-      visual: {
-        label: 'SVE Visual',
-        icon: '👁️',
-        norm: 'GATISO Visual',
-        patients: classify(null, (p) => {
-          const dx = [p.diagnostico1, p.diagnostico2, p.diagnostico3].filter(Boolean).join(' ').toLowerCase();
-          return dx.includes('miopia') || dx.includes('astigma') || dx.includes('presbicia') || dx.includes('ametro');
+            dx.includes('epicondil') || dx.includes('cervicalgia') || dx.includes('osteomuscular') || dx.includes('dme');
         }),
       },
       psicosocial: {
-        label: 'SVE Psicosocial',
-        icon: '🧠',
-        norm: 'Res. 2646/2008 · Batería Riesgo Psicosocial',
-        patients: classify(null, (p) => !!p.riesgoPsicosocial),
+        ...SVE_PROGRAMS[1],
+        pacientes: classify(null, (p) => !!p.riesgoPsicosocial || (p.conceptoAptitud || '').toLowerCase().includes('psicosocial')),
+      },
+      visual: {
+        ...SVE_PROGRAMS[2],
+        pacientes: classify(null, (p) => {
+          const dx = [p.diagnostico1, p.diagnostico2, p.diagnostico3].filter(Boolean).join(' ').toLowerCase();
+          return dx.includes('miopia') || dx.includes('astigma') || dx.includes('presbicia') || dx.includes('ametro') || dx.includes('visual');
+        }),
       },
       auditivo: {
-        label: 'SVE Conservación Auditiva',
-        icon: '👂',
-        norm: 'GATISO-HNIR',
-        patients: classify(null, (p) => {
+        ...SVE_PROGRAMS[3],
+        pacientes: classify(null, (p) => {
           const dx = [p.diagnostico1, p.diagnostico2, p.diagnostico3].filter(Boolean).join(' ').toLowerCase();
-          return dx.includes('hipoacusia') || dx.includes('auditiv') || !!p.riesgoFisico;
+          return dx.includes('hipoacusia') || dx.includes('auditiv') || !!p.riesgoFisico || dx.includes('hnir');
+        }),
+      },
+      respiratorio: {
+        ...SVE_PROGRAMS[4],
+        pacientes: classify(null, (p) => {
+          const dx = [p.diagnostico1, p.diagnostico2, p.diagnostico3].filter(Boolean).join(' ').toLowerCase();
+          return dx.includes('asma') || dx.includes('rinitis') || dx.includes('neumoconiosis') || dx.includes('respiratorio') || dx.includes('alergico');
+        }),
+      },
+      neurologico: {
+        ...SVE_PROGRAMS[5],
+        pacientes: classify(null, (p) => {
+          const dx = [p.diagnostico1, p.diagnostico2, p.diagnostico3].filter(Boolean).join(' ').toLowerCase();
+          return dx.includes('neuro') || dx.includes('ictus') || dx.includes('meningitis') || dx.includes('sindrome') || dx.includes('epilep');
+        }),
+      },
+      dermatologico: {
+        ...SVE_PROGRAMS[6],
+        pacientes: classify(null, (p) => {
+          const dx = [p.diagnostico1, p.diagnostico2, p.diagnostico3].filter(Boolean).join(' ').toLowerCase();
+          return dx.includes('dermat') || dx.includes('dermatitis') || dx.includes('eczema') || dx.includes('alergia cutanea') || dx.includes('derm');
         }),
       },
     };

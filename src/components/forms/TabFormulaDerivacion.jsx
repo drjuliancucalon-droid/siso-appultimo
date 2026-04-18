@@ -1,12 +1,11 @@
 // src/components/forms/TabFormulaDerivacion.jsx
 import React from 'react';
 import { DERIVACIONES_CATALOG, SPECIALTIES_LIST } from '../../data/catalogos.js';
-import MedicamentoAutocomplete from '../ui/MedicamentoAutocomplete.jsx';
+import { MedicamentoAutocomplete } from '../../shared/components/MedicamentoAutocomplete.jsx';
 import { _sanitize, _safeLogoUrl } from '../../shared/lib/security.js';
-import { _generarCertificadoHTMLNormalizado } from '../../shared/lib/printUtils.js';
 import { Pill, Share2, Printer, Plus, Trash2, Search, X } from 'lucide-react';
-import DoctorSignature from '../ui/DoctorSignature';
-import BrandLogo from '../ui/BrandLogo';
+import { DoctorSignature } from '../../shared/components/ui/DoctorSignature';
+import { BrandLogo } from '../../shared/components/ui/BrandLogo';
 const TabFormulaDerivacion = ({
   data,
   setData,

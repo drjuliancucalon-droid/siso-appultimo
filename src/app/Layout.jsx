@@ -15,6 +15,7 @@ import {
   MessageCircle, Crown
 } from 'lucide-react';
 import { useBackendObject } from '../hooks/useBackendData';
+import { MensajesDrawer } from '../shared/components/MensajesDrawer';
 
 const NAV_ITEMS = [
   { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
@@ -34,6 +35,7 @@ const NAV_ITEMS = [
   { path: '/portafolio', icon: Briefcase, label: 'Portafolio', roles: ['administrador', 'super_admin'] },
   { path: '/contabilidad', icon: Calculator, label: 'Contabilidad', roles: ['medico', 'administrador', 'super_admin'] },
   { path: '/mensajes', icon: MessageCircle, label: 'Mensajes' },
+  { path: '/arl', icon: Shield, label: 'ARL', roles: ['medico', 'administrador', 'super_admin'] },
   { path: '/habeas-data', icon: ShieldCheck, label: 'Habeas Data' },
   { path: '/config/ips', icon: Building2, label: 'Perfil IPS', roles: ['administrador', 'super_admin'] },
   { path: '/admin', icon: Crown, label: 'Super Admin', roles: ['super_admin'] },
@@ -47,6 +49,7 @@ export default function Layout() {
   const { syncStatus, setSyncStatus } = useUIStore();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
+  const [showMensajesDrawer, setShowMensajesDrawer] = useState(false);
   const { data: doctor } = useBackendObject('/data/doctor', 'siso_doctor_data', 'doctor');
   const tabsRef = useRef(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
@@ -201,6 +204,16 @@ export default function Layout() {
               {syncIcon}
             </div>
 
+            {/* T-04: Badge de mensajes no leídos - abre drawer */}
+            <button
+              onClick={() => setShowMensajesDrawer(true)}
+              className="relative p-1.5 text-emerald-300 hover:text-white hover:bg-emerald-700/50 rounded-lg transition-colors"
+              title="Mensajes"
+            >
+              <MessageCircle className="w-4.5 h-4.5" />
+              <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 text-white text-[8px] font-bold rounded-full flex items-center justify-center">3</span>
+            </button>
+
             <div className="hidden sm:flex items-center gap-2">
               <div className="text-right">
                 <p className="text-xs font-bold text-white leading-tight">{currentUser?.user || 'usuario'}</p>
@@ -327,6 +340,9 @@ export default function Layout() {
           <Outlet />
         </ErrorBoundary>
       </main>
+
+      {/* T-04: Mensajes Drawer Overlay */}
+      <MensajesDrawer isOpen={showMensajesDrawer} onClose={() => setShowMensajesDrawer(false)} />
     </div>
   );
 }
