@@ -799,27 +799,129 @@ export default function Reporte({
     const total = filteredPatients.length;
     const conHallazgos = filteredPatients.filter(p => 
       (p.conceptoAptitud || '').toLowerCase().includes('no apt') ||
-      (p.conceptoAptitud || '').toLowerCase().includes('reubic')
+      (p.conceptoAptitud || '').toLowerCase().includes('reubic') ||
+      (p.conceptoAptitud || '').toLowerCase().includes('hallazgos')
     ).length;
     const conRestricciones = filteredPatients.filter(p => 
       p.restriccionesLaborales && p.restriccionesLaborales.length > 0
     ).length;
+    const conRiesgosActivos = filteredPatients.filter(p => 
+      p.riesgos && Object.values(p.riesgos).some(v => v === true)
+    ).length;
     const tasaNoAptos = total > 0 ? ((conHallazgos / total) * 100).toFixed(1) : 0;
     
-    // Hallazgos principales
-    const hallazgosPrincipales = [];
-    if (sveIndicators.dme.count > 0) {
-      hallazgosPrincipales.push(`• DME: ${sveIndicators.dme.count} casos (${sveIndicators.dme.pct}%)`);
-    }
-    if (sveIndicators.cardiovascular.count > 0) {
-      hallazgosPrincipales.push(`• Cardiovascular: ${sveIndicators.cardiovascular.count} casos (${sveIndicators.cardiovascular.pct}%)`);
-    }
-    if (sveIndicators.respiratorio.count > 0) {
-      hallazgosPrincipales.push(`• Respiratorio: ${sveIndicators.respiratorio.count} casos (${sveIndicators.respiratorio.pct}%)`);
-    }
-    if (sveIndicators.psicosocial.count > 0) {
-      hallazgosPrincipales.push(`• Psicosocial: ${sveIndicators.psicosocial.count} casos (${sveIndicators.psicosocial.pct}%)`);
-    }
+    // Calcular edad promedio
+    const edadPromedio = filteredPatients.length > 0
+      ? (filteredPatients.reduce((acc, p) => acc + (parseInt(p.edad) || 0), 0) / filteredPatients.length).toFixed(0)
+      : 0;
+
+    // Por género
+    const generoStats = { 'Masculino': 0, 'Femenino': 0 };
+    filteredPatients.forEach(p => {
+      if ((p.genero || '').toLowerCase().includes('masc')) generoStats['Masculino']++;
+      else if ((p.genero || '').toLowerCase().includes('fem')) generoStats['Femenino']++;
+    });
+
+    // Rango etario
+    const rangoEtario = { '<18': 0, '18-27': 0, '28-37': 0, '38-47': 0, '48-57': 0, '58+': 0 };
+    filteredPatients.forEach(p => {
+      const edad = parseInt(p.edad) || 0;
+      if (edad < 18) rangoEtario['<18']++;
+      else if (edad < 28) rangoEtario['18-27']++;
+      else if (edad < 38) rangoEtario['28-37']++;
+      else if (edad < 48) rangoEtario['38-47']++;
+      else if (edad < 58) rangoEtario['48-57']++;
+      else rangoEtario['58+']++;
+    });
+
+    // Escolaridad
+    const escolaridadStats = {};
+    filteredPatients.forEach(p => {
+      const esc = p.escolaridad || 'No registrada';
+      escolaridadStats[esc] = (escolaridadStats[esc] || 0) + 1;
+    });
+
+    // Estado civil
+    const estadoCivilStats = {};
+    filteredPatients.forEach(p => {
+      const ec = p.estadoCivil || 'No registrado';
+      estadoCivilStats[ec] = (estadoCivilStats[ec] || 0) + 1;
+    });
+
+    // Estrato
+    const estratoStats = {};
+    filteredPatients.forEach(p => {
+      const est = p.estrato || 'No registrado';
+      estratoStats[est] = (estratoStats[est] || 0) + 1;
+    });
+
+    // Zona
+    const zonaStats = { 'Urbana': 0, 'Rural': 0 };
+    filteredPatients.forEach(p => {
+      const zona = (p.zonaResidencia || '').toLowerCase();
+      if (zona.includes('urb')) zonaStats['Urbana']++;
+      else if (zona.includes('rur')) zonaStats['Rural']++;
+    });
+
+    // Cargo
+    const cargoStats = {};
+    filteredPatients.forEach(p => {
+      const cargo = p.cargo || 'No registrado';
+      cargoStats[cargo] = (cargoStats[cargo] || 0) + 1;
+    });
+    const topCargos = Object.entries(cargoStats).sort((a, b) => b[1] - a[1]).slice(0, 5);
+
+    // Tipo contrato
+    const contratoStats = {};
+    filteredPatients.forEach(p => {
+      const tc = p.tipoContrato || 'No registrado';
+      contratoStats[tc] = (contratoStats[tc] || 0) + 1;
+    });
+
+    // Turno
+    const turnoStats = {};
+    filteredPatients.forEach(p => {
+      const turno = p.turnoTrabajo || 'No registrado';
+      turnoStats[turno] = (turnoStats[turno] || 0) + 1;
+    });
+
+    // Tipo examen
+    const tipoExamStats = {};
+    filteredPatients.forEach(p => {
+      const te = p.tipoExamen || 'No registrado';
+      tipoExamStats[te] = (tipoExamStats[te] || 0) + 1;
+    });
+
+    // Hallazgos físicos anormales
+    const hallazgosFisicos = { 'Extremidades': 0, 'Columna': 0, 'Neurológico': 0, 'Cardiovascular': 0, 'Respiratorio': 0 };
+    filteredPatients.forEach(p => {
+      if ((p.examenFisicoExtremidades || '').toLowerCase().includes('alter')) hallazgosFisicos['Extremidades']++;
+      if ((p.examenFisicoColumna || '').toLowerCase().includes('alter')) hallazgosFisicos['Columna']++;
+      if ((p.examenFisicoNeurologico || '').toLowerCase().includes('alter')) hallazgosFisicos['Neurológico']++;
+      if ((p.examenFisicoCardiovascular || '').toLowerCase().includes('alter')) hallazgosFisicos['Cardiovascular']++;
+      if ((p.examenFisicoRespiratorio || '').toLowerCase().includes('alter')) hallazgosFisicos['Respiratorio']++;
+    });
+
+    // Estilos de vida
+    const estilosVida = { 'Fumadores': 0, 'Alcohol': 0, 'Deporte': 0 };
+    filteredPatients.forEach(p => {
+      if ((p.habitos?.fuma || p.fuma || '').toLowerCase().includes('si')) estilosVida['Fumadores']++;
+      if ((p.habitos?.alcohol || p.alcohol || '').toLowerCase().includes('si')) estilosVida['Alcohol']++;
+      if ((p.habitos?.deporte || p.deporte || '').toLowerCase().includes('si')) estilosVida['Deporte']++;
+    });
+
+    // Riesgos ocupacionales
+    const riesgosExpuestos = { 'Físicos': 0, 'Mecánicos': 0, 'Biomecánicos': 0, 'Locativos': 0, 'Químicos': 0, 'Biológicos': 0, 'Psicosocial': 0 };
+    filteredPatients.forEach(p => {
+      const riesgos = p.riesgos || {};
+      if (riesgos.fisicos) riesgosExpuestos['Físicos']++;
+      if (riesgos.mecanicos) riesgosExpuestos['Mecánicos']++;
+      if (riesgos.biomecanicos) riesgosExpuestos['Biomecánicos']++;
+      if (riesgos.locativos) riesgosExpuestos['Locativos']++;
+      if (riesgos.quimicos) riesgosExpuestos['Químicos']++;
+      if (riesgos.biologicos) riesgosExpuestos['Biológicos']++;
+      if (riesgos.psicosocial) riesgosExpuestos['Psicosocial']++;
+    });
 
     // Recomendaciones
     const recomendaciones = [];
@@ -834,8 +936,12 @@ export default function Reporte({
     }
     recomendaciones.push('✓ Continuar con el programa de exámenes ocupacionales');
 
+    // Función auxiliar para mostrar percentage
+    const pct = (count) => total > 0 ? ((count / total) * 100).toFixed(0) : 0;
+
     return (
       <div className="space-y-6">
+        {/* Header con warn legal */}
         <div className="bg-gradient-to-r from-indigo-500 to-purple-500 rounded-xl p-4 text-white">
           <p className="font-black flex items-center gap-2">
             <FileText className="w-4 h-4" /> Resumen Ejecutivo Automático
@@ -845,38 +951,252 @@ export default function Reporte({
           </p>
         </div>
 
+        {/* Warn legal */}
+        <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs text-amber-700">
+          ⚠️ <strong>Res.1843/2025 Art.19</strong> - Confidencial
+        </div>
+
         {/* Métricas clave */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="bg-white border border-gray-200 rounded-xl p-4 text-center">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+          <div className="bg-white border border-gray-200 rounded-xl p-3 text-center">
             <p className="text-2xl font-black text-blue-600">{total}</p>
             <p className="text-xs font-bold text-gray-500">Total Evaluados</p>
           </div>
-          <div className="bg-white border border-gray-200 rounded-xl p-4 text-center">
+          <div className="bg-white border border-gray-200 rounded-xl p-3 text-center">
             <p className="text-2xl font-black text-amber-600">{conHallazgos}</p>
             <p className="text-xs font-bold text-gray-500">Con Hallazgos</p>
           </div>
-          <div className="bg-white border border-gray-200 rounded-xl p-4 text-center">
+          <div className="bg-white border border-gray-200 rounded-xl p-3 text-center">
             <p className="text-2xl font-black text-red-600">{conRestricciones}</p>
             <p className="text-xs font-bold text-gray-500">Con Restricciones</p>
           </div>
-          <div className="bg-white border border-gray-200 rounded-xl p-4 text-center">
+          <div className="bg-white border border-gray-200 rounded-xl p-3 text-center">
+            <p className="text-2xl font-black text-orange-600">{conRiesgosActivos}</p>
+            <p className="text-xs font-bold text-gray-500">Con Riesgos Activos</p>
+          </div>
+          <div className="bg-white border border-gray-200 rounded-xl p-3 text-center">
             <p className="text-2xl font-black text-purple-600">{tasaNoAptos}%</p>
             <p className="text-xs font-bold text-gray-500">Tasa No Aptos</p>
           </div>
         </div>
 
-        {/* Hallazgos */}
+        {/* Segunda fila métricas */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div className="bg-white border border-gray-200 rounded-xl p-3 text-center">
+            <p className="text-xl font-black text-gray-700">{edadPromedio}</p>
+            <p className="text-xs font-bold text-gray-500">Edad prom. (años)</p>
+          </div>
+          <div className="bg-white border border-gray-200 rounded-xl p-3 text-center">
+            <p className="text-xl font-black text-gray-700">{(precioPorPaciente || 0).toLocaleString('es-CO')}</p>
+            <p className="text-xs font-bold text-gray-500">Precio por paciente ($)</p>
+          </div>
+        </div>
+
+        {/* 1. PERFIL SOCIODEMOGRÁFICO */}
         <div className="bg-white border border-gray-200 rounded-xl p-5">
-          <h3 className="font-black text-sm text-gray-800 mb-4">📋 Hallazgos Principales</h3>
-          {hallazgosPrincipales.length > 0 ? (
-            <ul className="space-y-2 text-sm text-gray-700">
-              {hallazgosPrincipales.map((h, i) => (
-                <li key={i} className="bg-gray-50 p-2 rounded">{h}</li>
+          <h3 className="font-black text-sm text-gray-800 mb-4 border-b pb-2">1. Perfil Sociodemográfico y Ocupacional</h3>
+          
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            {/* Género */}
+            <div>
+              <p className="text-xs font-bold text-gray-500 mb-2">Género</p>
+              {Object.entries(generoStats).map(([k, v]) => (
+                <div key={k} className="flex justify-between text-xs mb-1">
+                  <span>{k}</span>
+                  <span className="font-bold">{pct(v)}%</span>
+                </div>
               ))}
-            </ul>
-          ) : (
-            <p className="text-gray-400 text-sm">No se detectaron hallazgos relevantes</p>
-          )}
+            </div>
+
+            {/* Rango Etario */}
+            <div>
+              <p className="text-xs font-bold text-gray-500 mb-2">Rango Etario</p>
+              {Object.entries(rangoEtario).filter(([,v]) => v > 0).map(([k, v]) => (
+                <div key={k} className="flex justify-between text-xs mb-1">
+                  <span>{k}</span>
+                  <span className="font-bold">{pct(v)}%</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Escolaridad */}
+            <div>
+              <p className="text-xs font-bold text-gray-500 mb-2">Escolaridad</p>
+              {Object.entries(escolaridadStats).sort((a, b) => b[1] - a[1]).slice(0, 4).map(([k, v]) => (
+                <div key={k} className="flex justify-between text-xs mb-1">
+                  <span className="truncate">{k}</span>
+                  <span className="font-bold">{pct(v)}%</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Estado Civil */}
+            <div>
+              <p className="text-xs font-bold text-gray-500 mb-2">Estado Civil</p>
+              {Object.entries(estadoCivilStats).map(([k, v]) => (
+                <div key={k} className="flex justify-between text-xs mb-1">
+                  <span>{k}</span>
+                  <span className="font-bold">{pct(v)}%</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Estrato */}
+            <div>
+              <p className="text-xs font-bold text-gray-500 mb-2">Estrato</p>
+              {Object.entries(estratoStats).map(([k, v]) => (
+                <div key={k} className="flex justify-between text-xs mb-1">
+                  <span>{k}</span>
+                  <span className="font-bold">{pct(v)}%</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Zona */}
+            <div>
+              <p className="text-xs font-bold text-gray-500 mb-2">Zona Residencia</p>
+              {Object.entries(zonaStats).map(([k, v]) => (
+                <div key={k} className="flex justify-between text-xs mb-1">
+                  <span>{k}</span>
+                  <span className="font-bold">{pct(v)}%</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Cargo */}
+          <div className="mt-4">
+            <p className="text-xs font-bold text-gray-500 mb-2">Cargo/Puesto (Top 5)</p>
+            {topCargos.map(([cargo, count]) => (
+              <div key={cargo} className="flex justify-between text-xs mb-1">
+                <span className="truncate">{cargo}</span>
+                <span className="font-bold">{pct(count)}%</span>
+              </div>
+            ))}
+          </div>
+
+          {/* Tipo contrato y Turno */}
+          <div className="grid grid-cols-2 gap-4 mt-4">
+            <div>
+              <p className="text-xs font-bold text-gray-500 mb-2">Tipo Contrato</p>
+              {Object.entries(contratoStats).map(([k, v]) => (
+                <div key={k} className="flex justify-between text-xs mb-1">
+                  <span>{k}</span>
+                  <span className="font-bold">{pct(v)}%</span>
+                </div>
+              ))}
+            </div>
+            <div>
+              <p className="text-xs font-bold text-gray-500 mb-2">Turno</p>
+              {Object.entries(turnoStats).map(([k, v]) => (
+                <div key={k} className="flex justify-between text-xs mb-1">
+                  <span>{k}</span>
+                  <span className="font-bold">{pct(v)}%</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Tipo examen */}
+          <div className="mt-4">
+            <p className="text-xs font-bold text-gray-500 mb-2">Tipo Examen</p>
+            {Object.entries(tipoExamStats).map(([k, v]) => (
+              <div key={k} className="flex justify-between text-xs mb-1">
+                <span>{k}</span>
+                <span className="font-bold">{pct(v)}%</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* 2. PERFIL CLÍNICO */}
+        <div className="bg-white border border-gray-200 rounded-xl p-5">
+          <h3 className="font-black text-sm text-gray-800 mb-4 border-b pb-2">2. Perfil Clínico y de Salud</h3>
+          
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            {/* IMC */}
+            <div>
+              <p className="text-xs font-bold text-gray-500 mb-2">IMC</p>
+              {Object.entries(stats.byIMC).filter(([,v]) => v > 0).map(([k, v]) => (
+                <div key={k} className="flex justify-between text-xs mb-1">
+                  <span>{k}</span>
+                  <span className="font-bold">{pct(v)}%</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Tensión Arterial */}
+            <div>
+              <p className="text-xs font-bold text-gray-500 mb-2">Tensión Arterial</p>
+              {Object.entries(stats.byTension).filter(([,v]) => v > 0).map(([k, v]) => (
+                <div key={k} className="flex justify-between text-xs mb-1">
+                  <span>{k}</span>
+                  <span className="font-bold">{pct(v)}%</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Concepto Aptitud */}
+            <div>
+              <p className="text-xs font-bold text-gray-500 mb-2">Concepto Aptitud</p>
+              {Object.entries(stats.byConcepto).slice(0, 5).map(([k, v]) => (
+                <div key={k} className="flex justify-between text-xs mb-1">
+                  <span className="truncate">{k.substring(0, 30)}</span>
+                  <span className="font-bold">{pct(v)}%</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Diagnóstico CIE-10 */}
+          <div className="mt-4">
+            <p className="text-xs font-bold text-gray-500 mb-2">Diagnóstico CIE-10</p>
+            {stats.topDiag.slice(0, 5).map(([diag, count]) => (
+              <div key={diag} className="flex justify-between text-xs mb-1">
+                <span className="truncate">{diag}</span>
+                <span className="font-bold">{pct(count)}%</span>
+              </div>
+            ))}
+          </div>
+
+          {/* Hallazgos Físicos Anormales */}
+          <div className="mt-4">
+            <p className="text-xs font-bold text-gray-500 mb-2">Hallazgos Físicos Anormales</p>
+            {Object.entries(hallazgosFisicos).filter(([,v]) => v > 0).map(([k, v]) => (
+              <div key={k} className="flex justify-between text-xs mb-1">
+                <span className="capitalize">{k.toLowerCase()}</span>
+                <span className="font-bold">{v} ({pct(v)}%)</span>
+              </div>
+            ))}
+            {Object.values(hallazgosFisicos).every(v => v === 0) && (
+              <p className="text-xs text-gray-400">Sin hallazgos anormales</p>
+            )}
+          </div>
+
+          {/* Riesgos Laborales Expuestos */}
+          <div className="mt-4">
+            <p className="text-xs font-bold text-gray-500 mb-2">Riesgos Laborales Expuestos</p>
+            {Object.entries(riesgosExpuestos).filter(([,v]) => v > 0).map(([k, v]) => (
+              <div key={k} className="flex justify-between text-xs mb-1">
+                <span>{k}</span>
+                <span className="font-bold">{((v / total) * 100).toFixed(1)}%</span>
+              </div>
+            ))}
+          </div>
+
+          {/* Estilos de Vida */}
+          <div className="mt-4">
+            <p className="text-xs font-bold text-gray-500 mb-2">Estilos de Vida y Hábitos</p>
+            {Object.entries(estilosVida).filter(([,v]) => v > 0).map(([k, v]) => (
+              <div key={k} className="flex justify-between text-xs mb-1">
+                <span>{k}</span>
+                <span className="font-bold">{((v / total) * 100).toFixed(1)}%</span>
+              </div>
+            ))}
+            {Object.values(estilosVida).every(v => v === 0) && (
+              <p className="text-xs text-gray-400">Sin datos registrados</p>
+            )}
+          </div>
         </div>
 
         {/* Recomendaciones */}
