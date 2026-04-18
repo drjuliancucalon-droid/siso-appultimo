@@ -58,12 +58,41 @@ export function useBackendData(endpoint, localStorageKey, dataField) {
         const sbKey = import.meta.env.VITE_SUPABASE_KEY || 'sb_publishable_K88qYuJ9wsWjQqnIhLVK7Q_NroFvPI7';
         // Determine the siso_store key from the endpoint
         const keyMap = {
+          // Datos principales
           '/data/patients': 'siso_patients_drcucalon',
           '/data/patients/db': 'siso_db_patients_drcucalon',
           '/data/companies': 'siso_companies_drcucalon',
           '/data/users': 'siso_users',
           '/data/agenda': 'siso_agendados_drcucalon',
           '/data/bills': 'siso_saved_bills_drcucalon',
+          '/data/doctor': 'siso_doctor_data_drcucalon',
+          // Módulos especializados
+          '/data/cotizaciones': 'siso_cotizaciones',
+          '/data/mensajes': 'siso_mensajes',
+          '/data/mensajes_drawer': 'siso_mensajes_drawer',
+          '/data/encuestas': 'siso_encuestas',
+          '/data/arl': 'siso_atl_cases',
+          '/data/habeas': 'siso_habeas_data_requests',
+          '/data/telemedicine': 'siso_teleconsultas',
+          '/data/teleSala': 'siso_teleSala',
+          '/data/teleEspera': 'siso_teleEspera',
+          '/data/portafolio': 'siso_portafolio',
+          '/data/sgsst': 'siso_sgsst_drcucalon',
+          '/data/ips_perfil': 'siso_ips_perfil',
+          '/data/orgs': 'siso_orgs',
+          // Configuración y auditoría
+          '/data/ai_config': 'siso_ai_config_provider',
+          '/data/ai_keys': 'siso_ai_keys_drcucalon',
+          '/data/doctor_signature': 'siso_doctor_signature',
+          '/data/email_config': 'siso_email_config',
+          '/data/audit_log': 'siso_audit_log',
+          '/data/privacidad': 'siso_privacidad_aceptada',
+          // Historial y estadísticas
+          '/data/atenciones': 'siso_atenciones',
+          '/data/atenciones_cerradas': 'siso_atenciones_cerradas',
+          '/data/reports': 'siso_saved_reports',
+          '/data/backup_history': 'siso_backup_history',
+          '/data/custom_meds': 'siso_custom_meds',
         };
         const storeKey = keyMap[endpoint];
         if (storeKey) {
@@ -138,7 +167,15 @@ export function useBackendObject(endpoint, localStorageKey, dataField) {
       try {
         const sbUrl = import.meta.env.VITE_SUPABASE_URL || 'https://yqrrktrgoijgzccrxnpz.supabase.co';
         const sbKey = import.meta.env.VITE_SUPABASE_KEY || 'sb_publishable_K88qYuJ9wsWjQqnIhLVK7Q_NroFvPI7';
-        const keyMap = { '/data/doctor': 'siso_doctor_data_drcucalon' };
+        // Extended keyMap for useBackendObject
+        const keyMap = {
+          '/data/doctor': 'siso_doctor_data_drcucalon',
+          '/data/ai_config': 'siso_ai_config_provider',
+          '/data/ai_keys': 'siso_ai_keys_drcucalon',
+          '/data/doctor_signature': 'siso_doctor_signature',
+          '/data/email_config': 'siso_email_config',
+          '/data/ips_perfil': 'siso_ips_perfil',
+        };
         const storeKey = keyMap[endpoint];
         if (storeKey) {
           const res = await fetch(
