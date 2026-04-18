@@ -792,6 +792,188 @@ export default function Reporte({
   };
 
   // ═══════════════════════════════════════════════════════════════════════
+  // RENDER: RESUMEN EJECUTIVO AUTOMÁTICO
+  // ═══════════════════════════════════════════════════════════════════════
+  const renderResumenEjecutivo = () => {
+    // Calcular métricas clave
+    const total = filteredPatients.length;
+    const conHallazgos = filteredPatients.filter(p => 
+      (p.conceptoAptitud || '').toLowerCase().includes('no apt') ||
+      (p.conceptoAptitud || '').toLowerCase().includes('reubic')
+    ).length;
+    const conRestricciones = filteredPatients.filter(p => 
+      p.restriccionesLaborales && p.restriccionesLaborales.length > 0
+    ).length;
+    const tasaNoAptos = total > 0 ? ((conHallazgos / total) * 100).toFixed(1) : 0;
+    
+    // Hallazgos principales
+    const hallazgosPrincipales = [];
+    if (sveIndicators.dme.count > 0) {
+      hallazgosPrincipales.push(`• DME: ${sveIndicators.dme.count} casos (${sveIndicators.dme.pct}%)`);
+    }
+    if (sveIndicators.cardiovascular.count > 0) {
+      hallazgosPrincipales.push(`• Cardiovascular: ${sveIndicators.cardiovascular.count} casos (${sveIndicators.cardiovascular.pct}%)`);
+    }
+    if (sveIndicators.respiratorio.count > 0) {
+      hallazgosPrincipales.push(`• Respiratorio: ${sveIndicators.respiratorio.count} casos (${sveIndicators.respiratorio.pct}%)`);
+    }
+    if (sveIndicators.psicosocial.count > 0) {
+      hallazgosPrincipales.push(`• Psicosocial: ${sveIndicators.psicosocial.count} casos (${sveIndicators.psicosocial.pct}%)`);
+    }
+
+    // Recomendaciones
+    const recomendaciones = [];
+    if (sveIndicators.dme.pct > 10) {
+      recomendaciones.push('⚠️ Implementar programa de vigilancia ergonómica');
+    }
+    if (sveIndicators.cardiovascular.pct > 10) {
+      recomendaciones.push('⚠️ Programa de control de factores de riesgo cardiovascular');
+    }
+    if (sveIndicators.psicosocial.pct > 10) {
+      recomendaciones.push('⚠️ Intervención en factores de riesgo psicosocial');
+    }
+    recomendaciones.push('✓ Continuar con el programa de exámenes ocupacionales');
+
+    return (
+      <div className="space-y-6">
+        <div className="bg-gradient-to-r from-indigo-500 to-purple-500 rounded-xl p-4 text-white">
+          <p className="font-black flex items-center gap-2">
+            <FileText className="w-4 h-4" /> Resumen Ejecutivo Automático
+          </p>
+          <p className="text-xs text-indigo-100 mt-1">
+            Análisis instantáneo sin necesidad de IA
+          </p>
+        </div>
+
+        {/* Métricas clave */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="bg-white border border-gray-200 rounded-xl p-4 text-center">
+            <p className="text-2xl font-black text-blue-600">{total}</p>
+            <p className="text-xs font-bold text-gray-500">Total Evaluados</p>
+          </div>
+          <div className="bg-white border border-gray-200 rounded-xl p-4 text-center">
+            <p className="text-2xl font-black text-amber-600">{conHallazgos}</p>
+            <p className="text-xs font-bold text-gray-500">Con Hallazgos</p>
+          </div>
+          <div className="bg-white border border-gray-200 rounded-xl p-4 text-center">
+            <p className="text-2xl font-black text-red-600">{conRestricciones}</p>
+            <p className="text-xs font-bold text-gray-500">Con Restricciones</p>
+          </div>
+          <div className="bg-white border border-gray-200 rounded-xl p-4 text-center">
+            <p className="text-2xl font-black text-purple-600">{tasaNoAptos}%</p>
+            <p className="text-xs font-bold text-gray-500">Tasa No Aptos</p>
+          </div>
+        </div>
+
+        {/* Hallazgos */}
+        <div className="bg-white border border-gray-200 rounded-xl p-5">
+          <h3 className="font-black text-sm text-gray-800 mb-4">📋 Hallazgos Principales</h3>
+          {hallazgosPrincipales.length > 0 ? (
+            <ul className="space-y-2 text-sm text-gray-700">
+              {hallazgosPrincipales.map((h, i) => (
+                <li key={i} className="bg-gray-50 p-2 rounded">{h}</li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-gray-400 text-sm">No se detectaron hallazgos relevantes</p>
+          )}
+        </div>
+
+        {/* Recomendaciones */}
+        <div className="bg-white border border-gray-200 rounded-xl p-5">
+          <h3 className="font-black text-sm text-gray-800 mb-4">💡 Recomendaciones</h3>
+          <ul className="space-y-2 text-sm text-gray-700">
+            {recomendaciones.map((r, i) => (
+              <li key={i} className="bg-emerald-50 p-2 rounded">{r}</li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    );
+  };
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // RENDER: ENVÍO INTEGRAL A EMPRESAS
+  // ═══════════════════════════════════════════════════════════════════════
+  const renderEnvioIntegral = () => {
+    const empresa = companies.find(c => c.id === selectedCompanyReport);
+    const totalPacientes = filteredPatients.length;
+    
+    return (
+      <div className="space-y-6">
+        <div className="bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl p-4 text-white">
+          <p className="font-black flex items-center gap-2">
+            <Send className="w-4 h-4" /> Envío Integral a Empresa
+          </p>
+          <p className="text-xs text-green-100 mt-1">
+            Genera y envía todos los documentos a la empresa
+          </p>
+        </div>
+
+        {!selectedCompanyReport ? (
+          <div className="bg-amber-50 border border-amber-200 rounded-xl p-6 text-center">
+            <AlertTriangle className="w-10 h-10 text-amber-500 mx-auto mb-3" />
+            <p className="font-bold text-amber-800">Selecciona una empresa</p>
+            <p className="text-xs text-amber-600 mt-1">Elige una empresa del filtro para continuar</p>
+          </div>
+        ) : (
+          <>
+            {/* Checklist de completitud */}
+            <div className="bg-white border border-gray-200 rounded-xl p-5">
+              <h3 className="font-black text-sm text-gray-800 mb-4">✅ Checklist de Documentos</h3>
+              <div className="space-y-3">
+                <div className="flex items-center gap-3">
+                  <input type="checkbox" checked className="w-5 h-5 text-emerald-600 rounded" readOnly />
+                  <span className="text-sm text-gray-700">Informe Epidemiológico</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <input type="checkbox" checked={totalPacientes > 0} className="w-5 h-5 text-emerald-600 rounded" readOnly />
+                  <span className="text-sm text-gray-700">Certificados ({totalPacientes} exámenes)</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <input type="checkbox" checked className="w-5 h-5 text-emerald-600 rounded" readOnly />
+                  <span className="text-sm text-gray-700">Cuenta de Cobro</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Datos de la empresa */}
+            <div className="bg-white border border-gray-200 rounded-xl p-5">
+              <h3 className="font-black text-sm text-gray-800 mb-4">🏢 Datos de la Empresa</h3>
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <p className="text-gray-500">Nombre:</p>
+                  <p className="font-bold">{empresa?.nombre || '—'}</p>
+                </div>
+                <div>
+                  <p className="text-gray-500">NIT:</p>
+                  <p className="font-bold">{empresa?.nit || '—'}</p>
+                </div>
+                <div>
+                  <p className="text-gray-500">Email:</p>
+                  <p className="font-bold">{empresa?.email || empresa?.emailContacto || '—'}</p>
+                </div>
+                <div>
+                  <p className="text-gray-500">Total Pacientes:</p>
+                  <p className="font-bold">{totalPacientes}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Botón de envío */}
+            <button 
+              onClick={() => showAlert?.('📧 Funcionalidad de envío por email - Configure servidor SMTP')}
+              className="w-full flex items-center justify-center gap-2 px-4 py-4 bg-green-600 text-white rounded-xl font-bold text-lg hover:bg-green-700 shadow-lg"
+            >
+              <Send className="w-5 h-5" /> Enviar Todo a la Empresa
+            </button>
+          </>
+        )}
+      </div>
+    );
+  };
+
+  // ═══════════════════════════════════════════════════════════════════════
   // RENDER: HISTORIAL DE REPORTES GUARDADOS
   // ═══════════════════════════════════════════════════════════════════════
   const renderHistorial = () => {
@@ -1283,12 +1465,14 @@ Concepto: ${cuenta.concepto}
       {/* Tab bar */}
       <div className="flex gap-2 overflow-x-auto pb-2">
         {[
+          { id: 'resumen', label: 'Resumen', icon: ClipboardList },
           { id: 'estadisticas', label: 'Estadísticas', icon: BarChart3 },
           { id: 'trabajadores', label: 'Trabajadores', icon: Users },
           { id: 'sve', label: 'Indicadores SVE', icon: Shield },
           { id: 'ia', label: 'Informe IA', icon: Brain },
           { id: 'certificados', label: 'Certificados', icon: FileCheck },
           { id: 'financiero', label: 'Financiero', icon: DollarSign },
+          { id: 'envio', label: 'Envío', icon: Send },
           { id: 'historial', label: 'Historial', icon: FileText },
         ].map(tab => (
           <button key={tab.id} onClick={() => setActiveTab(tab.id)}
@@ -1303,6 +1487,7 @@ Concepto: ${cuenta.concepto}
       </div>
 
       {/* Tab content */}
+      {activeTab === 'resumen' && renderResumenEjecutivo()}
       {activeTab === 'estadisticas' && renderEstadisticas()}
       {activeTab === 'trabajadores' && renderTablaWorkers()}
       {activeTab === 'sve' && (
@@ -1318,6 +1503,7 @@ Concepto: ${cuenta.concepto}
       {activeTab === 'ia' && renderAIReport()}
       {activeTab === 'certificados' && renderCertificados()}
       {activeTab === 'financiero' && renderFinanciero()}
+      {activeTab === 'envio' && renderEnvioIntegral()}
       {activeTab === 'historial' && renderHistorial()}
     </div>
   );
