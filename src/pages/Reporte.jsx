@@ -10,6 +10,7 @@ import {
   Wind, Activity, AlertTriangle, CheckCircle2, TrendingUp,
   PieChart, Printer, RefreshCw, Loader2, FileCheck, Search,
   ChevronDown, ChevronUp, Copy, Star, Zap, ClipboardList,
+  DollarSign, Send, FilePlus, Save, Trash2, Briefcase,
 } from 'lucide-react';
 import { SVEPrograms } from '../modules/reports/components/SVEPrograms';
 
