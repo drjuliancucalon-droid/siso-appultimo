@@ -668,6 +668,136 @@ export default function Reporte({
   );
 
   // ═══════════════════════════════════════════════════════════════════════
+  // RENDER: TABLA TRABAJADORES CON RESTRICCIONES
+  // ═══════════════════════════════════════════════════════════════════════
+  const renderTablaWorkers = () => {
+    // Pacientes con restricciones
+    const pacientesConRestricciones = filteredPatients.filter(p => 
+      p.restriccionesLaborales && p.restriccionesLaborales.length > 0
+    );
+    
+    // Todos los pacientes para la tabla
+    const todosPacientes = filteredPatients;
+    
+    return (
+      <div className="space-y-6">
+        {/* Resumen de restricciones */}
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="font-black text-amber-800 flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4" /> Trabajadores con Restricciones Laborales
+              </p>
+              <p className="text-xs text-amber-600 mt-1">
+                Listado de trabajadores que requieren adaptaciones o restricciones en su labor
+              </p>
+            </div>
+            <div className="text-right">
+              <p className="text-2xl font-black text-amber-600">{pacientesConRestricciones.length}</p>
+              <p className="text-xs text-amber-500">de {todosPacientes.length} evaluados</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Tabla completa de trabajadores */}
+        <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs">
+              <thead>
+                <tr className="bg-gray-800 text-white">
+                  <th className="p-3 text-left font-bold">#</th>
+                  <th className="p-3 text-left font-bold">Trabajador</th>
+                  <th className="p-3 text-left font-bold">Documento</th>
+                  <th className="p-3 text-left font-bold">Cargo / Área</th>
+                  <th className="p-3 text-left font-bold">Fecha Exam</th>
+                  <th className="p-3 text-left font-bold">Dx Principal (CIE-10)</th>
+                  <th className="p-3 text-left font-bold">Restricciones</th>
+                  <th className="p-3 text-left font-bold">Base Normativa</th>
+                  <th className="p-3 text-left font-bold">Concepto</th>
+                </tr>
+              </thead>
+              <tbody>
+                {todosPacientes.map((p, idx) => {
+                  const restricciones = p.restriccionesLaborales || [];
+                  const tieneRestricciones = restricciones.length > 0;
+                  
+                  return (
+                    <tr key={p.id} className={`border-b hover:bg-gray-50 ${tieneRestricciones ? 'bg-amber-50' : ''}`}>
+                      <td className="p-2 text-center font-bold text-gray-500">{idx + 1}</td>
+                      <td className="p-2 font-bold text-gray-800">{p.nombres || '—'}</td>
+                      <td className="p-2 text-gray-600">{p.docNumero || '—'}</td>
+                      <td className="p-2">
+                        <div className="text-gray-800 font-medium">{p.cargo || '—'}</div>
+                        <div className="text-gray-400 text-[10px]">{p.area || '—'}</div>
+                      </td>
+                      <td className="p-2 text-gray-600">{p.fechaExamen || '—'}</td>
+                      <td className="p-2">
+                        <div className="text-gray-800 font-medium">{p.diagPrincipal || '—'}</div>
+                        <div className="text-gray-400 text-[10px]">{p.cie10Principal || '—'}</div>
+                      </td>
+                      <td className="p-2">
+                        {tieneRestricciones ? (
+                          <div className="space-y-1">
+                            {restricciones.map((r, i) => (
+                              <div key={i} className="text-red-600 font-medium bg-red-50 px-2 py-1 rounded text-[10px]">
+                                {r}
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <span className="text-emerald-600 font-medium">Sin restricciones</span>
+                        )}
+                      </td>
+                      <td className="p-2">
+                        {p.baseNormativa && p.baseNormativa.length > 0 ? (
+                          <div className="space-y-1">
+                            {p.baseNormativa.map((n, i) => (
+                              <div key={i} className="text-blue-600 bg-blue-50 px-2 py-1 rounded text-[10px]">
+                                {n}
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <span className="text-gray-400 text-[10px]">—</span>
+                        )}
+                      </td>
+                      <td className="p-2">
+                        <span className={`px-2 py-1 text-[10px] font-bold rounded-md ${
+                          (p.conceptoAptitud || '').toLowerCase().includes('apto')
+                            ? 'bg-emerald-100 text-emerald-700'
+                            : (p.conceptoAptitud || '').toLowerCase().includes('restric')
+                            ? 'bg-amber-100 text-amber-700'
+                            : 'bg-red-100 text-red-700'
+                        }`}>
+                          {p.conceptoAptitud || p.conceptoOcupacional || '—'}
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })}
+                {todosPacientes.length === 0 && (
+                  <tr>
+                    <td colSpan={9} className="p-8 text-center text-gray-400">
+                      No hay trabajadores para mostrar
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+        
+        {todosPacientes.length > 0 && (
+          <div className="flex justify-between items-center text-xs text-gray-500">
+            <p>Total: {todosPacientes.length} trabajadores</p>
+            <p>Con restricciones: {pacientesConRestricciones.length}</p>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  // ═══════════════════════════════════════════════════════════════════════
   // RENDER: CERTIFICADOS
   // ═══════════════════════════════════════════════════════════════════════
   const renderCertificados = () => (
@@ -811,6 +941,7 @@ export default function Reporte({
       <div className="flex gap-2 overflow-x-auto pb-2">
         {[
           { id: 'estadisticas', label: 'Estadísticas', icon: BarChart3 },
+          { id: 'trabajadores', label: 'Trabajadores', icon: Users },
           { id: 'sve', label: 'Indicadores SVE', icon: Shield },
           { id: 'ia', label: 'Informe IA', icon: Brain },
           { id: 'certificados', label: 'Certificados', icon: FileCheck },
@@ -828,6 +959,7 @@ export default function Reporte({
 
       {/* Tab content */}
       {activeTab === 'estadisticas' && renderEstadisticas()}
+      {activeTab === 'trabajadores' && renderTablaWorkers()}
       {activeTab === 'sve' && (
         <SVEPrograms
           patients={patientsList}
