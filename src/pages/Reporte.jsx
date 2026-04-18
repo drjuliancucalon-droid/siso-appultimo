@@ -749,6 +749,106 @@ export default function Reporte({
   );
 
   // ═══════════════════════════════════════════════════════════════════════
+  // RENDER: EXPORTACIÓN PDF DE TABLA
+  // ═══════════════════════════════════════════════════════════════════════
+  const handlePrintTable = () => {
+    const printContent = document.getElementById('tabla-trabajadores-print');
+    if (!printContent) {
+      showAlert?.('⚠️ No hay contenido para imprimir');
+      return;
+    }
+    
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>Reporte de Trabajadores - ${new Date().toLocaleDateString('es-CO')}</title>
+          <style>
+            body { font-family: Arial, sans-serif; font-size: 10px; }
+            table { width: 100%; border-collapse: collapse; }
+            th, td { border: 1px solid #ddd; padding: 6px; text-align: left; }
+            th { background: #333; color: white; }
+            .bg-amber-50 { background: #fffbeb; }
+            .text-red-600 { color: #dc2626; }
+            .text-emerald-600 { color: #059669; }
+            @media print {
+              body { margin: 0; }
+              table { page-break-inside: auto; }
+              tr { page-break-inside: avoid; page-break-after: auto; }
+            }
+          </style>
+        </head>
+        <body>
+          <h1>Reporte de Trabajadores</h1>
+          <p>Empresa: ${companies.find(c => c.id === selectedCompanyReport)?.nombre || 'Todas'}</p>
+          <p>Fecha: ${new Date().toLocaleDateString('es-CO')}</p>
+          <p>Total trabajadores: ${filteredPatients.length}</p>
+          ${printContent.innerHTML}
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+    printWindow.print();
+  };
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // RENDER: HISTORIAL DE REPORTES GUARDADOS
+  // ═══════════════════════════════════════════════════════════════════════
+  const renderHistorial = () => {
+    return (
+      <div className="space-y-6">
+        {/* Resumen */}
+        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+          <p className="font-black text-blue-800 flex items-center gap-2">
+            <FileText className="w-4 h-4" /> Historial de Informes Guardados
+          </p>
+          <p className="text-xs text-blue-600 mt-1">
+            Visualiza los informes epidemiológicos guardados anteriormente
+          </p>
+        </div>
+
+        {/* Lista de reportes guardados */}
+        {savedReports && savedReports.length > 0 ? (
+          <div className="space-y-3">
+            {savedReports.map((report, idx) => (
+              <div key={idx} className="bg-white border border-gray-200 rounded-xl p-4 hover:shadow-md transition">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-bold text-gray-800">{report.nombre || `Informe ${idx + 1}`}</p>
+                    <p className="text-xs text-gray-500">
+                      {report.empresaNombre || 'Empresa'} · {report.fecha || new Date().toLocaleDateString('es-CO')}
+                    </p>
+                  </div>
+                  <div className="flex gap-2">
+                    <button 
+                      onClick={() => showAlert?.('📋 Copiando contenido...')}
+                      className="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-lg text-xs font-bold hover:bg-gray-200 flex items-center gap-1"
+                    >
+                      <Copy className="w-3 h-3" /> Ver
+                    </button>
+                    <button 
+                      onClick={() => showAlert?.('🗑️ Eliminado')}
+                      className="px-3 py-1.5 bg-red-100 text-red-700 rounded-lg text-xs font-bold hover:bg-red-200 flex items-center gap-1"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="bg-gray-50 border border-gray-200 rounded-xl p-10 text-center">
+            <FileText className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+            <p className="text-gray-500 font-bold">No hay informes guardados</p>
+            <p className="text-gray-400 text-xs mt-1">Genera un informe IA y guárdalo para verlo aquí</p>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  // ═══════════════════════════════════════════════════════════════════════
   // RENDER: TABLA TRABAJADORES CON RESTRICCIONES
   // ═══════════════════════════════════════════════════════════════════════
   const renderTablaWorkers = () => {
@@ -1189,6 +1289,7 @@ Concepto: ${cuenta.concepto}
           { id: 'ia', label: 'Informe IA', icon: Brain },
           { id: 'certificados', label: 'Certificados', icon: FileCheck },
           { id: 'financiero', label: 'Financiero', icon: DollarSign },
+          { id: 'historial', label: 'Historial', icon: FileText },
         ].map(tab => (
           <button key={tab.id} onClick={() => setActiveTab(tab.id)}
             className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold whitespace-nowrap transition ${
@@ -1217,6 +1318,7 @@ Concepto: ${cuenta.concepto}
       {activeTab === 'ia' && renderAIReport()}
       {activeTab === 'certificados' && renderCertificados()}
       {activeTab === 'financiero' && renderFinanciero()}
+      {activeTab === 'historial' && renderHistorial()}
     </div>
   );
 }
