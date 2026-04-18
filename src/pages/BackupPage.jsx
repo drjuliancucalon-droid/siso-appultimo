@@ -153,8 +153,126 @@ export default function BackupPage() {
     try {
       const text = await file.text();
       const backup = JSON.parse(text);
-      if (!backup.version || !backup.data) throw new Error('Formato de backup inválido');
-      if (!confirm(`¿Importar backup del ${new Date(backup.date).toLocaleDateString('es-CO')}?\n\nColecciones: ${backup.summary?.join(', ') || 'N/A'}\n\n⚠️ Esto sobrescribirá los datos actuales.`)) {
+      
+      // Normalize backup format - support both old and new formats
+      let normalizedBackup = backup;
+      
+      // New format: { version, data: { siso_patients_drcucalon: [...] } }
+      if (backup.version && backup.data) {
+        normalizedBackup = backup;
+      }
+      // Format with _meta: { _meta: { version, data: { patients: [...] } } }
+      else if (backup._meta && backup._meta.data) {
+        normalizedBackup = {
+          version: backup._meta.version || backup._meta.backupVersion || '2.0',
+          date: backup._meta.exportedAt || backup._meta.backupDate,
+          platform: backup._meta.platform,
+          exportedBy: backup._meta.exportedBy,
+          data: {}
+        };
+        
+        // Map _meta.data to siso_store keys
+        const sourceData = backup._meta.data;
+        
+        // Map patients
+        if (sourceData.patients) normalizedBackup.data.siso_patients_drcucalon = sourceData.patients;
+        if (sourceData.db_patients) normalizedBackup.data.siso_db_patients_drcucalon = sourceData.db_patients;
+        
+        // Map companies
+        if (sourceData.companies) normalizedBackup.data.siso_companies_drcucalon = sourceData.companies;
+        
+        // Map users
+        if (sourceData.users) normalizedBackup.data.siso_users = sourceData.users;
+        
+        // Map agenda
+        if (sourceData.agenda) normalizedBackup.data.siso_agendados_drcucalon = sourceData.agenda;
+        if (sourceData.agendados) normalizedBackup.data.siso_agendados_drcucalon = sourceData.agendados;
+        
+        // Map bills/invoices
+        if (sourceData.bills) normalizedBackup.data.siso_saved_bills_drcucalon = sourceData.bills;
+        if (sourceData.facturas) normalizedBackup.data.siso_saved_bills_drcucalon = sourceData.facturas;
+        
+        // Map doctor data
+        if (sourceData.doctor) normalizedBackup.data.siso_doctor_data_drcucalon = sourceData.doctor;
+        if (sourceData.doctor_data) normalizedBackup.data.siso_doctor_data_drcucalon = sourceData.doctor_data;
+        
+        // Map additional modules
+        if (sourceData.cotizaciones) normalizedBackup.data.siso_cotizaciones = sourceData.cotizaciones;
+        if (sourceData.mensajes) normalizedBackup.data.siso_mensajes = sourceData.mensajes;
+        if (sourceData.arl || sourceData.habeas_data_requests) {
+          normalizedBackup.data.siso_atl_cases = sourceData.arl || sourceData.habeas_data_requests || [];
+        }
+        if (sourceData.telemedicine) normalizedBackup.data.siso_teleconsultas = sourceData.telemedicine;
+        if (sourceData.sgsst) normalizedBackup.data.siso_sgsst_drcucalon = sourceData.sgsst;
+        if (sourceData.ips_perfil) normalizedBackup.data.siso_ips_perfil = sourceData.ips_perfil;
+        if (sourceData.ai_config) normalizedBackup.data.siso_ai_config_provider = sourceData.ai_config;
+        if (sourceData.ai_keys) normalizedBackup.data.siso_ai_keys_drcucalon = sourceData.ai_keys;
+        
+        normalizedBackup.summary = Object.entries(normalizedBackup.data).map(([k, v]) => 
+          `${k.replace('siso_', '').replace('_drcucalon', '')}: ${Array.isArray(v) ? v.length : 1}`
+        );
+      }
+      // Old format: { version: "3.1", patients: [...] }
+      else if (backup.version && backup.patients) {
+        // Convert old format to new format
+        normalizedBackup = {
+          version: backup.version,
+          date: backup.backupDate,
+          platform: backup.platform,
+          exportedBy: backup.exportedBy,
+          data: {}
+        };
+        
+        // Map patients
+        if (backup.patients) normalizedBackup.data.siso_patients_drcucalon = backup.patients;
+        if (backup.db_patients) normalizedBackup.data.siso_db_patients_drcucalon = backup.db_patients;
+        
+        // Map companies
+        if (backup.companies) normalizedBackup.data.siso_companies_drcucalon = backup.companies;
+        
+        // Map users
+        if (backup.users) normalizedBackup.data.siso_users = backup.users;
+        
+        // Map agenda
+        if (backup.agenda) normalizedBackup.data.siso_agendados_drcucalon = backup.agenda;
+        if (backup.agendados) normalizedBackup.data.siso_agendados_drcucalon = backup.agendados;
+        
+        // Map bills/invoices
+        if (backup.bills) normalizedBackup.data.siso_saved_bills_drcucalon = backup.bills;
+        if (backup.facturas) normalizedBackup.data.siso_saved_bills_drcucalon = backup.facturas;
+        
+        // Map doctor data
+        if (backup.doctor) normalizedBackup.data.siso_doctor_data_drcucalon = backup.doctor;
+        if (backup.doctor_data) normalizedBackup.data.siso_doctor_data_drcucalon = backup.doctor_data;
+        
+        // Map additional modules
+        if (backup.cotizaciones) normalizedBackup.data.siso_cotizaciones = backup.cotizaciones;
+        if (backup.mensajes) normalizedBackup.data.siso_mensajes = backup.mensajes;
+        if (backup.arl || backup.habeas_data_requests) {
+          normalizedBackup.data.siso_atl_cases = backup.arl || backup.habeas_data_requests || [];
+        }
+        if (backup.telemedicine) normalizedBackup.data.siso_teleconsultas = backup.telemedicine;
+        if (backup.sgsst) normalizedBackup.data.siso_sgsst_drcucalon = backup.sgsst;
+        if (backup.ips_perfil) normalizedBackup.data.siso_ips_perfil = backup.ips_perfil;
+        if (backup.ai_config) normalizedBackup.data.siso_ai_config_provider = backup.ai_config;
+        if (backup.ai_keys) normalizedBackup.data.siso_ai_keys_drcucalon = backup.ai_keys;
+        
+        normalizedBackup.summary = Object.entries(normalizedBackup.data).map(([k, v]) => 
+          `${k.replace('siso_', '').replace('_drcucalon', '')}: ${Array.isArray(v) ? v.length : 1}`
+        );
+      }
+      else {
+        throw new Error('Formato de backup inválido. Debe tener _meta y data o formato legacy (patients, companies, etc.)');
+      }
+      
+      if (!normalizedBackup.version || !normalizedBackup.data) throw new Error('Formato de backup inválido');
+      
+      // Build summary from data
+      const summary = Object.entries(normalizedBackup.data).map(([k, v]) => 
+        `${k.replace('siso_', '').replace('_drcucalon', '')}: ${Array.isArray(v) ? v.length : 1}`
+      );
+      
+      if (!confirm(`¿Importar backup del ${new Date(normalizedBackup.date || normalizedBackup.backupDate).toLocaleDateString('es-CO')}?\n\nColecciones: ${summary.join(', ')}\n\n⚠️ Esto sobrescribirá los datos actuales.`)) {
         setImporting(false); return;
       }
 
@@ -162,7 +280,7 @@ export default function BackupPage() {
       const SB_KEY = 'sb_publishable_K88qYuJ9wsWjQqnIhLVK7Q_NroFvPI7';
       let imported = 0;
 
-      for (const [key, value] of Object.entries(backup.data)) {
+      for (const [key, value] of Object.entries(normalizedBackup.data)) {
         try {
           await fetch(`${SB_URL}/rest/v1/siso_store`, {
             method: 'POST',
