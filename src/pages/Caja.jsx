@@ -26,6 +26,7 @@ export default function Caja({
   cajaFiltroDesde, setCajaFiltroDesde, cajaFiltroHasta, setCajaFiltroHasta,
   cajaMedicoPeriodo, setCajaMedicoPeriodo, porcentajeMedico, setPorcentajeMedico,
   usersList = [], patientsList = [],
+  savedBillsList = [], setSavedBillsList,
   showAlert, showConfirm,
   ...rest
 }) {
@@ -623,17 +624,76 @@ export default function Caja({
         </div>
       </div>
 
-      {/* T-01: Cuentas por Cobrar */}
+      {/* Cuentas por Cobrar */}
       <div className="mt-4 bg-red-50 border border-red-200 rounded-xl p-5">
-        <div className="flex items-center gap-2 mb-4">
+        <div className="flex items-center gap-2 mb-3">
           <CreditCard className="w-5 h-5 text-red-600" />
           <h3 className="font-black text-red-800">Cuentas por Cobrar</h3>
+          <span className="ml-auto text-xs font-black text-red-700">
+            Pendiente: {(savedBillsList.filter(b => !b.pagada).reduce((s, b) => s + Number(b.amount || 0), 0))
+              .toLocaleString('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 })}
+          </span>
         </div>
-        <p className="text-xs text-red-600 mb-3">Estado de cartera pendiente - empresas con saldo pendiente</p>
-        
-        <div className="text-center py-4 text-gray-500 text-xs italic">
-          Funcionalidad en desarrollo - conecta con módulo de facturación para mostrar cartera pendiente
-        </div>
+
+        {savedBillsList.length === 0 ? (
+          <p className="text-center py-4 text-gray-400 text-xs italic">
+            Sin cuentas de cobro registradas
+          </p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs">
+              <thead className="bg-red-100 text-[10px] font-black text-red-700 uppercase">
+                <tr>
+                  {['#', 'Empresa / Cliente', 'Concepto', 'Monto', 'Fecha', 'Estado', 'Acciones'].map(h => (
+                    <th key={h} className="px-3 py-2 text-left">{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-red-100">
+                {savedBillsList.map((bill, i) => (
+                  <tr key={bill.id || i} className={`hover:bg-red-50/50 ${bill.pagada ? 'opacity-60' : ''}`}>
+                    <td className="px-3 py-2 text-gray-500 font-mono">{bill.billNumber || bill.numero || `CC-${i + 1}`}</td>
+                    <td className="px-3 py-2 font-bold text-gray-800">
+                      {bill.companyName || bill.clientName || bill.empresa || '--'}
+                    </td>
+                    <td className="px-3 py-2 text-gray-600 max-w-[160px] truncate">
+                      {bill.concept || bill.concepto || 'Servicios médicos'}
+                    </td>
+                    <td className="px-3 py-2 font-black text-gray-800">
+                      {Number(bill.amount || 0).toLocaleString('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 })}
+                    </td>
+                    <td className="px-3 py-2 text-gray-500">{bill.date || bill.fecha || '--'}</td>
+                    <td className="px-3 py-2">
+                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-black ${
+                        bill.pagada ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'
+                      }`}>
+                        {bill.pagada ? '✅ Pagada' : '⏳ Pendiente'}
+                      </span>
+                    </td>
+                    <td className="px-3 py-2">
+                      {!bill.pagada && setSavedBillsList && (
+                        <button
+                          onClick={() => {
+                            if (!window.confirm('¿Marcar esta cuenta como pagada?')) return;
+                            const updated = savedBillsList.map(b =>
+                              b.id === bill.id
+                                ? { ...b, pagada: true, fechaPago: new Date().toISOString().split('T')[0] }
+                                : b
+                            );
+                            setSavedBillsList(updated);
+                          }}
+                          className="px-2 py-1 bg-emerald-600 text-white text-[10px] font-black rounded-lg hover:bg-emerald-700"
+                        >
+                          Cobrar
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </div>
   );

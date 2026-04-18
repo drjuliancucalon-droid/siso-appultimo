@@ -108,6 +108,12 @@ const generateRIPS = (patients, doctor) => {
   return { AF, AD, AC, AN, AU, AT };
 };
 
+// ── SHA-256 hash (sin dependencias externas — monolito línea 787) ──
+const _sha256 = async (str) => {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+};
+
 export default function BackupPage() {
   const [exporting, setExporting] = useState(false);
   const [importing, setImporting] = useState(false);
@@ -120,7 +126,7 @@ export default function BackupPage() {
       const SB_KEY = 'sb_publishable_K88qYuJ9wsWjQqnIhLVK7Q_NroFvPI7';
       const backup = { version: '2.0', date: new Date().toISOString(), data: {} };
 
-      for (const { key, label } of BACKUP_KEYS) {
+      for (const { key } of BACKUP_KEYS) {
         try {
           const res = await fetch(`${SB_URL}/rest/v1/siso_store?key=eq.${encodeURIComponent(key)}&select=value`, {
             headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` }
@@ -135,12 +141,18 @@ export default function BackupPage() {
       const counts = Object.entries(backup.data).map(([k, v]) => `${k.replace('siso_', '').replace('_drcucalon', '')}: ${Array.isArray(v) ? v.length : 1}`);
       backup.summary = counts;
 
+      // B-15: SHA-256 integrity hash
+      const dataStr = JSON.stringify(backup.data);
+      backup.sha256 = await _sha256(dataStr);
+      backup.integrity = 'SHA-256 — Ley 527/1999 art. 7';
+
       const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url; a.download = `backup_ocupasalud_${new Date().toISOString().split('T')[0]}.json`;
       a.click(); URL.revokeObjectURL(url);
-      setStatus({ type: 'ok', msg: `Backup exportado: ${counts.length} colecciones` });
+      setStatus({ type: 'ok', msg: `Backup exportado: ${counts.length} colecciones · SHA-256: ${backup.sha256.slice(0, 16)}...` });
+      saveBackupToHistory({ collections: counts.length, sha256: backup.sha256.slice(0, 16) });
     } catch (err) { setStatus({ type: 'error', msg: err.message }); }
     finally { setExporting(false); }
   };
@@ -153,7 +165,18 @@ export default function BackupPage() {
     try {
       const text = await file.text();
       const backup = JSON.parse(text);
-      
+
+      // B-15: Verify SHA-256 integrity if present
+      if (backup.sha256 && backup.data) {
+        const computedHash = await _sha256(JSON.stringify(backup.data));
+        if (computedHash !== backup.sha256) {
+          if (!window.confirm('⚠️ La integridad SHA-256 del backup no coincide.\n\nEl archivo puede haber sido modificado o corrompido.\n\n¿Continuar de todas formas?')) {
+            setImporting(false);
+            return;
+          }
+        }
+      }
+
       // Normalize backup format - support both old and new formats
       let normalizedBackup = backup;
       

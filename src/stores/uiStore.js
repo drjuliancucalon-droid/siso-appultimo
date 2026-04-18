@@ -17,6 +17,10 @@ export const useUIStore = create((set, get) => ({
   syncStatus: 'idle', // 'idle' | 'syncing' | 'ok' | 'error'
   showSyncReport: false,
 
+  // ── B-17: AI generation status (navbar badge) ──
+  aiGenerating: false,
+  aiGeneratingLabel: '',
+
   // ── Actions ────────────────────────────────
   toggleSidebar: () => set((s) => ({ sidebarOpen: !s.sidebarOpen })),
   setSidebarOpen: (open) => set({ sidebarOpen: open }),
@@ -34,4 +38,7 @@ export const useUIStore = create((set, get) => ({
 
   setSyncStatus: (status) => set({ syncStatus: status }),
   setShowSyncReport: (show) => set({ showSyncReport: show }),
+
+  // B-17: AI generation badge
+  setAIGenerating: (val, label = 'Analizando con IA...') => set({ aiGenerating: val, aiGeneratingLabel: label }),
 }));

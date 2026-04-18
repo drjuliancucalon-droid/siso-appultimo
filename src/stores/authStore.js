@@ -4,6 +4,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { apiClient } from '../lib/apiClient';
+import { _canUse, _secretariaPuede, PLAN_CONFIG, SECRETARIA_PERMISOS_DEFAULT } from '../shared/data/planConfig.js';
 
 const MAX_LOGIN_ATTEMPTS = 5;
 const BLOCK_DURATION_MS = 15 * 60 * 1000; // 15 min
@@ -148,21 +149,33 @@ export const useAuthStore = create(
         return false;
       },
 
+      // canUse: verifica si el usuario puede usar una feature según su plan
+      // Delegado a _canUse de planConfig.js (única fuente de verdad — igual al monolito)
       canUse: (feature) => {
         const { currentUser } = get();
         if (!currentUser) return false;
-        const PLAN_CONFIG = {
-          libre: { price: 0, features: ['agenda_basica', 'historias_basicas', 'backup_local'], hcLimit: 30 },
-          basico: { price: 49000, features: ['agenda_basica', 'historias_basicas', 'backup_local', 'reportes', 'telemedicina_basica', 'propuestas'], hcLimit: 200 },
-          pro: { price: 79000, features: ['todo'], hcLimit: Infinity },
-          empresarial: { price: 0, features: ['todo', 'multi_org'], hcLimit: Infinity },
-        };
-        const plan = currentUser.license || 'libre';
-        const cfg = PLAN_CONFIG[plan] || PLAN_CONFIG.libre;
-        if (cfg.price > 0 && currentUser.licenseExpiry) {
-          if (new Date(currentUser.licenseExpiry) < new Date()) return false;
-        }
-        return cfg.features.includes('todo') || cfg.features.includes(feature);
+        return _canUse(feature, currentUser);
+      },
+
+      // canAccessModule: verifica si el usuario tiene acceso a un módulo
+      // Médico/Admin: siempre. Secretaria: solo si el admin habilitó esa feature.
+      canAccessModule: (feature, usersList = []) => {
+        const { currentUser } = get();
+        return _secretariaPuede(feature, currentUser, usersList);
+      },
+
+      // getPlanConfig: devuelve la config del plan actual del usuario
+      getPlanConfig: () => {
+        const { currentUser } = get();
+        const plan = currentUser?.license || 'libre';
+        return PLAN_CONFIG[plan] || PLAN_CONFIG.libre;
+      },
+
+      // getHCLimit: límite de historias clínicas del plan actual
+      getHCLimit: () => {
+        const { currentUser } = get();
+        const plan = currentUser?.license || 'libre';
+        return (PLAN_CONFIG[plan] || PLAN_CONFIG.libre).maxHC || 8;
       },
     }),
     {

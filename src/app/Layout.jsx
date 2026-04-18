@@ -12,7 +12,7 @@ import {
   CreditCard, LogOut, Menu, X, Stethoscope, Activity,
   Cloud, CloudOff, Settings, ChevronLeft, ChevronRight,
   Bell, RefreshCw, ShieldCheck, Briefcase, Calculator,
-  MessageCircle, Crown
+  MessageCircle, Crown, BrainCircuit, Loader2
 } from 'lucide-react';
 import { useBackendObject } from '../hooks/useBackendData';
 import { MensajesDrawer } from '../shared/components/MensajesDrawer';
@@ -46,7 +46,7 @@ export default function Layout() {
   const navigate = useNavigate();
   const location = useLocation();
   const { currentUser, logout } = useAuthStore();
-  const { syncStatus, setSyncStatus } = useUIStore();
+  const { syncStatus, setSyncStatus, aiGenerating, aiGeneratingLabel } = useUIStore();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
   const [showMensajesDrawer, setShowMensajesDrawer] = useState(false);
@@ -203,6 +203,13 @@ export default function Layout() {
             <div className={`md:hidden flex items-center ${syncColor}`}>
               {syncIcon}
             </div>
+
+            {/* B-17: AI status badge during generation */}
+            {aiGenerating && (
+              <div className="flex items-center gap-1 px-2 py-1 bg-violet-700/60 text-violet-200 rounded-lg text-[10px] font-bold animate-pulse">
+                <Loader2 className="w-3 h-3 animate-spin" /> {aiGeneratingLabel || 'IA...'}
+              </div>
+            )}
 
             {/* T-04: Badge de mensajes no leídos - abre drawer */}
             <button

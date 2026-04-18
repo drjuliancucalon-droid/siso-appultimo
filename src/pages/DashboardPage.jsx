@@ -1,12 +1,14 @@
 // src/pages/DashboardPage.jsx — Dashboard with real data from backend
+// B-14: Plan gate wrappers for SVE/ARL/Telemedicina cards + plan status banner
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
 import { useBackendData, useBackendObject } from '../hooks/useBackendData';
+import { PLAN_CONFIG } from '../shared/data/planConfig';
 import {
   Users, Building2, Calendar, FileText, FileCheck, BarChart3,
   Shield, Stethoscope, Activity, AlertTriangle, TrendingUp,
-  Cloud, HardDrive
+  Cloud, HardDrive, Video
 } from 'lucide-react';
 
 const QUICK_ACTIONS = [
@@ -20,7 +22,7 @@ const QUICK_ACTIONS = [
 
 export default function DashboardPage() {
   const navigate = useNavigate();
-  const { currentUser } = useAuthStore();
+  const { currentUser, canUse } = useAuthStore();
   const { data: patients, source: patSource } = useBackendData('/data/patients', 'siso_db_patients', 'patients');
   const { data: companies } = useBackendData('/data/companies', 'siso_companies', 'companies');
   const { data: agenda } = useBackendData('/data/agenda', 'siso_agendados', 'appointments');
@@ -62,10 +64,18 @@ export default function DashboardPage() {
           {doctor?.licencia && (
             <p className="text-emerald-200 text-xs mt-1">RM: {doctor.licencia}</p>
           )}
-          {/* Plan activo - como monolito */}
-          <p className="text-emerald-200 text-xs mt-1 flex items-center gap-1">
-            <Shield className="w-3 h-3" /> Plan: <span className="font-bold">Pro (HC ilimitadas)</span>
-          </p>
+          {/* Plan activo — real from PLAN_CONFIG */}
+          {(() => {
+            const plan = PLAN_CONFIG[currentUser?.license || 'libre'] || PLAN_CONFIG.libre;
+            return (
+              <p className="text-emerald-200 text-xs mt-1 flex items-center gap-1">
+                <Shield className="w-3 h-3" /> Plan: <span className="font-bold">{plan.label}</span>
+                {plan.maxHC < 9999 && (
+                  <span className="ml-1 opacity-75">· máx {plan.maxHC} HC</span>
+                )}
+              </p>
+            );
+          })()}
         </div>
       </div>
 
@@ -86,6 +96,92 @@ export default function DashboardPage() {
               <p className="text-xs text-gray-500 mt-0.5">{action.desc}</p>
             </button>
           ))}
+        </div>
+      </div>
+
+      {/* ── Módulos Especializados (B-14: plan-gated cards) ── */}
+      <div>
+        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">⚡ Módulos Especializados</p>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+          {/* SVE — requiere Starter */}
+          <button
+            onClick={() =>
+              canUse('sve_starter')
+                ? navigate('/reports')
+                : alert('🔒 SVE está disponible en el plan 🌱 Starter ($45.000/mes, 2 programas) o ⭐ Pro ($79.000/mes, 7 programas).\n\nMenú → ⭐ Ver Planes')
+            }
+            className={`bg-white border rounded-xl p-3 flex items-center gap-2.5 transition group shadow-sm text-left ${
+              canUse('sve_starter') ? 'border-gray-100 hover:border-teal-200 hover:bg-teal-50/40' : 'border-gray-100 opacity-70'
+            }`}
+          >
+            <div className={`${canUse('sve_starter') ? 'bg-teal-50' : 'bg-gray-50'} p-2 rounded-lg flex-shrink-0`}>
+              <BarChart3 className={`w-4 h-4 ${canUse('sve_starter') ? 'text-teal-600' : 'text-gray-400'}`} />
+            </div>
+            <div className="min-w-0">
+              <p className="font-black text-gray-800 text-xs leading-tight">
+                SVE {!canUse('sve_starter') && <span className="text-[8px] bg-amber-100 text-amber-700 px-0.5 rounded">🔒</span>}
+              </p>
+              <p className="text-[10px] text-gray-400 truncate">Vigilancia epidemiológica</p>
+            </div>
+          </button>
+
+          {/* Telemedicina — requiere Starter */}
+          <button
+            onClick={() =>
+              canUse('telemedicina_starter')
+                ? navigate('/telemedicine')
+                : alert('🔒 Telemedicina está disponible en el plan 🌱 Starter ($45.000/mes) o ⭐ Pro ($79.000/mes).\n\nMenú → ⭐ Ver Planes')
+            }
+            className={`bg-white border rounded-xl p-3 flex items-center gap-2.5 transition group shadow-sm text-left ${
+              canUse('telemedicina_starter') ? 'border-gray-100 hover:border-indigo-200 hover:bg-indigo-50/40' : 'border-gray-100 opacity-70'
+            }`}
+          >
+            <div className={`${canUse('telemedicina_starter') ? 'bg-indigo-50' : 'bg-gray-50'} p-2 rounded-lg flex-shrink-0`}>
+              <Video className={`w-4 h-4 ${canUse('telemedicina_starter') ? 'text-indigo-600' : 'text-gray-400'}`} />
+            </div>
+            <div className="min-w-0">
+              <p className="font-black text-gray-800 text-xs leading-tight">
+                Telemedicina {!canUse('telemedicina_starter') && <span className="text-[8px] bg-amber-100 text-amber-700 px-0.5 rounded">🔒</span>}
+              </p>
+              <p className="text-[10px] text-gray-400 truncate">Teleconsultas</p>
+            </div>
+          </button>
+
+          {/* ARL — requiere Pro */}
+          <button
+            onClick={() =>
+              canUse('arl')
+                ? navigate('/arl')
+                : alert('🔒 Módulo ARL está disponible en el plan ⭐ Pro ($79.000/mes).\n\nMenú → ⭐ Ver Planes')
+            }
+            className={`bg-white border rounded-xl p-3 flex items-center gap-2.5 transition group shadow-sm text-left ${
+              canUse('arl') ? 'border-gray-100 hover:border-red-200 hover:bg-red-50/40' : 'border-gray-100 opacity-70'
+            }`}
+          >
+            <div className={`${canUse('arl') ? 'bg-red-50' : 'bg-gray-50'} p-2 rounded-lg flex-shrink-0`}>
+              <AlertTriangle className={`w-4 h-4 ${canUse('arl') ? 'text-red-600' : 'text-gray-400'}`} />
+            </div>
+            <div className="min-w-0">
+              <p className="font-black text-gray-800 text-xs leading-tight">
+                Módulo ARL {!canUse('arl') && <span className="text-[8px] bg-amber-100 text-amber-700 px-0.5 rounded">🔒</span>}
+              </p>
+              <p className="text-[10px] text-gray-400 truncate">Reportes AT/EL</p>
+            </div>
+          </button>
+
+          {/* Portal Empresa */}
+          <button
+            onClick={() => navigate('/portal-empresa')}
+            className="bg-white border border-gray-100 rounded-xl p-3 flex items-center gap-2.5 hover:border-emerald-200 hover:bg-emerald-50/40 transition group shadow-sm text-left"
+          >
+            <div className="bg-emerald-50 p-2 rounded-lg flex-shrink-0">
+              <Building2 className="w-4 h-4 text-emerald-600" />
+            </div>
+            <div className="min-w-0">
+              <p className="font-black text-gray-800 text-xs leading-tight">Portal Empresa</p>
+              <p className="text-[10px] text-gray-400 truncate">Acceso por NIT</p>
+            </div>
+          </button>
         </div>
       </div>
 

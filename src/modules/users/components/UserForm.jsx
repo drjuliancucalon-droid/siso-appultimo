@@ -2,15 +2,33 @@ import React, { useState } from 'react';
 import { Save, X } from 'lucide-react';
 import { InputGroup } from '../../../shared/components/ui/InputGroup';
 import { SelectGroup } from '../../../shared/components/ui/SelectGroup';
+import { SECRETARIA_PERMISOS_DEFAULT } from '../../../shared/data/planConfig';
 
 /**
  * UserForm - Formulario de creación/edición de usuario
  */
-export const UserForm = ({ user, onSave, onCancel, existingUsers = [] }) => {
+const PERM_LABELS = {
+  agenda:          '🗓️ Agenda',
+  bill:            '🧾 Cuentas de Cobro',
+  propuestas:      '📄 Propuestas',
+  telemedicina:    '🩺 Telemedicina',
+  empresas:        '🏢 Empresas',
+  pacientes_lista: '👥 Lista Pacientes',
+  pacientes_crear: '➕ Crear Pacientes',
+  reporte:         '📊 Reportes',
+  sve:             '🔬 SVE',
+  caja:            '💰 Financiero',
+  adjuntos:        '📎 Adjuntos',
+  cuentas_cobro:   '💳 Cuentas',
+};
+
+export const UserForm = ({ user, onSave, onCancel, existingUsers = [], usersList = [] }) => {
   const [form, setForm] = useState({
     usuario: '', nombre: '', role: 'medico', email: '', celular: '',
     cedula: '', titulo: '', licencia: '', ciudad: '', especialidad: '',
     mustChangePassword: true,
+    secretariaPermisos: { ...SECRETARIA_PERMISOS_DEFAULT },
+    medicosAsignados: [],
     ...user,
   });
   const [error, setError] = useState('');
@@ -60,6 +78,75 @@ export const UserForm = ({ user, onSave, onCancel, existingUsers = [] }) => {
             <InputGroup label="Licencia" name="licencia" value={form.licencia} onChange={handleChange} width="w-1/3" />
             <InputGroup label="Ciudad" name="ciudad" value={form.ciudad} onChange={handleChange} width="w-1/3" />
             <InputGroup label="Especialidad" name="especialidad" value={form.especialidad} onChange={handleChange} width="w-2/3" />
+          </div>
+        )}
+
+        {/* ── Permisos de Secretaria — 12 toggles ── */}
+        {form.role === 'secretaria' && (
+          <div className="bg-amber-50 rounded-xl p-4 border-2 border-amber-300">
+            <p className="text-xs font-black text-amber-800 uppercase mb-1">🔐 Permisos de Secretaria</p>
+            <p className="text-[10px] text-amber-600 mb-3">
+              Seleccione los módulos a los que tendrá acceso. Todo bloqueado por defecto.
+            </p>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-3">
+              {Object.entries(PERM_LABELS).map(([key, label]) => {
+                const permisos = form.secretariaPermisos || SECRETARIA_PERMISOS_DEFAULT;
+                const isOn = permisos[key] === true;
+                return (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() =>
+                      setForm(p => ({
+                        ...p,
+                        secretariaPermisos: {
+                          ...(p.secretariaPermisos || SECRETARIA_PERMISOS_DEFAULT),
+                          [key]: !isOn,
+                        },
+                      }))
+                    }
+                    className={`p-2 rounded-xl border-2 text-left text-xs font-bold transition ${
+                      isOn
+                        ? 'border-emerald-400 bg-emerald-50 text-emerald-800'
+                        : 'border-gray-200 bg-white text-gray-500 hover:border-amber-300'
+                    }`}
+                  >
+                    {label} {isOn ? '✅' : ''}
+                  </button>
+                );
+              })}
+            </div>
+            {usersList.filter(u => ['medico', 'administrador', 'super_admin'].includes(u.role) && u.activo !== false).length > 0 && (
+              <>
+                <p className="text-[10px] text-amber-700 font-black mb-2">👨‍⚕️ Médicos asignados (vacío = todos):</p>
+                <div className="flex flex-wrap gap-2">
+                  {usersList
+                    .filter(u => ['medico', 'administrador', 'super_admin'].includes(u.role) && u.activo !== false)
+                    .map(med => {
+                      const sel = (form.medicosAsignados || []).includes(med.usuario || med.user);
+                      return (
+                        <button
+                          key={med.usuario || med.user}
+                          type="button"
+                          onClick={() =>
+                            setForm(p => ({
+                              ...p,
+                              medicosAsignados: sel
+                                ? (p.medicosAsignados || []).filter(id => id !== (med.usuario || med.user))
+                                : [...(p.medicosAsignados || []), med.usuario || med.user],
+                            }))
+                          }
+                          className={`px-2 py-1 rounded-xl border text-xs font-bold ${
+                            sel ? 'border-blue-500 bg-blue-50 text-blue-800' : 'border-gray-200 bg-white text-gray-500'
+                          }`}
+                        >
+                          {sel ? '✅ ' : ''}{med.nombre || med.usuario || med.user}
+                        </button>
+                      );
+                    })}
+                </div>
+              </>
+            )}
           </div>
         )}
 

@@ -11,6 +11,7 @@ import {
   PieChart, Printer, RefreshCw, Loader2, FileCheck, Search,
   ChevronDown, ChevronUp, Copy, Star, Zap, ClipboardList,
 } from 'lucide-react';
+import { SVEPrograms } from '../modules/reports/components/SVEPrograms';
 
 // ═══════════════════════════════════════════════════════════════════════
 // REPORTE COMPONENT
@@ -826,7 +827,16 @@ export default function Reporte({
 
       {/* Tab content */}
       {activeTab === 'estadisticas' && renderEstadisticas()}
-      {activeTab === 'sve' && renderSVE()}
+      {activeTab === 'sve' && (
+        <SVEPrograms
+          patients={patientsList}
+          companies={companies}
+          aiConfig={aiConfig}
+          callAI={callAI}
+          showAlert={showAlert}
+          usersList={usersList}
+        />
+      )}
       {activeTab === 'ia' && renderAIReport()}
       {activeTab === 'certificados' && renderCertificados()}
     </div>
