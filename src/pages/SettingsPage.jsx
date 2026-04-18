@@ -7,6 +7,7 @@ import {
   Settings, Download, Upload, AlertCircle, CheckCircle,
   Loader2, Database, Shield, RefreshCw,
 } from 'lucide-react';
+import { useAIStore } from '../stores/aiStore';
 
 // ── Supabase ──────────────────────────────────────────────────────────
 const SB_URL = import.meta.env.VITE_SUPABASE_URL || 'https://yqrrktrgoijgzccrxnpz.supabase.co';
@@ -220,8 +221,9 @@ export default function SettingsPage() {
         if (src.arl)               rawData['siso_arl_reportes']           = src.arl;
         if (src.ai_config)         rawData['siso_ai_config_provider']     = src.ai_config;
         if (src.doctor_signature)  rawData['siso_doctor_signature']       = src.doctor_signature;
-      } else if (backup.patients || backup.companies) {
-        // Formato legacy monolito: { version, backupDate, patients: [...], companies: [...], ... }
+      } else if (backup.patients || backup.companies || backup.aiConfig) {
+        // Formato legacy monolito: { version, backupDate, patients: [...], aiConfig: {...}, ... }
+        // Claves en snake_case
         if (backup.patients)         rawData['siso_db_patients']            = backup.patients;
         if (backup.db_patients)      rawData['siso_db_patients']            = backup.db_patients;
         if (backup.companies)        rawData['siso_companies']              = backup.companies;
@@ -235,9 +237,18 @@ export default function SettingsPage() {
         if (backup.arl)              rawData['siso_arl_reportes']           = backup.arl;
         if (backup.ai_config)        rawData['siso_ai_config_provider']     = backup.ai_config;
         if (backup.doctor_signature) rawData['siso_doctor_signature']       = backup.doctor_signature;
-        // Campos directos con clave siso_ (si el monolito los incluyó sueltos)
+        // Claves camelCase del monolito OcupaSalud v3.x
+        if (backup.aiConfig)           rawData['siso_ai_config_provider']     = backup.aiConfig;
+        if (backup.savedBills)         rawData['siso_saved_bills']            = backup.savedBills;
+        if (backup.savedReports)       rawData['siso_saved_reports']          = backup.savedReports;
+        if (backup.atencionesCerradas) rawData['siso_atenciones_cerradas']    = backup.atencionesCerradas;
+        if (backup.customMedicamentos) rawData['siso_custom_meds']            = backup.customMedicamentos;
+        if (backup.propuestas)         rawData['siso_cotizaciones']           = backup.propuestas;
+        if (backup.habeasData)         rawData['siso_privacidad_aceptada']    = backup.habeasData;
+        if (backup.sgsst)              rawData['siso_sgsst_drcucalon']        = backup.sgsst;
+        // Cualquier clave siso_ directa
         for (const [k, v] of Object.entries(backup)) {
-          if (k.startsWith('siso_')) rawData[k] = v;
+          if (k.startsWith('siso_') && !rawData[k]) rawData[k] = v;
         }
       } else {
         throw new Error(
@@ -312,11 +323,33 @@ export default function SettingsPage() {
       }
 
       const skipCount = toSkip.length;
+
+      // ── Aplicar config IA al Zustand store si fue importada ──
+      // El modal de IA lee de useAIStore (Zustand/localStorage), no de Supabase.
+      // Si importamos siso_ai_config_provider, actualizamos el store directamente.
+      const aiImported = toWrite.find(x => x.key === 'siso_ai_config_provider');
+      if (aiImported && aiImported.value && typeof aiImported.value === 'object') {
+        try {
+          const aiCfg = aiImported.value;
+          const { setActiveProvider, setKey } = useAIStore.getState();
+          if (aiCfg.activeProvider) setActiveProvider(aiCfg.activeProvider);
+          if (aiCfg.keys && typeof aiCfg.keys === 'object') {
+            for (const [provider, key] of Object.entries(aiCfg.keys)) {
+              if (key) setKey(provider, key);
+            }
+          }
+        } catch (e) {
+          console.warn('No se pudo actualizar AI store:', e.message);
+        }
+      }
+
       setBackupStatus('success');
       setStatusMsg(
         fail > 0
-          ? `✅ ${ok} importadas · ⚠️ ${fail} con error · ⏭️ ${skipCount} omitidas (ya tenían datos)`
-          : `✅ ${ok} colecciones importadas · ⏭️ ${skipCount} omitidas (ya tenían datos)`
+          ? `✅ ${ok} importadas · ⚠️ ${fail} con error · ⏭️ ${skipCount} omitidas (ya tenían datos)` +
+            (aiImported ? ' · 🤖 Claves API restauradas' : '')
+          : `✅ ${ok} colecciones importadas · ⏭️ ${skipCount} omitidas` +
+            (aiImported ? ' · 🤖 Claves API restauradas — abre Config IA para verlas' : '')
       );
 
       // Refrescar conteos

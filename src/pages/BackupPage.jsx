@@ -3,6 +3,7 @@
 // FIX: Compatible con backups del monolito OcupaSalud (claves siso_db_patients, siso_companies, etc.)
 import React, { useState, useEffect, useCallback } from 'react';
 import { Download, Upload, Loader2, CheckCircle, AlertCircle, Database, Clock, FileText, RefreshCw } from 'lucide-react';
+import { useAIStore } from '../stores/aiStore';
 
 const SB_URL = import.meta.env.VITE_SUPABASE_URL || 'https://yqrrktrgoijgzccrxnpz.supabase.co';
 const SB_KEY = import.meta.env.VITE_SUPABASE_KEY || 'sb_publishable_K88qYuJ9wsWjQqnIhLVK7Q_NroFvPI7';
@@ -294,21 +295,33 @@ export default function BackupPage() {
         if (src.arl)        normalizedData['siso_arl_reportes']        = src.arl;
         if (src.ai_config)  normalizedData['siso_ai_config_provider']  = src.ai_config;
         if (src.doctor_signature) normalizedData['siso_doctor_signature'] = src.doctor_signature;
-      } else if (backup.version && backup.patients) {
-        // Formato legacy: { version, patients: [...], companies: [...], ... }
-        if (backup.patients)   normalizedData['siso_db_patients']        = backup.patients;
-        if (backup.db_patients) normalizedData['siso_db_patients']       = backup.db_patients;
-        if (backup.companies)  normalizedData['siso_companies']           = backup.companies;
-        if (backup.users)      normalizedData['siso_users']               = backup.users;
-        if (backup.agenda)     normalizedData['siso_agendados']           = backup.agenda;
-        if (backup.agendados)  normalizedData['siso_agendados']           = backup.agendados;
-        if (backup.bills)      normalizedData['siso_saved_bills']         = backup.bills;
-        if (backup.facturas)   normalizedData['siso_saved_bills']         = backup.facturas;
-        if (backup.doctor)     normalizedData['siso_doctor_data_drcucalon'] = backup.doctor;
-        if (backup.mensajes)   normalizedData['siso_mensajes']            = backup.mensajes;
-        if (backup.arl)        normalizedData['siso_arl_reportes']        = backup.arl;
-        if (backup.ai_config)  normalizedData['siso_ai_config_provider']  = backup.ai_config;
-        if (backup.doctor_signature) normalizedData['siso_doctor_signature'] = backup.doctor_signature;
+      } else if (backup.version && (backup.patients || backup.aiConfig)) {
+        // Formato legacy OcupaSalud v3.x — snake_case y camelCase
+        if (backup.patients)         normalizedData['siso_db_patients']           = backup.patients;
+        if (backup.db_patients)      normalizedData['siso_db_patients']           = backup.db_patients;
+        if (backup.companies)        normalizedData['siso_companies']             = backup.companies;
+        if (backup.users)            normalizedData['siso_users']                 = backup.users;
+        if (backup.agenda)           normalizedData['siso_agendados']             = backup.agenda;
+        if (backup.agendados)        normalizedData['siso_agendados']             = backup.agendados;
+        if (backup.bills)            normalizedData['siso_saved_bills']           = backup.bills;
+        if (backup.facturas)         normalizedData['siso_saved_bills']           = backup.facturas;
+        if (backup.doctor)           normalizedData['siso_doctor_data_drcucalon'] = backup.doctor;
+        if (backup.mensajes)         normalizedData['siso_mensajes']              = backup.mensajes;
+        if (backup.arl)              normalizedData['siso_arl_reportes']          = backup.arl;
+        if (backup.ai_config)        normalizedData['siso_ai_config_provider']    = backup.ai_config;
+        if (backup.doctor_signature) normalizedData['siso_doctor_signature']      = backup.doctor_signature;
+        // camelCase (monolito v3.x)
+        if (backup.aiConfig)           normalizedData['siso_ai_config_provider']  = backup.aiConfig;
+        if (backup.savedBills)         normalizedData['siso_saved_bills']         = backup.savedBills;
+        if (backup.savedReports)       normalizedData['siso_saved_reports']       = backup.savedReports;
+        if (backup.atencionesCerradas) normalizedData['siso_atenciones_cerradas'] = backup.atencionesCerradas;
+        if (backup.customMedicamentos) normalizedData['siso_custom_meds']         = backup.customMedicamentos;
+        if (backup.propuestas)         normalizedData['siso_cotizaciones']        = backup.propuestas;
+        if (backup.habeasData)         normalizedData['siso_privacidad_aceptada'] = backup.habeasData;
+        if (backup.sgsst)              normalizedData['siso_sgsst_drcucalon']     = backup.sgsst;
+        for (const [k, v] of Object.entries(backup)) {
+          if (k.startsWith('siso_') && !normalizedData[k]) normalizedData[k] = v;
+        }
       } else {
         throw new Error(
           'Formato de backup no reconocido.\n' +
@@ -385,9 +398,26 @@ export default function BackupPage() {
         } catch { errors++; }
       }
 
+      // ── Aplicar config IA al Zustand store si fue importada ──
+      const aiImported = toWrite.find(x => x.key === 'siso_ai_config_provider');
+      if (aiImported?.value && typeof aiImported.value === 'object') {
+        try {
+          const aiCfg = aiImported.value;
+          const { setActiveProvider, setKey } = useAIStore.getState();
+          if (aiCfg.activeProvider) setActiveProvider(aiCfg.activeProvider);
+          if (aiCfg.keys && typeof aiCfg.keys === 'object') {
+            for (const [provider, key] of Object.entries(aiCfg.keys)) {
+              if (key) setKey(provider, key);
+            }
+          }
+        } catch (e) { console.warn('AI store update failed:', e.message); }
+      }
+
       const msg = errors > 0
-        ? `${imported} importadas · ⚠️ ${errors} errores · ⏭️ ${toSkip.length} omitidas (ya tenían datos)`
-        : `✅ ${imported} importadas · ⏭️ ${toSkip.length} omitidas (ya tenían datos)`;
+        ? `${imported} importadas · ⚠️ ${errors} errores · ⏭️ ${toSkip.length} omitidas` +
+          (aiImported ? ' · 🤖 Claves API restauradas' : '')
+        : `✅ ${imported} importadas · ⏭️ ${toSkip.length} omitidas` +
+          (aiImported ? ' · 🤖 Claves API restauradas' : '');
 
       setStatus({ type: errors > 0 ? 'warn' : 'ok', msg });
       saveBackupToHistory({ collections: imported, tipo: 'import', errors, skipped: toSkip.length });
