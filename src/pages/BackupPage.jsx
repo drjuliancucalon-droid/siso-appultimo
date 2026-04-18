@@ -332,29 +332,44 @@ export default function BackupPage() {
         }
       }
 
-      // ── Paso 4: Confirmar con el usuario ──
-      const summary = Object.entries(remappedData).map(
-        ([k, v]) => `${k.replace('siso_', '').replace('_drcucalon', '')}: ${Array.isArray(v) ? v.length : 1}`
-      );
-      const backupDate = backup.date || backup.backupDate || backup._meta?.exportedAt || 'fecha desconocida';
-      const dateStr = (() => {
-        try { return new Date(backupDate).toLocaleDateString('es-CO'); } catch { return backupDate; }
-      })();
+      // ── Paso 4: MERGE INTELIGENTE — verificar qué ya existe en Supabase ──
+      const toWrite = [];   // vacías → se importan
+      const toSkip  = [];   // con datos → se omiten
+
+      for (const [key, value] of Object.entries(remappedData)) {
+        const existing = await fetchStoreKey(key);
+        const hasData = existing !== null && (!Array.isArray(existing) || existing.length > 0);
+        const label = key.replace('siso_', '').replace('_drcucalon', '');
+        if (hasData) {
+          toSkip.push({ key, label, cnt: Array.isArray(existing) ? existing.length : 1 });
+        } else {
+          toWrite.push({ key, value, label, cnt: Array.isArray(value) ? value.length : 1 });
+        }
+      }
+
+      const backupDate = backup.date || backup.backupDate || backup._meta?.exportedAt || '';
+      const dateStr = backupDate
+        ? (() => { try { return new Date(backupDate).toLocaleDateString('es-CO'); } catch { return backupDate; } })()
+        : 'fecha desconocida';
+
+      const writeLines = toWrite.map(x => `  ✅ ${x.label}: ${x.cnt} registros`).join('\n') || '  (ninguna)';
+      const skipLines  = toSkip.map(x  => `  ⏭️ ${x.label}: ya tiene ${x.cnt} registros`).join('\n') || '  (ninguna)';
 
       if (!window.confirm(
-        `¿Importar backup del ${dateStr}?\n\n` +
-        `Colecciones: ${summary.join(', ')}\n\n` +
-        `⚠️ Esto sobrescribirá los datos actuales.`
+        `Backup del ${dateStr}\n\n` +
+        `📥 SE IMPORTARÁN (vacías en Supabase):\n${writeLines}\n\n` +
+        `⏭️ SE OMITIRÁN (ya tienen datos):\n${skipLines}\n\n` +
+        `Solo se escribirán los datos que faltan. ¿Continuar?`
       )) {
         setImporting(false);
         return;
       }
 
-      // ── Paso 5: Escribir en Supabase siso_store ──
+      // ── Paso 5: Escribir solo las claves vacías ──
       let imported = 0;
       let errors = 0;
 
-      for (const [key, value] of Object.entries(remappedData)) {
+      for (const { key, value } of toWrite) {
         try {
           const res = await fetch(`${SB_URL}/rest/v1/siso_store`, {
             method: 'POST',
@@ -371,11 +386,11 @@ export default function BackupPage() {
       }
 
       const msg = errors > 0
-        ? `Backup importado con advertencias: ${imported} colecciones OK, ${errors} errores`
-        : `Backup importado: ${imported} colecciones restauradas`;
+        ? `${imported} importadas · ⚠️ ${errors} errores · ⏭️ ${toSkip.length} omitidas (ya tenían datos)`
+        : `✅ ${imported} importadas · ⏭️ ${toSkip.length} omitidas (ya tenían datos)`;
 
       setStatus({ type: errors > 0 ? 'warn' : 'ok', msg });
-      saveBackupToHistory({ collections: imported, tipo: 'import', errors });
+      saveBackupToHistory({ collections: imported, tipo: 'import', errors, skipped: toSkip.length });
       setBackupHistory(loadBackupHistory());
 
       // Recargar conteos del sistema

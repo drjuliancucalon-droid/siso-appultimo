@@ -258,19 +258,41 @@ export default function SettingsPage() {
       }
 
       const entries = Object.entries(remappedData);
-      const summary = entries.map(
-        ([k, v]) => `${k.replace('siso_', '').replace('_drcucalon', '')}: ${Array.isArray(v) ? v.length : 1}`
-      ).join(', ');
+
+      // ── MERGE INTELIGENTE: verificar qué ya existe en Supabase ──
+      setStatusMsg('Analizando datos existentes en Supabase…');
+      const toWrite   = [];   // claves vacías en Supabase → se importan
+      const toSkip    = [];   // claves con datos → se omiten
+
+      for (const [key, value] of entries) {
+        const existing = await fetchStoreKey(key);
+        const hasData = existing !== null && (
+          !Array.isArray(existing) || existing.length > 0
+        );
+        if (hasData) {
+          const label = key.replace('siso_', '').replace('_drcucalon', '');
+          const cnt = Array.isArray(existing) ? existing.length : 1;
+          toSkip.push({ key, label, cnt });
+        } else {
+          const label = key.replace('siso_', '').replace('_drcucalon', '');
+          const cnt = Array.isArray(value) ? value.length : 1;
+          toWrite.push({ key, value, label, cnt });
+        }
+      }
 
       const backupDate = backup.date || backup.backupDate || backup._meta?.exportedAt || '';
       const dateStr = backupDate
         ? (() => { try { return new Date(backupDate).toLocaleDateString('es-CO'); } catch { return backupDate; } })()
         : 'fecha desconocida';
 
+      const writeLines = toWrite.map(x => `  ✅ ${x.label}: ${x.cnt} registros`).join('\n') || '  (ninguna)';
+      const skipLines  = toSkip.map(x  => `  ⏭️ ${x.label}: ya tiene ${x.cnt} registros`).join('\n') || '  (ninguna)';
+
       if (!window.confirm(
-        `¿Importar backup del ${dateStr}?\n\n` +
-        `Colecciones: ${summary}\n\n` +
-        `⚠️ Esto sobrescribirá los datos actuales.`
+        `Backup del ${dateStr}\n\n` +
+        `📥 SE IMPORTARÁN (vacías en Supabase):\n${writeLines}\n\n` +
+        `⏭️ SE OMITIRÁN (ya tienen datos):\n${skipLines}\n\n` +
+        `Solo se escribirán los datos que faltan. ¿Continuar?`
       )) {
         setBackupStatus(null);
         setStatusMsg('');
@@ -278,22 +300,23 @@ export default function SettingsPage() {
         return;
       }
 
-      // ── Escribir en Supabase ──
+      // ── Escribir solo los que están vacíos ──
       let ok = 0;
       let fail = 0;
-      for (let i = 0; i < entries.length; i++) {
-        const [key, value] = entries[i];
+      for (let i = 0; i < toWrite.length; i++) {
+        const { key, value } = toWrite[i];
         const success = await upsertStoreKey(key, value);
         if (success) ok++; else fail++;
-        setImportProgress(Math.round(((i + 1) / entries.length) * 100));
-        setStatusMsg(`Importando… ${i + 1}/${entries.length}`);
+        setImportProgress(Math.round(((i + 1) / toWrite.length) * 100));
+        setStatusMsg(`Importando… ${i + 1}/${toWrite.length} (${toWrite[i].label})`);
       }
 
+      const skipCount = toSkip.length;
       setBackupStatus('success');
       setStatusMsg(
         fail > 0
-          ? `✅ ${ok} colecciones importadas · ⚠️ ${fail} con error`
-          : `✅ ${ok} colecciones importadas correctamente`
+          ? `✅ ${ok} importadas · ⚠️ ${fail} con error · ⏭️ ${skipCount} omitidas (ya tenían datos)`
+          : `✅ ${ok} colecciones importadas · ⏭️ ${skipCount} omitidas (ya tenían datos)`
       );
 
       // Refrescar conteos
