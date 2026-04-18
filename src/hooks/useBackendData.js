@@ -54,8 +54,8 @@ export function useBackendData(endpoint, localStorageKey, dataField) {
 
       // Try Supabase directly (transition mode — uses anon key like monolith)
       try {
-        const sbUrl = (import.meta.env.VITE_SUPABASE_URL || '');
-        const sbKey = (import.meta.env.VITE_SUPABASE_KEY || '');
+        const sbUrl = import.meta.env.VITE_SUPABASE_URL || 'https://yqrrktrgoijgzccrxnpz.supabase.co';
+        const sbKey = import.meta.env.VITE_SUPABASE_KEY || 'sb_publishable_K88qYuJ9wsWjQqnIhLVK7Q_NroFvPI7';
         // Determine the siso_store key from the endpoint
         const keyMap = {
           '/data/patients': 'siso_patients_drcucalon',
@@ -136,8 +136,8 @@ export function useBackendObject(endpoint, localStorageKey, dataField) {
 
       // Try Supabase direct (transition)
       try {
-        const sbUrl = (import.meta.env.VITE_SUPABASE_URL || '');
-        const sbKey = (import.meta.env.VITE_SUPABASE_KEY || '');
+        const sbUrl = import.meta.env.VITE_SUPABASE_URL || 'https://yqrrktrgoijgzccrxnpz.supabase.co';
+        const sbKey = import.meta.env.VITE_SUPABASE_KEY || 'sb_publishable_K88qYuJ9wsWjQqnIhLVK7Q_NroFvPI7';
         const keyMap = { '/data/doctor': 'siso_doctor_data_drcucalon' };
         const storeKey = keyMap[endpoint];
         if (storeKey) {
