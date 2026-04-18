@@ -41,3 +41,8 @@ coverage/
 # Temp
 *.tmp
 *.bak
+
+# Vite build logs
+vite_log.txt
+vite_out2.txt
+vite_output.txt
