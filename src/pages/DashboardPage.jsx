@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
 import { useBackendData, useBackendObject } from '../hooks/useBackendData';
 import {
-  Users, Building2, Calendar, FileText, BarChart3,
+  Users, Building2, Calendar, FileText, FileCheck, BarChart3,
   Shield, Stethoscope, Activity, AlertTriangle, TrendingUp,
   Cloud, HardDrive
 } from 'lucide-react';
