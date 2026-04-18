@@ -187,10 +187,52 @@ export default function Reporte({
       if ((p.habitos?.deporte || p.deporte || '').toLowerCase().includes('si')) byEstilos['Deporte']++;
     });
 
+    // ── Perfil Clínico: IMC ───────────────────────────────────────────────
+    const byIMC = { 'Bajo peso': 0, 'Normal': 0, 'Sobrepeso': 0, 'Obesidad I': 0, 'Obesidad II': 0, 'Obesidad III': 0 };
+    filteredPatients.forEach(p => {
+      const peso = parseFloat(p.peso) || 0;
+      const talla = parseFloat(p.talla) || 0; // en metros
+      if (peso > 0 && talla > 0) {
+        const imc = peso / (talla * talla);
+        if (imc < 18.5) byIMC['Bajo peso']++;
+        else if (imc < 25) byIMC['Normal']++;
+        else if (imc < 30) byIMC['Sobrepeso']++;
+        else if (imc < 35) byIMC['Obesidad I']++;
+        else if (imc < 40) byIMC['Obesidad II']++;
+        else byIMC['Obesidad III']++;
+      }
+    });
+
+    // ── Perfil Clínico: Tensión Arterial ─────────────────────────────────
+    const byTension = { 'Óptima': 0, 'Normal': 0, 'Pre-hipertensión': 0, 'HTA Etapa 1': 0, 'HTA Etapa 2': 0 };
+    filteredPatients.forEach(p => {
+      const ta = p.tensionArterial || p.ta || '';
+      if (ta.includes('/')) {
+        const [sistolica, diastolica] = ta.split('/').map(n => parseInt(n) || 0);
+        if (sistolica < 120 && diastolica < 80) byTension['Óptima']++;
+        else if (sistolica < 130 && diastolica < 80) byTension['Normal']++;
+        else if (sistolica < 140 || diastolica < 90) byTension['Pre-hipertensión']++;
+        else if (sistolica < 160 || diastolica < 100) byTension['HTA Etapa 1']++;
+        else byTension['HTA Etapa 2']++;
+      }
+    });
+
+    // ── Perfil Clínico: Examen Físico Alterado ─────────────────────────────
+    const examenFisicoAlterado = { 'Cardiovascular': 0, 'Respiratorio': 0, 'Neurológico': 0, 'Musculoesquelético': 0, 'Piel': 0, 'Abdomen': 0 };
+    filteredPatients.forEach(p => {
+      if ((p.examenFisicoCardiovascular || '').toLowerCase().includes('alter')) examenFisicoAlterado['Cardiovascular']++;
+      if ((p.examenFisicoRespiratorio || '').toLowerCase().includes('alter')) examenFisicoAlterado['Respiratorio']++;
+      if ((p.examenFisicoNeurologico || '').toLowerCase().includes('alter')) examenFisicoAlterado['Neurológico']++;
+      if ((p.examenFisicoMusculoesq || '').toLowerCase().includes('alter')) examenFisicoAlterado['Musculoesquelético']++;
+      if ((p.examenFisicoPiel || '').toLowerCase().includes('alter')) examenFisicoAlterado['Piel']++;
+      if ((p.examenFisicoAbdomen || '').toLowerCase().includes('alter')) examenFisicoAlterado['Abdomen']++;
+    });
+
     return { 
       total, byTipo, byConcepto, topDiag, byGender, byAge, 
       byEscolaridad, byEstadoCivil, byEstrato, byZona, 
-      byCargo, byContrato, byTurno, byRiesgos, byEstilos 
+      byCargo, byContrato, byTurno, byRiesgos, byEstilos,
+      byIMC, byTension, examenFisicoAlterado
     };
   }, [filteredPatients]);
 
@@ -511,6 +553,45 @@ export default function Reporte({
           <div className="space-y-2">
             {renderBarChart(stats.byAge, 200, 'bg-teal-500')}
           </div>
+        </div>
+      </div>
+
+      {/* Perfil Clínico: IMC */}
+      <div className="bg-white border border-gray-200 rounded-xl p-5">
+        <h3 className="font-black text-sm text-gray-800 mb-4 flex items-center gap-2">
+          <Activity className="w-4 h-4 text-orange-600" /> Índice de Masa Corporal (IMC)
+        </h3>
+        <div className="space-y-2">
+          {renderBarChart(stats.byIMC, 300, 'bg-orange-500')}
+          {Object.keys(stats.byIMC).every(k => stats.byIMC[k] === 0) && (
+            <p className="text-gray-400 text-xs text-center py-4">Sin datos de IMC</p>
+          )}
+        </div>
+      </div>
+
+      {/* Perfil Clínico: Tensión Arterial */}
+      <div className="bg-white border border-gray-200 rounded-xl p-5">
+        <h3 className="font-black text-sm text-gray-800 mb-4 flex items-center gap-2">
+          <Heart className="w-4 h-4 text-red-600" /> Presión Arterial
+        </h3>
+        <div className="space-y-2">
+          {renderBarChart(stats.byTension, 300, 'bg-red-500')}
+          {Object.keys(stats.byTension).every(k => stats.byTension[k] === 0) && (
+            <p className="text-gray-400 text-xs text-center py-4">Sin datos de presión arterial</p>
+          )}
+        </div>
+      </div>
+
+      {/* Perfil Clínico: Examen Físico */}
+      <div className="bg-white border border-gray-200 rounded-xl p-5">
+        <h3 className="font-black text-sm text-gray-800 mb-4 flex items-center gap-2">
+          <Stethoscope className="w-4 h-4 text-amber-600" /> Examen Físico Alterado por Sistemas
+        </h3>
+        <div className="space-y-2">
+          {renderBarChart(stats.examenFisicoAlterado, 300, 'bg-amber-500')}
+          {Object.keys(stats.examenFisicoAlterado).every(k => stats.examenFisicoAlterado[k] === 0) && (
+            <p className="text-gray-400 text-xs text-center py-4">Sin datos de examen físico</p>
+          )}
         </div>
       </div>
     </div>
