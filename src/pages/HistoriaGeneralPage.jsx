@@ -126,6 +126,7 @@ export default function HistoriaGeneralPage() {
     try {
       const { generateRestrictions } = await import('../modules/ai/services/aiAnalysis');
       dispatch({ restriccionesTexto: await generateRestrictions(data, aiConfig) });
+      alert('✅ Restricciones generadas por IA.');
     } catch (e) { alert('Error IA: ' + e.message); }
     finally { setIsGeneratingRestr(false); }
   }, [data, aiConfig]);
@@ -135,6 +136,7 @@ export default function HistoriaGeneralPage() {
     try {
       const { generateRecommendations } = await import('../modules/ai/services/aiAnalysis');
       dispatch({ recomendacionesTexto: await generateRecommendations(data, aiConfig) });
+      alert('✅ Recomendaciones generadas por IA.');
     } catch (e) { alert('Error IA: ' + e.message); }
     finally { setIsGeneratingReco(false); }
   }, [data, aiConfig]);
@@ -142,7 +144,7 @@ export default function HistoriaGeneralPage() {
   // ═══ RENDER ═══
   return (
     <div className="p-4 max-w-7xl mx-auto">
-      
+
       {/* --- VOLVER A PACIENTES --- */}
       <div className="flex items-center justify-between mb-4">
         <button onClick={() => navigate('/patients')} className="flex items-center gap-2 text-sm font-semibold text-gray-500 hover:text-emerald-700 transition-colors">
@@ -173,11 +175,11 @@ export default function HistoriaGeneralPage() {
             {TABS.map((tab) => (
               <button key={tab.id} onClick={() => setActiveTab(tab.id)}
                 className={`flex items-center justify-center gap-2 px-5 py-2 text-[11px] uppercase tracking-wider font-black rounded-lg whitespace-nowrap transition-all flex-shrink-0 ${
-                  activeTab === tab.id 
-                    ? `bg-white text-${tab.color}-700 shadow-sm ring-1 ring-gray-900/5` 
+                  activeTab === tab.id
+                    ? `bg-white text-${tab.color}-700 shadow-sm ring-1 ring-gray-900/5`
                     : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'
                 }`}>
-                <tab.icon className={`w-4 h-4 ${activeTab === tab.id ? 'text-' + tab.color + '-600' : 'opacity-50'}`} /> 
+                <tab.icon className={`w-4 h-4 ${activeTab === tab.id ? 'text-' + tab.color + '-600' : 'opacity-50'}`} />
                 {tab.label}
               </button>
             ))}
@@ -198,16 +200,20 @@ export default function HistoriaGeneralPage() {
 
         {/* Right: Secondary Actions */}
         <div className="flex items-center gap-2 flex-wrap justify-end">
-          {/* AI Group */}
+          {/* AI Group — paridad con HistoriaPage (ocupacional) */}
           <div className="flex bg-indigo-50/50 rounded-xl p-1 border border-indigo-100 hidden sm:flex">
-            
             <button onClick={onGenerateAI} disabled={isGenerating} className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold text-indigo-700 hover:bg-white rounded-lg transition-colors">
               {isGenerating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />} IA General
             </button>
-            <button onClick={() => setShowAIConfig(true)} className="flex items-center justify-center w-8 h-8 text-gray-500 hover:bg-white hover:text-gray-800 rounded-lg transition-colors" title="Configuraci�n IA">
+            <button onClick={onGenerateRestrictions} disabled={isGeneratingRestr} className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold text-amber-700 hover:bg-white rounded-lg transition-colors">
+              {isGeneratingRestr ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />} IA Restr
+            </button>
+            <button onClick={onGenerateRecommendations} disabled={isGeneratingReco} className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold text-teal-700 hover:bg-white rounded-lg transition-colors">
+              {isGeneratingReco ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />} IA Reco
+            </button>
+            <button onClick={() => setShowAIConfig(true)} className="flex items-center justify-center w-8 h-8 text-gray-500 hover:bg-white hover:text-gray-800 rounded-lg transition-colors" title="Configuración IA">
               <Settings className="w-4 h-4" />
             </button>
-      
           </div>
 
           <div className="h-6 w-px bg-gray-200 mx-1 hidden sm:block"></div>
@@ -215,15 +221,10 @@ export default function HistoriaGeneralPage() {
           <button onClick={() => printHC(data, activeDoctorData)} className="flex items-center gap-1.5 px-4 py-2 text-[11px] uppercase tracking-wider font-black text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 rounded-xl transition-colors shadow-sm">
             <Printer className="w-3.5 h-3.5 text-gray-500" /> Imprimir
           </button>
-          
-          
-
-          
         </div>
       </div>
 
       {/* --- TAB CONTENT --- */}
-
       <HCErrorBoundary>
         {activeTab === 'form' && (
           <GeneralHC data={data} setData={setData} activeDoctorData={activeDoctorData} activeSignature={null}
