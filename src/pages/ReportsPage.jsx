@@ -7,7 +7,7 @@ import React, { useState, useCallback, useMemo } from 'react';
 import { useAuthStore } from '../stores/authStore';
 import { useAIStore } from '../stores/aiStore';
 import { useBackendData } from '../hooks/useBackendData';
-import { callAIWithFailover } from '../modules/ai/services/aiAnalysis';
+import { callAIWithFailover, analyzeEpidemiologicalData } from '../modules/ai/services/aiAnalysis';
 import Reporte from './Reporte';
 
 export default function ReportsPage() {
@@ -64,6 +64,20 @@ export default function ReportsPage() {
     return await callAIWithFailover(prompt, null, aiConfigFromStore);
   }, [aiConfigFromStore]);
 
+  // ═══ GENERATE AI REPORT — conecta analyzeEpidemiologicalData con la UI ═══
+  const generateAIReport = useCallback(async (stats, total, compName) => {
+    setIsGeneratingReport(true);
+    setReportAIResult(null);
+    try {
+      const result = await analyzeEpidemiologicalData(stats, total, compName, aiConfigFromStore);
+      setReportAIResult(result);
+    } catch (err) {
+      showAlert('Error generando análisis IA: ' + (err?.message || 'Intente de nuevo'));
+    } finally {
+      setIsGeneratingReport(false);
+    }
+  }, [aiConfigFromStore, showAlert]);
+
   // ═══ PASAR TODOS LOS PROPS AL COMPONENTE REPORTE ═══
   return (
     <Reporte
@@ -93,6 +107,7 @@ export default function ReportsPage() {
       setPrecioPorPaciente={setPrecioPorPaciente}
       selectedMedicoReport={selectedMedicoReport}
       setSelectedMedicoReport={setSelectedMedicoReport}
+      generateAIReport={generateAIReport}
       callAI={callAI}
       showAlert={showAlert}
       showConfirm={showConfirm}
