@@ -194,6 +194,7 @@ export const MEDICO_SIEMPRE_PUEDE = new Set([
 
 // Helper: ¿el usuario actual tiene esta feature?
 export const _canUse = (feature, user) => {
+  if (user?.role === 'super_admin') return true;
   const plan = user?.license || "libre";
   const cfg = PLAN_CONFIG[plan] || PLAN_CONFIG.libre;
   if (cfg.price > 0 && user?.licenseExpiry) {

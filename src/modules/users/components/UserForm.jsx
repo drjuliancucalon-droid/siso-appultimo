@@ -22,10 +22,11 @@ const PERM_LABELS = {
   cuentas_cobro:   '💳 Cuentas',
 };
 
-export const UserForm = ({ user, onSave, onCancel, existingUsers = [], usersList = [] }) => {
+export const UserForm = ({ user, onSave, onCancel, existingUsers = [], usersList = [], currentUser }) => {
   const [form, setForm] = useState({
     usuario: '', nombre: '', role: 'medico', email: '', celular: '',
     cedula: '', titulo: '', licencia: '', ciudad: '', especialidad: '',
+    license: 'libre', licenseExpiry: '',
     mustChangePassword: true,
     secretariaPermisos: { ...SECRETARIA_PERMISOS_DEFAULT },
     medicosAsignados: [],
@@ -42,10 +43,17 @@ export const UserForm = ({ user, onSave, onCancel, existingUsers = [], usersList
   const handleSave = () => {
     if (!form.usuario?.trim()) { setError('Usuario requerido'); return; }
     if (!form.nombre?.trim()) { setError('Nombre requerido'); return; }
-    if (!user?.id && existingUsers.some((u) => u.usuario === form.usuario)) {
+    if (!user?.id && existingUsers.some((u) => (u.usuario || u.user) === form.usuario)) {
       setError('El nombre de usuario ya existe'); return;
     }
-    onSave({ ...form, id: form.id || `usr_${Date.now()}` });
+    
+    // Sincronizar ambos campos para compatibilidad con LicenseManager
+    const finalData = {
+      ...form,
+      plan: form.license || form.plan || 'libre',
+      id: form.id || `usr_${Date.now()}`
+    };
+    onSave(finalData);
   };
 
   return (
@@ -57,20 +65,44 @@ export const UserForm = ({ user, onSave, onCancel, existingUsers = [], usersList
 
       <div className="space-y-3">
         <div className="flex flex-wrap -mx-1.5">
-          <InputGroup label="Usuario *" name="usuario" value={form.usuario} onChange={handleChange} width="w-1/2" />
+          <InputGroup label="Usuario *" name="usuario" value={form.usuario || form.user || ''} onChange={handleChange} width="w-1/2" />
           <SelectGroup label="Rol *" name="role" value={form.role} onChange={handleChange}
             options={[
+              { v: 'super_admin',   l: '👑 Super Admin' },
               { v: 'administrador', l: 'Administrador' },
-              { v: 'medico', l: 'Médico' },
-              { v: 'secretaria', l: 'Secretaria' },
+              { v: 'medico',        l: 'Médico' },
+              { v: 'secretaria',    l: 'Secretaria' },
               { v: 'admin_empresa', l: 'Admin Empresa' },
             ]} width="w-1/2" />
           <InputGroup label="Nombre completo *" name="nombre" value={form.nombre} onChange={handleChange} width="w-full" />
           <InputGroup label="Email" name="email" type="email" value={form.email} onChange={handleChange} width="w-1/2" />
           <InputGroup label="Celular" name="celular" value={form.celular} onChange={handleChange} width="w-1/2" />
+          
+          {/* Campos de licencia */}
+          <SelectGroup
+            label="Plan / Licencia"
+            name="license"
+            value={form.license || form.plan || 'libre'}
+            onChange={handleChange}
+            options={[
+              { v: 'libre',   l: '🆓 Libre (gratis)' },
+              { v: 'starter', l: '🌱 Starter ($45.000/mes)' },
+              { v: 'pro',     l: '⭐ Pro ($79.000/mes)' },
+              { v: 'clinica', l: '🏢 Clínica ($159.000/mes)' },
+            ]}
+            width="w-1/2"
+          />
+          <InputGroup
+            label="Vencimiento licencia"
+            name="licenseExpiry"
+            type="date"
+            value={form.licenseExpiry || ''}
+            onChange={handleChange}
+            width="w-1/2"
+          />
         </div>
 
-        {(form.role === 'medico' || form.role === 'administrador') && (
+        {(form.role === 'medico' || form.role === 'administrador' || form.role === 'super_admin') && (
           <div className="flex flex-wrap -mx-1.5 bg-blue-50 p-2 rounded-xl">
             <p className="w-full text-[10px] font-black text-blue-700 px-1.5 mb-1 uppercase">Datos profesionales</p>
             <InputGroup label="Cédula" name="cedula" value={form.cedula} onChange={handleChange} width="w-1/3" />

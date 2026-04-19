@@ -49,13 +49,49 @@ export default function LoginPage() {
       }
 
       if (!loggedIn) {
-        // Fallback: local auth (no password verification)
-        // TODO: Remove this when real backend auth is fully configured
+        const storedUsers = JSON.parse(localStorage.getItem('siso_users') || '[]');
+
+        const SEED_USERS = [
+          {
+            id: 'usr_drcucalon_001',
+            user: 'drcucalon',
+            usuario: 'drcucalon',
+            nombre: 'Dr. Julián Cucalón',
+            role: 'super_admin',
+            license: 'clinica',
+            licenseExpiry: '2099-12-31',
+            activo: true,
+            password: 'cucalon2026',
+          }
+        ];
+
+        const allUsers = [...SEED_USERS, ...storedUsers];
+        const found = allUsers.find(
+          u => (u.user === user.trim() || u.usuario === user.trim())
+            && u.activo !== false
+        );
+
+        if (!found) {
+          setError('Usuario no encontrado o inactivo');
+          setLoading(false);
+          return;
+        }
+
+        if (found.password && found.password !== pass.trim()) {
+          setError('Contraseña incorrecta');
+          setLoading(false);
+          return;
+        }
+
         localFallback({
-          id: 'local_' + Date.now(),
-          user: user.trim(),
-          nombre: user.trim(),
-          role: 'administrador',
+          id: found.id,
+          user: found.user || found.usuario,
+          nombre: found.nombre,
+          role: found.role,
+          license: found.license || 'libre',
+          licenseExpiry: found.licenseExpiry || null,
+          email: found.email || '',
+          activo: true,
         });
       }
 

@@ -4,6 +4,7 @@ import { UserList } from '../modules/users/components/UserList';
 import { UserForm } from '../modules/users/components/UserForm';
 import { useBackendData } from '../hooks/useBackendData';
 import { useAuthStore } from '../stores/authStore';
+import { useSaveData } from '../hooks/useSaveData';
 import { Settings, Loader2, Cloud, HardDrive } from 'lucide-react';
 
 const USERS_KEY = 'siso_users';
@@ -13,6 +14,7 @@ const saveLocal = (d) => { try { localStorage.setItem(USERS_KEY, JSON.stringify(
 export default function UsersPage() {
   const { currentUser } = useAuthStore();
   const { data: usersFromBE, loading, source } = useBackendData('/data/users', USERS_KEY, 'users');
+  const { save } = useSaveData();
 
   // Use local copy so we can mutate
   const [users, setUsers] = useState(() => {
@@ -28,6 +30,26 @@ export default function UsersPage() {
     if (!loading && usersFromBE.length > 0) setUsers(usersFromBE);
   }, [loading, usersFromBE]);
 
+  // Seed automático de drcucalon si usuarios vacíos
+  React.useEffect(() => {
+    if (!loading && users.length === 0) {
+      const seed = [{
+        id: 'usr_drcucalon_001',
+        user: 'drcucalon',
+        usuario: 'drcucalon',
+        nombre: 'Dr. Julián Cucalón',
+        role: 'super_admin',
+        license: 'clinica',
+        plan: 'clinica',
+        licenseExpiry: '2099-12-31',
+        activo: true,
+        createdAt: new Date().toISOString(),
+      }];
+      setUsers(seed);
+      saveLocal(seed);
+    }
+  }, [loading, users.length]);
+
   const handleAdd = useCallback(() => {
     setEditingUser(null);
     setShowForm(true);
@@ -38,29 +60,38 @@ export default function UsersPage() {
     setShowForm(true);
   }, []);
 
-  const handleDelete = useCallback((id) => {
+  const handleDelete = useCallback(async (id) => {
     if (!window.confirm('¿Eliminar este usuario?')) return;
     const updated = users.filter(u => u.id !== id);
     setUsers(updated);
     saveLocal(updated);
-  }, [users]);
+    await save('/write/users/save', updated, USERS_KEY);
+  }, [users, save]);
 
   const handleResetPassword = useCallback((user) => {
-    alert(`🔐 Se enviará un correo a ${user.email || user.usuario} para restablecer la contraseña.\n\nEn la versión con backend, esto enviará el email real.`);
+    alert(`🔐 Se enviará un correo a ${user.email || user.usuario || user.user} para restablecer la contraseña.\n\nEn la versión con backend, esto enviará el email real.`);
   }, []);
 
-  const handleSave = useCallback((userData) => {
+  const handleSave = useCallback(async (userData) => {
     let updated;
     if (editingUser?.id) {
-      updated = users.map(u => u.id === editingUser.id ? { ...u, ...userData } : u);
+      updated = users.map(u =>
+        u.id === editingUser.id ? { ...u, ...userData } : u
+      );
     } else {
-      updated = [...users, { ...userData, id: userData.id || `usr_${Date.now()}`, activo: true, createdAt: new Date().toISOString() }];
+      updated = [...users, {
+        ...userData,
+        id: userData.id || `usr_${Date.now()}`,
+        activo: true,
+        createdAt: new Date().toISOString()
+      }];
     }
     setUsers(updated);
     saveLocal(updated);
+    await save('/write/users/save', updated, USERS_KEY);
     setShowForm(false);
     setEditingUser(null);
-  }, [users, editingUser]);
+  }, [users, editingUser, save]);
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
@@ -90,6 +121,7 @@ export default function UsersPage() {
             onCancel={() => { setShowForm(false); setEditingUser(null); }}
             existingUsers={users}
             usersList={users}
+            currentUser={currentUser}
           />
         </div>
       )}

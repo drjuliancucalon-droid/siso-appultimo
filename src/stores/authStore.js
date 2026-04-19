@@ -154,6 +154,7 @@ export const useAuthStore = create(
       canUse: (feature) => {
         const { currentUser } = get();
         if (!currentUser) return false;
+        if (currentUser.role === 'super_admin') return true;
         return _canUse(feature, currentUser);
       },
 
@@ -167,6 +168,7 @@ export const useAuthStore = create(
       // getPlanConfig: devuelve la config del plan actual del usuario
       getPlanConfig: () => {
         const { currentUser } = get();
+        if (currentUser?.role === 'super_admin') return PLAN_CONFIG.clinica;
         const plan = currentUser?.license || 'libre';
         return PLAN_CONFIG[plan] || PLAN_CONFIG.libre;
       },
@@ -174,6 +176,7 @@ export const useAuthStore = create(
       // getHCLimit: límite de historias clínicas del plan actual
       getHCLimit: () => {
         const { currentUser } = get();
+        if (currentUser?.role === 'super_admin') return 9999;
         const plan = currentUser?.license || 'libre';
         return (PLAN_CONFIG[plan] || PLAN_CONFIG.libre).maxHC || 8;
       },
