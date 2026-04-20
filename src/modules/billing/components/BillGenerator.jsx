@@ -15,7 +15,9 @@ export const BillGenerator = ({ doctorData, companies = [], onSave, onPrint, sav
 
   const atencionesFiltradas = useMemo(() => {
     return (atencionesCerradas || []).filter(a => {
-      if (filterEmpresaId && a.empresaId !== filterEmpresaId) return false;
+      // Soportar empresa o empresaId
+      const empId = a.empresaId || a.empresa;
+      if (filterEmpresaId && empId !== filterEmpresaId) return false;
       if (filterMes && a.fechaAtencion && !a.fechaAtencion.startsWith(filterMes)) return false;
       return true;
     });
@@ -25,7 +27,7 @@ export const BillGenerator = ({ doctorData, companies = [], onSave, onPrint, sav
     const map = new Map();
     atencionesFiltradas.forEach(a => {
       if (!map.has(a.docNumero)) {
-        map.set(a.docNumero, {docNumero: a.docNumero, nombres: a.nombres || a.pacienteNombre || 'Sin nombre', docTipo: a.docTipo || 'CC', atenciones: []});
+        map.set(a.docNumero, {docNumero: a.docNumero, nombres: a.nombres || a.nombre || a.pacienteNombre || 'Sin nombre', docTipo: a.docTipo || a.tipoDoc || 'CC', empresaId: a.empresaId || a.empresa, empresa: a.empresaNombre || a.empresa, atenciones: []});
       }
       map.get(a.docNumero).atenciones.push(a);
     });
