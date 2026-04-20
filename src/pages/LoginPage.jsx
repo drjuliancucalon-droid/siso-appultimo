@@ -5,6 +5,44 @@ import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
 import { Stethoscope, Eye, EyeOff, AlertCircle, Loader2, Shield } from 'lucide-react';
 
+// ── Helpers de hash (igual que el monolito) ─────────────────────
+const _sha256 = async (str) => {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+};
+const _pbkdf2Verify = async (password, saltHex, hashHex) => {
+  const saltBytes = Uint8Array.from(saltHex.match(/.{2}/g).map(h => parseInt(h, 16)));
+  const keyMaterial = await crypto.subtle.importKey('raw', new TextEncoder().encode(password), 'PBKDF2', false, ['deriveBits']);
+  const derivedBits = await crypto.subtle.deriveBits(
+    { name: 'PBKDF2', salt: saltBytes, iterations: 100000, hash: 'SHA-256' },
+    keyMaterial, 256
+  );
+  const computed = Array.from(new Uint8Array(derivedBits)).map(b => b.toString(16).padStart(2,'0')).join('');
+  return computed === hashHex;
+};
+const _verifyHash = async (password, passHash, passSalt) => {
+  if (!passHash) return false;
+  if (passSalt) return _pbkdf2Verify(password, passSalt, passHash);
+  return (await _sha256(password)) === passHash;
+};
+
+// Usuarios semilla — siempre disponibles como recuperación de emergencia
+// Contraseña de drcucalon: cucalon2026
+const SEED_USERS = [
+  {
+    id: 'usr_drcucalon_001',
+    user: 'drcucalon',
+    usuario: 'drcucalon',
+    nombre: 'Dr. Julián Cucalón',
+    role: 'super_admin',
+    license: 'clinica',
+    licenseExpiry: '2099-12-31',
+    activo: true,
+    password: 'cucalon2026',       // texto plano para comparación rápida
+    passHash: '11177743b7227bd517fd7a05e0c9576b3497830f72ccfec4a5a0e1c9f65d9892', // SHA-256 backup
+  },
+];
+
 export default function LoginPage() {
   const navigate = useNavigate();
   const { loginLocal, isAuthenticated, loginAttempts, blockedUntil } = useAuthStore();
@@ -22,12 +60,6 @@ export default function LoginPage() {
     e.preventDefault();
     setError('');
 
-    if (blockedUntil && Date.now() < blockedUntil) {
-      const minLeft = Math.ceil((blockedUntil - Date.now()) / 60000);
-      setError(`Cuenta bloqueada temporalmente. Intenta en ${minLeft} minuto(s).`);
-      return;
-    }
-
     if (!user.trim() || !pass.trim()) {
       setError('Ingresa usuario y contraseña');
       return;
@@ -35,65 +67,91 @@ export default function LoginPage() {
 
     setLoading(true);
     try {
-      const { login, loginLocal: localFallback } = useAuthStore.getState();
+      const { loginLocal: localFallback } = useAuthStore.getState();
+      const uName = user.trim();
+      const pVal  = pass.trim();
 
-      // Try backend auth first (real JWT with Supabase)
-      let loggedIn = false;
-      try {
-        await login(user.trim(), pass.trim());
-        loggedIn = true;
-      } catch (backendErr) {
-        // Backend auth failed — use local auth during transition period
-        // This allows access while we set up real passwords
-        console.warn('Backend auth failed, using local login:', backendErr.message);
-      }
-
-      if (!loggedIn) {
-        const storedUsers = JSON.parse(localStorage.getItem('siso_users') || '[]');
-
-        const SEED_USERS = [
-          {
-            id: 'usr_drcucalon_001',
-            user: 'drcucalon',
-            usuario: 'drcucalon',
-            nombre: 'Dr. Julián Cucalón',
-            role: 'super_admin',
-            license: 'clinica',
-            licenseExpiry: '2099-12-31',
+      // ── 1. Seed users (siempre funciona — recuperación de emergencia) ──
+      const seedMatch = SEED_USERS.find(
+        u => (u.user === uName || u.usuario === uName) && u.activo !== false
+      );
+      if (seedMatch) {
+        const ok = seedMatch.password === pVal
+          || await _verifyHash(pVal, seedMatch.passHash, seedMatch.passSalt);
+        if (ok) {
+          localFallback({
+            id: seedMatch.id,
+            user: seedMatch.user,
+            nombre: seedMatch.nombre,
+            role: seedMatch.role,
+            license: seedMatch.license || 'libre',
+            licenseExpiry: seedMatch.licenseExpiry || null,
+            email: seedMatch.email || '',
             activo: true,
-            password: 'cucalon2026',
-          }
-        ];
-
-        const allUsers = [...SEED_USERS, ...storedUsers];
-        const found = allUsers.find(
-          u => (u.user === user.trim() || u.usuario === user.trim())
-            && u.activo !== false
-        );
-
-        if (!found) {
-          setError('Usuario no encontrado o inactivo');
-          setLoading(false);
+          });
+          navigate('/dashboard', { replace: true });
           return;
         }
-
-        if (found.password && found.password !== pass.trim()) {
-          setError('Contraseña incorrecta');
-          setLoading(false);
-          return;
-        }
-
-        localFallback({
-          id: found.id,
-          user: found.user || found.usuario,
-          nombre: found.nombre,
-          role: found.role,
-          license: found.license || 'libre',
-          licenseExpiry: found.licenseExpiry || null,
-          email: found.email || '',
-          activo: true,
-        });
       }
+
+      // ── 2. Usuarios en localStorage (importados desde backup) ──
+      const storedUsers = JSON.parse(localStorage.getItem('siso_users') || '[]');
+      let found = null;
+      for (const u of storedUsers) {
+        if ((u.user === uName || u.usuario === uName) && u.activo !== false) {
+          // Soporte texto plano, SHA-256 y PBKDF2
+          const ok = (u.password && u.password === pVal)
+            || await _verifyHash(pVal, u.passHash, u.passSalt);
+          if (ok) { found = u; break; }
+        }
+      }
+
+      if (!found) {
+        // ── 3. Fallback a Supabase (usuarios creados en otro dispositivo) ──
+        try {
+          const SB_URL = import.meta.env.VITE_SUPABASE_URL;
+          const SB_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+          if (SB_URL && SB_KEY) {
+            const r = await fetch(
+              `${SB_URL}/rest/v1/siso_store?key=eq.siso_users&select=value`,
+              { headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` } }
+            );
+            if (r.ok) {
+              const rows = await r.json();
+              const sbUsers = rows?.[0]?.value;
+              if (Array.isArray(sbUsers)) {
+                for (const u of sbUsers) {
+                  if ((u.user === uName || u.usuario === uName) && u.activo !== false) {
+                    const ok = (u.password && u.password === pVal)
+                      || await _verifyHash(pVal, u.passHash, u.passSalt);
+                    if (ok) { found = u; break; }
+                  }
+                }
+              }
+            }
+          }
+        } catch (sbErr) {
+          console.warn('Supabase user lookup failed:', sbErr.message);
+        }
+      }
+
+      if (!found) {
+        // Incrementar intentos solo en credenciales realmente incorrectas
+        useAuthStore.setState(s => ({ loginAttempts: s.loginAttempts + 1 }));
+        const attempts = useAuthStore.getState().loginAttempts;
+        throw new Error(`Credenciales incorrectas. Intentos fallidos: ${attempts}/5`);
+      }
+
+      localFallback({
+        id: found.id || ('usr_' + uName),
+        user: found.user || found.usuario || uName,
+        nombre: found.nombre || found.name || uName,
+        role: found.role || 'medico',
+        license: found.license || 'libre',
+        licenseExpiry: found.licenseExpiry || null,
+        email: found.email || '',
+        activo: true,
+      });
 
       navigate('/dashboard', { replace: true });
     } catch (err) {
