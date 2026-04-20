@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { FileText, Save, Printer, Plus, Trash2, DollarSign } from 'lucide-react';
 import { InputGroup } from '../../../shared/components/ui/InputGroup';
 import { SelectGroup } from '../../../shared/components/ui/SelectGroup';
@@ -9,7 +9,7 @@ import { numeroALetras } from '../../../shared/lib/formatters';
  * Formato colombiano con IVA, retenciones, y conversión a letras
  */
 export const BillGenerator = ({ doctorData, companies = [], onSave, onPrint, savedBills = [], atencionesCerradas = [] }) => {
-  const [bill, setBill] = useState({
+  const [filterEmpresaId, setFilterEmpresaId] = useState(''); const [filterMes, setFilterMes] = useState(''); const [selectedWorkers, setSelectedWorkers] = useState({}); const [workerValues, setWorkerValues] = useState({}); const [marcarTodos, setMarcarTodos] = useState(false); const atencionesFiltradas = useMemo(() => (atencionesCerradas || []).filter(a => { if (filterEmpresaId && a.empresaId !== filterEmpresaId) return false; if (filterMes && a.fechaAtencion && !a.fechaAtencion.startsWith(filterMes)) return false; return true; }), [atencionesCerradas, filterEmpresaId, filterMes]); const trabajadoresUnicos = useMemo(() => { const map = new Map(); atencionesFiltradas.forEach(a => { if (!map.has(a.docNumero)) map.set(a.docNumero, {docNumero: a.docNumero, nombres: a.nombres || a.pacienteNombre || 'Sin nombre', docTipo: a.docTipo || 'CC', fechaAtencion: a.fechaAtencion}); return Array.from(map.values()); }), [atencionesFiltradas]); const totalSeleccionado = useMemo(() => Object.entries(selectedWorkers).filter(([_, v]) => v).reduce((s, [d]) => s + (parseFloat(workerValues[d]) || 0), 0), [selectedWorkers, workerValues]); const toggleWorker = (doc) => setSelectedWorkers(p => ({...p, [doc]: !p[doc]})); const updateWorkerValor = (doc, v) => setWorkerValues(p => ({...p, [doc]: parseFloat(v) || 0})); 
     numero: `CC-${String(savedBills.length + 1).padStart(4, '0')}`,
     fecha: new Date().toISOString().split('T')[0],
     empresaId: '',
@@ -59,7 +59,7 @@ export const BillGenerator = ({ doctorData, companies = [], onSave, onPrint, sav
   const iva = 0; // Servicios médicos exentos Art. 476 E.T.
   const total = subtotal + iva;
 
-  return (
+  return (UI_MARKER
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-black text-gray-800 flex items-center gap-2">
