@@ -8,7 +8,7 @@ import { Stethoscope, Eye, EyeOff, AlertCircle, Loader2, Shield } from 'lucide-r
 // ── Helpers de hash (igual que el monolito) ─────────────────────
 const _sha256 = async (str) => {
   const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
-  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
 };
 const _pbkdf2Verify = async (password, saltHex, hashHex) => {
   const saltBytes = Uint8Array.from(saltHex.match(/.{2}/g).map(h => parseInt(h, 16)));
@@ -17,7 +17,7 @@ const _pbkdf2Verify = async (password, saltHex, hashHex) => {
     { name: 'PBKDF2', salt: saltBytes, iterations: 100000, hash: 'SHA-256' },
     keyMaterial, 256
   );
-  const computed = Array.from(new Uint8Array(derivedBits)).map(b => b.toString(16).padStart(2,'0')).join('');
+  const computed = Array.from(new Uint8Array(derivedBits)).map(b => b.toString(16).padStart(2, '0')).join('');
   return computed === hashHex;
 };
 const _verifyHash = async (password, passHash, passSalt) => {
@@ -26,26 +26,107 @@ const _verifyHash = async (password, passHash, passSalt) => {
   return (await _sha256(password)) === passHash;
 };
 
-// Usuarios semilla — siempre disponibles como recuperación de emergencia
-// Contraseña de drcucalon: cucalon2026
+// ── Usuarios semilla ─────────────────────────────────────────────
+// Siempre disponibles como recuperación de emergencia (independiente de Supabase).
+// Para crear más usuarios usa el panel Usuarios dentro de la app.
+//
+// CREDENCIALES DE PRUEBA:
+//   drcucalon   / cucalon2026   → super_admin
+//   dr.garcia   / medico2026    → medico
+//   admin.ips   / admin2026     → administrador
+//   secre.maria / secre2026     → secretaria  (agenda, pacientes, adjuntos)
+//   secre.ana   / secre2026     → secretaria  (agenda, caja, crear pacientes)
+//   empresa.abc / empresa2026   → admin_empresa
+//   empresa.xyz / empresa2026   → admin_empresa
+//   empresa.qrs / empresa2026   → admin_empresa
 const SEED_USERS = [
   {
     id: 'usr_drcucalon_001',
-    user: 'drcucalon',
-    usuario: 'drcucalon',
+    user: 'drcucalon', usuario: 'drcucalon',
     nombre: 'Dr. Julián Cucalón',
-    role: 'super_admin',
-    license: 'clinica',
-    licenseExpiry: '2099-12-31',
+    role: 'super_admin', license: 'clinica', licenseExpiry: '2099-12-31',
     activo: true,
-    password: 'cucalon2026',       // texto plano para comparación rápida
-    passHash: '11177743b7227bd517fd7a05e0c9576b3497830f72ccfec4a5a0e1c9f65d9892', // SHA-256 backup
+    password: 'cucalon2026',
+    passHash: '11177743b7227bd517fd7a05e0c9576b3497830f72ccfec4a5a0e1c9f65d9892',
+  },
+  {
+    id: 'usr_drgarcia_001',
+    user: 'dr.garcia', usuario: 'dr.garcia',
+    nombre: 'Dr. Carlos García',
+    role: 'medico', license: 'clinica', licenseExpiry: '2099-12-31',
+    activo: true,
+    password: 'medico2026',
+    passHash: 'ff75db5104f87b85a8f9a58731aa51313233cae9534d3b44c18bcea2c01bfe7d',
+  },
+  {
+    id: 'usr_adminips_001',
+    user: 'admin.ips', usuario: 'admin.ips',
+    nombre: 'Administrador IPS',
+    role: 'administrador', license: 'clinica', licenseExpiry: '2099-12-31',
+    activo: true,
+    password: 'admin2026',
+    passHash: '6051fc84a7a0d74c225fb18a496b09952da5642e60723ecae543298edd7d82d6',
+  },
+  {
+    id: 'usr_secremaria_001',
+    user: 'secre.maria', usuario: 'secre.maria',
+    nombre: 'María López (Secretaria)',
+    role: 'secretaria', license: 'libre', licenseExpiry: '2099-12-31',
+    activo: true,
+    password: 'secre2026',
+    passHash: '0723f257f0b360e57fc499c1fdd809f4cb922ba52b861166f6df91fbe42be363',
+    secretariaPermisos: {
+      agenda: true, pacientes_lista: true, adjuntos: true,
+      bill: false, propuestas: false, telemedicina: false, empresas: false,
+      reporte: false, sve: false, caja: false, cuentas_cobro: false, pacientes_crear: false,
+    },
+  },
+  {
+    id: 'usr_secreana_001',
+    user: 'secre.ana', usuario: 'secre.ana',
+    nombre: 'Ana Martínez (Secretaria)',
+    role: 'secretaria', license: 'libre', licenseExpiry: '2099-12-31',
+    activo: true,
+    password: 'secre2026',
+    passHash: '0723f257f0b360e57fc499c1fdd809f4cb922ba52b861166f6df91fbe42be363',
+    secretariaPermisos: {
+      agenda: true, pacientes_lista: true, adjuntos: false,
+      bill: false, propuestas: false, telemedicina: false, empresas: false,
+      reporte: false, sve: false, caja: true, cuentas_cobro: true, pacientes_crear: true,
+    },
+  },
+  {
+    id: 'usr_empresaabc_001',
+    user: 'empresa.abc', usuario: 'empresa.abc',
+    nombre: 'Empresa ABC S.A.S.',
+    role: 'admin_empresa', license: 'libre', licenseExpiry: '2099-12-31',
+    activo: true,
+    password: 'empresa2026',
+    passHash: 'b7cb6abb0a3eb230c725327ff0d42a720f6efeee7cb2120a5a9db4c057d645c0',
+  },
+  {
+    id: 'usr_empresaxyz_001',
+    user: 'empresa.xyz', usuario: 'empresa.xyz',
+    nombre: 'Empresa XYZ Ltda.',
+    role: 'admin_empresa', license: 'libre', licenseExpiry: '2099-12-31',
+    activo: true,
+    password: 'empresa2026',
+    passHash: 'b7cb6abb0a3eb230c725327ff0d42a720f6efeee7cb2120a5a9db4c057d645c0',
+  },
+  {
+    id: 'usr_empresaqrs_001',
+    user: 'empresa.qrs', usuario: 'empresa.qrs',
+    nombre: 'Empresa QRS S.A.',
+    role: 'admin_empresa', license: 'libre', licenseExpiry: '2099-12-31',
+    activo: true,
+    password: 'empresa2026',
+    passHash: 'b7cb6abb0a3eb230c725327ff0d42a720f6efeee7cb2120a5a9db4c057d645c0',
   },
 ];
 
 export default function LoginPage() {
   const navigate = useNavigate();
-  const { loginLocal, isAuthenticated, loginAttempts, blockedUntil } = useAuthStore();
+  const { isAuthenticated, loginAttempts } = useAuthStore();
   const [user, setUser] = useState('');
   const [pass, setPass] = useState('');
   const [showPass, setShowPass] = useState(false);
@@ -67,11 +148,11 @@ export default function LoginPage() {
 
     setLoading(true);
     try {
-      const { loginLocal: localFallback } = useAuthStore.getState();
+      const { loginLocal } = useAuthStore.getState();
       const uName = user.trim();
       const pVal  = pass.trim();
 
-      // ── 1. Seed users (siempre funciona — recuperación de emergencia) ──
+      // ── 1. SEED USERS (emergencia — siempre funciona) ───────────
       const seedMatch = SEED_USERS.find(
         u => (u.user === uName || u.usuario === uName) && u.activo !== false
       );
@@ -79,7 +160,7 @@ export default function LoginPage() {
         const ok = seedMatch.password === pVal
           || await _verifyHash(pVal, seedMatch.passHash, seedMatch.passSalt);
         if (ok) {
-          localFallback({
+          loginLocal({
             id: seedMatch.id,
             user: seedMatch.user,
             nombre: seedMatch.nombre,
@@ -88,26 +169,29 @@ export default function LoginPage() {
             licenseExpiry: seedMatch.licenseExpiry || null,
             email: seedMatch.email || '',
             activo: true,
+            secretariaPermisos: seedMatch.secretariaPermisos || null,
           });
           navigate('/dashboard', { replace: true });
           return;
         }
+        // usuario encontrado pero contraseña incorrecta
+        useAuthStore.setState(s => ({ loginAttempts: s.loginAttempts + 1 }));
+        throw new Error(`Credenciales incorrectas. Intentos: ${useAuthStore.getState().loginAttempts}/5`);
       }
 
-      // ── 2. Usuarios en localStorage (importados desde backup) ──
+      // ── 2. Usuarios en localStorage (importados desde backup/panel) ──
       const storedUsers = JSON.parse(localStorage.getItem('siso_users') || '[]');
       let found = null;
       for (const u of storedUsers) {
         if ((u.user === uName || u.usuario === uName) && u.activo !== false) {
-          // Soporte texto plano, SHA-256 y PBKDF2
           const ok = (u.password && u.password === pVal)
             || await _verifyHash(pVal, u.passHash, u.passSalt);
           if (ok) { found = u; break; }
         }
       }
 
+      // ── 3. Fallback a Supabase (otro dispositivo / panel en la nube) ──
       if (!found) {
-        // ── 3. Fallback a Supabase (usuarios creados en otro dispositivo) ──
         try {
           const SB_URL = import.meta.env.VITE_SUPABASE_URL;
           const SB_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -136,13 +220,12 @@ export default function LoginPage() {
       }
 
       if (!found) {
-        // Incrementar intentos solo en credenciales realmente incorrectas
         useAuthStore.setState(s => ({ loginAttempts: s.loginAttempts + 1 }));
         const attempts = useAuthStore.getState().loginAttempts;
         throw new Error(`Credenciales incorrectas. Intentos fallidos: ${attempts}/5`);
       }
 
-      localFallback({
+      loginLocal({
         id: found.id || ('usr_' + uName),
         user: found.user || found.usuario || uName,
         nombre: found.nombre || found.name || uName,
@@ -151,6 +234,7 @@ export default function LoginPage() {
         licenseExpiry: found.licenseExpiry || null,
         email: found.email || '',
         activo: true,
+        secretariaPermisos: found.secretariaPermisos || null,
       });
 
       navigate('/dashboard', { replace: true });
@@ -170,7 +254,7 @@ export default function LoginPage() {
       </div>
 
       <div className="w-full max-w-md relative z-10">
-        {/* Logo — matches BrandLogo.jsx from monolith */}
+        {/* Logo */}
         <div className="text-center mb-8">
           <div className="w-16 h-16 bg-gradient-to-tr from-emerald-700 to-teal-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
             <div className="flex flex-col items-center leading-none">
