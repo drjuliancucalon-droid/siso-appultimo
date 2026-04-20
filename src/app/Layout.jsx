@@ -36,6 +36,7 @@ const NAV_ITEMS = [
   { path: '/contabilidad', icon: Calculator, label: 'Contabilidad', roles: ['medico', 'administrador', 'super_admin'] },
   { path: '/mensajes', icon: MessageCircle, label: 'Mensajes' },
   { path: '/arl', icon: Shield, label: 'ARL', roles: ['medico', 'administrador', 'super_admin'] },
+  { path: '/custodia', icon: FileText, label: 'Custodia', roles: ['medico', 'administrador', 'super_admin'] },
   { path: '/habeas-data', icon: ShieldCheck, label: 'Habeas Data' },
   { path: '/config/ips', icon: Building2, label: 'Perfil IPS', roles: ['administrador', 'super_admin'] },
   { path: '/admin', icon: Crown, label: 'Super Admin', roles: ['super_admin'] },

@@ -39,6 +39,8 @@ const ContabilidadPage = React.lazy(() => import('./pages/ContabilidadPage'));
 const SuperAdminPage = React.lazy(() => import('./pages/SuperAdminPage'));
 const MensajesPage = React.lazy(() => import('./pages/MensajesPage'));
 const ARLPage = React.lazy(() => import('./pages/ARLPage'));
+// Carta de Custodia
+const CartaCustodiaPage = React.lazy(() => import('./pages/CartaCustodiaPage'));
 
 // ── React Query client ───────────────────────────────────────────
 const queryClient = new QueryClient({
@@ -180,6 +182,11 @@ export default function App() {
               <Route path="arl" element={
                 <ProtectedRoute roles={['super_admin', 'administrador', 'medico']}>
                   <ARLPage />
+                </ProtectedRoute>
+              } />
+              <Route path="custodia" element={
+                <ProtectedRoute roles={['super_admin', 'administrador', 'medico']}>
+                  <CartaCustodiaPage />
                 </ProtectedRoute>
               } />
             </Route>
