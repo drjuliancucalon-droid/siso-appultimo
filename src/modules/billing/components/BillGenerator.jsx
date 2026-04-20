@@ -1,182 +1,179 @@
 import React, { useState, useMemo } from 'react';
-import { FileText, Save, Printer, Plus, Trash2, DollarSign } from 'lucide-react';
+import { DollarSign, CheckSquare, Square, Filter, Save, Printer, Plus, Trash2 } from 'lucide-react';
 import { InputGroup } from '../../../shared/components/ui/InputGroup';
 import { SelectGroup } from '../../../shared/components/ui/SelectGroup';
 import { numeroALetras } from '../../../shared/lib/formatters';
 
-/**
- * BillGenerator - Generador de cuentas de cobro
- * Formato colombiano con IVA, retenciones, y conversión a letras
- */
 export const BillGenerator = ({ doctorData, companies = [], onSave, onPrint, savedBills = [], atencionesCerradas = [] }) => {
-  const [filterEmpresaId, setFilterEmpresaId] = useState(''); const [filterMes, setFilterMes] = useState(''); const [selectedWorkers, setSelectedWorkers] = useState({}); const [workerValues, setWorkerValues] = useState({}); const [marcarTodos, setMarcarTodos] = useState(false); const atencionesFiltradas = useMemo(() => (atencionesCerradas || []).filter(a => { if (filterEmpresaId && a.empresaId !== filterEmpresaId) return false; if (filterMes && a.fechaAtencion && !a.fechaAtencion.startsWith(filterMes)) return false; return true; }), [atencionesCerradas, filterEmpresaId, filterMes]); const trabajadoresUnicos = useMemo(() => { const map = new Map(); atencionesFiltradas.forEach(a => { if (!map.has(a.docNumero)) map.set(a.docNumero, {docNumero: a.docNumero, nombres: a.nombres || a.pacienteNombre || 'Sin nombre', docTipo: a.docTipo || 'CC', fechaAtencion: a.fechaAtencion}); return Array.from(map.values()); }), [atencionesFiltradas]); const totalSeleccionado = useMemo(() => Object.entries(selectedWorkers).filter(([_, v]) => v).reduce((s, [d]) => s + (parseFloat(workerValues[d]) || 0), 0), [selectedWorkers, workerValues]); const toggleWorker = (doc) => setSelectedWorkers(p => ({...p, [doc]: !p[doc]})); const updateWorkerValor = (doc, v) => setWorkerValues(p => ({...p, [doc]: parseFloat(v) || 0})); 
-    numero: `CC-${String(savedBills.length + 1).padStart(4, '0')}`,
+  const [filterEmpresaId, setFilterEmpresaId] = useState('');
+  const [filterMes, setFilterMes] = useState('');
+  const [selectedWorkers, setSelectedWorkers] = useState({});
+  const [workerValues, setWorkerValues] = useState({});
+  const [marcarTodos, setMarcarTodos] = useState(false);
+  const [modoCobro, setModoCobro] = useState('por_trabajador');
+  const [valorUnitarioGlobal, setValorUnitarioGlobal] = useState(0);
+
+  const atencionesFiltradas = useMemo(() => {
+    return (atencionesCerradas || []).filter(a => {
+      if (filterEmpresaId && a.empresaId !== filterEmpresaId) return false;
+      if (filterMes && a.fechaAtencion && !a.fechaAtencion.startsWith(filterMes)) return false;
+      return true;
+    });
+  }, [atencionesCerradas, filterEmpresaId, filterMes]);
+
+  const trabajadoresUnicos = useMemo(() => {
+    const map = new Map();
+    atencionesFiltradas.forEach(a => {
+      if (!map.has(a.docNumero)) {
+        map.set(a.docNumero, {docNumero: a.docNumero, nombres: a.nombres || a.pacienteNombre || 'Sin nombre', docTipo: a.docTipo || 'CC', atenciones: []});
+      }
+      map.get(a.docNumero).atenciones.push(a);
+    });
+    return Array.from(map.values());
+  }, [atencionesFiltradas]);
+
+  const getCantidadAtenciones = (docNumero) => {
+    const t = trabajadoresUnicos.find(x => x.docNumero === docNumero);
+    return t ? t.atenciones.length : 0;
+  };
+
+  const toggleWorker = (doc) => setSelectedWorkers(prev => ({...prev, [doc]: !prev[doc]}));
+  const updateWorkerValor = (doc, v) => setWorkerValues(prev => ({...prev, [doc]: parseFloat(v) || 0}));
+
+  const handleMarcarTodos = () => {
+    const nuevoEstado = !marcarTodos;
+    setMarcarTodos(nuevoEstado);
+    const nuevosSeleccionados = {};
+    const nuevosValores = {};
+    trabajadoresUnicos.forEach(t => {
+      nuevosSeleccionados[t.docNumero] = nuevoEstado;
+      nuevosValores[t.docNumero] = workerValues[t.docNumero] || valorUnitarioGlobal;
+    });
+    setSelectedWorkers(nuevosSeleccionados);
+    setWorkerValues(nuevosValores);
+  };
+
+  const totalSeleccionado = useMemo(() => {
+    let total = 0;
+    Object.entries(selectedWorkers).forEach(([doc, sel]) => {
+      if (!sel) return;
+      const valor = parseFloat(workerValues[doc]) || 0;
+      const cantidad = modoCobro === 'por_trabajador' ? 1 : getCantidadAtenciones(doc);
+      total += valor * cantidad;
+    });
+    return total;
+  }, [selectedWorkers, workerValues, modoCobro, trabajadoresUnicos]);
+
+  const detalleAtenciones = useMemo(() => {
+    const dets = [];
+    Object.entries(selectedWorkers).forEach(([doc, sel]) => {
+      if (!sel) return;
+      const trab = trabajadoresUnicos.find(t => t.docNumero === doc);
+      if (!trab) return;
+      trab.atenciones.forEach(a => {
+        dets.push({trabajador: trab.nombres, documento: trab.docTipo + ' ' + trab.docNumero, fecha: a.fechaAtencion, tipo: a.tipoAtencion || 'Evaluacion'});
+      });
+    });
+    return dets;
+  }, [selectedWorkers, trabajadoresUnicos]);
+
+  const [bill, setBill] = useState({
+    numero: 'CC-' + String(savedBills.length + 1).padStart(4, '0'),
     fecha: new Date().toISOString().split('T')[0],
-    empresaId: '',
-    empresaNombre: '',
-    empresaNit: '',
-    items: [{ id: Date.now(), descripcion: 'Evaluación médica ocupacional', cantidad: 1, valorUnit: 0 }],
-    observaciones: '',
-    formaPago: 'Transferencia',
-    banco: '',
-    tipoCuenta: '',
-    numeroCuenta: '',
+    empresaId: '', empresaNombre: '', empresaNit: '',
+    items: [{ id: Date.now(), descripcion: 'Evaluacion medica ocupacional', cantidad: 1, valorUnit: 0 }]
   });
 
   const handleChange = (field, value) => setBill((p) => ({ ...p, [field]: value }));
 
   const handleCompanyChange = (compId) => {
     const comp = companies.find((c) => c.id === compId);
-    if (comp) {
-      setBill((p) => ({
-        ...p,
-        empresaId: comp.id,
-        empresaNombre: comp.nombre,
-        empresaNit: comp.nit || '',
-      }));
-    }
+    if (comp) setBill((p) => ({ ...p, empresaId: comp.id, empresaNombre: comp.nombre, empresaNit: comp.nit || '' }));
   };
 
-  const addItem = () => {
-    setBill((p) => ({
-      ...p,
-      items: [...p.items, { id: Date.now(), descripcion: '', cantidad: 1, valorUnit: 0 }],
-    }));
+  const handleFilterEmpresaChange = (e) => {
+    const empId = e.target.value;
+    setFilterEmpresaId(empId);
+    const comp = companies.find(c => c.id === empId);
+    if (comp) setBill(p => ({...p, empresaId: comp.id, empresaNombre: comp.nombre, empresaNit: comp.nit || ''}));
   };
 
-  const updateItem = (id, field, value) => {
-    setBill((p) => ({
-      ...p,
-      items: p.items.map((it) => (it.id === id ? { ...it, [field]: value } : it)),
-    }));
-  };
-
-  const removeItem = (id) => {
-    setBill((p) => ({ ...p, items: p.items.filter((it) => it.id !== id) }));
+  const handleSave = () => {
+    const itemsParaGuardar = Object.entries(selectedWorkers).filter(([_, sel]) => sel).map(([doc, _]) => {
+      const trab = trabajadoresUnicos.find(t => t.docNumero === doc);
+      const cantidad = modoCobro === 'por_trabajador' ? 1 : getCantidadAtenciones(doc);
+      const valor = workerValues[doc] || 0;
+      return {descripcion: 'Evaluacion medica - ' + (trab?.nombres || 'Trabajador'), cantidad, valorUnit: valor, subtotal: cantidad * valor};
+    });
+    const billCompleto = {...bill, items: itemsParaGuardar.length > 0 ? itemsParaGuardar : bill.items, total: totalSeleccionado, detalleAtenciones};
+    onSave?.(billCompleto);
   };
 
   const subtotal = bill.items.reduce((s, it) => s + (it.cantidad || 0) * (it.valorUnit || 0), 0);
-  const iva = 0; // Servicios médicos exentos Art. 476 E.T.
-  const total = subtotal + iva;
+  const total = subtotal;
 
-  return (UI_MARKER
+  return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-black text-gray-800 flex items-center gap-2">
-          <DollarSign className="w-5 h-5 text-emerald-600" />
-          Cuenta de Cobro
-        </h2>
-        <span className="text-xs font-mono text-gray-500">Nº {bill.numero}</span>
+        <h2 className="text-lg font-black text-gray-800 flex items-center gap-2"><DollarSign className="w-5 h-5 text-emerald-600" />Cuenta de Cobro</h2>
+        <span className="text-xs font-mono text-gray-500">N. {bill.numero}</span>
       </div>
 
-      {/* Datos básicos */}
-      <div className="bg-gray-50 rounded-xl p-4 space-y-3">
+      <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+        <div className="flex items-center gap-2 mb-3"><Filter className="w-4 h-4 text-blue-600" /><p className="text-xs font-black text-blue-800 uppercase">Paso 1: Seleccionar periodo</p></div>
         <div className="flex flex-wrap -mx-1.5">
-          <InputGroup label="Nº Cuenta" name="numero" value={bill.numero} onChange={(e) => handleChange('numero', e.target.value)} width="w-1/4" />
-          <InputGroup label="Fecha" name="fecha" type="date" value={bill.fecha} onChange={(e) => handleChange('fecha', e.target.value)} width="w-1/4" />
-          <div className="w-1/2 px-1.5 mb-2">
-            <label className="block text-[10px] font-black text-gray-600 mb-0.5 uppercase">Empresa</label>
-            <select value={bill.empresaId} onChange={(e) => handleCompanyChange(e.target.value)}
-              className="w-full p-1.5 border border-gray-200 rounded text-xs font-bold bg-white">
-              <option value="">Seleccionar empresa...</option>
-              {companies.map((c) => <option key={c.id} value={c.id}>{c.nombre} (NIT: {c.nit || '--'})</option>)}
-            </select>
+          <div className="w-1/2 px-1.5 mb-2"><label className="block text-[10px] font-black text-gray-600 mb-0.5 uppercase">Empresa</label>
+            <select value={filterEmpresaId} onChange={handleFilterEmpresaChange} className="w-full p-2 border border-gray-200 rounded text-xs font-bold bg-white"><option value="">Seleccionar empresa...</option>{companies.map((c) => <option key={c.id} value={c.id}>{c.nombre} (NIT: {c.nit || '--'})</option>)}</select></div>
+          <div className="w-1/2 px-1.5 mb-2"><label className="block text-[10px] font-black text-gray-600 mb-0.5 uppercase">Mes / Periodo</label>
+            <input type="month" value={filterMes} onChange={(e) => setFilterMes(e.target.value)} className="w-full p-2 border border-gray-200 rounded text-xs font-bold bg-white" /></div>
+        </div>
+        <p className="text-[10px] text-blue-600">{trabajadoresUnicos.length} trabajador(es) encontrado(s)</p>
+      </div>
+
+      {trabajadoresUnicos.length > 0 && (
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
+          <div className="flex items-center gap-2 mb-3"><DollarSign className="w-4 h-4 text-amber-600" /><p className="text-xs font-black text-amber-800 uppercase">Paso 2: Modalidad de cobro</p></div>
+          <div className="flex gap-4"><label className="flex items-center gap-2"><input type="radio" name="modoCobro" checked={modoCobro === 'por_trabajador'} onChange={() => setModoCobro('por_trabajador')} /><span className="text-xs font-bold">Por trabajador</span></label><label className="flex items-center gap-2"><input type="radio" name="modoCobro" checked={modoCobro === 'por_atencion'} onChange={() => setModoCobro('por_atencion')} /><span className="text-xs font-bold">Por atencion</span></label></div>
+          <div className="mt-3"><label className="text-xs font-bold text-gray-600">Valor unitario:</label><input type="number" value={valorUnitarioGlobal} onChange={(e) => setValorUnitarioGlobal(parseFloat(e.target.value) || 0)} className="w-32 p-1.5 border rounded text-xs text-right font-bold" /></div>
+        </div>
+      )}
+
+      {trabajadoresUnicos.length > 0 && (
+        <div className="bg-white border border-gray-200 rounded-xl p-4">
+          <div className="flex justify-between items-center mb-3"><div className="flex items-center gap-2"><CheckSquare className="w-4 h-4 text-emerald-600" /><p className="text-xs font-black uppercase">Trabajadores a facturar</p></div><label className="flex items-center gap-2"><input type="checkbox" checked={marcarTodos} onChange={handleMarcarTodos} /><span className="text-xs font-bold"> Seleccionar todos</span></label></div>
+          <div className="space-y-2 max-h-64 overflow-y-auto">
+            {trabajadoresUnicos.map((trabajador) => {
+              const cantidad = getCantidadAtenciones(trabajador.docNumero);
+              const esSeleccionado = selectedWorkers[trabajador.docNumero];
+              const valor = workerValues[trabajador.docNumero] || valorUnitarioGlobal;
+              const subtotalFila = modoCobro === 'por_trabajador' ? valor : valor * cantidad;
+              return (<div key={trabajador.docNumero} className={'flex items-center gap-2 p-2 rounded-lg border ' + (esSeleccionado ? 'bg-emerald-50 border-emerald-300' : 'bg-gray-50 border-gray-200')}>
+                <button onClick={() => toggleWorker(trabajador.docNumero)}>{esSeleccionado ? <CheckSquare className="w-5 h-5 text-emerald-600" /> : <Square className="w-5 h-5 text-gray-400" />}</button>
+                <div className="flex-1"><p className="text-xs font-bold">{trabajador.nombres}</p><p className="text-[10px] text-gray-500">{trabajador.docTipo} {trabajador.docNumero}</p></div>
+                <div className="text-center px-2"><p className="text-[10px] text-gray-500">Cant</p><p className="text-xs font-bold">{cantidad}</p></div>
+                <div className="w-24"><input type="number" value={valor} onChange={(e) => updateWorkerValor(trabajador.docNumero, e.target.value)} className="w-full p-1 border rounded text-xs text-right" disabled={!esSeleccionado} /></div>
+                <div className="w-24 text-right"><p className="text-[10px] text-gray-500">Subtotal</p><p className="text-xs font-black text-emerald-700">{subtotalFila.toLocaleString('es-CO')}</p></div>
+              </div>);
+            })}
           </div>
+          <div className="mt-4 pt-3 border-t flex justify-end"><div className="text-right"><p className="text-xs text-gray-600">Total:</p><p className="text-lg font-black text-emerald-600">{totalSeleccionado.toLocaleString('es-CO')}</p></div></div>
+        </div>
+      )}
+
+      <div className="bg-gray-50 rounded-xl p-4">
+        <p className="text-xs font-black text-gray-700 uppercase mb-3">Datos de la cuenta</p>
+        <div className="flex flex-wrap -mx-1.5">
+          <InputGroup label="N. Cuenta" name="numero" value={bill.numero} onChange={(e) => handleChange('numero', e.target.value)} width="w-1/4" />
+          <InputGroup label="Fecha" name="fecha" type="date" value={bill.fecha} onChange={(e) => handleChange('fecha', e.target.value)} width="w-1/4" />
+          <div className="w-1/2 px-1.5"><label className="block text-[10px] font-black text-gray-600 mb-0.5 uppercase">Empresa</label><select value={bill.empresaId} onChange={(e) => handleCompanyChange(e.target.value)} className="w-full p-1.5 border border-gray-200 rounded text-xs font-bold bg-white"><option value="">Seleccionar...</option>{companies.map((c) => <option key={c.id} value={c.id}>{c.nombre}</option>)}</select></div>
         </div>
       </div>
 
-      {/* Items */}
-      <div>
-        <div className="flex justify-between items-center mb-2">
-          <p className="text-xs font-black text-gray-700 uppercase">Servicios</p>
-          <button onClick={addItem} className="text-[10px] px-2 py-1 bg-emerald-50 text-emerald-700 rounded-lg font-bold hover:bg-emerald-100 flex items-center gap-1">
-            <Plus className="w-3 h-3" /> Agregar servicio
-          </button>
-        </div>
-        <div className="space-y-2">
-          {bill.items.map((item, idx) => (
-            <div key={item.id} className="flex gap-2 items-end bg-white border border-gray-200 rounded-xl p-3">
-              <span className="text-xs font-black text-gray-400 w-6">{idx + 1}.</span>
-              <div className="flex-1">
-                <input value={item.descripcion}
-                  onChange={(e) => updateItem(item.id, 'descripcion', e.target.value)}
-                  placeholder="Descripción del servicio..."
-                  className="w-full p-1.5 border border-gray-200 rounded text-xs" />
-              </div>
-              <div className="w-20">
-                <label className="block text-[9px] text-gray-400">Cant.</label>
-                <input type="number" value={item.cantidad}
-                  onChange={(e) => updateItem(item.id, 'cantidad', parseInt(e.target.value) || 0)}
-                  className="w-full p-1.5 border border-gray-200 rounded text-xs text-center" />
-              </div>
-              <div className="w-32">
-                <label className="block text-[9px] text-gray-400">Valor unit. $</label>
-                <input type="number" value={item.valorUnit}
-                  onChange={(e) => updateItem(item.id, 'valorUnit', parseFloat(e.target.value) || 0)}
-                  className="w-full p-1.5 border border-gray-200 rounded text-xs text-right" />
-              </div>
-              <div className="w-32 text-right">
-                <label className="block text-[9px] text-gray-400">Subtotal</label>
-                <p className="text-xs font-black text-gray-800 p-1.5">
-                  ${((item.cantidad || 0) * (item.valorUnit || 0)).toLocaleString('es-CO')}
-                </p>
-              </div>
-              {bill.items.length > 1 && (
-                <button onClick={() => removeItem(item.id)} className="text-red-400 hover:text-red-600 pb-1">
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              )}
-            </div>
-          ))}
-        </div>
-      </div>
+      {detalleAtenciones.length > 0 && (<div className="bg-white border border-gray-200 rounded-xl p-4"><p className="text-xs font-black text-gray-700 uppercase mb-3">Detalle de atenciones</p><div className="max-h-40 overflow-y-auto"><table className="w-full text-[10px]"><thead className="bg-gray-100"><tr><th>Trabajador</th><th>Documento</th><th>Fecha</th><th>Tipo</th></tr></thead><tbody>{detalleAtenciones.slice(0, 15).map((det, idx) => (<tr key={idx} className="border-b"><td>{det.trabajador}</td><td>{det.documento}</td><td>{det.fecha}</td><td>{det.tipo}</td></tr>))}</tbody></table></div></div>)}
 
-      {/* Totals */}
-      <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4">
-        <div className="flex justify-between text-xs mb-1">
-          <span className="text-gray-600">Subtotal:</span>
-          <span className="font-bold">${subtotal.toLocaleString('es-CO')}</span>
-        </div>
-        <div className="flex justify-between text-xs mb-1">
-          <span className="text-gray-600">IVA (Exento Art. 476 E.T.):</span>
-          <span className="font-bold">$0</span>
-        </div>
-        <div className="flex justify-between text-sm font-black border-t border-emerald-300 pt-2 mt-2">
-          <span className="text-emerald-800">TOTAL:</span>
-          <span className="text-emerald-800">${total.toLocaleString('es-CO')}</span>
-        </div>
-        {total > 0 && (
-          <p className="text-[10px] text-emerald-700 italic mt-1">
-            Son: {numeroALetras ? numeroALetras(total) : `${total} pesos`} M/CTE
-          </p>
-        )}
-      </div>
+      <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4"><div className="flex justify-between text-sm font-black border-t border-emerald-300 pt-2 mt-2"><span className="text-emerald-800">TOTAL:</span><span className="text-emerald-800">{total.toLocaleString('es-CO')}</span></div></div>
 
-      {/* Payment info */}
-      <div className="flex flex-wrap -mx-1.5">
-        <SelectGroup label="Forma de pago" name="formaPago" value={bill.formaPago}
-          onChange={(e) => handleChange('formaPago', e.target.value)}
-          options={['Transferencia', 'Efectivo', 'Cheque', 'Consignación']} width="w-1/4" />
-        <InputGroup label="Banco" value={bill.banco}
-          onChange={(e) => handleChange('banco', e.target.value)} width="w-1/4" />
-        <SelectGroup label="Tipo cuenta" value={bill.tipoCuenta}
-          onChange={(e) => handleChange('tipoCuenta', e.target.value)}
-          options={['Ahorros', 'Corriente']} width="w-1/4" />
-        <InputGroup label="Nº Cuenta" value={bill.numeroCuenta}
-          onChange={(e) => handleChange('numeroCuenta', e.target.value)} width="w-1/4" />
-      </div>
-
-      {/* Actions */}
-      <div className="flex gap-2 pt-3 border-t">
-        <button onClick={() => onSave?.(bill)}
-          className="flex-1 py-2.5 bg-emerald-600 text-white rounded-xl text-xs font-black hover:bg-emerald-700 flex items-center justify-center gap-1.5">
-          <Save className="w-4 h-4" /> Guardar Cuenta
-        </button>
-        <button onClick={() => onPrint?.(bill)}
-          className="py-2.5 px-6 bg-gray-100 text-gray-700 rounded-xl text-xs font-bold hover:bg-gray-200 flex items-center gap-1">
-          <Printer className="w-4 h-4" /> Imprimir
-        </button>
-      </div>
+      <div className="flex gap-2 pt-3 border-t"><button onClick={handleSave} className="flex-1 py-2.5 bg-emerald-600 text-white rounded-xl text-xs font-black hover:bg-emerald-700 flex items-center justify-center gap-1.5"><Save className="w-4 h-4" />Guardar</button><button onClick={() => onPrint?.(bill)} className="py-2.5 px-6 bg-gray-100 text-gray-700 rounded-xl text-xs font-bold hover:bg-gray-200">Imprimir</button></div>
     </div>
   );
 };
