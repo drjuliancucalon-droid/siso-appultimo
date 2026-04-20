@@ -13,23 +13,39 @@ export const BillGenerator = ({ doctorData, companies = [], onSave, onPrint, sav
   const [modoCobro, setModoCobro] = useState('por_trabajador');
   const [valorUnitarioGlobal, setValorUnitarioGlobal] = useState(0);
 
+  // Obtener todas las atenciones disponibles (fallback multiple)
+  const atencionesGlobales = useMemo(() => {
+    let todas = [...(atencionesCerradas || [])];
+    return todas;
+  }, [atencionesCerradas]);
+
   const atencionesFiltradas = useMemo(() => {
-    return (atencionesCerradas || []).filter(a => {
-      // Soportar empresa o empresaId
-      const empId = a.empresaId || a.empresa;
-      if (filterEmpresaId && empId !== filterEmpresaId) return false;
-      if (filterMes && a.fechaAtencion && !a.fechaAtencion.startsWith(filterMes)) return false;
-      return true;
+    if (!filterEmpresaId && !filterMes) return [];
+    return atencionesGlobales.filter(a => {
+      const emp = (a.empresa || a.empresaNombre || "").toLowerCase();
+      const filtroEmp = (filterEmpresaId || "").toLowerCase();
+      const matchEmp = !filterEmpresaId || emp.includes(filtroEmp);
+      const fecha = a.fechaAtencion || a.fecha || "";
+      const matchMes = !filterMes || fecha.startsWith(filterMes);
+      return matchEmp && matchMes;
     });
-  }, [atencionesCerradas, filterEmpresaId, filterMes]);
+  }, [atencionesGlobales, filterEmpresaId, filterMes]);
 
   const trabajadoresUnicos = useMemo(() => {
     const map = new Map();
     atencionesFiltradas.forEach(a => {
-      if (!map.has(a.docNumero)) {
-        map.set(a.docNumero, {docNumero: a.docNumero, nombres: a.nombres || a.nombre || a.pacienteNombre || 'Sin nombre', docTipo: a.docTipo || a.tipoDoc || 'CC', empresaId: a.empresaId || a.empresa, empresa: a.empresaNombre || a.empresa, atenciones: []});
+      const docKey = a.docNumero || a.id;
+      if (!map.has(docKey)) {
+        map.set(docKey, {
+          docNumero: docKey,
+          nombres: a.nombres || a.nombre || a.pacienteNombre || 'Sin nombre',
+          docTipo: a.docTipo || a.tipoDoc || 'CC',
+          empresa: a.empresa || a.empresaNombre,
+          empresaId: a.empresaId || a.empresa,
+          atenciones: []
+        });
       }
-      map.get(a.docNumero).atenciones.push(a);
+      map.get(docKey).atenciones.push(a);
     });
     return Array.from(map.values());
   }, [atencionesFiltradas]);
