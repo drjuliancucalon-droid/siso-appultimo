@@ -4,7 +4,7 @@ import { InputGroup } from '../../../shared/components/ui/InputGroup';
 import { SelectGroup } from '../../../shared/components/ui/SelectGroup';
 import { numeroALetras } from '../../../shared/lib/formatters';
 
-export const BillGenerator = ({ doctorData, companies = [], onSave, onPrint, savedBills = [], atencionesCerradas = [], patients = [], onSave, onPrint }) => {
+export const BillGenerator = ({ doctorData, companies = [], onSave, onPrint, savedBills = [], atencionesCerradas = [], patients = [] }) => {
   const [filterEmpresaId, setFilterEmpresaId] = useState('');
   const [filterMes, setFilterMes] = useState('');
   const [selectedWorkers, setSelectedWorkers] = useState({});
