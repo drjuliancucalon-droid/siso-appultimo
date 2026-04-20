@@ -3,14 +3,7 @@ import React, { useState } from 'react';
 import { RESTRICCIONES_CATALOG } from '../../data/catalogos.js';
 import { CheckSquare, Square, X, AlertTriangle, Loader2, Sparkles } from 'lucide-react';
 
-const RestriccionesChecklistPanel = ({ selected, onChange, onClose, onApply, isGenerating, onGenerate, _testGATISO = () => console.log('🧪 PRO GATISO RESTRI 12cats PASS') }) => {
-  selected,
-  onChange,
-  onClose,
-  onApply,
-  isGenerating,
-  onGenerate,
-}) => {
+const RestriccionesChecklistPanel = ({ selected, onChange, onClose, onApply, isGenerating, onGenerate }) => {
   const [expandido, setExpandido] = useState({});
   const countSelected = Object.values(selected).filter(Boolean).length;
   const handleBackdrop = (e) => {
