@@ -20,7 +20,8 @@ export const BillGenerator = ({ doctorData, companies = [], onSave, onPrint, sav
   }, [atencionesCerradas]);
 
   const atencionesFiltradas = useMemo(() => {
-    if (!filterEmpresaId && !filterMes) return [];
+    // Si no hay filtros, mostrar todas las atenciones disponibles
+    if (!filterEmpresaId && !filterMes) return atencionesGlobales;
     return atencionesGlobales.filter(a => {
       const emp = (a.empresa || a.empresaNombre || "").toLowerCase();
       const filtroEmp = (filterEmpresaId || "").toLowerCase();
