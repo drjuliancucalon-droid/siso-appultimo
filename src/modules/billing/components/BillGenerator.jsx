@@ -4,7 +4,7 @@ import { InputGroup } from '../../../shared/components/ui/InputGroup';
 import { SelectGroup } from '../../../shared/components/ui/SelectGroup';
 import { numeroALetras } from '../../../shared/lib/formatters';
 
-export const BillGenerator = ({ doctorData, companies = [], onSave, onPrint, savedBills = [], atencionesCerradas = [] }) => {
+export const BillGenerator = ({ doctorData, companies = [], onSave, onPrint, savedBills = [], atencionesCerradas = [], patients = [], onSave, onPrint }) => {
   const [filterEmpresaId, setFilterEmpresaId] = useState('');
   const [filterMes, setFilterMes] = useState('');
   const [selectedWorkers, setSelectedWorkers] = useState({});
@@ -16,8 +16,25 @@ export const BillGenerator = ({ doctorData, companies = [], onSave, onPrint, sav
   // Obtener todas las atenciones disponibles (fallback multiple)
   const atencionesGlobales = useMemo(() => {
     let todas = [...(atencionesCerradas || [])];
+    // Fallback: usar pacientes con empresa si no hay atenciones
+    if (todas.length === 0 && patients && patients.length > 0) {
+      todas = patients
+        .filter(p => p.empresa)
+        .map(p => ({
+          id: p.id,
+          docNumero: p.docNumero,
+          nombres: p.nombres,
+          nombre: p.nombres,
+          docTipo: p.docTipo,
+          empresa: p.empresa,
+          empresaId: p.empresaId,
+          empresaNombre: p.empresa,
+          fechaAtencion: p.fechaExamen || p.fecha,
+          tipo: p.tipoExamen || 'Evaluacion'
+        }));
+    }
     return todas;
-  }, [atencionesCerradas]);
+  }, [atencionesCerradas, patients]);
 
   const atencionesFiltradas = useMemo(() => {
     // Si no hay filtros, mostrar todas las atenciones disponibles

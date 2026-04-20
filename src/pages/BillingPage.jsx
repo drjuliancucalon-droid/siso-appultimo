@@ -15,11 +15,11 @@ const TABS = [
 
 export default function BillingPage() {
   const [activeTab, setActiveTab] = useState('facturacion');
-  const { data: atencionesData, loading: la } = useBackendData('/data/atenciones_cerradas', 'siso_atenciones_cerradas', 'atenciones'); const atencionesCerradas = atencionesData || []
+  const { data: atencionesData, loading: la } = useBackendData('/data/atenciones_cerradas', 'siso_atenciones_cerradas', 'atenciones'); const atencionesCerradas = atencionesData || []; const { data: pacientesData, loading: lp } = useBackendData('/data/patients', 'siso_patients_drcucalon', 'patients'); const patients = pacientesData || []
 const { data: companies, loading: lc } = useBackendData('/data/companies', 'siso_companies', 'companies');
   const { data: bills, loading: lb, source } = useBackendData('/data/bills', 'siso_saved_bills', 'bills');
 
-  const loading = lc || lb || la;
+  const loading = lc || lb || la || lp;
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
@@ -60,7 +60,7 @@ const { data: companies, loading: lc } = useBackendData('/data/companies', 'siso
         </div>
       ) : (
         <>
-          {activeTab === 'facturacion' && <BillGenerator companies={companies} savedBills={bills} atencionesCerradas={atencionesCerradas} />}
+          {activeTab === 'facturacion' && <BillGenerator companies={companies} savedBills={bills} atencionesCerradas={atencionesCerradas} patients={patients} />}
           {activeTab === 'propuestas' && <Proposals />}
           {activeTab === 'dian' && <DIANExport bills={bills} companies={companies} />}
         </>
