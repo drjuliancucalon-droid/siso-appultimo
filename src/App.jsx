@@ -41,6 +41,8 @@ const MensajesPage = React.lazy(() => import('./pages/MensajesPage'));
 const ARLPage = React.lazy(() => import('./pages/ARLPage'));
 // Carta de Custodia
 const CartaCustodiaPage = React.lazy(() => import('./pages/CartaCustodiaPage'));
+// Perfil propio (todos los roles)
+const ProfilePage = React.lazy(() => import('./pages/ProfilePage'));
 
 // ── React Query client ───────────────────────────────────────────
 const queryClient = new QueryClient({
@@ -189,6 +191,8 @@ export default function App() {
                   <CartaCustodiaPage />
                 </ProtectedRoute>
               } />
+              {/* Perfil propio — accesible para cualquier rol autenticado */}
+              <Route path="perfil" element={<ProfilePage />} />
             </Route>
 
             {/* 404 */}

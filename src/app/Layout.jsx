@@ -41,6 +41,7 @@ const NAV_ITEMS = [
   { path: '/config/ips', icon: Building2, label: 'Perfil IPS', roles: ['administrador', 'super_admin'] },
   { path: '/admin', icon: Crown, label: 'Super Admin', roles: ['super_admin'] },
   { path: '/settings', icon: Settings, label: 'Config', roles: ['administrador', 'super_admin'] },
+  { path: '/perfil', icon: Users, label: 'Mi Perfil' }, // visible para todos los roles
 ];
 
 export default function Layout() {
