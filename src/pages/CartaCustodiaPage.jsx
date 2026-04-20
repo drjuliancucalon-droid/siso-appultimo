@@ -116,10 +116,10 @@ export default function CartaCustodiaPage() {
           PRINT STYLES — oculta el panel izquierdo
       ═══════════════════════════════════════════════ */}
       <style>{`
-        @media print {
+        @media print {.carta-wrap { padding: 0 !important; background: white !important; }
           .no-print  { display: none !important; }
           .carta-wrap { padding: 0 !important; background: white !important; }
-          .carta-doc  { box-shadow: none !important; margin: 0 !important; width: 100% !important; min-height: unset !important; }
+          .carta-doc  { box-shadow: none !important; margin: 0 !important; width: 100% !important; }
           @page { margin: 0; size: letter portrait; }
           body { background: white; }
         }
@@ -381,10 +381,10 @@ function CartaDocumento({
       <p style={s.p}>
         Doy garantía de que el archivo de las historias clínicas se encuentra bajo custodia
         electrónica en la ciudad de {docCiudad}, dando así estricto cumplimiento a lo establecido en
-        la <strong>Resolución 1918 de 2009</strong> del Ministerio de la Protección Social. La
+        la <strong>Resolución 1072 de 2015</strong> del Ministerio de la Protección Social. La
         custodia está garantizada por un periodo de <strong>15 años</strong> contados a partir de la
         fecha de la última atención, conforme a lo dispuesto en la{' '}
-        <strong>Resolución 039 de 2017</strong> del Ministerio de Salud y Protección Social.
+        <strong>Resolución 1843 de 2025</strong> del Ministerio de Salud y Protección Social.
       </p>
 
       {/* ── PÁRRAFO 4 ── */}
