@@ -15,7 +15,8 @@ const TABS = [
 
 export default function BillingPage() {
   const [activeTab, setActiveTab] = useState('facturacion');
-  const { data: companies, loading: lc } = useBackendData('/data/companies', 'siso_companies', 'companies');
+  const atencionesDefault = [];
+const { data: companies, loading: lc } = useBackendData('/data/companies', 'siso_companies', 'companies');
   const { data: bills, loading: lb, source } = useBackendData('/data/bills', 'siso_saved_bills', 'bills');
 
   const loading = lc || lb;
@@ -59,7 +60,7 @@ export default function BillingPage() {
         </div>
       ) : (
         <>
-          {activeTab === 'facturacion' && <BillGenerator companies={companies} savedBills={bills} />}
+          {activeTab === 'facturacion' && <BillGenerator companies={companies} savedBills={bills} atenciones={atenciones} />}
           {activeTab === 'propuestas' && <Proposals />}
           {activeTab === 'dian' && <DIANExport bills={bills} companies={companies} />}
         </>

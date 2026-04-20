@@ -8,7 +8,7 @@ import { numeroALetras } from '../../../shared/lib/formatters';
  * BillGenerator - Generador de cuentas de cobro
  * Formato colombiano con IVA, retenciones, y conversión a letras
  */
-export const BillGenerator = ({ doctorData, companies = [], onSave, onPrint, savedBills = [] }) => {
+export const BillGenerator = ({ doctorData, companies = [], onSave, onPrint, savedBills = [], atencionesCerradas = [] }) => {
   const [bill, setBill] = useState({
     numero: `CC-${String(savedBills.length + 1).padStart(4, '0')}`,
     fecha: new Date().toISOString().split('T')[0],
