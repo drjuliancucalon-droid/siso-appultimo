@@ -60,6 +60,7 @@ export default function CartaCustodiaPage() {
     [companies, selectedCompanyId]
   );
   const empresaNombre = selectedCompany?.nombre || selectedCompany?.empresaNombre || 'NOMBRE DE LA EMPRESA';
+  const empresaNit = selectedCompany?.nit || '';
   const ciudadDisplay = selectedCompany?.ciudad || ciudadDest;
 
   const mesTexto  = MONTHS_ES[mesVal];
@@ -77,11 +78,30 @@ export default function CartaCustodiaPage() {
         id: `cust_${Date.now()}`,
         empresaId: selectedCompanyId,
         empresaNombre,
+        empresaNit,
         fecha: fechaCarta,
         mes: mesVal, anio: anioVal,
+        mesTexto: MONTHS_ES[mesVal],
         medicoNombre: docNombre,
         medicoLicencia: docLicencia,
+        medicoCC: docCC,
+        medicoTitulo: docTitulo,
+        medicoCel: docCel,
+        medicoEmail: docEmail,
+        medicoCiudad: docCiudad,
+        ciudadDest: ciudadDest,
         savedAt: new Date().toISOString(),
+        // Referencias para el portal de empresas
+        referenciaEmpresa: {
+          nit: empresaNit,
+          nombre: empresaNombre,
+          empresaId: selectedCompanyId,
+          periodo: `${MONTHS_ES[mesVal]} ${anioVal}`,
+          mes: mesVal,
+          anio: anioVal,
+          fechaGeneracion: new Date().toISOString(),
+          tipoDocumento: 'Carta de Custodia'
+        }
       };
       await fetch(`${SB_URL}/rest/v1/siso_store`, {
         method: 'POST',
@@ -92,7 +112,7 @@ export default function CartaCustodiaPage() {
       setTimeout(() => setSaved(false), 3000);
     } catch (e) { alert('Error guardando: ' + e.message); }
     finally { setSaving(false); }
-  }, [selectedCompanyId, empresaNombre, fechaCarta, mesVal, anioVal, docNombre, docLicencia]);
+  }, [selectedCompanyId, empresaNombre, empresaNit, fechaCarta, mesVal, anioVal, docNombre, docLicencia, docCC, docTitulo, docCel, docEmail, docCiudad, ciudadDest]);
 
   const handleEmail = () => {
     const to  = selectedCompany?.email || selectedCompany?.correo || '';

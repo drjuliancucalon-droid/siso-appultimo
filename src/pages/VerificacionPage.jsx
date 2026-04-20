@@ -5,7 +5,7 @@ import React, { useState, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import {
   ShieldCheck, Search, Loader2, AlertCircle, CheckCircle,
-  Building2, User, Printer, QrCode, Download
+  Building2, User, Printer, QrCode, Download, FileText
 } from 'lucide-react';
 
 const SB_URL = 'https://yqrrktrgoijgzccrxnpz.supabase.co';
@@ -339,45 +339,66 @@ export default function VerificacionPage() {
               {empresaWorkers.length === 0 ? (
                 <p className="text-sm text-gray-400 text-center py-4">Cargando registros de trabajadores...</p>
               ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full text-xs">
-                    <thead>
-                      <tr className="bg-gray-50 border-b">
-                        <th className="text-left py-2 px-3 font-bold text-gray-600">Trabajador</th>
-                        <th className="text-left py-2 px-3 font-bold text-gray-600">Cargo</th>
-                        <th className="text-left py-2 px-3 font-bold text-gray-600">Fecha</th>
-                        <th className="text-left py-2 px-3 font-bold text-gray-600">Concepto</th>
-                        <th className="text-left py-2 px-3 font-bold text-gray-600">Vigencia</th>
-                        <th className="py-2 px-3"></th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {empresaWorkers.map((w, i) => {
-                        const apt = getAptitudColor(w.conceptoAptitud || '');
-                        return (
-                          <tr key={i} className="border-b hover:bg-gray-50">
-                            <td className="py-2 px-3">
-                              <p className="font-bold text-gray-800">{w.nombres}</p>
-                              <p className="text-gray-400">{w.docTipo} {w.docNumero}</p>
-                            </td>
-                            <td className="py-2 px-3 text-gray-600">{w.cargo}</td>
-                            <td className="py-2 px-3 text-gray-500">{w.fechaExamen}</td>
-                            <td className="py-2 px-3">
-                              <span className={`px-2 py-0.5 rounded-full text-[10px] font-black ${apt.bg} ${apt.text}`}>
-                                {apt.label}
-                              </span>
-                            </td>
-                            <td className="py-2 px-3 text-gray-500">{w.vigencia}</td>
-                            <td className="py-2 px-3">
-                              <button onClick={() => { setResult(w); setMode('codigo'); window.scrollTo(0, 0); }}
-                                className="text-emerald-600 hover:underline font-bold text-[10px]">Ver</button>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
+                <>
+                  {/* NUEVO: Botón para acceder al portal completo */}
+                  <div className="flex items-center justify-between mb-3 bg-emerald-50 p-3 rounded-lg border border-emerald-200">
+                    <div>
+                      <p className="text-sm font-bold text-emerald-800">Portal de Documentos Completo</p>
+                      <p className="text-xs text-emerald-600">
+                        Acceda a certificados descargables, informes, cuentas de cobro y cartas de custodia
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => {
+                        window.location.href = `/portal-certificados?nit=${encodeURIComponent(nit)}`;
+                      }}
+                      className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:bg-emerald-700 transition-colors"
+                    >
+                      <FileText className="w-3.5 h-3.5" />
+                      Ver Portal
+                    </button>
+                  </div>
+                  
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-xs">
+                      <thead>
+                        <tr className="bg-gray-50 border-b">
+                          <th className="text-left py-2 px-3 font-bold text-gray-600">Trabajador</th>
+                          <th className="text-left py-2 px-3 font-bold text-gray-600">Cargo</th>
+                          <th className="text-left py-2 px-3 font-bold text-gray-600">Fecha</th>
+                          <th className="text-left py-2 px-3 font-bold text-gray-600">Concepto</th>
+                          <th className="text-left py-2 px-3 font-bold text-gray-600">Vigencia</th>
+                          <th className="py-2 px-3"></th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {empresaWorkers.map((w, i) => {
+                          const apt = getAptitudColor(w.conceptoAptitud || '');
+                          return (
+                            <tr key={i} className="border-b hover:bg-gray-50">
+                              <td className="py-2 px-3">
+                                <p className="font-bold text-gray-800">{w.nombres}</p>
+                                <p className="text-gray-400">{w.docTipo} {w.docNumero}</p>
+                              </td>
+                              <td className="py-2 px-3 text-gray-600">{w.cargo}</td>
+                              <td className="py-2 px-3 text-gray-500">{w.fechaExamen}</td>
+                              <td className="py-2 px-3">
+                                <span className={`px-2 py-0.5 rounded-full text-[10px] font-black ${apt.bg} ${apt.text}`}>
+                                  {apt.label}
+                                </span>
+                              </td>
+                              <td className="py-2 px-3 text-gray-500">{w.vigencia}</td>
+                              <td className="py-2 px-3">
+                                <button onClick={() => { setResult(w); setMode('codigo'); window.scrollTo(0, 0); }}
+                                  className="text-emerald-600 hover:underline font-bold text-[10px]">Ver</button>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </>
               )}
             </div>
           )}

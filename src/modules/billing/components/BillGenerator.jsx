@@ -141,7 +141,25 @@ export const BillGenerator = ({ doctorData, companies = [], onSave, onPrint, sav
       const valor = workerValues[doc] || 0;
       return {descripcion: 'Evaluacion medica - ' + (trab?.nombres || 'Trabajador'), cantidad, valorUnit: valor, subtotal: cantidad * valor};
     });
-    const billCompleto = {...bill, items: itemsParaGuardar.length > 0 ? itemsParaGuardar : bill.items, total: totalSeleccionado, detalleAtenciones};
+    
+    // Agregar referencias para el portal de empresas
+    const billCompleto = {
+      ...bill, 
+      items: itemsParaGuardar.length > 0 ? itemsParaGuardar : bill.items, 
+      total: totalSeleccionado, 
+      detalleAtenciones,
+      // Referencias para recuperación por empresa
+      referenciaEmpresa: {
+        nit: bill.empresaNit,
+        nombre: bill.empresaNombre,
+        empresaId: bill.empresaId,
+        periodo: filterMes || new Date().toISOString().slice(0, 7),
+        fechaGeneracion: new Date().toISOString()
+      },
+      // Datos adicionales para el portal
+      trabajadoresCount: Object.keys(selectedWorkers).filter(([_, sel]) => sel).length,
+      modoCobro: modoCobro
+    };
     onSave?.(billCompleto);
   };
 

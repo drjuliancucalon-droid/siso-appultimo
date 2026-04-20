@@ -1206,7 +1206,82 @@ export default function ReporteSection({ ctx }) {
                         <span className="ai-label-print-hide">Inteligente IA</span>
                       </h3>
                       <button
-                        onClick={() => generateAIReport(stats, total, compName)}
+                        onClick={async () => {
+                          // Generar el informe
+                          await generateAIReport(stats, total, compName);
+                          
+                          // Esperar un momento para que se actualice el estado con el resultado del IA
+                          setTimeout(async () => {
+                            // Verificar que tenemos el resultado del IA
+                            if (!reportAIResult) {
+                              console.warn('No se pudo obtener el resultado del IA para guardar');
+                              return;
+                            }
+                            
+                            const compData = companies.find(c => c.id === selectedCompanyReport);
+                            const reportData = {
+                              companyId: selectedCompanyReport,
+                              empresaId: selectedCompanyReport,
+                              empresaNombre: compName,
+                              empresaNit: compData?.nit || null,
+                              empresaId: selectedCompanyReport,
+                              periodoInicio: reportStartDate,
+                              periodoFin: reportEndDate,
+                              tipoInforme: 'epidemiologico',
+                              totalTrabajadores: total,
+                              estadisticas: stats,
+                              // Incluir el resultado completo del IA
+                              resultadoIA: {
+                                resumenEjecutivo: reportAIResult.resumenEjecutivo,
+                                conclusiones: reportAIResult.conclusiones,
+                                analisisJustificado: reportAIResult.analisisJustificado,
+                                recomendacionesInforme: reportAIResult.recomendacionesInforme,
+                                tabla: reportAIResult.tabla,
+                                matrizLegalNormativa: reportAIResult.matrizLegalNormativa,
+                                pveRecomendados: reportAIResult.pveRecomendados,
+                              },
+                              // Referencias para el portal de empresas
+                              referenciaEmpresa: {
+                                nit: compData?.nit || null,
+                                nombre: compName,
+                                empresaId: selectedCompanyReport,
+                                periodo: reportStartDate && reportEndDate 
+                                  ? `${reportStartDate} al ${reportEndDate}`
+                                  : new Date().toISOString().slice(0, 7),
+                                fechaGeneracion: new Date().toISOString(),
+                                tipoDocumento: 'Informe Epidemiológico',
+                                medicoId: selectedMedicoReport || currentUser?.user,
+                              },
+                              fechaGeneracion: new Date().toISOString(),
+                              generadoPor: currentUser?.user || currentUser?.nombre || 'Sistema',
+                            };
+                            
+                            try {
+                              const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+                              const token = currentUser?.token || localStorage.getItem('token');
+                              
+                              const res = await fetch(`${API_URL}/write/reports/save`, {
+                                method: 'POST',
+                                headers: {
+                                  'Authorization': `Bearer ${token}`,
+                                  'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify(reportData)
+                              });
+                              
+                              if (res.ok) {
+                                const result = await res.json();
+                                console.log('Informe guardado exitosamente:', result);
+                                showAlert('Informe guardado exitosamente');
+                              } else {
+                                console.error('Error guardando informe:', res.statusText);
+                              }
+                            } catch (err) {
+                              console.error('Error guardando informe:', err);
+                              showAlert('Error al guardar el informe');
+                            }
+                          }, 1500);
+                        }}
                         disabled={isGeneratingReport}
                         className="bg-indigo-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 hover:bg-indigo-700 disabled:opacity-50"
                       >
@@ -1215,7 +1290,7 @@ export default function ReporteSection({ ctx }) {
                         ) : (
                           <Sparkles className="w-3.5 h-3.5" />
                         )}{" "}
-                        Generar Análisis IA
+                        Generar y Guardar Análisis IA
                       </button>
                     </div>
                     {reportAIResult ? (

@@ -104,6 +104,40 @@ router.get('/bills', async (req, res) => {
   }
 });
 
+// ═══ BILLS BY COMPANY ════════════════════════════════
+router.get('/bills/by-company/:companyId', async (req, res) => {
+  try {
+    const userId = req.user.user;
+    const { companyId } = req.params;
+    const { data } = await getUserScopedData('siso_saved_bills', userId);
+    const allBills = Array.isArray(data) ? data : [];
+    const bills = allBills.filter(b => b.empresaId === companyId || b.companyId === companyId);
+    res.json({ bills, count: bills.length, companyId });
+  } catch (err) {
+    console.error('Error fetching bills by company:', err.message);
+    res.status(500).json({ message: 'Error al obtener facturas de la empresa' });
+  }
+});
+
+// ═══ BILLS BY NIT ════════════════════════════════════
+router.get('/bills/by-nit/:nit', async (req, res) => {
+  try {
+    const userId = req.user.user;
+    const { nit } = req.params;
+    const nitLimpio = nit.replace(/[^0-9]/g, '');
+    const { data } = await getUserScopedData('siso_saved_bills', userId);
+    const allBills = Array.isArray(data) ? data : [];
+    const bills = allBills.filter(b => {
+      const billNit = (b.empresaNit || b.nit || '').replace(/[^0-9]/g, '');
+      return billNit === nitLimpio;
+    });
+    res.json({ bills, count: bills.length, nit: nitLimpio });
+  } catch (err) {
+    console.error('Error fetching bills by NIT:', err.message);
+    res.status(500).json({ message: 'Error al obtener facturas por NIT' });
+  }
+});
+
 // ═══ DOCTOR DATA ═════════════════════════════════════
 router.get('/doctor', async (req, res) => {
   try {
@@ -146,6 +180,202 @@ router.get('/audit', requireRole('administrador', 'super_admin'), async (req, re
   } catch (err) {
     console.error('Error fetching audit log:', err.message);
     res.status(500).json({ message: 'Error al obtener log de auditoría' });
+  }
+});
+
+// ═══ REPORTS (Informes guardados) ════════════════════
+router.get('/reports', async (req, res) => {
+  try {
+    const userId = req.user.user;
+    const { data } = await getUserScopedData('siso_saved_reports', userId);
+    const reports = Array.isArray(data) ? data : [];
+    res.json({ reports, count: reports.length });
+  } catch (err) {
+    console.error('Error fetching reports:', err.message);
+    res.status(500).json({ message: 'Error al obtener informes' });
+  }
+});
+
+// ═══ REPORTS BY COMPANY ══════════════════════════════
+router.get('/reports/by-company/:companyId', async (req, res) => {
+  try {
+    const userId = req.user.user;
+    const { companyId } = req.params;
+    const { data } = await getUserScopedData('siso_saved_reports', userId);
+    const allReports = Array.isArray(data) ? data : [];
+    const reports = allReports.filter(r => r.companyId === companyId || r.empresaId === companyId);
+    res.json({ reports, count: reports.length, companyId });
+  } catch (err) {
+    console.error('Error fetching reports by company:', err.message);
+    res.status(500).json({ message: 'Error al obtener informes de la empresa' });
+  }
+});
+
+// ═══ REPORTS BY NIT ══════════════════════════════════
+router.get('/reports/by-nit/:nit', async (req, res) => {
+  try {
+    const userId = req.user.user;
+    const { nit } = req.params;
+    const nitLimpio = nit.replace(/[^0-9]/g, '');
+    const { data } = await getUserScopedData('siso_saved_reports', userId);
+    const allReports = Array.isArray(data) ? data : [];
+    const reports = allReports.filter(r => {
+      const reportNit = (r.empresaNit || r.nit || '').replace(/[^0-9]/g, '');
+      return reportNit === nitLimpio;
+    });
+    res.json({ reports, count: reports.length, nit: nitLimpio });
+  } catch (err) {
+    console.error('Error fetching reports by NIT:', err.message);
+    res.status(500).json({ message: 'Error al obtener informes por NIT' });
+  }
+});
+
+// ═══ CUSTODIA (Cartas de custodia) ════════════════════
+router.get('/custodia', async (req, res) => {
+  try {
+    const userId = req.user.user;
+    const { data } = await getUserScopedData('siso_cartas_custodia', userId);
+    const cartas = Array.isArray(data) ? data : [];
+    res.json({ cartas, count: cartas.length });
+  } catch (err) {
+    console.error('Error fetching custodia:', err.message);
+    res.status(500).json({ message: 'Error al obtener cartas de custodia' });
+  }
+});
+
+// ═══ CUSTODIA BY COMPANY ═════════════════════════════
+router.get('/custodia/by-company/:companyId', async (req, res) => {
+  try {
+    const userId = req.user.user;
+    const { companyId } = req.params;
+    const { data } = await getUserScopedData('siso_cartas_custodia', userId);
+    const allCartas = Array.isArray(data) ? data : [];
+    const cartas = allCartas.filter(c => c.empresaId === companyId || c.companyId === companyId);
+    res.json({ cartas, count: cartas.length, companyId });
+  } catch (err) {
+    console.error('Error fetching custodia by company:', err.message);
+    res.status(500).json({ message: 'Error al obtener cartas de la empresa' });
+  }
+});
+
+// ═══ CUSTODIA BY NIT ═════════════════════════════════
+router.get('/custodia/by-nit/:nit', async (req, res) => {
+  try {
+    const userId = req.user.user;
+    const { nit } = req.params;
+    const nitLimpio = nit.replace(/[^0-9]/g, '');
+    
+    // Primero obtener empresas para mapear NIT a companyId
+    const { data: companiesData } = await getUserScopedData('siso_companies', userId);
+    const companies = Array.isArray(companiesData) ? companiesData : [];
+    const company = companies.find(c => (c.nit || '').replace(/[^0-9]/g, '') === nitLimpio);
+    
+    const { data } = await getUserScopedData('siso_cartas_custodia', userId);
+    const allCartas = Array.isArray(data) ? data : [];
+    const cartas = allCartas.filter(c => {
+      const cartaNit = (c.empresaNit || c.nit || '').replace(/[^0-9]/g, '');
+      return cartaNit === nitLimpio || (company && c.empresaId === company.id);
+    });
+    res.json({ cartas, count: cartas.length, nit: nitLimpio });
+  } catch (err) {
+    console.error('Error fetching custodia by NIT:', err.message);
+    res.status(500).json({ message: 'Error al obtener cartas por NIT' });
+  }
+});
+
+// ═══ CERTIFICATES (Certificados por empresa) ═══════════
+router.get('/certificates/by-company/:companyId', async (req, res) => {
+  try {
+    const userId = req.user.user;
+    const { companyId } = req.params;
+    const { data } = await getUserScopedData('siso_patients', userId);
+    const allPatients = Array.isArray(data) ? data : [];
+    
+    // Filtrar pacientes que tienen certificado (HC cerrada) y pertenecen a la empresa
+    const certificates = allPatients
+      .filter(p => 
+        (p.empresaId === companyId || p.empresa === companyId) &&
+        p.estadoHistoria === 'Cerrada' &&
+        p.codigoVerificacion
+      )
+      .map(p => ({
+        id: p.id,
+        docNumero: p.docNumero,
+        docTipo: p.docTipo,
+        nombres: p.nombres,
+        conceptoAptitud: p.conceptoAptitud,
+        fechaExamen: p.fechaExamen,
+        vigencia: p.vigencia,
+        codigoVerificacion: p.codigoVerificacion,
+        empresaId: p.empresaId,
+        empresaNombre: p.empresaNombre || p.empresa,
+        tipoExamen: p.tipoExamen,
+        enfasisExamen: p.enfasisExamen,
+        medicoNombre: p.medicoNombre || p._doctorData?.nombre,
+        diagnosticoPrincipal: p.diagnosticoPrincipal,
+        cerradaAt: p.cerradaAt || p.fechaModificacion
+      }));
+    
+    res.json({ certificates, count: certificates.length, companyId });
+  } catch (err) {
+    console.error('Error fetching certificates by company:', err.message);
+    res.status(500).json({ message: 'Error al obtener certificados de la empresa' });
+  }
+});
+
+// ═══ CERTIFICATES BY NIT ═════════════════════════════
+router.get('/certificates/by-nit/:nit', async (req, res) => {
+  try {
+    const userId = req.user.user;
+    const { nit } = req.params;
+    const nitLimpio = nit.replace(/[^0-9]/g, '');
+    
+    // Obtener empresas para mapear NIT a companyId
+    const { data: companiesData } = await getUserScopedData('siso_companies', userId);
+    const companies = Array.isArray(companiesData) ? companiesData : [];
+    const matchingCompanies = companies.filter(c => (c.nit || '').replace(/[^0-9]/g, '') === nitLimpio);
+    const companyIds = matchingCompanies.map(c => c.id);
+    
+    const { data } = await getUserScopedData('siso_patients', userId);
+    const allPatients = Array.isArray(data) ? data : [];
+    
+    // Filtrar pacientes que tienen certificado y pertenecen a empresas con ese NIT
+    const certificates = allPatients
+      .filter(p => {
+        const patientNit = (p.empresaNit || '').replace(/[^0-9]/g, '');
+        return (
+          (companyIds.includes(p.empresaId) || patientNit === nitLimpio) &&
+          p.estadoHistoria === 'Cerrada' &&
+          p.codigoVerificacion
+        );
+      })
+      .map(p => ({
+        id: p.id,
+        docNumero: p.docNumero,
+        docTipo: p.docTipo,
+        nombres: p.nombres,
+        conceptoAptitud: p.conceptoAptitud,
+        fechaExamen: p.fechaExamen,
+        vigencia: p.vigencia,
+        codigoVerificacion: p.codigoVerificacion,
+        empresaId: p.empresaId,
+        empresaNombre: p.empresaNombre || p.empresa,
+        tipoExamen: p.tipoExamen,
+        enfasisExamen: p.enfasisExamen,
+        medicoNombre: p.medicoNombre || p._doctorData?.nombre,
+        diagnosticoPrincipal: p.diagnosticoPrincipal,
+        cerradaAt: p.cerradaAt || p.fechaModificacion
+      }));
+    
+    res.json({ 
+      certificates, 
+      count: certificates.length, 
+      nit: nitLimpio,
+      empresasEncontradas: matchingCompanies.map(c => c.nombre)
+    });
+  } catch (err) {
+    console.error('Error fetching certificates by NIT:', err.message);
+    res.status(500).json({ message: 'Error al obtener certificados por NIT' });
   }
 });
 

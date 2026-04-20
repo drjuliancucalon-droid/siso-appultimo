@@ -607,7 +607,7 @@ export default function Companies({
             )}
           </div>
 
-          <div className="p-5 border-t border-gray-100 flex gap-3">
+          <div className="p-5 border-t border-gray-100 flex gap-3 flex-wrap">
             <button onClick={() => { setDetailCompany(null); handleEditCompany(c); }}
               className="flex items-center gap-2 px-4 py-2 bg-amber-100 text-amber-700 rounded-xl text-sm font-bold hover:bg-amber-200">
               <Edit3 className="w-4 h-4" /> Editar
@@ -621,6 +621,15 @@ export default function Companies({
               {c.portalActivo ? <Lock className="w-4 h-4" /> : <Globe className="w-4 h-4" />}
               {c.portalActivo ? 'Desactivar Portal' : 'Activar Portal'}
             </button>
+            {/* NUEVO: Botón para acceder al portal de certificados */}
+            {c.portalActivo && (
+              <button 
+                onClick={() => goTo?.('portal-certificados-empresa', { empresaId: c.id })}
+                className="flex items-center gap-2 px-4 py-2 bg-blue-100 text-blue-700 rounded-xl text-sm font-bold hover:bg-blue-200"
+              >
+                <ExternalLink className="w-4 h-4" /> Portal Certificados
+              </button>
+            )}
           </div>
         </div>
       </div>

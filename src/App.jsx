@@ -41,6 +41,8 @@ const MensajesPage = React.lazy(() => import('./pages/MensajesPage'));
 const ARLPage = React.lazy(() => import('./pages/ARLPage'));
 // Carta de Custodia
 const CartaCustodiaPage = React.lazy(() => import('./pages/CartaCustodiaPage'));
+// Portal de Certificados por Empresa (Nuevo)
+const PortalCertificadosEmpresa = React.lazy(() => import('./pages/PortalCertificadosEmpresa'));
 // Perfil propio (todos los roles)
 const ProfilePage = React.lazy(() => import('./pages/ProfilePage'));
 
@@ -164,6 +166,8 @@ export default function App() {
               <Route path="sgsst" element={<SGSSTPage />} />
               <Route path="telemedicine" element={<TelemedicinePage />} />
               <Route path="portal-empresa" element={<PortalEmpresaPage />} />
+              <Route path="portal-certificados/:companyId" element={<PortalCertificadosEmpresa />} />
+              <Route path="portal-certificados" element={<PortalCertificadosEmpresa />} />
               <Route path="habeas-data" element={<HabeasDataPage />} />
               <Route path="cotizaciones" element={<CotizacionesPage />} />
               <Route path="config/ips" element={<ConfigIPSPage />} />

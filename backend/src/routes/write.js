@@ -178,23 +178,174 @@ router.post('/bills/save', async (req, res) => {
     const key = `siso_saved_bills_${userId}`;
     const now = new Date().toISOString();
 
+    // Asegurar que la factura tenga referencias completas
+    const billConReferencias = {
+      ...bill,
+      // Indexación por empresa
+      empresaId: bill.empresaId || bill.companyId || null,
+      empresaNit: bill.empresaNit || bill.nit || null,
+      // Array de IDs de trabajadores incluidos
+      trabajadorIds: bill.trabajadorIds || bill.workerIds || 
+        (bill.items ? bill.items
+          .filter(i => i.descripcion && i.descripcion.includes(' - '))
+          .map(i => i.descripcion.split(' - ')[1])
+          .filter(n => n && n !== 'Trabajador')
+        : []),
+      // Array de IDs de atenciones facturadas
+      atencionesIds: bill.atencionesIds || bill.attentionIds || [],
+      // Período de facturación
+      periodoMes: bill.periodoMes || bill.mes || null,
+      periodoAnio: bill.periodoAnio || bill.anio || null,
+      // Totales calculados
+      totalCalculado: bill.total || bill.amount || 0,
+      cantidadTrabajadores: bill.cantidadTrabajadores || 
+        (bill.trabajadorIds ? bill.trabajadorIds.length : 0),
+    };
+
     const updated = await readModifyWrite(key, (bills) => {
-      const billId = bill.id || `bill_${Date.now()}`;
-      const idx = bills.findIndex((b) => b.id === bill.id);
+      const billId = billConReferencias.id || `bill_${Date.now()}`;
+      const idx = bills.findIndex((b) => b.id === billConReferencias.id);
 
       if (idx >= 0) {
-        bills[idx] = { ...bills[idx], ...bill, fechaModificacion: now };
+        bills[idx] = { ...bills[idx], ...billConReferencias, fechaModificacion: now };
       } else {
-        bills.push({ ...bill, id: billId, fechaCreacion: now });
+        bills.push({ ...billConReferencias, id: billId, fechaCreacion: now });
       }
       return bills;
     });
 
-    await auditLog(userId, 'SAVE_BILL', bill.numero || 'Nueva factura');
-    res.json({ ok: true, count: updated.length });
+    await auditLog(userId, 'SAVE_BILL', billConReferencias.numero || 'Nueva factura');
+    res.json({ ok: true, count: updated.length, billId: billConReferencias.id });
   } catch (err) {
     console.error('Save bill error:', err.message);
     res.status(500).json({ message: 'Error al guardar factura' });
+  }
+});
+
+// ═══ SAVE REPORT (Informe epidemiológico) ═══════════════
+router.post('/reports/save', async (req, res) => {
+  try {
+    const report = req.body;
+    const userId = req.user.user;
+    const key = `siso_saved_reports_${userId}`;
+    const now = new Date().toISOString();
+
+    // Validar datos requeridos
+    if (!report.companyId && !report.empresaId) {
+      return res.status(400).json({ message: 'companyId o empresaId es requerido' });
+    }
+
+    // Construir objeto de informe con metadatos completos
+    const reportData = {
+      ...report,
+      id: report.id || `report_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+      // Indexación por empresa
+      companyId: report.companyId || report.empresaId,
+      empresaId: report.empresaId || report.companyId,
+      empresaNombre: report.empresaNombre || report.companyName || null,
+      empresaNit: report.empresaNit || report.nit || null,
+      // Período del informe
+      periodoInicio: report.periodoInicio || report.startDate || report.reportStartDate || null,
+      periodoFin: report.periodoFin || report.endDate || report.reportEndDate || null,
+      periodoMes: report.periodoMes || report.mes || null,
+      periodoAnio: report.periodoAnio || report.anio || null,
+      // Datos del informe
+      tipoInforme: report.tipoInforme || report.type || 'epidemiologico',
+      totalTrabajadores: report.totalTrabajadores || report.totalWorkers || 0,
+      resumenEjecutivo: report.resumenEjecutivo || report.executiveSummary || null,
+      conclusiones: report.conclusiones || report.conclusions || null,
+      analisisJustificado: report.analisisJustificado || null,
+      recomendacionesInforme: report.recomendacionesInforme || null,
+      matrizLegalNormativa: report.matrizLegalNormativa || null,
+      pveRecomendados: report.pveRecomendados || [],
+      tablaMorbilidad: report.tablaMorbilidad || report.tabla || [],
+      // Datos estadísticos (para regenerar informe si es necesario)
+      estadisticas: report.estadisticas || report.stats || null,
+      // Metadatos
+      generadoPor: userId,
+      generadoPorNombre: req.user.nombre || userId,
+      fechaGeneracion: report.fechaGeneracion || report.generatedAt || now,
+      fechaModificacion: now,
+      fechaCreacion: report.fechaCreacion || report.createdAt || now,
+    };
+
+    const updated = await readModifyWrite(key, (reports) => {
+      const idx = reports.findIndex((r) => r.id === reportData.id);
+      if (idx >= 0) {
+        reports[idx] = { ...reports[idx], ...reportData, fechaModificacion: now };
+      } else {
+        reports.push(reportData);
+      }
+      return reports;
+    });
+
+    await auditLog(userId, 'SAVE_REPORT', `Informe ${reportData.tipoInforme} - ${reportData.empresaNombre || reportData.companyId}`);
+    res.json({ ok: true, count: updated.length, reportId: reportData.id });
+  } catch (err) {
+    console.error('Save report error:', err.message);
+    res.status(500).json({ message: 'Error al guardar informe' });
+  }
+});
+
+// ═══ SAVE CUSTODIA (Carta de custodia con indexación) ═══
+router.post('/custodia/save', async (req, res) => {
+  try {
+    const carta = req.body;
+    const userId = req.user.user;
+    const key = `siso_cartas_custodia_${userId}`;
+    const now = new Date().toISOString();
+
+    // Validar datos requeridos
+    if (!carta.empresaId && !carta.companyId) {
+      return res.status(400).json({ message: 'empresaId o companyId es requerido' });
+    }
+
+    // Construir objeto de carta con metadatos completos
+    const cartaData = {
+      ...carta,
+      id: carta.id || `cust_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+      // Indexación por empresa
+      empresaId: carta.empresaId || carta.companyId,
+      companyId: carta.companyId || carta.empresaId,
+      empresaNombre: carta.empresaNombre || carta.companyName || carta.nombreEmpresa || null,
+      empresaNit: carta.empresaNit || carta.nit || carta.companyNit || null,
+      // Período de la carta
+      mes: carta.mes || carta.mesVal || null,
+      anio: carta.anio || carta.anioVal || null,
+      mesTexto: carta.mesTexto || carta.monthName || null,
+      fechaCarta: carta.fechaCarta || carta.letterDate || now.split('T')[0],
+      // Datos del médico
+      medicoNombre: carta.medicoNombre || carta.doctorName || req.user.nombre || userId,
+      medicoLicencia: carta.medicoLicencia || carta.doctorLicense || null,
+      medicoCC: carta.medicoCC || carta.doctorId || null,
+      // Contenido de la carta
+      ciudadDestino: carta.ciudadDestino || carta.ciudad || carta.destinationCity || null,
+      contenidoHTML: carta.contenidoHTML || carta.htmlContent || null,
+      // Estado
+      enviadaPorEmail: carta.enviadaPorEmail || carta.sentByEmail || false,
+      fechaEnvio: carta.fechaEnvio || carta.sentAt || null,
+      emailDestino: carta.emailDestino || carta.destinationEmail || null,
+      // Metadatos
+      creadaPor: userId,
+      fechaCreacion: carta.fechaCreacion || carta.createdAt || now,
+      fechaModificacion: now,
+    };
+
+    const updated = await readModifyWrite(key, (cartas) => {
+      const idx = cartas.findIndex((c) => c.id === cartaData.id);
+      if (idx >= 0) {
+        cartas[idx] = { ...cartas[idx], ...cartaData, fechaModificacion: now };
+      } else {
+        cartas.push(cartaData);
+      }
+      return cartas;
+    });
+
+    await auditLog(userId, 'SAVE_CUSTODIA', `Carta custodia - ${cartaData.empresaNombre || cartaData.empresaId} - ${cartaData.mesTexto}/${cartaData.anio}`);
+    res.json({ ok: true, count: updated.length, custodiaId: cartaData.id });
+  } catch (err) {
+    console.error('Save custodia error:', err.message);
+    res.status(500).json({ message: 'Error al guardar carta de custodia' });
   }
 });
 
