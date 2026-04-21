@@ -218,4 +218,5 @@ const AIConfigPanel = ({ aiConfig, onSave, onClose }) => {
   );
 };
 
-export default AIConfigPanel;
+export { AIConfigPanel as default }; 
+export { AIConfigPanel };
