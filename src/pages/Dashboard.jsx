@@ -3,7 +3,11 @@
 // DASHBOARD PRINCIPAL — Panel con estadísticas, acciones rápidas,
 // registros recientes y alertas de cumplimiento
 // ═══════════════════════════════════════════════════════════════════════
-import React, { useMemo, useCallback } from 'react';
+
+import React from 'react';
+import { DashboardMain } from '../modules/dashboard/components/DashboardMain.jsx';
+import { useDashboardStats } from '../modules/dashboard/hooks/useDashboardStats.js';
+
 import {
   FileText, Building2, Lock, Unlock, Users, Receipt,
   Clock, Eye, FileCheck, Trash2, Stethoscope, Heart,
