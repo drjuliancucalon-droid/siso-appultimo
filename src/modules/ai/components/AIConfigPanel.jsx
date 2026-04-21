@@ -6,7 +6,7 @@ import { AI_PROVIDERS } from '../../../shared/lib/aiProviders';
  * AIConfigPanel - Panel de configuración de 4 proveedores IA gratuitos
  * Gemini, Groq, Together AI, OpenRouter
  */
-export const AIConfigPanel = ({ aiConfig, onSave, onClose }) => {
+const AIConfigPanel = ({ aiConfig, onSave, onClose }) => {
   const [cfg, setCfg] = useState(() => ({ ...aiConfig, keys: { ...aiConfig.keys } }));
   const [testStatus, setTestStatus] = useState({});
   const [showKey, setShowKey] = useState({});
@@ -82,7 +82,7 @@ export const AIConfigPanel = ({ aiConfig, onSave, onClose }) => {
       const provider = AI_PROVIDERS[providerKey];
       const text = await provider.call('Responde SOLO con la palabra: CONECTADO', 'Eres un asistente.', key.trim());
       const ok = !!text && text.length > 0;
-      setTestStatus((p) => ({ ...p, [providerKey]: { ok, msg: ok ? `✅ ¡Funciona! "${text.slice(0, 40)}"` : '⚠️ Respuesta vacía' } }));
+      setTestStatus((p) => ({ ...p, [providerKey]: { ok, msg: ok ? `✅ ¡Funciona! "${text.slice(0, 40)}..."` : '⚠️ Respuesta vacía' } }));
     } catch (e) {
       const msg = e.message || '';
       let hint = '';
@@ -217,3 +217,5 @@ export const AIConfigPanel = ({ aiConfig, onSave, onClose }) => {
     </div>
   );
 };
+
+export default AIConfigPanel;

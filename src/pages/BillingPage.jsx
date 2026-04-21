@@ -1,7 +1,8 @@
 // src/pages/BillingPage.jsx — Billing with tabs: Facturación + Propuestas + DIAN
 // Sprint 1.6: Integrates Proposals and DIANExport
 import React, { useState } from 'react';
-import { BillGenerator } from '../modules/billing/components/BillGenerator';
+import { BillMain } from '../modules/billing/components/BillMain';
+import { useBill } from '../modules/billing/hooks/useBill';
 import { Proposals } from '../modules/billing/components/Proposals';
 import { DIANExport } from '../modules/billing/components/DIANExport';
 import { useBackendData } from '../hooks/useBackendData';
@@ -60,7 +61,7 @@ const { data: companies, loading: lc } = useBackendData('/data/companies', 'siso
         </div>
       ) : (
         <>
-          {activeTab === 'facturacion' && <BillGenerator companies={companies} savedBills={bills} atencionesCerradas={atencionesCerradas} patients={patients} />}
+{activeTab === 'facturacion' && <BillMain companies={companies} savedBills={bills} atencionesCerradas={atencionesCerradas} patients={patients} />}
           {activeTab === 'propuestas' && <Proposals />}
           {activeTab === 'dian' && <DIANExport bills={bills} companies={companies} />}
         </>

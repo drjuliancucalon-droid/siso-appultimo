@@ -12,7 +12,7 @@ const Login = React.lazy(() => import('./pages/LoginPage'));
 const Dashboard = React.lazy(() => import('./pages/DashboardPage'));
 const Patients = React.lazy(() => import('./pages/PatientsPage'));
 const HistoriaClinica = React.lazy(() => import('./pages/HistoriaPage'));
-const Companies = React.lazy(() => import('./pages/CompaniesPage'));
+const Companies = React.lazy(() => import('./pages/Companies'));
 const UsersPage = React.lazy(() => import('./pages/UsersPage'));
 const AgendaPage = React.lazy(() => import('./pages/AgendaPage'));
 const BillingPage = React.lazy(() => import('./pages/BillingPage'));

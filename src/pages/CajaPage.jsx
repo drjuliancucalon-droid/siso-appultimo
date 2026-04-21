@@ -5,7 +5,8 @@ import React, { useState, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
 import { useBackendData } from '../hooks/useBackendData';
-import Caja from './Caja';
+import { CajaMain } from '../modules/cashbox/components/CajaMain.jsx';
+import { useCaja } from '../modules/cashbox/hooks/useCaja.js';
 
 export default function CajaPage() {
   const navigate = useNavigate();
@@ -33,7 +34,7 @@ export default function CajaPage() {
     );
   }
 
-  return <CajaWithData />;
+return <CajaMain cajaMovimientos={cajaMovimientos} setCajaMovimientos={saveCajaDebounced} cajaForm={cajaForm} setCajaForm={setCajaForm} currentUser={currentUser} saveCajaDebounced={saveCajaDebounced} patientsList={patientsList || []} savedBillsList={savedBillsList} setSavedBillsList={(updated) => { setSavedBillsList(updated); try { localStorage.setItem(billsKey, JSON.stringify(updated)); } catch {} }} showAlert={showAlert} showConfirm={showConfirm} />;
 }
 
 // ── Inner: rendered only after gate passes ──
