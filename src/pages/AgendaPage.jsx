@@ -1,10 +1,9 @@
-// src/pages/AgendaPage.jsx — Agenda with backend data + Sala de espera
+// src/pages/AgendaPage.jsx — Agenda con backend data + Sala de espera
 import React from 'react';
-import { AgendaView } from '../modules/agenda/components/AgendaView';
-import { QueueManager } from '../modules/agenda/components/QueueManager';
+import { AgendaMain } from '../modules/agenda/components/AgendaMain';
 import { useAuthStore } from '../stores/authStore';
 import { useBackendData } from '../hooks/useBackendData';
-import { Calendar, Loader2, Cloud, HardDrive, Users } from 'lucide-react';
+import { Calendar, Loader2, Cloud, HardDrive } from 'lucide-react';
 
 export default function AgendaPage() {
   const { currentUser } = useAuthStore();
@@ -37,24 +36,27 @@ export default function AgendaPage() {
           <Loader2 className="w-8 h-8 text-emerald-500 animate-spin" />
         </div>
       ) : (
-        <>
-          {/* ── SALA DE ESPERA (como monolito) ── */}
-          <div className="bg-gradient-to-r from-orange-500 to-amber-500 rounded-xl p-4 text-white">
-            <div className="flex items-center gap-2">
-              <Users className="w-5 h-5" />
-              <span className="font-bold">Sala de Espera</span>
-            </div>
-          </div>
-          <QueueManager />
-
-          {/* ── CALENDARIO ── */}
-          <div className="bg-white rounded-xl border border-gray-200 p-4">
-            <h2 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
-              <Calendar className="w-4 h-4" /> Calendario de Citas
-            </h2>
-            <AgendaView currentUser={currentUser} />
-          </div>
-        </>
+        <AgendaMain
+          currentUser={currentUser}
+          goTo={() => {}}
+          patientsList={[]}
+          companies={[]}
+          appointments={appointments}
+          onAddAppointment={(nuevo) => {
+            const actuales = JSON.parse(localStorage.getItem('siso_agendados') || '[]');
+            const actualizados = [...actuales, nuevo];
+            localStorage.setItem('siso_agendados', JSON.stringify(actualizados));
+            window.location.reload();
+          }}
+          onCompleteAppointment={(id) => {
+            const actuales = JSON.parse(localStorage.getItem('siso_agendados') || '[]');
+            const actualizados = actuales.map(a => 
+              a.id === id ? { ...a, estado: 'atendido', completed: true } : a
+            );
+            localStorage.setItem('siso_agendados', JSON.stringify(actualizados));
+            window.location.reload();
+          }}
+        />
       )}
     </div>
   );

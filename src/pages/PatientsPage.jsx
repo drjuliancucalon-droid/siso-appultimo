@@ -1,7 +1,7 @@
 // src/pages/PatientsPage.jsx — Patient management with backend data
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { PatientList } from '../modules/patients/components/PatientList';
+import { PatientsMain } from '../modules/patients/components/PatientsMain';
 import { useBackendData } from '../hooks/useBackendData';
 import { Users, Loader2, Cloud, HardDrive } from 'lucide-react';
 
@@ -43,7 +43,7 @@ export default function PatientsPage() {
           <span className="ml-3 text-gray-500">Cargando pacientes...</span>
         </div>
       ) : (
-        <PatientList onSelect={handleSelectPatient} pacientes={patients} />
+        <PatientsMain onSelect={handleSelectPatient} pacientes={patients} />
       )}
     </div>
   );
