@@ -602,37 +602,80 @@ export const GeneralHC = ({
               }))} />
           </div>
 
-          {/* P4 FIX: Restricciones y Recomendaciones con IA */}
+          {/* Analisis Clinico Detallado IA */}
+          <div className="mt-3">
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-[10px] font-black text-violet-700 uppercase">
+                🔬 Análisis Clínico Detallado
+                <span className="font-normal text-violet-400 ml-2 no-print">
+                  — Razonamiento diagnóstico generado por IA
+                </span>
+              </label>
+              {!data.analisis && (
+                <span className="text-[9px] text-gray-400 italic no-print">Use “Análisis IA” para generar</span>
+              )}
+            </div>
+            <textarea
+              value={data.analisis || ''}
+              onChange={(e) => setData((p) => ({ ...p, analisis: e.target.value }))}
+              rows={data.analisis ? 8 : 3}
+              className={`w-full p-3 border-2 rounded-xl text-xs focus:outline-none transition-colors ${
+                data.analisis
+                  ? 'border-violet-300 bg-violet-50/40 focus:border-violet-500'
+                  : 'border-gray-200 bg-gray-50 focus:border-violet-400'
+              }`}
+              placeholder="El análisis clínico se genera con el botón Análisis IA. Incluye: hipótesis diagnóstica, diagnóstico diferencial, correlación síntomas-hallazgos, gravedad y pronóstico."
+              style={{ resize: 'vertical' }}
+            />
+            {data.analisis && (
+              <div className="flex items-center gap-3 mt-1 no-print">
+                <p className="text-[9px] text-violet-400 flex-1">
+                  Incluye: hipótesis diagnóstica · diagnóstico diferencial · correlación síntomas-hallazgos · gravedad · pronóstico
+                </p>
+                <button onClick={() => setData((p) => ({ ...p, analisis: '' }))} className="text-[9px] text-red-400 hover:text-red-600 font-bold">
+                  ✕ Limpiar
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Restricciones Medicas con IA */}
           <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 mt-3">
             <div className="flex justify-between items-center mb-2">
-              <h3 className="text-xs font-black text-amber-800 uppercase">Restricciones M�dicas</h3>
+              <h3 className="text-xs font-black text-amber-800 uppercase">⚠️ Restricciones Médicas</h3>
               {onGenerateRestrictions && (
                 <button type="button" onClick={onGenerateRestrictions} disabled={isGeneratingRestr}
-                  className="flex items-center gap-1 px-2 py-1 text-[10px] font-bold text-amber-700 bg-amber-100 hover:bg-amber-200 rounded-lg">
-                  {isGeneratingRestr ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
-                  Generar con IA
+                  className="flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-bold text-amber-700 bg-amber-100 hover:bg-amber-200 rounded-lg disabled:opacity-50">
+                  {isGeneratingRestr
+                    ? <><Loader2 className="w-3 h-3 animate-spin" /> Generando...</>
+                    : <><Sparkles className="w-3 h-3" /> Generar con IA</>
+                  }
                 </button>
               )}
             </div>
-            <textarea rows={3} className="w-full text-xs p-2 border border-amber-300 rounded-lg"
-              placeholder="Restricciones m�dicas del paciente..."
+            <textarea rows={3} className="w-full text-xs p-2 border border-amber-300 rounded-lg focus:border-amber-500 focus:outline-none"
+              placeholder="Restricciones médicas del paciente (reposo, actividad física, alimentación, trabajo)..."
               value={data.restricciones || data.restriccionesTexto || ''}
               onChange={(e) => setData((p) => ({ ...p, restricciones: e.target.value, restriccionesTexto: e.target.value }))}
             />
           </div>
+
+          {/* Recomendaciones Medicas con IA */}
           <div className="bg-teal-50 border border-teal-200 rounded-xl p-3 mt-3">
             <div className="flex justify-between items-center mb-2">
-              <h3 className="text-xs font-black text-teal-800 uppercase">Recomendaciones M�dicas</h3>
+              <h3 className="text-xs font-black text-teal-800 uppercase">✅ Recomendaciones Médicas</h3>
               {onGenerateRecommendations && (
                 <button type="button" onClick={onGenerateRecommendations} disabled={isGeneratingReco}
-                  className="flex items-center gap-1 px-2 py-1 text-[10px] font-bold text-teal-700 bg-teal-100 hover:bg-teal-200 rounded-lg">
-                  {isGeneratingReco ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
-                  Generar con IA
+                  className="flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-bold text-teal-700 bg-teal-100 hover:bg-teal-200 rounded-lg disabled:opacity-50">
+                  {isGeneratingReco
+                    ? <><Loader2 className="w-3 h-3 animate-spin" /> Generando...</>
+                    : <><Sparkles className="w-3 h-3" /> Generar con IA</>
+                  }
                 </button>
               )}
             </div>
-            <textarea rows={3} className="w-full text-xs p-2 border border-teal-300 rounded-lg"
-              placeholder="Recomendaciones m�dicas..."
+            <textarea rows={3} className="w-full text-xs p-2 border border-teal-300 rounded-lg focus:border-teal-500 focus:outline-none"
+              placeholder="Recomendaciones médicas personalizadas (adherencia, estilo de vida, signos de alarma, próximo control)..."
               value={data.recomendaciones || data.recomendacionesTexto || ''}
               onChange={(e) => setData((p) => ({ ...p, recomendaciones: e.target.value, recomendacionesTexto: e.target.value }))}
             />

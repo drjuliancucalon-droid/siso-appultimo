@@ -76,6 +76,8 @@ export const OccupationalHC = ({
   activeSignature,
   // Callbacks
   onGenerateAI,
+  onGenerateRecommendations,
+  onGenerateRestrictions,
   onOpenConsent,
   onOpenHistory,
   onOpenRecommendations,
@@ -1175,12 +1177,16 @@ export const OccupationalHC = ({
               } Análisis IA Completo
             </button>
             <button
-              onClick={() => {
+              onClick={async () => {
+                // Inicializar checklist si está vacío
                 setData((p) => {
                   const existing = p.recomendacionesChecklist || {};
                   const hasAny = Object.values(existing).some(Boolean);
                   return hasAny ? p : { ...p, recomendacionesChecklist: { ...DEFAULT_RECOMENDACIONES_SELECTED } };
                 });
+                // Llamar IA primero para generar texto
+                if (onGenerateRecommendations) await onGenerateRecommendations();
+                // Luego abrir el panel de checklist
                 setShowRecomendacionesPanel && setShowRecomendacionesPanel(true);
                 onOpenRecommendations && onOpenRecommendations();
               }}
@@ -1188,12 +1194,15 @@ export const OccupationalHC = ({
               className="flex items-center gap-1.5 bg-emerald-600 text-white px-3 py-1.5 rounded-lg text-[11px] font-bold hover:bg-emerald-700 disabled:opacity-50 shadow-sm"
             >
               {isGeneratingReco
-                ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                : <ClipboardList className="w-3.5 h-3.5" />
-              } Recomendaciones
+                ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Generando...</>
+                : <><ClipboardList className="w-3.5 h-3.5" /> Recomendaciones IA</>
+              }
             </button>
             <button
-              onClick={() => {
+              onClick={async () => {
+                // Llamar IA primero para generar texto de restricciones
+                if (onGenerateRestrictions) await onGenerateRestrictions();
+                // Luego abrir el panel de checklist
                 setShowRestriccionesPanel && setShowRestriccionesPanel(true);
                 onOpenRestrictions && onOpenRestrictions();
               }}
@@ -1201,9 +1210,9 @@ export const OccupationalHC = ({
               className="flex items-center gap-1.5 bg-red-600 text-white px-3 py-1.5 rounded-lg text-[11px] font-bold hover:bg-red-700 disabled:opacity-50 shadow-sm"
             >
               {isGeneratingRestr
-                ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                : <ShieldAlert className="w-3.5 h-3.5" />
-              } Restricciones
+                ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Generando...</>
+                : <><ShieldAlert className="w-3.5 h-3.5" /> Restricciones IA</>
+              }
             </button>
           </div>
 
@@ -1246,23 +1255,89 @@ export const OccupationalHC = ({
             </div>
           </div>
 
-          {/* Concepto de Aptitud */}
-          <SelectGroup label="Concepto de Aptitud" name="conceptoAptitud" value={data.conceptoAptitud}
-            onChange={handleChange}
-            options={[
-              'Sin restricciones de salud para que el trabajador continúe desempeñando la labor.',
-              'Hallazgos clínicos que no interfieren para que el trabajador continúe desempeñando la labor.',
-              'Con recomendaciones médico-laborales para que el trabajador continúe desempeñando la labor.',
-              'Con restricciones laborales para que el trabajador continúe desempeñando la labor.',
-              'Requiere reubicación laboral.',
-              'Aplazado',
-              'Egreso satisfactorio',
-              'Egreso con hallazgos',
-              'Periódico satisfactorio',
-              'Periódico con hallazgos',
-            ]}
-            required
-          />
+          {/* Concepto de Aptitud — opciones dinámicas según tipo de examen Res. 1843/2025 */}
+          {(() => {
+            const tipo = (data.tipoExamen || '').toUpperCase();
+            const esIngreso = tipo.includes('INGRESO');
+            const esEgreso = tipo.includes('EGRESO') || tipo.includes('RETIRO');
+            const esPeriodico = tipo.includes('PERI');
+            const esReintegro = tipo.includes('POST') || tipo.includes('REINTEGRO') || tipo.includes('INCAPACIDAD');
+            const esSeguimiento = tipo.includes('SEGUIMIENTO');
+
+            let opciones;
+            if (esIngreso) {
+              opciones = [
+                'APTO para inicio de relación laboral — Sin restricciones. Res. 1843/2025 Art. 20.',
+                'APTO CON RECOMENDACIONES para inicio de relación laboral — Hallazgos que no impiden el cargo. Res. 1843/2025 Art. 20.',
+                'APTO CON RESTRICCIONES para inicio de relación laboral — Con limitaciones operativas específicas. Res. 1843/2025 Art. 20.',
+                'NO APTO para inicio de relación laboral — Condición de salud incompatible con las demandas del cargo. Res. 1843/2025 Art. 20.',
+                'APLAZADO para inicio de relación laboral — Pendiente resultado de paraclínicos o valoración especializada.',
+                'CONDICIONAL para inicio de relación laboral — Apto sujeto a adaptaciones del puesto de trabajo.',
+              ];
+            } else if (esEgreso) {
+              opciones = [
+                'Egreso satisfactorio — Sin hallazgos de origen laboral al finalizar vínculo.',
+                'Egreso con hallazgos — Condiciones de salud a seguimiento post-retiro. Res. 1843/2025.',
+                'Egreso con hallazgos de posible origen laboral — Remitir a ARL para determinación de origen. Dec. 1477/2014.',
+                'Egreso con enfermedad laboral confirmada — Requiere seguimiento ARL. Dec. 1477/2014.',
+              ];
+            } else if (esReintegro) {
+              opciones = [
+                'APTO para reintegro laboral pleno — Sin restricciones adicionales.',
+                'APTO para reintegro laboral gradual — Inicio con carga parcial según plan de reincorporación.',
+                'APTO para reintegro con restricciones temporales — Plazo definido y seguimiento.',
+                'APTO para reintegro con reubicación laboral — Cargo actual contraindicado.',
+                'NO APTO para reintegro — Condición de salud impide retorno al trabajo.',
+                'APLAZADO para reintegro — Pendiente evolución médica o concepto especialista.',
+              ];
+            } else if (esPeriodico || esSeguimiento) {
+              opciones = [
+                'Periódico satisfactorio — Sin cambios significativos respecto a evaluación anterior.',
+                'Periódico con hallazgos — Nuevos hallazgos que requieren seguimiento o intervención.',
+                'Con recomendaciones médico-laborales para que el trabajador continúe desempeñando la labor.',
+                'Con restricciones laborales para que el trabajador continúe desempeñando la labor.',
+                'Requiere reubicación laboral.',
+                'Aplazado — Pendiente paraclínicos o valoración especializada.',
+              ];
+            } else {
+              opciones = [
+                'Sin restricciones de salud para que el trabajador continúe desempeñando la labor.',
+                'Hallazgos clínicos que no interfieren para que el trabajador continúe desempeñando la labor.',
+                'Con recomendaciones médico-laborales para que el trabajador continúe desempeñando la labor.',
+                'Con restricciones laborales para que el trabajador continúe desempeñando la labor.',
+                'Requiere reubicación laboral.',
+                'Aplazado',
+                'Egreso satisfactorio',
+                'Egreso con hallazgos',
+                'Periódico satisfactorio',
+                'Periódico con hallazgos',
+              ];
+            }
+            return (
+              <div className="mb-2">
+                {esIngreso && (
+                  <div className="mb-1 flex items-center gap-2 bg-blue-50 border border-blue-200 rounded-lg px-3 py-1.5">
+                    <span className="text-blue-700 text-[10px] font-black uppercase">📋 Examen de INGRESO</span>
+                    <span className="text-blue-500 text-[9px]">Res. 1843/2025 Art. 20 — Opciones específicas para vinculación laboral</span>
+                  </div>
+                )}
+                {esEgreso && (
+                  <div className="mb-1 flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-lg px-3 py-1.5">
+                    <span className="text-amber-700 text-[10px] font-black uppercase">📋 Examen de EGRESO</span>
+                    <span className="text-amber-500 text-[9px]">Res. 1843/2025 — Dec. 1477/2014 — Determinación de origen laboral</span>
+                  </div>
+                )}
+                {esReintegro && (
+                  <div className="mb-1 flex items-center gap-2 bg-purple-50 border border-purple-200 rounded-lg px-3 py-1.5">
+                    <span className="text-purple-700 text-[10px] font-black uppercase">📋 REINTEGRO / POST-INCAPACIDAD</span>
+                    <span className="text-purple-500 text-[9px]">Res. 1843/2025 Art. 13 — Plan de reincorporación laboral</span>
+                  </div>
+                )}
+                <SelectGroup label="Concepto de Aptitud" name="conceptoAptitud" value={data.conceptoAptitud}
+                  onChange={handleChange} options={opciones} required />
+              </div>
+            );
+          })()}
 
           <div className="grid grid-cols-2 gap-2">
             <TextAreaGroup label="Recomendaciones" name="recomendaciones"
@@ -1271,34 +1346,47 @@ export const OccupationalHC = ({
               value={data.analisisRestricciones} onChange={handleChange} rows={4} />
           </div>
 
-          {/* ── Análisis Clínico IA ──────────────────────────────── */}
-          {data.analisisIA && (
-            <div className="mt-3">
-              <label className="block text-[10px] font-black text-indigo-700 uppercase mb-1">
-                🧠 Análisis Clínico <span className="ai-label-print-hide">(generado por IA — campo independiente)</span>
+          {/* ── Diagnóstico Detallado IA ─────────────────────────── */}
+          <div className="mt-3">
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-[10px] font-black text-violet-700 uppercase">
+                🔬 Diagnóstico Detallado
+                <span className="ai-label-print-hide font-normal text-violet-400 ml-2">
+                  — Análisis clínico-ocupacional estructurado (generado por IA)
+                </span>
               </label>
-              <textarea value={data.analisisIA || ''}
-                onChange={(e) => setData((p) => ({ ...p, analisisIA: e.target.value }))}
-                rows={6}
-                className="w-full p-3 border-2 border-indigo-200 rounded-xl text-xs bg-indigo-50/50 focus:border-indigo-400 focus:outline-none"
-                placeholder="El análisis clínico se genera automáticamente al usar la IA. Puede editarlo manualmente."
-                style={{ resize: 'vertical' }} />
-              <p className="text-[9px] text-indigo-400 mt-1">
-                Este campo es independiente de Recomendaciones y Restricciones. Redactado con lenguaje técnico-formal de medicina laboral.
-              </p>
+              {!data.analisisIA && (
+                <span className="text-[9px] text-gray-400 italic">
+                  Use "Análisis IA Completo" para generar
+                </span>
+              )}
             </div>
-          )}
-          {!data.analisisIA && (
-            <div className="mt-3">
-              <label className="block text-[10px] font-black text-gray-500 uppercase mb-1">🧠 Análisis Clínico</label>
-              <textarea value={data.analisisIA || ''}
-                onChange={(e) => setData((p) => ({ ...p, analisisIA: e.target.value }))}
-                rows={3}
-                className="w-full p-2 border border-gray-200 rounded-xl text-xs focus:border-indigo-400 focus:outline-none"
-                placeholder="Se generará automáticamente con el análisis de IA, o puede escribirlo manualmente."
-                style={{ resize: 'vertical' }} />
-            </div>
-          )}
+            <textarea
+              value={data.analisisIA || ''}
+              onChange={(e) => setData((p) => ({ ...p, analisisIA: e.target.value }))}
+              rows={data.analisisIA ? 10 : 3}
+              className={`w-full p-3 border-2 rounded-xl text-xs focus:outline-none transition-colors ${
+                data.analisisIA
+                  ? 'border-violet-300 bg-violet-50/40 focus:border-violet-500'
+                  : 'border-gray-200 bg-gray-50 focus:border-violet-400'
+              }`}
+              placeholder="El diagnóstico detallado se genera automáticamente al usar &#39;Análisis IA Completo&#39;. Incluye: hallazgos por sistemas, correlación clínico-ocupacional, determinación de origen (laboral/común/agravado), capacidad funcional y pronóstico laboral. También puede escribirlo manualmente."
+              style={{ resize: 'vertical' }}
+            />
+            {data.analisisIA && (
+              <div className="flex items-center gap-3 mt-1">
+                <p className="text-[9px] text-violet-400 flex-1">
+                  Incluye: hallazgos por sistemas · correlación clínico-ocupacional · origen laboral · capacidad funcional · pronóstico
+                </p>
+                <button
+                  onClick={() => setData((p) => ({ ...p, analisisIA: '' }))}
+                  className="text-[9px] text-red-400 hover:text-red-600 font-bold no-print"
+                >
+                  ✕ Limpiar
+                </button>
+              </div>
+            )}
+          </div>
 
           {/* ── SVE — Sistema de Vigilancia Epidemiológica ──────── */}
           <div className="mt-3 bg-amber-50 border border-amber-200 rounded-xl p-3">

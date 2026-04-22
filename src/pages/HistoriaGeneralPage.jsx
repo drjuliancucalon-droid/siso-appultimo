@@ -102,42 +102,80 @@ export default function HistoriaGeneralPage() {
   const [isGeneratingReco, setIsGeneratingReco] = useState(false);
   const [showAIConfig, setShowAIConfig] = useState(false);
 
+  // ── IA General: analyzeGeneralHC ya retorna objeto parseado — NO necesita doble parse ──
   const onGenerateAI = useCallback(async () => {
     setIsGenerating(true);
     try {
       const { analyzeGeneralHC } = await import('../modules/ai/services/aiAnalysis');
+      // analyzeGeneralHC retorna un objeto {diagnosticos, plan, analisis, restricciones, recomendaciones}
       const result = await analyzeGeneralHC(data, aiConfig);
-      try {
-        const { parseAIJSON } = await import('../shared/lib/aiProviders');
-        const parsed = parseAIJSON(result);
-        dispatch({
-          analisis: parsed.analisis || parsed.resumen || result,
-          ...(parsed.diagnosticos && { diagnosticos: parsed.diagnosticos }),
-          ...(parsed.planManejo && { planManejo: parsed.planManejo }),
-          ...(parsed.recomendaciones && { recomendaciones: parsed.recomendaciones }),
-        });
-      } catch { dispatch({ analisis: result }); }
-    } catch (e) { alert('Error IA: ' + e.message); }
+
+      // Aplicar campos al state de forma directa (sin doble-parse)
+      const updates = {};
+
+      // Diagnósticos CIE-10 — solo si trae datos reales
+      if (Array.isArray(result.diagnosticos) && result.diagnosticos.length > 0) {
+        updates.diagnosticos = result.diagnosticos;
+      }
+      // Plan de manejo / conducta
+      if (result.plan?.conducta) {
+        updates.plan = { ...(data.plan || {}), conducta: result.plan.conducta };
+      }
+      // Medicamentos sugeridos en el plan
+      if (result.plan?.recomendaciones) {
+        updates.plan = { ...(updates.plan || data.plan || {}), recomendaciones: result.plan.recomendaciones };
+      }
+      // Fórmula de medicamentos
+      if (Array.isArray(result.plan?.formulaMedicamentos) && result.plan.formulaMedicamentos.length > 0) {
+        updates.formulaMedicamentos = result.plan.formulaMedicamentos;
+      }
+      // Análisis clínico detallado (campo principal del diagnóstico)
+      if (result.analisis) {
+        updates.analisis = result.analisis;
+      }
+      // Restricciones si las trae
+      if (result.plan?.restricciones || result.restricciones) {
+        updates.restriccionesTexto = result.plan?.restricciones || result.restricciones;
+        updates.restricciones = updates.restriccionesTexto;
+      }
+
+      dispatch(updates);
+
+      // Mensaje detallado de lo que se aplicó
+      const extras = [
+        updates.diagnosticos ? `\n• ${updates.diagnosticos.length} diagnóstico(s) CIE-10 aplicado(s)` : '',
+        updates.plan?.conducta ? '\n• Plan de manejo generado' : '',
+        updates.formulaMedicamentos ? `\n• ${updates.formulaMedicamentos.length} medicamento(s) sugerido(s)` : '',
+        updates.analisis ? '\n• Análisis clínico detallado generado' : '',
+        updates.restriccionesTexto ? '\n• Restricciones médicas incluidas' : '',
+      ].filter(Boolean).join('');
+      alert(`✅ Análisis IA completado.${extras || '\n• Revise y ajuste según criterio clínico.'}`);
+    } catch (e) { alert('Error IA: ' + (e.message || 'Verifique configuración de IA')); }
     finally { setIsGenerating(false); }
   }, [data, aiConfig]);
 
+  // ── IA Restricciones — contexto medicina general ──
   const onGenerateRestrictions = useCallback(async () => {
     setIsGeneratingRestr(true);
     try {
-      const { generateRestrictions } = await import('../modules/ai/services/aiAnalysis');
-      dispatch({ restriccionesTexto: await generateRestrictions(data, aiConfig) });
-      alert('✅ Restricciones generadas por IA.');
-    } catch (e) { alert('Error IA: ' + e.message); }
+      const { generateRestrictionsGeneral } = await import('../modules/ai/services/aiAnalysis');
+      const text = await generateRestrictionsGeneral(data, aiConfig);
+      dispatch({ restriccionesTexto: text, restricciones: text });
+      alert('✅ Restricciones médicas generadas por IA.');
+    } catch (e) { alert('Error IA Restricciones: ' + e.message); }
     finally { setIsGeneratingRestr(false); }
   }, [data, aiConfig]);
 
+  // ── IA Recomendaciones — contexto medicina general ──
   const onGenerateRecommendations = useCallback(async () => {
     setIsGeneratingReco(true);
     try {
-      const { generateRecommendations } = await import('../modules/ai/services/aiAnalysis');
-      dispatch({ recomendacionesTexto: await generateRecommendations(data, aiConfig) });
-      alert('✅ Recomendaciones generadas por IA.');
-    } catch (e) { alert('Error IA: ' + e.message); }
+      const { generateRecommendationsGeneral } = await import('../modules/ai/services/aiAnalysis');
+      const text = await generateRecommendationsGeneral(data, aiConfig);
+      dispatch({ recomendacionesTexto: text, recomendaciones: text });
+      dispatch((prev) => ({ ...prev, plan: { ...(prev.plan || {}), recomendaciones: text } }));
+      alert('✅ Recomendaciones médicas generadas por IA.');
+    } catch (e) { alert('Error IA Recomendaciones: ' + e.message); }
     finally { setIsGeneratingReco(false); }
   }, [data, aiConfig]);
 

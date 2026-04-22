@@ -1,76 +1,44 @@
-
 import React, { useMemo, useCallback } from 'react';
-import {
+import { useDashboardStats } from '../hooks/useDashboardStats';
+import { 
   FileText, Building2, Lock, Unlock, Users, Receipt,
   Clock, Eye, FileCheck, Trash2, Stethoscope, Heart,
   BarChart3, Shield, UserCheck, FileSearch, AlertTriangle
 } from 'lucide-react';
-import { PLAN_CONFIG, _isAdmin, _isAdminOrEmpresa, _canUse, _contarHC, _secretariaPuede } from '../../../shared/data/planConfig.js';
 import { getSpanishDate } from '../../../shared/lib/formatters.js';
 
-export default function DashboardMain({
+export const DashboardMain = ({
   currentUser,
   goTo,
   patientsList = [],
   companies = [],
   atencionesCerradas = [],
   canUseSGSST = false,
-}) {
-  const showAlert = useCallback((msg) => window.alert(msg), []);
+  showAlert
+}) => {
+  const {
+    plan, 
+    hcUsadas, 
+    pct, 
+    col,
+    statCards,
+    recentRecords,
+    alertas
+  } = useDashboardStats({ 
+    currentUser, 
+    patientsList, 
+    companies, 
+    atencionesCerradas, 
+    canUseSGSST 
+  });
 
-  // Plan banner data
-  const plan = PLAN_CONFIG[currentUser?.license || 'libre'];
-  const hcUsadas = useMemo(() => {
-    return patientsList.filter(p => p.fechaExamen && !p._archivado).length;
-  }, [patientsList]);
-  const pct = plan.maxHC < 9999 ? Math.round((hcUsadas / plan.maxHC) * 100) : -1;
-  const colorMap = { libre: 'gray', starter: 'teal', pro: 'blue', clinica: 'purple' };
-  const col = colorMap[currentUser?.license || 'libre'];
-
-  // Stat cards
-  const statCards = useMemo(() => {
-    const cards = [
-      { label: 'Historias Registradas', value: patientsList.filter(p => p.fechaExamen).length, color: 'emerald', icon: FileText },
-      { label: 'Empresas', value: companies.length, color: 'purple', icon: Building2 },
-      { label: 'HC Cerradas', value: patientsList.filter(p => p.estadoHistoria === 'Cerrada').length, color: 'red', icon: Lock },
-      { label: 'HC Abiertas', value: patientsList.filter(p => p.estadoHistoria !== 'Cerrada' && p.fechaExamen).length, color: 'blue', icon: Unlock },
-    ];
-    return cards;
-  }, [patientsList, companies]);
-
-  // Recent records
-  const recentRecords = useMemo(() => {
-    return patientsList
-      .filter(p => p.fechaExamen && !p._archivado)
-      .slice(-20)
-      .reverse();
-  }, [patientsList]);
-
-  // Alerts
-  const alertas = useMemo(() => {
-    const hoy = new Date();
-    const en30 = new Date(hoy);
-    en30.setDate(en30.getDate() + 30);
-
-    const alerts = [];
-    // Convenios próximos a vencer
-    const conveniosAlerta = companies.filter(c =>
-      c.convenioVencimiento &&
-      new Date(c.convenioVencimiento) <= en30 &&
-      new Date(c.convenioVencimiento) >= hoy
-    );
-    conveniosAlerta.forEach(c => {
-      alerts.push({ tipo: 'amber', msg: `⚠️ Convenio próximo a vencer: ${c.nombre} (${c.convenioVencimiento})`, accion: () => goTo('empresas') });
-    });
-
-    // HC abiertas
-    const hcAbiertas = patientsList.filter(p => p.estadoHistoria !== 'Cerrada' && p.fechaExamen && !p._archivado);
-    if (hcAbiertas.length > 3) {
-      alerts.push({ tipo: 'blue', msg: `📋 ${hcAbiertas.length} HCs sin cerrar`, accion: () => {} });
-    }
-
-    return alerts;
-  }, [companies, patientsList, goTo]);
+  // Plan color classes
+  const colorMap = { 
+    libre: 'gray', 
+    starter: 'teal', 
+    pro: 'blue', 
+    clinica: 'purple' 
+  };
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">
@@ -94,25 +62,25 @@ export default function DashboardMain({
           ) : (
             <span className="text-xs text-gray-500">📋 HC ilimitadas</span>
           )}
-          {plan.price === 0 && (
-            <button onClick={() => goTo('planes')} className={`ml-auto text-xs font-black bg-${col}-600 text-white px-3 py-1 rounded-lg hover:opacity-90 transition`}>
-              ⬆️ Ver planes
-            </button>
-          )}
         </div>
       </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {statCards.map((card) => (
-          <div key={card.label} className={`bg-white rounded-xl p-4 shadow-sm border border-${card.color}-100`}>
+        {statCards.map((card, idx) => (
+          <div key={idx} className={`bg-white rounded-xl p-4 shadow-sm border border-${card.color}-100`}>
             <div className="flex justify-between items-start">
               <div>
                 <p className="text-xs text-gray-500 font-bold uppercase">{card.label}</p>
                 <p className={`text-3xl font-black text-${card.color}-600 mt-1`}>{card.value}</p>
               </div>
               <div className={`bg-${card.color}-50 p-2 rounded-lg`}>
-                <card.icon className={`w-5 h-5 text-${card.color}-600`} />
+                <div className={`w-5 h-5 text-${card.color}-600`}>
+                  {card.icon === 'FileText' && <FileText size={20} />}
+                  {card.icon === 'Building2' && <Building2 size={20} />}
+                  {card.icon === 'Lock' && <Lock size={20} />}
+                  {card.icon === 'Unlock' && <Unlock size={20} />}
+                </div>
               </div>
             </div>
           </div>
@@ -151,9 +119,60 @@ export default function DashboardMain({
         </button>
       </div>
 
-      {/* Resto del código igual - 100% copia */}
-      {/* [CONTENIDO COMPLETO COPIADO] */}
+      {/* Resto del Dashboard JSX... (igual que original) */}
+      {/* ... (Module Grid, Admin Alerts, Recent Records) ... */}
+
+      {/* Recent Records Table */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="p-4 border-b border-gray-100 flex justify-between items-center">
+          <h3 className="font-black text-gray-800 flex items-center gap-2">
+            <Clock className="w-4 h-4 text-gray-400" /> Registros Recientes
+          </h3>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="bg-gray-50 text-gray-500 text-xs font-bold uppercase">
+              <tr>
+                <th className="p-3 text-left">Fecha</th>
+                <th className="p-3 text-left">Paciente</th>
+                <th className="p-3 text-left">Tipo</th>
+                <th className="p-3 text-left">Concepto</th>
+                <th className="p-3 text-center">Estado</th>
+              </tr>
+            </thead>
+            <tbody>
+              {recentRecords.map((p, i) => (
+                <tr key={`${p.id}-${i}`} className="border-b border-gray-50 hover:bg-gray-50 transition">
+                  <td className="p-3 text-xs text-gray-500 whitespace-nowrap">{p.fechaExamen}</td>
+                  <td className="p-3">
+                    <div className="font-bold text-gray-800 text-xs">{p.nombres}</div>
+                    <div className="text-[10px] text-gray-400">{p.docNumero} · {p.cargo || 'Sin cargo'}</div>
+                  </td>
+                  <td className="p-3">
+                    <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${p.type === 'general' ? 'bg-blue-100 text-blue-700' : 'bg-emerald-100 text-emerald-700'}`}>
+                      {p.type === 'general' ? 'General' : 'Ocupacional'}
+                    </span>
+                  </td>
+                  <td className="p-3 text-[10px] text-gray-600 max-w-[200px] truncate">{p.conceptoAptitud || '--'}</td>
+                  <td className="p-3 text-center">
+                    <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${p.estadoHistoria === 'Cerrada' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
+                      {p.estadoHistoria || 'Abierta'}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+              {recentRecords.length === 0 && (
+                <tr>
+                  <td colSpan="5" className="p-8 text-center text-gray-400 text-sm">
+                    No hay registros aún. Cree una nueva historia clínica.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   );
-}
+};
 

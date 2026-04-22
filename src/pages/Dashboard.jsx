@@ -6,15 +6,6 @@
 
 import React from 'react';
 import { DashboardMain } from '../modules/dashboard/components/DashboardMain.jsx';
-import { useDashboardStats } from '../modules/dashboard/hooks/useDashboardStats.js';
-
-import {
-  FileText, Building2, Lock, Unlock, Users, Receipt,
-  Clock, Eye, FileCheck, Trash2, Stethoscope, Heart,
-  BarChart3, Shield, UserCheck, FileSearch, AlertTriangle
-} from 'lucide-react';
-import { PLAN_CONFIG, _isAdmin, _isAdminOrEmpresa, _canUse, _contarHC, _secretariaPuede } from '../shared/data/planConfig.js';
-import { getSpanishDate } from '../shared/lib/formatters.js';
 
 export default function Dashboard({
   currentUser,
@@ -23,8 +14,9 @@ export default function Dashboard({
   companies = [],
   atencionesCerradas = [],
   canUseSGSST = false,
+  showAlert
 }) {
-  const showAlert = useCallback((msg) => window.alert(msg), []);
+
 
   // Plan banner data
   const plan = PLAN_CONFIG[currentUser?.license || 'libre'];

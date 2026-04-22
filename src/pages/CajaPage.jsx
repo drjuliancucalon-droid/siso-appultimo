@@ -34,8 +34,9 @@ export default function CajaPage() {
     );
   }
 
-return <CajaMain cajaMovimientos={cajaMovimientos} setCajaMovimientos={saveCajaDebounced} cajaForm={cajaForm} setCajaForm={setCajaForm} currentUser={currentUser} saveCajaDebounced={saveCajaDebounced} patientsList={patientsList || []} savedBillsList={savedBillsList} setSavedBillsList={(updated) => { setSavedBillsList(updated); try { localStorage.setItem(billsKey, JSON.stringify(updated)); } catch {} }} showAlert={showAlert} showConfirm={showConfirm} />;
+return <CajaWithData />;
 }
+
 
 // ── Inner: rendered only after gate passes ──
 function CajaWithData() {

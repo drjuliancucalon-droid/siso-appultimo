@@ -1,8 +1,13 @@
+import { useMemo, useCallback } from 'react';
+import { PLAN_CONFIG, _isAdmin, _isAdminOrEmpresa, _contarHC } from '../../../shared/data/planConfig.js';
 
-import { useMemo } from 'react';
-import { PLAN_CONFIG } from '../../../shared/data/planConfig.js';
-
-export const useDashboardStats = (currentUser, patientsList, companies) => {
+export const useDashboardStats = ({ 
+  currentUser, 
+  patientsList = [], 
+  companies = [], 
+  atencionesCerradas = [], 
+  canUseSGSST = false 
+}) => {
   // Plan banner data
   const plan = PLAN_CONFIG[currentUser?.license || 'libre'];
   const hcUsadas = useMemo(() => {
@@ -45,26 +50,34 @@ export const useDashboardStats = (currentUser, patientsList, companies) => {
       new Date(c.convenioVencimiento) >= hoy
     );
     conveniosAlerta.forEach(c => {
-      alerts.push({ tipo: 'amber', msg: `⚠️ Convenio próximo a vencer: ${c.nombre} (${c.convenioVencimiento})`, accion: null });
+      alerts.push({ 
+        tipo: 'amber', 
+        msg: `⚠️ Convenio próximo a vencer: ${c.nombre} (${c.convenioVencimiento})`, 
+        accion: null 
+      });
     });
 
     // HC abiertas
     const hcAbiertas = patientsList.filter(p => p.estadoHistoria !== 'Cerrada' && p.fechaExamen && !p._archivado);
     if (hcAbiertas.length > 3) {
-      alerts.push({ tipo: 'blue', msg: `📋 ${hcAbiertas.length} HCs sin cerrar`, accion: null });
+      alerts.push({ 
+        tipo: 'blue', 
+        msg: `📋 ${hcAbiertas.length} HCs sin cerrar`, 
+        accion: null 
+      });
     }
 
-    return alerts;
+    return alerts.slice(0, 5);
   }, [companies, patientsList]);
 
   return {
-    plan,
-    hcUsadas,
-    pct,
+    plan, 
+    hcUsadas, 
+    pct, 
     col,
     statCards,
     recentRecords,
-    alertas,
+    alertas
   };
 };
 
