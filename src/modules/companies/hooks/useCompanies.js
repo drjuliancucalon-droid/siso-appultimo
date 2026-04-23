@@ -25,6 +25,11 @@ export const useCompanies = ({
   const [showConvenio, setShowConvenio] = useState(false);
   const logoInputRef = useRef(null);
 
+  // Estado de nueva encuesta — centralizado aquí para evitar scope error
+  const [newEncuesta, setNewEncuesta] = useState({
+    empresaId: '', empresaNombre: '', tipoExamen: 'INGRESO', fechaLimite: ''
+  });
+
   const formatCOP = useCallback((n) => {
     const v = parseFloat(n) || 0;
     return v.toLocaleString('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 });
@@ -187,6 +192,7 @@ export const useCompanies = ({
     handleAddSede,
     handleRemoveSede,
     handleCrearEncuesta,
+    newEncuesta, setNewEncuesta,
     logoInputRef,
   };
 };
