@@ -5,7 +5,7 @@
 
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
-import { _generarCertificadoHTMLNormalizado } from '../../shared/lib/printUtils';
+import { _generarCertificadoHTMLNormalizado } from '../../../shared/lib/printUtils';
 
 export function generatePDFfromHTML(html, filename) {
   const printWindow = window.open('', '_blank', 'width=900,height=1100');

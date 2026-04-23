@@ -2,8 +2,8 @@
 // State, API calls, table, totals, movements
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { useAuthStore } from '../../stores/authStore';
-import { useBackendData, useBackendObject } from '../../hooks/useBackendData';
+import { useAuthStore } from '../../../stores/authStore';
+import { useBackendData, useBackendObject } from '../../../hooks/useBackendData';
 
 export default function useCaja({ bills, companies, patients, onUpdateBillStatus }) {
   const { currentUser, token } = useAuthStore();
