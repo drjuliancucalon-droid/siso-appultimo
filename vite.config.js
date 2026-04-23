@@ -22,7 +22,7 @@ export default defineConfig({
       output: {
         // Same as ocupasalud: react and lucide as dedicated vendor chunks
         manualChunks: {
-          react: ['react', 'react-dom'],
+          react: ['react', 'react-dom', 'react/jsx-runtime', 'react/jsx-dev-runtime'],
           lucide: ['lucide-react'],
         },
       },
