@@ -151,6 +151,18 @@ Lic. ${b.doctorLicencia}</div>
     printWindow.print();
   }, [activeDoctorData, calcTotal, lineItems]);
 
+
+  // ══ FILTERED BILLS COMPUTED (desde monolito) ══
+  const filteredBills = useMemo(() => {
+    if (!searchBill.trim()) return savedBillsList;
+    const q = searchBill.toLowerCase();
+    return savedBillsList.filter(b =>
+      b.number.toLowerCase().includes(q) ||
+      b.clientName.toLowerCase().includes(q) ||
+      b.clientNit.includes(q)
+    );
+  }, [savedBillsList, searchBill]);
+
   // ══ RETORNO del hook ══
   return {
     // Estados
@@ -165,7 +177,8 @@ Lic. ${b.doctorLicencia}</div>
     handleCompanySelect, handleSaveBill, handlePrint,
     
     // Computed
-    filteredBills: filteredBills,
+    filteredBills,
   };
 };
+
 

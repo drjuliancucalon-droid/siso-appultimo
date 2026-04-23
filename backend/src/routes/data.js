@@ -330,6 +330,54 @@ router.get('/certificates/by-nit/:nit', async (req, res) => {
     const { nit } = req.params;
     const nitLimpio = nit.replace(/[^0-9]/g, '');
     
+    const { data: companiesData } = await getUserScopedData('siso_companies', userId);
+    const companies = Array.isArray(companiesData) ? companiesData : [];
+    const matchingCompanies = companies.filter(c => (c.nit || '').replace(/[^0-9]/g, '') === nitLimpio);
+    const companyIds = matchingCompanies.map(c => c.id);
+    
+    const { data: patientsData } = await getUserScopedData('siso_patients', userId);
+    const allPatients = Array.isArray(patientsData) ? patientsData : [];
+    
+    const certificates = allPatients.filter(p => {
+      const patientNit = (p.empresaNit || '').replace(/[^0-9]/g, '');
+      return (
+        (companyIds.includes(p.empresaId) || patientNit === nitLimpio) &&
+        p.estadoHistoria === 'Cerrada' &&
+        p.codigoVerificacion
+      );
+    }).map(p => ({
+      id: p.id,
+      docNumero: p.docNumero,
+      docTipo: p.docTipo,
+      nombres: p.nombres,
+      conceptoAptitud: p.conceptoAptitud,
+      fechaExamen: p.fechaExamen,
+      vigencia: p.vigencia,
+      codigoVerificacion: p.codigoVerificacion,
+      empresaId: p.empresaId,
+      empresaNombre: p.empresaNombre || p.empresa,
+      tipoExamen: p.tipoExamen,
+      enfasisExamen: p.enfasisExamen,
+      medicoNombre: p.medicoNombre || p._doctorData?.nombre,
+      diagnosticoPrincipal: p.diagnosticoPrincipal,
+      cerradaAt: p.cerradaAt || p.fechaModificacion
+    }));
+    
+    res.json({ certificates, count: certificates.length, nit: nitLimpio, empresas: matchingCompanies });
+  } catch (err) {
+    console.error('Error fetching certificates by NIT:', err.message);
+    res.status(500).json({ message: 'Error al obtener certificados por NIT' });
+  }
+});
+
+
+// ═══ CERTIFICATES BY NIT ═════════════════════════════
+router.get('/certificates/by-nit/:nit', async (req, res) => {
+  try {
+    const userId = req.user.user;
+    const { nit } = req.params;
+    const nitLimpio = nit.replace(/[^0-9]/g, '');
+    
     // Obtener empresas para mapear NIT a companyId
     const { data: companiesData } = await getUserScopedData('siso_companies', userId);
     const companies = Array.isArray(companiesData) ? companiesData : [];

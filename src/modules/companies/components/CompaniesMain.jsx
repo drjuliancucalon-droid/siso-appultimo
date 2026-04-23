@@ -15,17 +15,45 @@ export const CompaniesMain = ({
   encuestas, setEncuestas, sedeForm, setSedeForm,
   showAlert, showConfirm,
 }) => {
+  const [newEncuesta, setNewEncuesta] = React.useState({ empresaId: '', empresaNombre: '', tipoExamen: 'INGRESO', fechaLimite: '' });
+  
   const { 
     searchTerm, setSearchTerm, showModal, setShowModal, detailCompany, setDetailCompany,
     showConvenio, setShowConvenio, formatCOP, filteredCompanies, getPatientCount,
     resetForm, handleSaveCompany, handleEditCompany, handleDeleteCompany,
     handleLogoUpload, handleTogglePortal, handleAddSede, handleRemoveSede,
-    handleCrearEncuesta, logoInputRef
+    logoInputRef
   } = useCompanies({
     companies, setCompanies, newComp, setNewComp, patientsList, currentUser,
     _syncCompanies, showAlert, showConfirm, sedeForm, setSedeForm,
-    encuestas
+    encuestas, setEncuestas
   });
+  
+  const handleCrearEncuesta = () => {
+    if (!newEncuesta.empresaId || !newEncuesta.empresaNombre) {
+      showAlert?.('⚠️ Seleccione una empresa.');
+      return;
+    }
+    const token = Math.random().toString(36).substring(2, 10);
+    const enc = {
+      id: Date.now(),
+      token,
+      empresaId: newEncuesta.empresaId,
+      empresaNombre: newEncuesta.empresaNombre,
+      tipoExamen: newEncuesta.tipoExamen,
+      fechaLimite: newEncuesta.fechaLimite,
+      fechaCreacion: new Date().toISOString(),
+      respuestas: [],
+      estado: 'activa',
+    };
+    const updated = [...encuestas, enc];
+    setEncuestas(updated);
+    localStorage.setItem("siso_encuestas", JSON.stringify(updated));
+    const url = window.location.origin + window.location.pathname + "#encuesta?token=" + token;
+    showAlert?.("✅ Encuesta creada!\n\n📋 Link:\n" + url + "\n\nComparta este link con los trabajadores.");
+    setNewEncuesta({ empresaId: '', empresaNombre: '', tipoExamen: 'INGRESO', fechaLimite: '' });
+  };
+
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">
