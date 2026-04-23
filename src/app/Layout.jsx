@@ -18,6 +18,7 @@ import { useBackendObject } from '../hooks/useBackendData';
 import { MensajesDrawer } from '../shared/components/MensajesDrawer';
 
 const NAV_ITEMS = [
+  { path: '/portal-certificados', icon: Building2, label: 'Portal Empresa', roles: ['medico', 'administrador', 'super_admin'] },
   { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
   { path: '/hc/new', icon: Stethoscope, label: 'HC Ocup.', roles: ['medico', 'administrador', 'super_admin'] },
   { path: '/hc/general', icon: FileText, label: 'HC General', roles: ['medico', 'administrador', 'super_admin'] },

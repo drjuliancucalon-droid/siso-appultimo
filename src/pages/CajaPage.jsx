@@ -1,14 +1,20 @@
-// CajaPage.jsx RESTAURADO Y FIJADO DESDE BACKUP
-import React, { useState, useCallback, useMemo } from 'react';
+// src/pages/CajaPage.jsx
+// Caja financiera — gate de secretaria + render módulo
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
 import { useBackendData } from '../hooks/useBackendData';
-import { CajaMain } from '../modules/cashbox/components/CajaMain.jsx';
+import CajaMain from '../modules/cashbox/components/CajaMain';
 
 export default function CajaPage() {
   const navigate = useNavigate();
   const { currentUser, canAccessModule } = useAuthStore();
 
+  // ── Datos necesarios para CajaMain (hooks siempre antes de returns condicionales) ──
+  const { data: billsList = [] } = useBackendData('/data/bills', 'siso_db_bills', 'bills');
+  const { data: companiesList = [] } = useBackendData('/data/companies', 'siso_db_companies', 'companies');
+
+  // ── Gate: secretaria sin permiso ──
   if (currentUser?.role === 'secretaria' && !canAccessModule('caja')) {
     return (
       <div className="min-h-screen bg-gray-50 font-sans flex items-center justify-center">
@@ -18,7 +24,10 @@ export default function CajaPage() {
           <p className="text-xs text-gray-500">
             El módulo financiero no está habilitado para su perfil. Solicite acceso al administrador.
           </p>
-          <button onClick={() => navigate('/dashboard')} className="mt-4 px-4 py-2 bg-blue-700 text-white rounded-lg text-sm font-bold">
+          <button
+            onClick={() => navigate('/dashboard')}
+            className="mt-4 px-4 py-2 bg-blue-700 text-white rounded-lg text-sm font-bold"
+          >
             ← Volver
           </button>
         </div>
@@ -26,43 +35,14 @@ export default function CajaPage() {
     );
   }
 
-  const { currentUser: user } = useAuthStore();
-  const storageKey = useMemo(() => `siso_caja_${user?.empresaId || user?.user || 'shared'}`, [user]);
-  const [cajaMovimientos, setCajaMovimientos] = useState([]);
-  const [savedBillsList, setSavedBillsList] = useState([]);
-  const [cajaForm, setCajaForm] = useState({ tipo: 'ingreso', concepto: '', monto: '', formaPago: 'Efectivo', fecha: new Date().toISOString().split('T')[0], categoria: '' });
-  const [cajaTab, setCajaTab] = useState('movimientos');
-  const [cajaFiltroPeriodo, setCajaFiltroPeriodo] = useState('hoy');
-  const [porcentajeMedico, setPorcentajeMedico] = useState(40);
-
-  const { data: patientsList } = useBackendData('/data/patients', 'siso_db_patients', 'patients');
-
-  const saveCajaDebounced = useCallback((movements) => {
-    setCajaMovimientos(movements);
-    try { localStorage.setItem(storageKey, JSON.stringify(movements)); } catch {}
-  }, [storageKey]);
-
-  const showAlert = useCallback((msg) => alert(msg), []);
-  const showConfirm = useCallback((msg) => window.confirm(msg), []);
-
   return (
-    <CajaMain
-      cajaMovimientos={cajaMovimientos}
-      setCajaMovimientos={saveCajaDebounced}
-      cajaForm={cajaForm}
-      setCajaForm={setCajaForm}
-      currentUser={currentUser}
-      cajaTab={cajaTab}
-      setCajaTab={setCajaTab}
-      cajaFiltroPeriodo={cajaFiltroPeriodo}
-      setCajaFiltroPeriodo={setCajaFiltroPeriodo}
-      porcentajeMedico={porcentajeMedico}
-      setPorcentajeMedico={setPorcentajeMedico}
-      patientsList={patientsList || []}
-      savedBillsList={savedBillsList}
-      showAlert={showAlert}
-      showConfirm={showConfirm}
-    />
+    <div className="p-4 max-w-7xl mx-auto">
+      <CajaMain
+        bills={billsList}
+        companies={companiesList}
+        currentUser={currentUser}
+        onUpdateBillStatus={() => {}}
+      />
+    </div>
   );
 }
-

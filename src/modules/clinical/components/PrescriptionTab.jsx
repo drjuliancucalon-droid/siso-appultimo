@@ -13,6 +13,8 @@ const TabFormulaDerivacion = ({
   activeDoctorData,
   activeSignature,
   forceTab,
+  currentUser,
+  companies = [],
 }) => {
   const [activeSubTab, setActiveSubTab] = React.useState(forceTab || "formula");
   // When forceTab changes (switching between separate tabs), update active sub-tab

@@ -44,9 +44,9 @@ export const BillMain = ({
     handleCompanySelect, handleSaveBill, handlePrint,
     filteredBills
   } = useBill({
-    companies, savedBillsList, setSavedBillsList, currentUser, activeDoctorData, 
+    companies, savedBillsList, setSavedBillsList, currentUser, activeDoctorData,
     _sync, showAlert, showConfirm, patientsList, usersList, dianProvider,
-    billData, setBillData, calcTotal, lineItems, editingBillId, setActiveTab
+    billData, setBillData, setActiveTab
   });
 
   // ══ RENDER NUEVA CUENTA ══

@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Brain, Loader2, FileText, AlertTriangle, Shield, Clipboard } from 'lucide-react';
-import { _ss, sps } from '../../../shared/lib/storage';
 
 const NIVELES_RIESGO = ['I - Mínimo', 'II - Bajo', 'III - Medio', 'IV - Alto', 'V - Máximo'];
 
@@ -30,7 +29,7 @@ const FRECUENCIAS = {
   'V - Máximo': 'Semestral',
 };
 
-export const ProfesiogramaAI = () => {
+export const ProfesiogramaAI = ({ aiConfig = {} }) => {
   const [cargo, setCargo] = useState('');
   const [area, setArea] = useState('');
   const [nivelRiesgo, setNivelRiesgo] = useState('III - Medio');
@@ -49,12 +48,9 @@ export const ProfesiogramaAI = () => {
     setUsandoIA(true);
 
     try {
-      // Intentar usar IA configurada
-      const aiKeys = sps('siso_ai_keys', {});
-      const geminiKey = aiKeys?.gemini;
+      const { callAIWithFailover, parseAIJSON } = await import('../../../modules/ai/services/aiAnalysis');
 
-      if (geminiKey) {
-        const prompt = `Eres un médico especialista en salud ocupacional en Colombia. Genera un profesiograma para:
+      const prompt = `Eres un médico especialista en salud ocupacional en Colombia. Genera un profesiograma para:
 - Cargo: ${cargo}
 - Área: ${area || 'General'}
 - Nivel de riesgo: ${nivelRiesgo}
@@ -72,35 +68,15 @@ Responde SOLO en formato JSON (sin markdown) con esta estructura:
   "normativa": ["Decreto 1072/2015", "Res. 0312/2019"]
 }`;
 
-        const res = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              contents: [{ parts: [{ text: prompt }] }],
-              generationConfig: { temperature: 0.3 },
-            }),
-          }
-        );
-
-        if (res.ok) {
-          const data = await res.json();
-          const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
-          const jsonMatch = text.match(/\{[\s\S]*\}/);
-          if (jsonMatch) {
-            const parsed = JSON.parse(jsonMatch[0]);
-            setResultado(parsed);
-            setCargando(false);
-            return;
-          }
-        }
+      const text = await callAIWithFailover(prompt, 'Eres médico especialista en salud ocupacional colombiana.', aiConfig);
+      const parsed = parseAIJSON(text);
+      if (parsed && parsed.examenes) {
+        setResultado(parsed);
+        setCargando(false);
+        return;
       }
-
-      // Fallback: generar sin IA usando base de datos local
       generarLocal();
     } catch {
-      // Fallback silencioso
       generarLocal();
     }
     setCargando(false);

@@ -113,17 +113,68 @@ export const CompaniesMain = ({
                 <X className="w-5 h-5" />
               </button>
             </div>
-            <div className="p-6 space-y-6">
-              <div className="md:col-span-2">
-                <label className="text-xs font-bold text-gray-600 block mb-1">Razón Social</label>
-                <input type="text" value={newComp.nombre || ''} onChange={e => setNewComp(p => ({ ...p, nombre: e.target.value }))} className="w-full p-2.5 border border-gray-200 rounded-lg text-sm" placeholder="Nombre" />
+            <div className="p-6 space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="md:col-span-2">
+                  <label className="text-xs font-bold text-gray-600 block mb-1">Razón Social *</label>
+                  <input type="text" value={newComp.nombre || ''} onChange={e => setNewComp(p => ({ ...p, nombre: e.target.value }))} className="w-full p-2.5 border border-gray-200 rounded-lg text-sm" placeholder="Nombre de la empresa" />
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-gray-600 block mb-1">NIT *</label>
+                  <input type="text" value={newComp.nit || ''} onChange={e => setNewComp(p => ({ ...p, nit: e.target.value }))} className="w-full p-2.5 border border-gray-200 rounded-lg text-sm" placeholder="900.123.456-7" />
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-gray-600 block mb-1">Teléfono</label>
+                  <input type="text" value={newComp.telefono || ''} onChange={e => setNewComp(p => ({ ...p, telefono: e.target.value }))} className="w-full p-2.5 border border-gray-200 rounded-lg text-sm" placeholder="601 234 5678" />
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-gray-600 block mb-1">Correo electrónico</label>
+                  <input type="email" value={newComp.correo || ''} onChange={e => setNewComp(p => ({ ...p, correo: e.target.value }))} className="w-full p-2.5 border border-gray-200 rounded-lg text-sm" placeholder="empresa@correo.com" />
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-gray-600 block mb-1">Dirección</label>
+                  <input type="text" value={newComp.direccion || ''} onChange={e => setNewComp(p => ({ ...p, direccion: e.target.value }))} className="w-full p-2.5 border border-gray-200 rounded-lg text-sm" placeholder="Calle 123 # 45-67" />
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-gray-600 block mb-1">Ciudad</label>
+                  <input type="text" value={newComp.ciudad || ''} onChange={e => setNewComp(p => ({ ...p, ciudad: e.target.value }))} className="w-full p-2.5 border border-gray-200 rounded-lg text-sm" placeholder="Bogotá" />
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-gray-600 block mb-1">ARL</label>
+                  <select value={newComp.arl || ''} onChange={e => setNewComp(p => ({ ...p, arl: e.target.value }))} className="w-full p-2.5 border border-gray-200 rounded-lg text-sm">
+                    <option value="">Seleccionar ARL</option>
+                    <option>Sura</option>
+                    <option>Positiva</option>
+                    <option>Colmena</option>
+                    <option>Bolívar</option>
+                    <option>Equidad</option>
+                    <option>Liberty</option>
+                    <option>Alfa</option>
+                    <option>Mapfre</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-gray-600 block mb-1">Clase de Riesgo</label>
+                  <select value={newComp.claseRiesgo || ''} onChange={e => setNewComp(p => ({ ...p, claseRiesgo: e.target.value }))} className="w-full p-2.5 border border-gray-200 rounded-lg text-sm">
+                    <option value="">Seleccionar</option>
+                    <option value="I">I — Mínimo</option>
+                    <option value="II">II — Bajo</option>
+                    <option value="III">III — Medio</option>
+                    <option value="IV">IV — Alto</option>
+                    <option value="V">V — Máximo</option>
+                  </select>
+                </div>
+                <div className="md:col-span-2">
+                  <label className="text-xs font-bold text-gray-600 block mb-1">Actividad Económica</label>
+                  <input type="text" value={newComp.actividadEconomica || ''} onChange={e => setNewComp(p => ({ ...p, actividadEconomica: e.target.value }))} className="w-full p-2.5 border border-gray-200 rounded-lg text-sm" placeholder="Ej: Manufactura, Servicios, Comercio..." />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="text-xs font-bold text-gray-600 block mb-1">Representante Legal</label>
+                  <input type="text" value={newComp.representanteLegal || ''} onChange={e => setNewComp(p => ({ ...p, representanteLegal: e.target.value }))} className="w-full p-2.5 border border-gray-200 rounded-lg text-sm" placeholder="Nombre completo del representante legal" />
+                </div>
               </div>
-              <div>
-                <label className="text-xs font-bold text-gray-600 block mb-1">NIT</label>
-                <input type="text" value={newComp.nit || ''} onChange={e => setNewComp(p => ({ ...p, nit: e.target.value }))} className="w-full p-2.5 border border-gray-200 rounded-lg text-sm" placeholder="900.123.456" />
-              </div>
-              <button onClick={handleSaveCompany} className="flex items-center gap-2 px-5 py-2.5 bg-purple-600 text-white rounded-xl font-bold">
-                <Save className="w-4 h-4" /> Guardar
+              <button onClick={handleSaveCompany} className="flex items-center gap-2 px-5 py-2.5 bg-purple-600 text-white rounded-xl font-bold mt-2">
+                <Save className="w-4 h-4" /> Guardar Empresa
               </button>
             </div>
           </div>

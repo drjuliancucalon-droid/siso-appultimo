@@ -1,20 +1,29 @@
 // src/pages/TelemedicinePage.jsx
-// Secretary gate + PlanGate + VideoConsult
-// B-07 — Fiel al monolito líneas 30966-31001 (gate)
-import React from 'react';
+// Secretary gate + tabs: VideoConsult + ProfesiogramaAI
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { VideoConsult } from '../modules/telemedicine/components/VideoConsult';
+import { ProfesiogramaAI } from '../modules/telemedicine/components/ProfesiogramaAI';
 import { useAuthStore } from '../stores/authStore';
+import { useAIStore } from '../stores/aiStore';
+import { Video, Brain } from 'lucide-react';
+
+const TABS = [
+  { id: 'video', label: 'Videoconsulta', icon: Video },
+  { id: 'profesiograma', label: 'Profesiograma IA', icon: Brain },
+];
 
 export default function TelemedicinePage() {
   const navigate = useNavigate();
   const { currentUser, canAccessModule } = useAuthStore();
+  const aiConfig = useAIStore((s) => ({
+    gemini: s.gemini, groq: s.groq, together: s.together, openrouter: s.openrouter,
+    activeProvider: s.activeProvider,
+  }));
+  const [activeTab, setActiveTab] = useState('video');
 
-  // ── SECRETARIA GATE: "Telemedicina" requiere autorización del admin ──
-  if (
-    currentUser?.role === 'secretaria' &&
-    !canAccessModule('telemedicina')
-  ) {
+  // ── SECRETARIA GATE ──
+  if (currentUser?.role === 'secretaria' && !canAccessModule('telemedicina')) {
     return (
       <div className="max-w-xl mx-auto px-4 py-16 text-center">
         <div className="bg-amber-50 border-2 border-amber-300 rounded-2xl p-8 space-y-3">
@@ -41,7 +50,31 @@ export default function TelemedicinePage() {
 
   return (
     <div className="p-4 max-w-7xl mx-auto">
-      <VideoConsult currentUser={currentUser} />
+      {/* Tab nav */}
+      <div className="flex gap-2 mb-6 border-b border-gray-200">
+        {TABS.map((tab) => {
+          const Icon = tab.icon;
+          const isActive = activeTab === tab.id;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex items-center gap-2 px-4 py-2.5 text-sm font-bold rounded-t-lg border-b-2 transition-colors ${
+                isActive
+                  ? 'text-blue-700 border-blue-600 bg-blue-50'
+                  : 'text-gray-500 border-transparent hover:text-gray-700 hover:bg-gray-50'
+              }`}
+            >
+              <Icon className="w-4 h-4" />
+              {tab.label}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Tab content */}
+      {activeTab === 'video' && <VideoConsult currentUser={currentUser} />}
+      {activeTab === 'profesiograma' && <ProfesiogramaAI aiConfig={aiConfig} />}
     </div>
   );
 }

@@ -1,117 +1,47 @@
-import React, { useState, useMemo } from 'react';
+import React from 'react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../../shared/components/ui/Tabs'; // Si no existe, usar div manual
+import { useBilling } from '../hooks/useBilling.js';
+import { useActiveDoctorData } from '../../../shared/hooks/useActiveDoctorData.js';
+import { useSync } from '../../../shared/hooks/useSync.js';
+import { useUICallbacks } from '../../../shared/hooks/useUICallbacks.js';
+
 import { DollarSign, CheckSquare, Square, Filter, Save, Printer, Plus, Trash2 } from 'lucide-react';
 import { InputGroup } from '../../../shared/components/ui/InputGroup';
 import { SelectGroup } from '../../../shared/components/ui/SelectGroup';
 import { numeroALetras } from '../../../shared/lib/formatters';
 
-export const BillGenerator = ({ doctorData, companies = [], onSave, onPrint, savedBills = [], atencionesCerradas = [], patients = [] }) => {
-  const [filterEmpresaId, setFilterEmpresaId] = useState('');
-  const [filterMes, setFilterMes] = useState('');
-  const [selectedWorkers, setSelectedWorkers] = useState({});
-  const [workerValues, setWorkerValues] = useState({});
-  const [marcarTodos, setMarcarTodos] = useState(false);
-  const [modoCobro, setModoCobro] = useState('por_trabajador');
-  const [valorUnitarioGlobal, setValorUnitarioGlobal] = useState(0);
+export const BillGenerator = ({ companies = [], onPrint, savedBills = [], atencionesCerradas = [], patients = [] }) => {
+  const { _sync } = useSync();
+  const { showAlert } = useUICallbacks();
+  const { activeDoctor } = useActiveDoctorData();
+  
+  const {
+    filterEmpresaId, setFilterEmpresaId,
+    filterMes, setFilterMes,
+    selectedWorkers,
+    toggleWorker,
+    workerValues, updateWorkerValor,
+    marcarTodos, handleMarcarTodos,
+    modoCobro, setModoCobro,
+    valorUnitarioGlobal, setValorUnitarioGlobal,
+    atencionesFiltradas,
+    trabajadoresUnicos,
+    getCantidadAtenciones,
+    totalSeleccionado,
+    detalleAtenciones,
+    generateBillData,
+    handleSaveBill
+  } = useBilling({
+    companies,
+    savedBills,
+    atencionesCerradas,
+    patients,
+    doctorData: activeDoctor,
+    _sync,
+    showAlert
+  });
 
-  // Obtener todas las atenciones disponibles (fallback multiple)
-  const atencionesGlobales = useMemo(() => {
-    let todas = [...(atencionesCerradas || [])];
-    // Fallback: usar pacientes con empresa si no hay atenciones
-    if (todas.length === 0 && patients && patients.length > 0) {
-      todas = patients
-        .filter(p => p.empresa)
-        .map(p => ({
-          id: p.id,
-          docNumero: p.docNumero,
-          nombres: p.nombres,
-          nombre: p.nombres,
-          docTipo: p.docTipo,
-          empresa: p.empresa,
-          empresaId: p.empresaId,
-          empresaNombre: p.empresa,
-          fechaAtencion: p.fechaExamen || p.fecha,
-          tipo: p.tipoExamen || 'Evaluacion'
-        }));
-    }
-    return todas;
-  }, [atencionesCerradas, patients]);
-
-  const atencionesFiltradas = useMemo(() => {
-    // Si no hay filtros, mostrar todas las atenciones disponibles
-    if (!filterEmpresaId && !filterMes) return atencionesGlobales;
-    return atencionesGlobales.filter(a => {
-      const emp = (a.empresa || a.empresaNombre || "").toLowerCase();
-      const filtroEmp = (filterEmpresaId || "").toLowerCase();
-      const matchEmp = !filterEmpresaId || emp.includes(filtroEmp);
-      const fecha = a.fechaAtencion || a.fecha || "";
-      const matchMes = !filterMes || fecha.startsWith(filterMes);
-      return matchEmp && matchMes;
-    });
-  }, [atencionesGlobales, filterEmpresaId, filterMes]);
-
-  const trabajadoresUnicos = useMemo(() => {
-    const map = new Map();
-    atencionesFiltradas.forEach(a => {
-      const docKey = a.docNumero || a.id;
-      if (!map.has(docKey)) {
-        map.set(docKey, {
-          docNumero: docKey,
-          nombres: a.nombres || a.nombre || a.pacienteNombre || 'Sin nombre',
-          docTipo: a.docTipo || a.tipoDoc || 'CC',
-          empresa: a.empresa || a.empresaNombre,
-          empresaId: a.empresaId || a.empresa,
-          atenciones: []
-        });
-      }
-      map.get(docKey).atenciones.push(a);
-    });
-    return Array.from(map.values());
-  }, [atencionesFiltradas]);
-
-  const getCantidadAtenciones = (docNumero) => {
-    const t = trabajadoresUnicos.find(x => x.docNumero === docNumero);
-    return t ? t.atenciones.length : 0;
-  };
-
-  const toggleWorker = (doc) => setSelectedWorkers(prev => ({...prev, [doc]: !prev[doc]}));
-  const updateWorkerValor = (doc, v) => setWorkerValues(prev => ({...prev, [doc]: parseFloat(v) || 0}));
-
-  const handleMarcarTodos = () => {
-    const nuevoEstado = !marcarTodos;
-    setMarcarTodos(nuevoEstado);
-    const nuevosSeleccionados = {};
-    const nuevosValores = {};
-    trabajadoresUnicos.forEach(t => {
-      nuevosSeleccionados[t.docNumero] = nuevoEstado;
-      nuevosValores[t.docNumero] = workerValues[t.docNumero] || valorUnitarioGlobal;
-    });
-    setSelectedWorkers(nuevosSeleccionados);
-    setWorkerValues(nuevosValores);
-  };
-
-  const totalSeleccionado = useMemo(() => {
-    let total = 0;
-    Object.entries(selectedWorkers).forEach(([doc, sel]) => {
-      if (!sel) return;
-      const valor = parseFloat(workerValues[doc]) || 0;
-      const cantidad = modoCobro === 'por_trabajador' ? 1 : getCantidadAtenciones(doc);
-      total += valor * cantidad;
-    });
-    return total;
-  }, [selectedWorkers, workerValues, modoCobro, trabajadoresUnicos]);
-
-  const detalleAtenciones = useMemo(() => {
-    const dets = [];
-    Object.entries(selectedWorkers).forEach(([doc, sel]) => {
-      if (!sel) return;
-      const trab = trabajadoresUnicos.find(t => t.docNumero === doc);
-      if (!trab) return;
-      trab.atenciones.forEach(a => {
-        dets.push({trabajador: trab.nombres, documento: trab.docTipo + ' ' + trab.docNumero, fecha: a.fechaAtencion, tipo: a.tipoAtencion || 'Evaluacion'});
-      });
-    });
-    return dets;
-  }, [selectedWorkers, trabajadoresUnicos]);
+// Lógica movida a useBilling - Componente limpio
 
   const [bill, setBill] = useState({
     numero: 'CC-' + String(savedBills.length + 1).padStart(4, '0'),
