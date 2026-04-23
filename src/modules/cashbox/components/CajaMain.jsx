@@ -3,7 +3,7 @@
 
 import React from 'react';
 import { DollarSign } from 'lucide-react';
-import { useCaja } from '../hooks/useCaja.js';
+import useCaja from '../hooks/useCaja.js';
 
 export default function CajaMain({ bills, companies, onUpdateBillStatus }) {
   const {
