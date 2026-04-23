@@ -17,8 +17,8 @@ export default function TelemedicinePage() {
   const navigate = useNavigate();
   const { currentUser, canAccessModule } = useAuthStore();
   const aiConfig = useAIStore((s) => ({
-    gemini: s.gemini, groq: s.groq, together: s.together, openrouter: s.openrouter,
     activeProvider: s.activeProvider,
+    keys: s.keys || {},
   }));
   const [activeTab, setActiveTab] = useState('video');
 

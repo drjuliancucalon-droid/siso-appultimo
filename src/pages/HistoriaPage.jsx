@@ -709,14 +709,34 @@ export default function HistoriaPage() {
       {showRestriccionesPanel && (
         <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4" onClick={() => setShowRestriccionesPanel(false)}>
           <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-            <RestriccionesChecklistPanel data={data} setData={setData} onClose={() => setShowRestriccionesPanel(false)} isGenerating={isGeneratingRestr} />
+            <RestriccionesChecklistPanel
+              selected={data.restriccionesChecklist || {}}
+              onChange={(key) => setData((prev) => ({
+                ...prev,
+                restriccionesChecklist: { ...(prev.restriccionesChecklist || {}), [key]: !(prev.restriccionesChecklist || {})[key] },
+              }))}
+              onApply={(updated) => setData((prev) => ({ ...prev, restriccionesChecklist: updated }))}
+              onClose={() => setShowRestriccionesPanel(false)}
+              isGenerating={isGeneratingRestr}
+              onGenerate={onGenerateRestrictions}
+            />
           </div>
         </div>
       )}
       {showRecomendacionesPanel && (
         <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4" onClick={() => setShowRecomendacionesPanel(false)}>
           <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-            <RecomendacionesChecklistPanel data={data} setData={setData} onClose={() => setShowRecomendacionesPanel(false)} isGenerating={isGeneratingReco} />
+            <RecomendacionesChecklistPanel
+              selected={data.recomendacionesChecklist || {}}
+              onChange={(key) => setData((prev) => ({
+                ...prev,
+                recomendacionesChecklist: { ...(prev.recomendacionesChecklist || {}), [key]: !(prev.recomendacionesChecklist || {})[key] },
+              }))}
+              onApply={(updated) => setData((prev) => ({ ...prev, recomendacionesChecklist: updated }))}
+              onClose={() => setShowRecomendacionesPanel(false)}
+              isGenerating={isGeneratingReco}
+              onGenerate={onGenerateRecommendations}
+            />
           </div>
         </div>
       )}
