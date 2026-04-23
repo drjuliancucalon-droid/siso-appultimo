@@ -72,11 +72,8 @@ export default function HistoriaPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const currentUser = useAuthStore.getState().currentUser;
-  // Siempre leer configuración actual del store (evita config stale tras guardar en modal)
-  const aiConfig = useAIStore((s) => ({
-    activeProvider: s.activeProvider,
-    keys: s.keys || {},
-  }));
+  // Stable reference — never recreated, prevents OccupationalHC useCallback loops (#185)
+  const aiConfig = useMemo(() => useAIStore.getState().getConfig(), []);
   const { data: patients } = useBackendData('/data/patients', 'siso_db_patients', 'patients');
   const { data: companies } = useBackendData('/data/companies', 'siso_companies', 'companies');
   const { data: doctor } = useBackendObject('/data/doctor', 'siso_doctor_data', 'doctor');
