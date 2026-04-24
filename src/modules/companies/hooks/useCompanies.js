@@ -1,6 +1,7 @@
 // src/modules/companies/hooks/useCompanies.js
 // Hook principal para gestión de empresas (extraído de Companies.jsx)
 import { useState, useMemo, useCallback, useRef } from 'react';
+import { syncArrayToSupabase } from '../../../lib/supabaseSync';
 
 export const useCompanies = ({
   companies = [],
@@ -155,9 +156,9 @@ export const useCompanies = ({
       showAlert('⚠️ Seleccione una empresa.');
       return;
     }
-    const token = Math.random().toString(36).substring(2, 10);
+    const token = Math.random().toString(36).substring(2, 10).toUpperCase();
     const enc = {
-      id: Date.now(),
+      id: `ENC-${Date.now()}`,
       token,
       empresaId: newEncuesta.empresaId,
       empresaNombre: newEncuesta.empresaNombre,
@@ -168,10 +169,25 @@ export const useCompanies = ({
       estado: 'activa',
     };
     const updated = [...encuestas, enc];
+
+    // 1. Actualizar estado React (dispara re-render inmediato)
     setEncuestas?.(updated);
-    localStorage.setItem("siso_encuestas", JSON.stringify(updated));
-    const url = window.location.origin + window.location.pathname + "#encuesta?token=" + token;
-    showAlert("✅ Encuesta creada!\n\n📋 Link:\n" + url + "\n\nComparta este link con los trabajadores.");
+
+    // 2. Sync Supabase en background (Companies.jsx ya lo maneja vía setEncuestas)
+    // Por si acaso: guardar también directo
+    syncArrayToSupabase('siso_encuestas', updated).catch(() => {});
+
+    const url =
+      window.location.origin +
+      window.location.pathname +
+      '#encuesta?token=' +
+      token;
+    showAlert(
+      '✅ Encuesta creada y guardada en la nube!\n\n' +
+      '📋 Token: ' + token + '\n' +
+      '🔗 Link:\n' + url + '\n\n' +
+      'Comparta este link con los trabajadores.'
+    );
     setNewEncuesta({ empresaId: '', empresaNombre: '', tipoExamen: 'INGRESO', fechaLimite: '' });
   }, [newEncuesta, encuestas, setEncuestas, showAlert]);
 

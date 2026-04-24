@@ -1,7 +1,7 @@
 // src/pages/HistoriaPage.jsx — HC Ocupacional (reconstrucción desde ocupasalud)
 // REGLA: CERO React.lazy() para tabs internos. Todo estático.
 import React, { useReducer, useCallback, useRef, useMemo, useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
 import { useAIStore } from '../stores/aiStore';
 import { useBackendData, useBackendObject } from '../hooks/useBackendData';
@@ -105,6 +105,15 @@ export default function HistoriaPage() {
       if (p) { dispatch(p); loaded.current = true; }
     }
   }, [id, patients.length]);
+
+  // ═══ Pre-load from agenda ═══
+  const location = useLocation();
+  useEffect(() => {
+    if (location.state?.preload) {
+      dispatch(location.state.preload);
+    }
+  }, [location.state]);
+
 
   // ═══ Dirty tracking + Auto-save ═══
   const [isDirty, setIsDirty] = useState(false);

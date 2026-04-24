@@ -115,12 +115,7 @@ function SessionWatcher() {
 
 // ── Main App ─────────────────────────────────────────────────────
 export default function App() {
-  // Estados para Companies (incluye encuestas)
-  const [companiesTab, setCompaniesTab] = useState("lista");
-  const [editingCompany, setEditingCompany] = useState(null);
-  const [encuestas, setEncuestas] = useState(() => {
-    try { return JSON.parse(localStorage.getItem("siso_encuestas") || "[]"); } catch { return []; }
-  });
+  // Companies: estado mínimo en App — datos reales se cargan en Companies.jsx
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -147,13 +142,7 @@ export default function App() {
               <Route path="hc/new" element={<HistoriaClinica />} />
               <Route path="hc/general" element={<HistoriaGeneralPage />} />
               <Route path="patients/:id/certificado" element={<CertificadoPage />} />
-              <Route path="companies" element={
-                <Companies 
-                  companiesTab={companiesTab} setCompaniesTab={setCompaniesTab}
-                  editingCompany={editingCompany} setEditingCompany={setEditingCompany}
-                  encuestas={encuestas} setEncuestas={setEncuestas}
-                />
-              } />
+              <Route path="companies" element={<Companies />} />
               <Route path="users" element={
                 <ProtectedRoute roles={['super_admin', 'administrador']}>
                   <UsersPage />
