@@ -1,7 +1,7 @@
 // src/App.jsx — New App Shell (v2)
 // React Router + Lazy Loading + Zustand stores
 // Replaces the 48K-line monolith with a clean router
-import React, { Suspense, useEffect, useState } from 'react';
+import React, { Suspense, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useAuthStore } from './stores/authStore';
@@ -115,13 +115,6 @@ function SessionWatcher() {
 
 // ── Main App ─────────────────────────────────────────────────────
 export default function App() {
-  // Estados para Companies (incluye encuestas)
-  const [companiesTab, setCompaniesTab] = useState("lista");
-  const [editingCompany, setEditingCompany] = useState(null);
-  const [encuestas, setEncuestas] = useState(() => {
-    try { return JSON.parse(localStorage.getItem("siso_encuestas") || "[]"); } catch { return []; }
-  });
-
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
@@ -147,13 +140,7 @@ export default function App() {
               <Route path="hc/new" element={<HistoriaClinica />} />
               <Route path="hc/general" element={<HistoriaGeneralPage />} />
               <Route path="patients/:id/certificado" element={<CertificadoPage />} />
-              <Route path="companies" element={
-                <Companies 
-                  companiesTab={companiesTab} setCompaniesTab={setCompaniesTab}
-                  editingCompany={editingCompany} setEditingCompany={setEditingCompany}
-                  encuestas={encuestas} setEncuestas={setEncuestas}
-                />
-              } />
+              <Route path="companies" element={<Companies />} />
               <Route path="users" element={
                 <ProtectedRoute roles={['super_admin', 'administrador']}>
                   <UsersPage />

@@ -36,8 +36,7 @@ export const useAuthStore = create(
         }
 
         try {
-          // TODO: Replace with real backend call when backend is ready
-          // For now, use the existing auth flow from useAuth.js
+          // Auth via backend API proxy (reemplaza auth directa del monolito)
           const response = await apiClient.post('/auth/login', { username, password });
           const { user, token, refreshToken } = response;
 

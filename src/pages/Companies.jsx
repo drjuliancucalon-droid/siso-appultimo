@@ -12,6 +12,7 @@ import {
   Building, CreditCard, Star, ExternalLink,
 } from 'lucide-react';
 import { _isAdmin, _isAdminOrEmpresa } from '../shared/data/planConfig.js';
+import { useCompaniesStore } from '../stores/companiesStore.js';
 
 // ═══════════════════════════════════════════════════════════════════════
 // COMPANIES COMPONENT
@@ -19,23 +20,39 @@ import { _isAdmin, _isAdminOrEmpresa } from '../shared/data/planConfig.js';
 export default function Companies({
   companies = [], setCompanies, newComp = {}, setNewComp,
   patientsList = [], currentUser, _sync, goTo, initialCompanyState,
-  // Companies tab state from App
-  companiesTab, setCompaniesTab, editingCompany, setEditingCompany,
-  // Encuestas
-  encuestas = [], setEncuestas,
-  // IPS mode
   mode,
   ipsPerfilForm, setIpsPerfilForm,
-  // Portal empresa
   portalActivadoInfo, setPortalActivadoInfo,
   portalEmpresaAdmin, setPortalEmpresaAdmin,
   sedeForm, setSedeForm,
-  // Sync helpers
   _syncCompanies, _sbSet,
   showAlert, showConfirm,
   usersList = [],
+  // Externalized state from companiesStore (can be overridden by props)
+  companiesTab: propCompaniesTab,
+  setCompaniesTab: propSetCompaniesTab,
+  editingCompany: propEditingCompany,
+  setEditingCompany: propSetEditingCompany,
+  encuestas: propEncuestas,
+  setEncuestas: propSetEncuestas,
   ...rest
 }) {
+  // ── Externalized state from companiesStore ────────────────
+  const storeCompaniesTab = useCompaniesStore((s) => s.companiesTab);
+  const storeSetCompaniesTab = useCompaniesStore((s) => s.setCompaniesTab);
+  const storeEditingCompany = useCompaniesStore((s) => s.editingCompany);
+  const storeSetEditingCompany = useCompaniesStore((s) => s.setEditingCompany);
+  const storeEncuestas = useCompaniesStore((s) => s.encuestas);
+  const storeSetEncuestas = useCompaniesStore((s) => s.setEncuestas);
+
+  // Use store values unless props explicitly override
+  const companiesTab = propCompaniesTab !== undefined ? propCompaniesTab : storeCompaniesTab;
+  const setCompaniesTab = propSetCompaniesTab || storeSetCompaniesTab;
+  const editingCompany = propEditingCompany !== undefined ? propEditingCompany : storeEditingCompany;
+  const setEditingCompany = propSetEditingCompany || storeSetEditingCompany;
+  const encuestas = propEncuestas !== undefined ? propEncuestas : storeEncuestas;
+  const setEncuestas = propSetEncuestas || storeSetEncuestas;
+
   const [searchTerm, setSearchTerm] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [detailCompany, setDetailCompany] = useState(null);
@@ -621,7 +638,6 @@ export default function Companies({
               {c.portalActivo ? <Lock className="w-4 h-4" /> : <Globe className="w-4 h-4" />}
               {c.portalActivo ? 'Desactivar Portal' : 'Activar Portal'}
             </button>
-            {/* NUEVO: Botón para acceder al portal de certificados */}
             {c.portalActivo && (
               <button 
                 onClick={() => goTo?.('portal-certificados-empresa', { empresaId: c.id })}
@@ -916,7 +932,7 @@ export default function Companies({
         <div className="bg-gray-50 border border-gray-200 rounded-xl p-8 text-center">
           <FileText className="w-10 h-10 text-gray-300 mx-auto mb-2" />
           <p className="text-gray-500 text-sm">No hay encuestas creadas</p>
-          <p className="text-gray-400 text-xs">Cree una上方 para comenzar</p>
+          <p className="text-gray-400 text-xs">Cree una arriba para comenzar</p>
         </div>
       ) : (
         <div className="space-y-3">
