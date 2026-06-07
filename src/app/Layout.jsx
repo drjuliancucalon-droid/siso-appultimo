@@ -6,6 +6,7 @@ import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { ErrorBoundary } from '../components/ErrorBoundary';
 import { useAuthStore } from '../stores/authStore';
 import { useUIStore } from '../stores/uiStore';
+import { ConnectionBadge } from '../shared/lib/connectionStatus';
 import {
   LayoutDashboard, Users, Building2, Calendar, FileText,
   Receipt, DollarSign, BarChart3, Shield, Video,
@@ -19,29 +20,25 @@ import { MensajesDrawer } from '../shared/components/MensajesDrawer';
 
 const NAV_ITEMS = [
   { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+  { path: '/patients', icon: Users, label: 'Pacientes' },
+  { path: '/agenda', icon: Calendar, label: 'Agenda' },
+  { path: '/companies', icon: Building2, label: 'Empresas' },
+  { path: '/billing', icon: Receipt, label: 'Facturación', roles: ['administrador', 'super_admin', 'medico'] },
+  { path: '/reports', icon: BarChart3, label: 'Reportes' },
   { path: '/hc/new', icon: Stethoscope, label: 'HC Ocup.', roles: ['medico', 'administrador', 'super_admin'] },
   { path: '/hc/general', icon: FileText, label: 'HC General', roles: ['medico', 'administrador', 'super_admin'] },
-  { path: '/patients', icon: Users, label: 'Pacientes' },
-  { path: '/companies', icon: Building2, label: 'Empresas' },
-  { path: '/agenda', icon: Calendar, label: 'Agenda' },
-  { path: '/billing', icon: Receipt, label: 'Facturación', roles: ['administrador', 'super_admin', 'medico'] },
   { path: '/caja', icon: DollarSign, label: 'Caja' },
-  { path: '/reports', icon: BarChart3, label: 'Reportes' },
   { path: '/sgsst', icon: Shield, label: 'SG-SST' },
   { path: '/telemedicine', icon: Video, label: 'Telemedicina' },
   { path: '/users', icon: Settings, label: 'Usuarios', roles: ['administrador', 'super_admin'] },
   { path: '/planes', icon: CreditCard, label: 'Planes', roles: ['administrador', 'super_admin'] },
-  { path: '/cotizaciones', icon: DollarSign, label: 'Cotizaciones', roles: ['medico', 'administrador', 'super_admin'] },
-  { path: '/portafolio', icon: Briefcase, label: 'Portafolio', roles: ['administrador', 'super_admin'] },
-  { path: '/contabilidad', icon: Calculator, label: 'Contabilidad', roles: ['medico', 'administrador', 'super_admin'] },
-  { path: '/mensajes', icon: MessageCircle, label: 'Mensajes' },
-  { path: '/arl', icon: Shield, label: 'ARL', roles: ['medico', 'administrador', 'super_admin'] },
   { path: '/custodia', icon: FileText, label: 'Custodia', roles: ['medico', 'administrador', 'super_admin'] },
   { path: '/habeas-data', icon: ShieldCheck, label: 'Habeas Data' },
-  { path: '/config/ips', icon: Building2, label: 'Perfil IPS', roles: ['administrador', 'super_admin'] },
-  { path: '/admin', icon: Crown, label: 'Super Admin', roles: ['super_admin'] },
-  { path: '/settings', icon: Settings, label: 'Config', roles: ['administrador', 'super_admin'] },
-  { path: '/perfil', icon: Users, label: 'Mi Perfil' }, // visible para todos los roles
+  { path: '/arl', icon: Shield, label: 'ARL', roles: ['medico', 'administrador', 'super_admin'] },
+  { path: '/contabilidad', icon: Calculator, label: 'Contab.', roles: ['medico', 'administrador', 'super_admin'] },
+  { path: '/mensajes', icon: MessageCircle, label: 'Mensajes' },
+  { path: '/perfil', icon: Users, label: 'Mi Perfil' },
+  { path: '/admin', icon: Crown, label: 'Admin', roles: ['super_admin'] },
 ];
 
 export default function Layout() {
@@ -63,27 +60,18 @@ export default function Layout() {
     setIsSyncing(true);
     setSyncStatus('syncing');
     try {
-      // Force re-fetch by clearing cached data timestamps
-      // This triggers useBackendData hooks to refetch
       const keysToRefresh = ['siso_db_patients', 'siso_companies', 'siso_doctor_data', 'siso_agenda', 'siso_bills'];
       for (const key of keysToRefresh) {
         const stored = localStorage.getItem(key);
         if (stored) {
           try {
             const parsed = JSON.parse(stored);
-            if (parsed._lastSync) {
-              parsed._lastSync = null; // Force refetch
-              localStorage.setItem(key, JSON.stringify(parsed));
-            }
-          } catch { /* skip non-JSON */ }
+            if (parsed._lastSync) { parsed._lastSync = null; localStorage.setItem(key, JSON.stringify(parsed)); }
+          } catch {}
         }
       }
-      // Reload the page to trigger all hooks
       window.location.reload();
-    } catch {
-      setSyncStatus('error');
-      setIsSyncing(false);
-    }
+    } catch { setSyncStatus('error'); setIsSyncing(false); }
   }, [isSyncing, setSyncStatus]);
 
   const filteredNav = NAV_ITEMS.filter((item) => {
@@ -93,12 +81,8 @@ export default function Layout() {
 
   const isActive = (path) => location.pathname === path || location.pathname.startsWith(path + '/');
 
-  const handleLogout = () => {
-    logout();
-    navigate('/login', { replace: true });
-  };
+  const handleLogout = () => { logout(); navigate('/login', { replace: true }); };
 
-  // Initials for avatar (matches BrandLogo.jsx from monolith)
   const doctorName = doctor?.nombre || currentUser?.nombre || currentUser?.user || '';
   const getInitials = () => {
     const parts = doctorName.trim().split(/\s+/);
@@ -106,7 +90,6 @@ export default function Layout() {
     return doctorName.substring(0, 2).toUpperCase() || 'DR';
   };
 
-  // Tab scroll management
   const checkScroll = () => {
     const el = tabsRef.current;
     if (!el) return;
@@ -114,11 +97,7 @@ export default function Layout() {
     setCanScrollRight(el.scrollLeft < el.scrollWidth - el.clientWidth - 5);
   };
 
-  useEffect(() => {
-    checkScroll();
-    window.addEventListener('resize', checkScroll);
-    return () => window.removeEventListener('resize', checkScroll);
-  }, []);
+  useEffect(() => { checkScroll(); window.addEventListener('resize', checkScroll); return () => window.removeEventListener('resize', checkScroll); }, []);
 
   const scrollTabs = (dir) => {
     const el = tabsRef.current;
@@ -127,117 +106,116 @@ export default function Layout() {
     setTimeout(checkScroll, 300);
   };
 
-  // Scroll active tab into view
   useEffect(() => {
     const el = tabsRef.current;
     if (!el) return;
     const activeBtn = el.querySelector('[data-active="true"]');
-    if (activeBtn) {
-      activeBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-      setTimeout(checkScroll, 300);
-    }
+    if (activeBtn) { activeBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' }); setTimeout(checkScroll, 300); }
   }, [location.pathname]);
 
-  const syncIcon = syncStatus === 'ok' || syncStatus === 'idle'
-    ? <Cloud className="w-3.5 h-3.5" />
-    : <CloudOff className="w-3.5 h-3.5" />;
-  const syncColor = syncStatus === 'ok' || syncStatus === 'idle'
-    ? 'text-emerald-400'
-    : syncStatus === 'syncing' ? 'text-yellow-400' : 'text-red-400';
+  const syncIcon = syncStatus === 'ok' || syncStatus === 'idle' ? <Cloud className="w-3.5 h-3.5" /> : <CloudOff className="w-3.5 h-3.5" />;
+  const syncColor = syncStatus === 'ok' || syncStatus === 'idle' ? 'text-emerald-400' : syncStatus === 'syncing' ? 'text-yellow-400' : 'text-red-400';
   const syncText = syncStatus === 'ok' ? 'Sincronizado' : syncStatus === 'syncing' ? 'Sincronizando...' : syncStatus === 'error' ? 'Error sync' : 'Local';
 
   return (
     <div className="flex flex-col h-screen bg-gray-50 overflow-hidden">
       {/* ═══ TOP HEADER — Brand + Sync + User ═══ */}
-      <header className="bg-gradient-to-r from-emerald-900 via-emerald-800 to-teal-900 text-white flex-shrink-0">
+      <header className="bg-white border-b border-gray-100 shadow-sm flex-shrink-0 no-print sticky top-0 z-50">
         <div className="flex items-center justify-between px-4 py-2.5">
-          {/* Left: Brand logo (matches BrandLogo.jsx) */}
+          {/* Left: Brand logo */}
           <div className="flex items-center gap-3">
-            {/* Mobile menu button */}
             <button
               onClick={() => setMobileMenuOpen(true)}
-              className="lg:hidden text-emerald-300 hover:text-white mr-1"
+              className="lg:hidden text-gray-500 hover:text-gray-700 mr-1"
             >
               <Menu className="w-5 h-5" />
             </button>
 
-            <div className="flex items-center gap-2.5">
-              <div className="h-9 w-9 bg-gradient-to-tr from-emerald-700 to-teal-500 rounded-xl flex items-center justify-center shadow-md flex-shrink-0">
+            <div className="flex items-center gap-2.5 cursor-pointer" onClick={() => navigate('/dashboard')}>
+              <div className="h-10 w-10 bg-gradient-to-tr from-emerald-700 to-teal-500 rounded-xl flex items-center justify-center shadow-md flex-shrink-0">
                 <div className="flex flex-col items-center leading-none">
-                  <Stethoscope className="w-3 h-3 mb-0.5" strokeWidth={2.5} />
-                  <span className="text-[7px] font-black tracking-tighter">{getInitials()}</span>
+                  <Stethoscope className="w-3.5 h-3.5 mb-0.5 text-white" strokeWidth={2.5} />
+                  <span className="text-[7px] font-black text-white/90 tracking-tighter">SO</span>
                 </div>
               </div>
               <div className="hidden sm:block">
-                <p className="text-[10px] font-black text-white uppercase leading-tight tracking-wide">
-                  {doctorName || 'MÉDICO'}
-                </p>
-                <div className="h-[2px] w-7 bg-gradient-to-r from-emerald-400 to-teal-300 my-0.5 rounded-full" />
-                <p className="text-[8px] font-bold text-emerald-300 uppercase">
-                  {doctor?.titulo || 'Salud Ocupacional'}
-                </p>
-                {doctor?.licencia && (
-                  <p className="text-[7px] text-emerald-400">RM: {doctor.licencia}</p>
-                )}
+                <p className="text-sm font-black text-gray-800 uppercase leading-tight tracking-wide">OCUPASALUD</p>
+                <div className="h-0.5 w-8 bg-gradient-to-r from-emerald-500 to-teal-400 my-0.5 rounded-full" />
+                <p className="text-[9px] font-bold text-emerald-600 uppercase">SALUD OCUPACIONAL</p>
               </div>
             </div>
           </div>
 
-          {/* Center: Sync indicator + sync button */}
-          <div className={`hidden md:flex items-center gap-2 text-xs`}>
-            <div className={`flex items-center gap-1.5 ${syncColor}`}>
-              {syncIcon}
-              <span className="font-medium">{isSyncing ? 'Sincronizando...' : syncText}</span>
-            </div>
-            <button
-              onClick={handleManualSync}
-              disabled={isSyncing}
-              className="text-emerald-400 hover:text-white transition-colors p-1 hover:bg-emerald-700/50 rounded-lg disabled:opacity-50"
-              title="Sincronizar ahora"
-            >
-              <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
-            </button>
+          {/* Center: Nav buttons (MONOLITO style) */}
+          <div className="hidden lg:flex items-center gap-1">
+            {[
+              { path: '/patients', icon: Users, label: 'Pacientes' },
+              { path: '/agenda', icon: Calendar, label: 'Agenda' },
+              { path: '/companies', icon: Building2, label: 'Empresas' },
+              { path: '/billing', icon: Receipt, label: 'Facturación' },
+              { path: '/reports', icon: BarChart3, label: 'Reportes' },
+            ].map((item) => {
+              const active = location.pathname.startsWith(item.path);
+              return (
+                <button
+                  key={item.path}
+                  onClick={() => navigate(item.path)}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                    active
+                      ? 'bg-emerald-600 text-white shadow'
+                      : 'text-gray-600 hover:bg-gray-100'
+                  }`}
+                >
+                  <item.icon className="w-3.5 h-3.5" />
+                  <span>{item.label}</span>
+                </button>
+              );
+            })}
           </div>
 
-          {/* Right: User info + logout */}
-          <div className="flex items-center gap-3">
-            {/* Sync mobile */}
-            <div className={`md:hidden flex items-center ${syncColor}`}>
-              {syncIcon}
+          {/* Right: ConnectionStatus + Plan + User */}
+          <div className="flex items-center gap-2.5">
+            {/* Connection badge (igual al MONOLITO) */}
+            <div className="hidden sm:block">
+              <ConnectionBadge />
             </div>
 
-            {/* B-17: AI status badge during generation */}
+            {/* Sync indicator */}
+            <div className={`hidden sm:flex items-center gap-1 text-xs ${syncColor}`}>
+              {syncIcon}
+              <span className="text-gray-500">{syncText}</span>
+            </div>
+
+            {/* AI badge */}
             {aiGenerating && (
-              <div className="flex items-center gap-1 px-2 py-1 bg-violet-700/60 text-violet-200 rounded-lg text-[10px] font-bold animate-pulse">
+              <div className="flex items-center gap-1 px-2 py-1 bg-violet-50 text-violet-700 rounded-lg text-[10px] font-bold">
                 <Loader2 className="w-3 h-3 animate-spin" /> {aiGeneratingLabel || 'IA...'}
               </div>
             )}
 
-            {/* T-04: Badge de mensajes no leídos - abre drawer */}
-            <button
-              onClick={() => setShowMensajesDrawer(true)}
-              className="relative p-1.5 text-emerald-300 hover:text-white hover:bg-emerald-700/50 rounded-lg transition-colors"
-              title="Mensajes"
-            >
-              <MessageCircle className="w-4.5 h-4.5" />
-              <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 text-white text-[8px] font-bold rounded-full flex items-center justify-center">3</span>
+            {/* Messages badge */}
+            <button onClick={() => setShowMensajesDrawer(true)} className="relative p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors" title="Mensajes">
+              <MessageCircle className="w-4 h-4" />
+              <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 bg-red-500 text-white text-[7px] font-bold rounded-full flex items-center justify-center">3</span>
             </button>
 
+            {/* User info */}
             <div className="hidden sm:flex items-center gap-2">
               <div className="text-right">
-                <p className="text-xs font-bold text-white leading-tight">{currentUser?.user || 'usuario'}</p>
-                <p className="text-[10px] text-emerald-300 capitalize">{currentUser?.role || 'Sin rol'}</p>
+                <p className="text-xs font-bold text-gray-700 leading-tight">{currentUser?.user || 'usuario'}</p>
+                <p className="text-[10px] text-gray-500 capitalize">{currentUser?.role || 'Sin rol'}</p>
               </div>
-              <div className="w-8 h-8 bg-emerald-600/60 rounded-lg flex items-center justify-center">
-                <span className="text-[10px] font-black">{getInitials()}</span>
+              <div className="w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center">
+                <span className="text-[10px] font-black text-emerald-700">{getInitials()}</span>
               </div>
             </div>
 
-            <button
-              onClick={handleLogout}
-              className="text-emerald-400 hover:text-white transition-colors p-1.5 hover:bg-emerald-700/50 rounded-lg"
-              title="Cerrar sesión"
-            >
+            {/* Plan badge (MONOLITO style) */}
+            <div className="hidden sm:flex items-center gap-1 px-2 py-1 bg-emerald-50 rounded-lg text-[10px] font-bold text-emerald-700 border border-emerald-200">
+              <Shield className="w-3 h-3" /> {currentUser?.license === 'clinica' ? '🏢 Clínica' : currentUser?.license === 'pro' ? '⭐ Pro' : '🆓 Libre'}
+            </div>
+
+            <button onClick={handleLogout} className="text-gray-400 hover:text-gray-600 transition-colors p-1.5 hover:bg-gray-100 rounded-lg" title="Cerrar sesión">
               <LogOut className="w-4 h-4" />
             </button>
           </div>
@@ -245,39 +223,22 @@ export default function Layout() {
       </header>
 
       {/* ═══ HORIZONTAL TAB NAVIGATION ═══ */}
-      <nav className="bg-gradient-to-r from-emerald-800 to-teal-800 flex-shrink-0 relative border-t border-emerald-700/30">
-        {/* Scroll left button */}
+      <nav className="bg-white border-b border-gray-100 flex-shrink-0 relative shadow-sm">
         {canScrollLeft && (
-          <button
-            onClick={() => scrollTabs(-1)}
-            className="absolute left-0 top-0 bottom-0 z-10 px-1.5 bg-gradient-to-r from-emerald-800 via-emerald-800/95 to-transparent text-emerald-300 hover:text-white"
-          >
+          <button onClick={() => scrollTabs(-1)} className="absolute left-0 top-0 bottom-0 z-10 px-1.5 bg-gradient-to-r from-white via-white/95 to-transparent text-gray-400 hover:text-gray-600">
             <ChevronLeft className="w-4 h-4" />
           </button>
         )}
-
-        {/* Tabs container */}
-        <div
-          ref={tabsRef}
-          onScroll={checkScroll}
-          className="flex overflow-x-auto scrollbar-hide px-2 gap-0.5"
-          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-        >
+        <div ref={tabsRef} onScroll={checkScroll} className="flex overflow-x-auto scrollbar-hide px-2 gap-0.5" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
           {filteredNav.map((item) => {
             const active = isActive(item.path);
             return (
-              <button
-                key={item.path}
-                data-active={active}
-                onClick={() => navigate(item.path)}
-                className={`
-                  flex items-center gap-1.5 px-3 py-2 text-xs font-semibold whitespace-nowrap
-                  transition-all duration-200 rounded-t-lg mt-1 flex-shrink-0
-                  ${active
-                    ? 'bg-gray-50 text-emerald-800 shadow-sm'
-                    : 'text-emerald-200/80 hover:text-white hover:bg-emerald-700/40'
-                  }
-                `}
+              <button key={item.path} data-active={active} onClick={() => navigate(item.path)}
+                className={`flex items-center gap-1.5 px-3 py-2 text-xs font-semibold whitespace-nowrap transition-all duration-200 border-b-2 flex-shrink-0 ${
+                  active
+                    ? 'border-emerald-600 text-emerald-700 bg-emerald-50/50'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
               >
                 <item.icon className={`w-3.5 h-3.5 ${active ? 'text-emerald-600' : ''}`} />
                 <span className="hidden sm:inline">{item.label}</span>
@@ -285,57 +246,46 @@ export default function Layout() {
             );
           })}
         </div>
-
-        {/* Scroll right button */}
         {canScrollRight && (
-          <button
-            onClick={() => scrollTabs(1)}
-            className="absolute right-0 top-0 bottom-0 z-10 px-1.5 bg-gradient-to-l from-teal-800 via-teal-800/95 to-transparent text-emerald-300 hover:text-white"
-          >
+          <button onClick={() => scrollTabs(1)} className="absolute right-0 top-0 bottom-0 z-10 px-1.5 bg-gradient-to-l from-white via-white/95 to-transparent text-gray-400 hover:text-gray-600">
             <ChevronRight className="w-4 h-4" />
           </button>
         )}
       </nav>
 
-      {/* ═══ MOBILE MENU OVERLAY ═══ */}
+      {/* Mobile menu */}
       {mobileMenuOpen && (
         <div className="fixed inset-0 z-50 lg:hidden">
           <div className="fixed inset-0 bg-black/50" onClick={() => setMobileMenuOpen(false)} />
-          <div className="fixed left-0 top-0 bottom-0 w-72 bg-gradient-to-b from-emerald-900 to-teal-900 text-white z-50 overflow-y-auto shadow-2xl">
-            <div className="flex items-center justify-between p-4 border-b border-emerald-700/50">
+          <div className="fixed left-0 top-0 bottom-0 w-72 bg-white text-gray-800 z-50 overflow-y-auto shadow-2xl">
+            <div className="flex items-center justify-between p-4 border-b border-gray-100">
               <div className="flex items-center gap-2">
                 <div className="h-8 w-8 bg-gradient-to-tr from-emerald-700 to-teal-500 rounded-xl flex items-center justify-center">
-                  <Stethoscope className="w-4 h-4" />
+                  <Stethoscope className="w-4 h-4 text-white" />
                 </div>
                 <div>
-                  <p className="text-xs font-black uppercase">{currentUser?.nombre || 'OCUPASALUD'}</p>
-                  <p className="text-[9px] text-emerald-300">{currentUser?.role || 'Pro'}</p>
+                  <p className="text-xs font-black uppercase text-gray-800">OCUPASALUD</p>
+                  <p className="text-[9px] text-gray-500">{currentUser?.role || 'Pro'}</p>
                 </div>
               </div>
-              <button onClick={() => setMobileMenuOpen(false)} className="text-emerald-300 hover:text-white">
+              <button onClick={() => setMobileMenuOpen(false)} className="text-gray-400 hover:text-gray-600">
                 <X className="w-5 h-5" />
               </button>
             </div>
-
             <nav className="py-3">
               {filteredNav.map((item) => (
-                <button
-                  key={item.path}
-                  onClick={() => { navigate(item.path); setMobileMenuOpen(false); }}
-                  className={`w-full flex items-center gap-3 px-5 py-3 text-sm transition-colors
-                    ${isActive(item.path)
-                      ? 'bg-emerald-600/40 text-white font-bold border-l-3 border-teal-400'
-                      : 'text-emerald-200/80 hover:bg-emerald-700/40 hover:text-white'
-                    }`}
+                <button key={item.path} onClick={() => { navigate(item.path); setMobileMenuOpen(false); }}
+                  className={`w-full flex items-center gap-3 px-5 py-3 text-sm transition-colors ${
+                    isActive(item.path) ? 'bg-emerald-50 text-emerald-700 font-bold border-l-3 border-emerald-600' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-800'
+                  }`}
                 >
-                  <item.icon className={`w-5 h-5 ${isActive(item.path) ? 'text-teal-300' : ''}`} />
+                  <item.icon className={`w-5 h-5 ${isActive(item.path) ? 'text-emerald-600' : ''}`} />
                   <span>{item.label}</span>
                 </button>
               ))}
             </nav>
-
-            <div className="p-4 border-t border-emerald-700/50 mt-auto">
-              <button onClick={handleLogout} className="flex items-center gap-2 text-emerald-300 hover:text-white text-sm w-full py-2">
+            <div className="p-4 border-t border-gray-100 mt-auto">
+              <button onClick={handleLogout} className="flex items-center gap-2 text-gray-500 hover:text-gray-700 text-sm w-full py-2">
                 <LogOut className="w-4 h-4" /> Cerrar sesión
               </button>
             </div>
@@ -343,14 +293,13 @@ export default function Layout() {
         </div>
       )}
 
-      {/* ═══ MAIN CONTENT — Full width ═══ */}
+      {/* Main content */}
       <main className="flex-1 overflow-y-auto bg-gray-50">
         <ErrorBoundary>
           <Outlet />
         </ErrorBoundary>
       </main>
 
-      {/* T-04: Mensajes Drawer Overlay */}
       <MensajesDrawer isOpen={showMensajesDrawer} onClose={() => setShowMensajesDrawer(false)} />
     </div>
   );
