@@ -262,7 +262,7 @@ export const CertificateView = ({
           {data.codigoVerificacion && (
             <div className="flex-shrink-0 bg-white p-1 rounded-lg border border-emerald-200">
               <img
-                src={`https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(`${import.meta.env.VITE_STABLE_DOMAIN || 'https://siso-refactor.pages.dev'}/verificar/${data.codigoVerificacion}`)}`}
+                src={`https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(`${import.meta.env.VITE_STABLE_DOMAIN || 'https://siso-appultimo-arp.pages.dev'}/verificar/${data.codigoVerificacion}`)}`}
                 alt="QR Verificación"
                 className="w-20 h-20 rounded"
                 loading="lazy"

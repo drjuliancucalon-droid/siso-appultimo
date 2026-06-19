@@ -4,8 +4,8 @@ import { DERIVACIONES_CATALOG } from '../../../shared/data/derivaciones';
 import { SPECIALTIES_LIST } from '../../../shared/data/catalogs';
 import { MedicamentoAutocomplete } from '../../../shared/components/MedicamentoAutocomplete';
 import { _generarCertificadoHTMLNormalizado } from '../../../shared/lib/printUtils';
-import BrandLogo from '../../../components/ui/BrandLogo';
-import DoctorSignature from '../../../components/ui/DoctorSignature';
+import { BrandLogo } from '../../../shared/components/ui/BrandLogo';
+import { DoctorSignature } from '../../../shared/components/ui/DoctorSignature';
 import { Pill, Share2, Printer, Plus, Trash2, Search, X } from 'lucide-react';
 const TabFormulaDerivacion = ({
   data,

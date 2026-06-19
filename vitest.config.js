@@ -4,7 +4,7 @@ export default defineConfig({
   test: {
     globals: false,
     environment: 'node',
-    // setupFiles: './src/test/setup.js', // Temporalmente deshabilitado por bug vitest v4 + top-level await
+    setupFiles: './src/test/setup.js',
     // Mock import.meta.env para que d1Client.js no explote en tests
     env: {
       VITE_WORKER_URL: 'https://siso-api.dr-juliancucalon.workers.dev',
