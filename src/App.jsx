@@ -45,6 +45,9 @@ const CartaCustodiaPage = React.lazy(() => import('./pages/CartaCustodiaPage'));
 const PortalCertificadosEmpresa = React.lazy(() => import('./pages/PortalCertificadosEmpresa'));
 // Perfil propio (todos los roles)
 const ProfilePage = React.lazy(() => import('./pages/ProfilePage'));
+// Sprint 6: Encuestas
+const EncuestasPage = React.lazy(() => import('./pages/EncuestasPage'));
+const SurveyResponsePage = React.lazy(() => import('./pages/SurveyResponsePage'));
 
 // ── React Query client ───────────────────────────────────────────
 const queryClient = new QueryClient({
@@ -134,6 +137,8 @@ export default function App() {
             <Route path="/portal/:code" element={<WorkerPortalPage />} />
             <Route path="/verificar" element={<VerificacionPage />} />
             <Route path="/verificar/:codigo" element={<VerificacionPage />} />
+            {/* Sprint 6: Encuesta pública (sin login) */}
+            <Route path="/encuesta/:token" element={<SurveyResponsePage />} />
 
             {/* Protected routes inside Layout */}
             <Route path="/" element={
@@ -192,6 +197,8 @@ export default function App() {
               } />
               {/* Perfil propio — accesible para cualquier rol autenticado */}
               <Route path="perfil" element={<ProfilePage />} />
+              {/* Sprint 6: Encuestas (admin interno) */}
+              <Route path="encuestas" element={<EncuestasPage />} />
             </Route>
 
             {/* 404 */}
