@@ -1,7 +1,7 @@
 // src/pages/CompaniesPage.jsx — Routes to full Companies module with encuestas
 import React from 'react';
-import Companies from './Companies';
+import { CompanyList } from '../modules/companies';
 
 export default function CompaniesPage(props) {
-  return <Companies {...props} />;
+  return <CompanyList {...props} />;
 }

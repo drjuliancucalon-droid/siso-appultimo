@@ -18,7 +18,7 @@ import {
   Hospital, Sparkles, Database, Heart, Lock, ClipboardList,
   Download, Settings, X
 } from 'lucide-react';
-
+import { useClinicalStore } from '../modules/clinical/store/clinicalStore';
 // ═══ STATIC IMPORTS — NO React.lazy() ═══
 // Each component is bundled with this page chunk
 import OccupationalHC from '../modules/clinical/components/OccupationalHC';
@@ -63,10 +63,6 @@ const HC_TABS = [
   { id: 'evolucion', label: 'Evolución', icon: ClipboardList, color: 'violet' },
 ];
 
-function hcReducer(state, action) {
-  if (typeof action === 'function') return action(state);
-  return { ...state, ...action };
-}
 
 export default function HistoriaPage() {
   const { id } = useParams();
@@ -78,12 +74,7 @@ export default function HistoriaPage() {
   const { data: doctor } = useBackendObject('/data/doctor', 'siso_doctor_data', 'doctor');
 
   // ═══ State ═══
-  const [data, dispatch] = useReducer(hcReducer, {
-    ...initialOccupPatientState,
-    tipoHistoria: 'ocupacional',
-    fechaExamen: new Date().toISOString().split('T')[0],
-  });
-  const setData = useCallback((updates) => dispatch(updates), []);
+  const { data, setData } = useClinicalStore();
   const [activeTab, setActiveTab] = useState('form');
 
   // Doctor data (declared EARLY to avoid TDZ)
@@ -101,7 +92,7 @@ export default function HistoriaPage() {
   useEffect(() => {
     if (id && patients.length > 0 && !loaded.current) {
       const p = patients.find((x) => x.docNumero === id || x.id === id);
-      if (p) { dispatch(p); loaded.current = true; }
+      if (p) { setData(p); loaded.current = true; }
     }
   }, [id, patients.length]);
 
@@ -178,7 +169,7 @@ export default function HistoriaPage() {
       const r = await analyzeHC(data, aiConfig);
 
       // Aplicar campos principales (monolito líneas 15023-15042)
-      dispatch({
+      setData({
         diagnosticoPrincipal: r.diagnosticoPrincipal || data.diagnosticoPrincipal,
         diagnosticoSecundario1: r.diagnosticoSecundario1 || data.diagnosticoSecundario1,
         diagnosticoSecundario2: r.diagnosticoSecundario2 || data.diagnosticoSecundario2,
@@ -191,7 +182,7 @@ export default function HistoriaPage() {
 
       // Auto-aplicar derivaciones (monolito líneas 15044-15056)
       if (r.derivaciones?.length > 0) {
-        dispatch((prev) => ({
+        setData((prev) => ({
           ...prev,
           derivaciones: [...(prev.derivaciones || []), ...r.derivaciones],
         }));
@@ -199,7 +190,7 @@ export default function HistoriaPage() {
 
       // Auto-aplicar exámenes sugeridos — sin duplicados (monolito líneas 15057-15079)
       if (r.examenesSugeridos?.length > 0) {
-        dispatch((prev) => {
+        setData((prev) => {
           const existentes = new Set((prev.solicitudExamenes || []).map((e) => (e.nombre || '').toLowerCase()));
           const nuevos = r.examenesSugeridos
             .filter((n) => !existentes.has(n.toLowerCase()))
@@ -213,7 +204,7 @@ export default function HistoriaPage() {
 
       // Auto-aplicar incapacidad (monolito líneas 15080-15100)
       if (r.incapacidadSugerida?.aplica && r.incapacidadSugerida.dias > 0) {
-        dispatch((prev) => ({
+        setData((prev) => ({
           ...prev,
           incapacidad: {
             ...(prev.incapacidad || {}),
@@ -226,7 +217,7 @@ export default function HistoriaPage() {
 
       // Auto-aplicar SVE recomendado (monolito líneas 15109-15113)
       if (r.sveRecomendado?.length > 0) {
-        dispatch((prev) => ({ ...prev, sveRecomendado: r.sveRecomendado }));
+        setData((prev) => ({ ...prev, sveRecomendado: r.sveRecomendado }));
       }
 
       // Mensaje de confirmación detallado (monolito líneas 15115-15136)
@@ -252,7 +243,7 @@ export default function HistoriaPage() {
       const { generateRestrictions } = await import('../modules/ai/services/aiAnalysis');
       const result = await generateRestrictions(data, aiConfig);
       // Guardar en analisisRestricciones (campo correcto del monolito)
-      dispatch({ analisisRestricciones: result });
+      setData({ analisisRestricciones: result });
       alert('✅ Restricciones generadas por IA. Seleccione las adicionales en el checklist.');
     } catch (e) { alert('Error IA Restricciones: ' + e.message); }
     finally { setIsGeneratingRestr(false); }
@@ -264,7 +255,7 @@ export default function HistoriaPage() {
     try {
       const { generateRecommendations } = await import('../modules/ai/services/aiAnalysis');
       const result = await generateRecommendations(data, aiConfig);
-      dispatch({ recomendaciones: result });
+      setData({ recomendaciones: result });
       alert('✅ Recomendaciones generadas por IA.');
     } catch (e) { alert('Error IA Recomendaciones: ' + e.message); }
     finally { setIsGeneratingReco(false); }
@@ -308,7 +299,7 @@ export default function HistoriaPage() {
       hashHC: hcHash,
       firmaDigital,
     };
-    dispatch(closeData);
+    setData(closeData);
 
     // B-02.3: portalData completo ~25 campos (monolito líneas 16235-16280)
     const portalData = {
@@ -667,8 +658,8 @@ export default function HistoriaPage() {
             handleChange={null}
             handleCompanySelect={(e) => {
               const comp = companies.find(c => c.id === e.target.value);
-              if (comp) dispatch({ empresaId: comp.id, empresaNombre: comp.nombre, ...(comp.arl && { arl: comp.arl }), ...(comp.claseRiesgo && { nivelRiesgoARL: comp.claseRiesgo }) });
-              else dispatch({ empresaId: 'particular', empresaNombre: '' });
+              if (comp) setData({ empresaId: comp.id, empresaNombre: comp.nombre, ...(comp.arl && { arl: comp.arl }), ...(comp.claseRiesgo && { nivelRiesgoARL: comp.claseRiesgo }) });
+              else setData({ empresaId: 'particular', empresaNombre: '' });
             }}
             handleNameChange={null} patientSuggestions={[]} selectPatientSuggestion={() => {}}
             historyNotification={null} isGenerating={isGenerating}
@@ -719,7 +710,7 @@ export default function HistoriaPage() {
       {showConsentModal && (
         <ConsentimientoModal data={data} estadoCerrada={data.estadoHistoria === 'Cerrada'}
           onCerrar={() => setShowConsentModal(false)}
-          onConfirmar={(campos) => { dispatch(campos); setShowConsentModal(false); }} />
+          onConfirmar={(campos) => { setData(campos); setShowConsentModal(false); }} />
       )}
 
       {/* ═══ AI Config Modal ═══ */}

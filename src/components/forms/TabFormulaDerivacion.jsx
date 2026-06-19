@@ -1,6 +1,7 @@
 // src/components/forms/TabFormulaDerivacion.jsx
 import React from 'react';
-import { DERIVACIONES_CATALOG, SPECIALTIES_LIST } from '../../data/catalogos.js';
+import { SPECIALTIES_LIST } from '../../shared/data/catalogs.js';
+import { DERIVACIONES_CATALOG } from '../../shared/data/derivaciones.js';
 import { MedicamentoAutocomplete } from '../../shared/components/MedicamentoAutocomplete.jsx';
 import { _sanitize, _safeLogoUrl } from '../../shared/lib/security.js';
 import { Pill, Share2, Printer, Plus, Trash2, Search, X } from 'lucide-react';

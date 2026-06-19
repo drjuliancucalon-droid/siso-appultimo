@@ -1,7 +1,7 @@
 // src/components/panels/RestriccionesChecklistPanel.jsx
 import React, { useState } from 'react';
-import { RESTRICCIONES_CATALOG } from '../../data/catalogos.js';
-import { CheckSquare, Square, X, AlertTriangle, Loader2, Sparkles } from 'lucide-react';
+import { RESTRICCIONES_CATALOG } from '../../shared/data/restricciones.js';
+import { CheckSquare, Square, X, AlertTriangle, Loader2, Sparkles, ChevronRight } from 'lucide-react';
 
 const RestriccionesChecklistPanel = ({ selected, onChange, onClose, onApply, isGenerating, onGenerate }) => {
   const [expandido, setExpandido] = useState({});

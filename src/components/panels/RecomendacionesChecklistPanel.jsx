@@ -1,7 +1,7 @@
 // src/components/panels/RecomendacionesChecklistPanel.jsx
 import React, { useState } from 'react';
-import { RECOMENDACIONES_CATALOG } from '../../data/catalogos.js';
-import { CheckSquare, Square, X, Sparkles, ClipboardList, Loader2 } from 'lucide-react';
+import { RECOMENDACIONES_CATALOG } from '../../shared/data/recomendaciones.js';
+import { CheckSquare, Square, X, Sparkles, ClipboardList, Loader2, ChevronRight } from 'lucide-react';
 
 const RecomendacionesChecklistPanel = ({
   selected,
@@ -33,9 +33,9 @@ const RecomendacionesChecklistPanel = ({
             <div className="flex items-center gap-3">
               <ClipboardList className="w-6 h-6" />
               <div>
-                <h2 className="text-lg font-black">Recomendaciones Médicas</h2>
+                <h2 className="text-lg font-black">Recomendaciones MÃ©dicas</h2>
                 <p className="text-xs text-emerald-100">
-                  Checklist de Recomendaciones por Categoría
+                  Checklist de Recomendaciones por CategorÃ­a
                 </p>
               </div>
             </div>
