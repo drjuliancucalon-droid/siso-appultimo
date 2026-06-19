@@ -82,6 +82,11 @@ function ProtectedRoute({ children, roles }) {
   return children;
 }
 
+// ── Infrastructure watchers (SPRINT 1) ───────────────────────────
+import VersionWatcher from './components/VersionWatcher';
+import D1ChangesWatcher from './components/D1ChangesWatcher';
+import StorageHealth from './components/StorageHealth';
+
 // ── Session timeout watcher ──────────────────────────────────────
 function SessionWatcher() {
   const { isAuthenticated, logout, resetActivity } = useAuthStore();
@@ -118,6 +123,9 @@ export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
+        <VersionWatcher />
+        <D1ChangesWatcher />
+        <StorageHealth />
         <SessionWatcher />
         <Suspense fallback={<PageLoader />}>
           <Routes>
