@@ -1,71 +1,52 @@
 # BITÁCORA DE CONTEXTO — SISO OCUPASALUD
-Última actualización: 2026-06-19 11:07 (America/Santiago)
-Sprint actual: SPRINT 4 — HC General + Fórmula + Derivaciones (COMPLETADO)
-Porcentaje estimado de completitud: 35%
+Última actualización: 2026-06-19 12:18 (America/Santiago)
+Sprint actual: SPRINT 5 — Portales (COMPLETADO)
+Porcentaje estimado de completitud: 42%
 
 ## ESTADO DEL REPOSITORIO
-- Build: PASA — 1764 modules, 51 chunks, 6.25s + version.json
+- Build: PASA — 1765 modules, 51 chunks, 7.68s + version.json
 - Tests: 1 suite pasando (8/8 d1Client.test.js)
 - Rama: main
-- Último commit: 5fd909b — sprint4: hc-general completo con incapacidad + plan + campos faltantes
-- Worker D1: NO VERIFICADO (vía health endpoint)
+- Último commit: fda5675 — sprint5: PortalEmpresa conectado a D1 + login NIT-codigo + periodo + ZIP
+- Worker D1: NO VERIFICADO
 
 ## COMPLETADO EN SESIONES ANTERIORES
-### PRE-SPRINT → SPRINT 3
-- Infraestructura, d1Client, authStore, HC Ocupacional cierre bloqueante + paraclínicos + QR + signos vitales
+### PRE-SPRINT → SPRINT 4
+- Infraestructura, d1Client, authStore, HC Ocupacional (cierre bloqueante + paraclínicos + QR + signos vitales), HC General (incapacidad + plan completo)
 
-### SPRINT 4 (commit: 5fd909b)
-- **GeneralHC.jsx** completado:
-  - Sección Incapacidad: checkbox "Aplica Incapacidad" + días, desde, hasta, origen (5 opciones)
-  - Campos Plan: medicamentos, paraclínicos, remisiones, controlEn — todos conectados a `data.plan`
-  - Datos demográficos: escolaridad (SelectGroup, 7 opciones) + email (InputGroup type=email)
-  - Cobertura GeneralHC: 80% → **95%** (40/42 campos de initialGeneralPatientState)
-- **TabFormulaDerivacion**: YA integrado en HistoriaGeneralPage.jsx con tabs fórmula + derivación
-- **ExamRequestTab**: 100% completo con búsqueda CUPS + impresión
-- **QR fix**: dominio ahora usa `VITE_STABLE_DOMAIN` con fallback
+### SPRINT 5 (commits: eb4f87f → e848b9f → c52b9d5 → fda5675)
+- **FIX 5 — cleanFirma()**: `src/shared/lib/utils/cleanFirma.js` CREADO. Aplicado en 4/4 archivos
+- **FIX 4 — Anti-popup**: `printService.js` openPrintWindow() con validación
+- **WorkerPortal**: Conectado a D1 con `d1Get('siso_portal_doc_<cc>')` + `d1Get('siso_portal_<code>')` + `d1Get('siso_portal_CV-<code>')`. Historial de atenciones con CertificateView integrado
+- **PortalEmpresa**: Login NIT+código, filtro por período, descarga ZIP con JSZip, conexión D1 (`siso_portal_empresa_atenciones_<NIT>`, `siso_portal_empresa_docs_<NIT>`, `siso_companies_shared`)
 
 ## EN CURSO
-- Ninguno. SPRINT 4 completado. Listo para SPRINT 5.
+- Ninguno. SPRINT 5 completado. Listo para SPRINT 6.
 
 ## PRÓXIMO PASO EXACTO
-Iniciar SPRINT 5 — PORTALES:
-1. WorkerPortalPage — login cédula/código
-2. PortalEmpresaPage — login NIT+código, periodos, descarga ZIP
-3. FIX 5: cleanFirma antes de publicar
-4. FIX 4: window.open() anti-popup blocker en impresión
-Commit sugerido: sprint5: portales trabajador empresa
+Iniciar SPRINT 6 — ENCUESTAS + AGENDA + PACIENTES
 
 ## DEUDA TÉCNICA DETECTADA
-- modules/clinical/services/printService.js: stub "1", real está en src/lib/printService.js
-- 14 suites legacy aún fallan por imports rotos — no bloqueante
-- FIX 4 (anti-popup window.open) pendiente en tabs de impresión
-
-## RIESGOS ACTIVOS
-- D1 tiene 2.441 claves activas: protegido con d1WriteArrayMerge
-- Worker token debe configurarse en GitHub Secrets de Repo B antes de CI/CD
+- 14 suites legacy fallan por imports rotos — no bloqueante
 
 ## INVENTARIO DE COBERTURA
 ### Módulos completos ✅
-- Infraestructura PRE-SPRINT
-- D1 Client SPRINT 1
-- Auth + Router SPRINT 2
-- HC Ocupacional SPRINT 3 (95%)
-- HC General SPRINT 4 (95%)
+- PRE-SPRINT, D1 Client, Auth + Router, HC Ocupacional (95%), HC General (95%), Portales SPRINT 5
 
 ### Módulos parciales 🔶
-- Páginas (44 en Repo B, build pasa)
-- TabFormulaDerivacion integrado en ambas HC
+- SPRINT 6 en adelante (Encuestas, Agenda, Pacientes, Facturación, IA, SGSST)
 
 ### Módulos ausentes ❌
 - .github/workflows/deploy.yml
-- SPRINT 5 en adelante (Portales, Encuestas, Agenda, Facturación, IA, SGSST...)
 
-## ARCHIVOS TOCADOS EN ÚLTIMA SESIÓN (SPRINT 4)
-- src/modules/clinical/components/GeneralHC.jsx: +85 líneas (incapacidad, plan campos, escolaridad, email)
-- src/modules/clinical/components/CertificateView.jsx: QR domain fix
+## ARCHIVOS TOCADOS EN ÚLTIMA SESIÓN (SPRINT 5)
+- src/shared/lib/utils/cleanFirma.js: CREADO
+- src/pages/HistoriaPage.jsx, CertificateView.jsx, DoctorSignature.jsx, PortalPublicoTrabajador.jsx: cleanFirma
+- src/lib/printService.js: FIX 4 anti-popup
+- src/modules/patients/components/WorkerPortal.jsx: REWRITE completo con D1
+- src/pages/PortalEmpresaPage.jsx: REWRITE completo con D1 + JSZip
 
-## CONTEXTO TÉCNICO CLAVE PARA PRÓXIMA SESIÓN (SPRINT 5)
-- WorkerPortalPage.jsx y PortalEmpresaPage.jsx ya existen en src/pages/
-- FIX 5: cleanFirma(firma) antes de guardar — usar regex replace(/^"+|"+$/g, '')
-- FIX 4: En cada window.open(), agregar: `if (!w) alert('Popup bloqueado...')`
-- Las rutas de portal ya están en App.jsx: /portal/:code, /portal-empresa
+## CONTEXTO TÉCNICO CLAVE PARA PRÓXIMA SESIÓN (SPRINT 6)
+- Las 6 claves D1 del portal se escriben en handleCloseHC y se leen desde WorkerPortal/PortalEmpresa
+- cleanFirma centralizado en src/shared/lib/utils/cleanFirma.js
+- JSZip ya importado para PortalEmpresa ZIP
