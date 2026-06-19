@@ -756,6 +756,53 @@ export const OccupationalHC = ({
           </div>
         </div>
 
+        {/* ── Paraclínicos ──────────────────────────────────────────── */}
+        <div className="mt-2 bg-slate-50 border border-slate-200 rounded-xl p-3 mb-2 print:bg-transparent print:border-gray-300">
+          <h3 className="text-[10px] font-black text-slate-700 uppercase mb-2 flex items-center gap-1.5">
+            <TestTube className="w-3.5 h-3.5 text-slate-600" /> Exámenes Paraclínicos
+          </h3>
+          <div className="grid grid-cols-3 md:grid-cols-4 gap-1.5">
+            {[
+              { k: 'optometria', l: 'Optometría' },
+              { k: 'audiometria', l: 'Audiometría' },
+              { k: 'espirometria', l: 'Espirometría' },
+              { k: 'ecg', l: 'Electrocardiograma' },
+              { k: 'glicemia', l: 'Glicemia' },
+              { k: 'lipidico', l: 'Perfil Lipídico' },
+              { k: 'frotisFaringeo', l: 'Frotis Faríngeo' },
+              { k: 'coprologico', l: 'Coprológico' },
+              { k: 'kohUnas', l: 'KOH Uñas' },
+              { k: 'hematico', l: 'Perfil Hemático' },
+              { k: 'rx', l: 'Radiografía Tórax' },
+              { k: 'emg', l: 'Electromiografía' },
+              { k: 'psicologia', l: 'Psicología / Test' },
+              { k: 'otros', l: 'Otros', isInput: true },
+            ].map(({ k, l, isInput }) => (
+              <label key={k} className="flex items-center gap-1.5 cursor-pointer bg-white border border-slate-200 rounded-lg px-2 py-1.5 hover:border-emerald-300 transition-colors">
+                {!isInput ? (
+                  <>
+                    <input type="checkbox" checked={!!(data.paraclinicosCheck || {})[k]}
+                      onChange={(e) => setData((p) => ({
+                        ...p, paraclinicosCheck: { ...p.paraclinicosCheck, [k]: e.target.checked },
+                      }))} className="w-3 h-3 accent-emerald-600 rounded" />
+                    <span className="text-[10px] font-semibold text-gray-700">{l}</span>
+                  </>
+                ) : (
+                  <div className="flex items-center gap-1 w-full">
+                    <span className="text-[10px] font-semibold text-gray-700 flex-shrink-0">{l}:</span>
+                    <input value={(data.paraclinicosCheck || {}).otros || ''}
+                      onChange={(e) => setData((p) => ({
+                        ...p, paraclinicosCheck: { ...p.paraclinicosCheck, otros: e.target.value },
+                      }))}
+                      className="flex-1 text-[10px] p-0.5 border-b border-slate-300 outline-none focus:border-emerald-400"
+                      placeholder="especificar..." />
+                  </div>
+                )}
+              </label>
+            ))}
+          </div>
+        </div>
+
         <div className="print-section-break" />
 
         {/* ══════════════════════════════════════════════════════════════ */}

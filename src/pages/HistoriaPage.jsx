@@ -10,6 +10,7 @@ import { printHC, generateHCPrintHTML, openPrintWindow, _printHCClean, PrintStyl
 import { initialOccupPatientState } from '../shared/data/initialStates';
 import { _sha256 } from '../shared/lib/crypto';
 import { _generarCertificadoHTMLNormalizado } from '../shared/lib/printUtils';
+import { d1Set, d1WriteArrayMerge } from '../lib/d1Client';
 
 // Lucide icons — imported ONCE at page level
 import {
@@ -340,25 +341,81 @@ export default function HistoriaPage() {
       hashHC: hcHash,
     };
 
-    // B-02.4: Guardar con 4 claves (monolito líneas 16281-16306)
+    // B-02.4: FIX 3 — Publicación bloqueante a 6 claves D1 (monolito línea 19600)
+    const docClean = (data.docNumero || '').replace(/\s/g, '');
+    const nitClean = company?.nit ? (company.nit || '').replace(/[^0-9]/g, '') : '';
+    const logPrefix = `[HC:${code.slice(-8)}]`;
+    const periodo = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+
+    const hcCompleta = { ...portalData, _hcCompleta: true, cerradaEn: now.toISOString() };
+    const atencion = {
+      id: `ac_${code}_${docClean}`,
+      docNumero: data.docNumero, nombres: data.nombres,
+      empresa: data.empresaNombre, cargo: data.cargo,
+      tipoExamen: data.tipoExamen, conceptoAptitud: data.conceptoAptitud,
+      fechaExamen: data.fechaExamen, codigoVerificacion: code,
+      periodo, cerradaEn: now.toISOString(),
+    };
+    const empresaReg = {
+      id: `emp_${nitClean}_${code}`,
+      docNumero: data.docNumero, nombres: data.nombres,
+      codigoVerificacion: code, fechaExamen: data.fechaExamen,
+      tipoExamen: data.tipoExamen, conceptoAptitud: data.conceptoAptitud,
+      cerradaEn: now.toISOString(),
+    };
+    const periodoDoc = {
+      periodo,
+      docNumero: data.docNumero, nombres: data.nombres,
+      codigoVerificacion: code, tipoExamen: data.tipoExamen,
+      fechaExamen: data.fechaExamen, conceptoAptitud: data.conceptoAptitud,
+    };
+
+    const failedKeys = [];
+    console.log(`${logPrefix} Iniciando publicación a 6 claves D1...`);
+
+    // Clave 1 (objeto)
     try {
-      await save('/write/portal/save', portalData, `siso_portal_${code}`);
-      if (data.docNumero) await save('/write/portal/save', portalData, `siso_portal_doc_${(data.docNumero || '').replace(/\s/g, '')}`);
-      // Clave legacy para compatibilidad
-      if (!code.startsWith('CV-')) await save('/write/portal/save', portalData, `siso_portal_CV-${code}`);
-      // Índice por NIT de empresa (agrega docNumero al array documentos[])
-      if (company?.nit) {
-        const nitLimpio = (company.nit || '').replace(/[^0-9]/g, '');
-        if (nitLimpio.length >= 3) {
-          const existingRaw = localStorage.getItem(`siso_portal_empresa_${nitLimpio}`);
-          const existing = existingRaw ? JSON.parse(existingRaw) : { nit: nitLimpio, nombre: company.nombre || '', documentos: [] };
-          if (!existing.documentos.includes(data.docNumero)) existing.documentos.push(data.docNumero);
-          existing.updatedAt = now.toISOString();
-          existing.nombre = company.nombre || existing.nombre;
-          await save('/write/portal/empresa', existing, `siso_portal_empresa_${nitLimpio}`);
-        }
-      }
-    } catch (portalErr) { console.warn('[handleCloseHC] portal error:', portalErr); }
+      await d1Set(`siso_hc_completa_${docClean}`, hcCompleta);
+      console.log(`${logPrefix} ✅ hc_completa`);
+    } catch (e) { failedKeys.push(`hc_completa: ${e.message}`); console.warn(`${logPrefix} ❌ hc_completa:`, e.message); }
+
+    // Clave 2 (objeto)
+    try {
+      await d1Set(`siso_portal_doc_${docClean}`, portalData);
+      console.log(`${logPrefix} ✅ portal_doc`);
+    } catch (e) { failedKeys.push(`portal_doc: ${e.message}`); console.warn(`${logPrefix} ❌ portal_doc:`, e.message); }
+
+    // Clave 3 (objeto)
+    try {
+      await d1Set(`siso_portal_${code}`, portalData);
+      console.log(`${logPrefix} ✅ portal_code`);
+    } catch (e) { failedKeys.push(`portal_code: ${e.message}`); console.warn(`${logPrefix} ❌ portal_code:`, e.message); }
+
+    // Claves 4-6 solo si hay NIT
+    if (nitClean && nitClean.length >= 3) {
+      // Clave 4 (array — MERGE)
+      try {
+        await d1WriteArrayMerge(`siso_portal_empresa_atenciones_${nitClean}`, [atencion], 'id');
+        console.log(`${logPrefix} ✅ empresa_atenciones`);
+      } catch (e) { failedKeys.push(`empresa_atenciones: ${e.message}`); console.warn(`${logPrefix} ❌ empresa_atenciones:`, e.message); }
+
+      // Clave 5 (array — MERGE)
+      try {
+        await d1WriteArrayMerge(`siso_portal_empresa_${nitClean}`, [empresaReg], 'id');
+        console.log(`${logPrefix} ✅ empresa`);
+      } catch (e) { failedKeys.push(`empresa: ${e.message}`); console.warn(`${logPrefix} ❌ empresa:`, e.message); }
+
+      // Clave 6 (array — MERGE, idField='periodo')
+      try {
+        await d1WriteArrayMerge(`siso_portal_empresa_docs_${nitClean}`, [periodoDoc], 'periodo');
+        console.log(`${logPrefix} ✅ empresa_docs`);
+      } catch (e) { failedKeys.push(`empresa_docs: ${e.message}`); console.warn(`${logPrefix} ❌ empresa_docs:`, e.message); }
+    }
+
+    console.log(`${logPrefix} Publicación D1: ${6 - failedKeys.length}/6 claves OK`);
+    if (failedKeys.length > 0) {
+      alert(`⚠️ Algunas claves del portal no se publicaron:\n${failedKeys.join('\n')}\n\nLa HC quedó cerrada localmente. Se sincronizará al reconectar.`);
+    }
 
     // B-02.5: Auto-sincronización de agenda — marcar como "atendido" (monolito líneas 16307-16328)
     if (data._agendaId) {

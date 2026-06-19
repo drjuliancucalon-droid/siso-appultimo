@@ -245,17 +245,46 @@ export const CertificateView = ({
         </div>
       )}
 
-      {/* HC Cerrada badge */}
+      {/* HC Cerrada badge + QR */}
       {data.estadoHistoria === 'Cerrada' && (
         <div className="mx-4 mb-3 bg-emerald-50 border-2 border-emerald-400 rounded-xl px-4 py-3 flex items-center gap-3 no-print">
           <div className="w-8 h-8 bg-emerald-500 rounded-full flex items-center justify-center flex-shrink-0">
             <Lock className="w-4 h-4 text-white" />
           </div>
-          <div>
+          <div className="flex-1">
             <p className="text-xs font-black text-emerald-800">Historia Clínica Firmada y Cerrada</p>
             <p className="text-[10px] text-emerald-600">
               Código de verificación: <span className="font-mono font-bold">{data.codigoVerificacion || '--'}</span>
             </p>
+          </div>
+          {/* QR Code */}
+          {data.codigoVerificacion && (
+            <div className="flex-shrink-0 bg-white p-1 rounded-lg border border-emerald-200">
+              <img
+                src={`https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(`https://siso-refactor.pages.dev/verificar/${data.codigoVerificacion}`)}`}
+                alt="QR Verificación"
+                className="w-20 h-20 rounded"
+                loading="lazy"
+              />
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Signos Vitales en Certificado */}
+      {(data.fc || data.fr || data.ta || data.temp || data.peso || data.talla || data.imc) && (
+        <div className="mb-4 border border-gray-200 rounded-xl overflow-hidden">
+          <div className="bg-blue-100 px-3 py-1.5 font-black text-xs uppercase text-blue-800">
+            Signos Vitales y Antropometría
+          </div>
+          <div className="p-3 grid grid-cols-3 gap-x-4 gap-y-1 text-[10px]">
+            {data.fc && <div className={rowCls}><span className="text-gray-500">FC (lpm)</span><span className="font-semibold">{data.fc}</span></div>}
+            {data.fr && <div className={rowCls}><span className="text-gray-500">FR (rpm)</span><span className="font-semibold">{data.fr}</span></div>}
+            {data.ta && <div className={rowCls}><span className="text-gray-500">T/A (mmHg)</span><span className="font-semibold">{data.ta}</span></div>}
+            {data.temp && <div className={rowCls}><span className="text-gray-500">Temp. (°C)</span><span className="font-semibold">{data.temp}</span></div>}
+            {data.peso && <div className={rowCls}><span className="text-gray-500">Peso (kg)</span><span className="font-semibold">{data.peso}</span></div>}
+            {data.talla && <div className={rowCls}><span className="text-gray-500">Talla (cm)</span><span className="font-semibold">{data.talla}</span></div>}
+            {data.imc && <div className={rowCls}><span className="text-gray-500">IMC (kg/m²)</span><span className="font-semibold">{data.imc}</span></div>}
           </div>
         </div>
       )}
