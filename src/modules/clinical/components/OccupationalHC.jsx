@@ -6,7 +6,7 @@
 import React, { useState, useCallback } from 'react';
 import {
   User, Stethoscope, Activity, History, ShieldCheck, ShieldAlert,
-  FileCheck, ClipboardList, Sparkles, Loader2, X, FileText, Lock, Plus
+  FileCheck, ClipboardList, Sparkles, Loader2, X, FileText, Lock, Plus, TestTube
 } from 'lucide-react';
 import { InputGroup } from '../../../shared/components/ui/InputGroup';
 import { SelectGroup } from '../../../shared/components/ui/SelectGroup';

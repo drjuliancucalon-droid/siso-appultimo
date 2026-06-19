@@ -2,7 +2,7 @@
 import React from 'react';
 import { DERIVACIONES_CATALOG } from '../../../shared/data/derivaciones';
 import { SPECIALTIES_LIST } from '../../../shared/data/catalogs';
-import MedicamentoAutocomplete from '../../../components/ui/MedicamentoAutocomplete';
+import { MedicamentoAutocomplete } from '../../../shared/components/MedicamentoAutocomplete';
 import { _generarCertificadoHTMLNormalizado } from '../../../shared/lib/printUtils';
 import BrandLogo from '../../../components/ui/BrandLogo';
 import DoctorSignature from '../../../components/ui/DoctorSignature';

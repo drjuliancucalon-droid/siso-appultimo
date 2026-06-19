@@ -434,6 +434,21 @@ export const GeneralHC = ({
               }))} />
           </div>
 
+          <div className="grid grid-cols-1 gap-2 mt-2">
+            <TextAreaGroup label="Estado General" name="estadoGeneral"
+              value={data.examenFisico?.estadoGeneral || ''}
+              onChange={(e) => setData((p) => ({
+                ...p, examenFisico: { ...p.examenFisico, estadoGeneral: e.target.value },
+              }))}
+              rows={2} placeholder="Describa el estado general del paciente..." />
+            <TextAreaGroup label="Hallazgos del Examen Físico" name="hallazgosFisico"
+              value={data.examenFisico?.hallazgos || ''}
+              onChange={(e) => setData((p) => ({
+                ...p, examenFisico: { ...p.examenFisico, hallazgos: e.target.value },
+              }))}
+              rows={2} placeholder="Resumen de hallazgos relevantes del examen físico..." />
+          </div>
+
           {/* Botón Todos Normal */}
           <div className="flex justify-end mb-2 no-print">
             <button
