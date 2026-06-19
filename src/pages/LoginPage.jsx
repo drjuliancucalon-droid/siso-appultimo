@@ -163,7 +163,7 @@ export default function LoginPage() {
           || await _verifyHash(pVal, seedMatch.passHash, seedMatch.passSalt);
         if (ok) {
           try {
-            loginLocal({
+            await loginLocal({
               id: seedMatch.id,
               user: seedMatch.user,
               nombre: seedMatch.nombre,
@@ -233,7 +233,7 @@ export default function LoginPage() {
         throw new Error(`Credenciales incorrectas. Intentos fallidos: ${attempts}/5`);
       }
 
-      loginLocal({
+      await loginLocal({
         id: found.id || ('usr_' + uName),
         user: found.user || found.usuario || uName,
         nombre: found.nombre || found.name || uName,
@@ -245,6 +245,7 @@ export default function LoginPage() {
         secretariaPermisos: found.secretariaPermisos || null,
       });
 
+      console.log('[login] ✅ loginLocal OK (found user)');
       navigate('/dashboard', { replace: true });
     } catch (err) {
       console.error('[login] ❌ login error', err);
