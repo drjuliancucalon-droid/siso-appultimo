@@ -73,7 +73,7 @@ export function openPrintWindow(title, htmlContent, options = {}) {
 
   const w = window.open('', '_blank', `width=${width},height=${height}`);
   if (!w) {
-    alert('No se pudo abrir la ventana de impresión. Verifica que el navegador no bloquea popups.');
+    alert('El navegador bloqueó la ventana de impresión.\nHabilita ventanas emergentes para este sitio e intenta de nuevo.');
     return;
   }
 

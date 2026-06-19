@@ -11,6 +11,7 @@ import { initialOccupPatientState } from '../shared/data/initialStates';
 import { _sha256 } from '../shared/lib/crypto';
 import { _generarCertificadoHTMLNormalizado } from '../shared/lib/printUtils';
 import { d1Set, d1WriteArrayMerge } from '../lib/d1Client';
+import { cleanFirma } from '../shared/lib/utils/cleanFirma';
 
 // Lucide icons — imported ONCE at page level
 import {

@@ -1,5 +1,6 @@
 import React from 'react';
 import { DEFAULT_DOCTOR_DATA } from '../../data/catalogs.js';
+import { cleanFirma } from '../../lib/utils/cleanFirma';
 
 export const DoctorSignature = ({ signature, data, showData = true }) => {
   const doc = data || DEFAULT_DOCTOR_DATA;
@@ -7,7 +8,7 @@ export const DoctorSignature = ({ signature, data, showData = true }) => {
     <div className="flex flex-col items-center justify-center w-full">
       <div className="h-16 w-52 flex items-center justify-center mb-0.5">
         {signature ? (
-          <img src={signature} alt="Firma" className="max-h-full max-w-full object-contain drop-shadow-sm" />
+          <img src={cleanFirma(signature)} alt="Firma" className="max-h-full max-w-full object-contain drop-shadow-sm" />
         ) : (
           <div className="h-14 w-full border-b-2 border-dashed border-gray-400 flex items-end justify-center pb-1">
             <span className="text-[9px] text-gray-300 italic">Firma</span>

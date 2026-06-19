@@ -7,6 +7,7 @@ import React from 'react';
 import { FileText, Lock } from 'lucide-react';
 import { BrandLogo } from '../../../shared/components/ui/BrandLogo';
 import { DoctorSignature } from '../../../shared/components/ui/DoctorSignature';
+import { cleanFirma } from '../../../shared/lib/utils/cleanFirma';
 
 /**
  * CertificateView — Certificado de Aptitud Laboral imprimible
