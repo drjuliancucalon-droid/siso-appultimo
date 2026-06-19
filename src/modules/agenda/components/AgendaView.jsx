@@ -1,8 +1,6 @@
-import React, { useState, useEffect, useMemo } from 'react';
+// src/modules/agenda/components/AgendaView.jsx — SPRINT 6: D1-powered
+import React, { useState, useMemo } from 'react';
 import { Calendar, Search, CheckCircle, Clock, User, Filter } from 'lucide-react';
-import { sp, _ls } from '../../../shared/lib/storage';
-
-const STORAGE_KEY = 'siso_agendados';
 
 const STATUS_CONFIG = {
   espera: { label: 'En espera', color: 'bg-yellow-100 text-yellow-800', icon: Clock },
@@ -11,30 +9,20 @@ const STATUS_CONFIG = {
   no_asistio: { label: 'No asistió', color: 'bg-red-100 text-red-800', icon: Clock },
 };
 
-export const AgendaView = ({ currentUser }) => {
-  const [citas, setCitas] = useState([]);
+export const AgendaView = ({ currentUser, appointments = [], onAppointmentsChange, onOpenHC }) => {
   const [filtroFecha, setFiltroFecha] = useState(new Date().toISOString().slice(0, 10));
   const [busqueda, setBusqueda] = useState('');
   const [filtroEstado, setFiltroEstado] = useState('todos');
 
-  useEffect(() => {
-    setCitas(sp(STORAGE_KEY, []));
-  }, []);
-
-  const guardar = (nuevas) => {
-    setCitas(nuevas);
-    _ls.setItem(STORAGE_KEY, JSON.stringify(nuevas));
-  };
-
   const cambiarEstado = (id, nuevoEstado) => {
-    const actualizadas = citas.map((c) =>
+    const actualizadas = appointments.map((c) =>
       c.id === id ? { ...c, estado: nuevoEstado, updatedAt: new Date().toISOString() } : c
     );
-    guardar(actualizadas);
+    if (onAppointmentsChange) onAppointmentsChange(actualizadas);
   };
 
   const citasFiltradas = useMemo(() => {
-    return citas.filter((c) => {
+    return appointments.filter((c) => {
       const coincideFecha = c.fecha === filtroFecha;
       const coincideBusqueda =
         !busqueda ||
@@ -43,7 +31,7 @@ export const AgendaView = ({ currentUser }) => {
       const coincideEstado = filtroEstado === 'todos' || c.estado === filtroEstado;
       return coincideFecha && coincideBusqueda && coincideEstado;
     });
-  }, [citas, filtroFecha, busqueda, filtroEstado]);
+  }, [appointments, filtroFecha, busqueda, filtroEstado]);
 
   return (
     <div className="space-y-4">
@@ -51,113 +39,70 @@ export const AgendaView = ({ currentUser }) => {
         <Calendar className="w-5 h-5 text-teal-600" /> Agenda de Citas
       </h2>
 
-      {/* Filtros */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
         <div>
           <label className="block text-xs font-semibold text-gray-600 mb-1">Fecha</label>
-          <input
-            type="date"
-            value={filtroFecha}
-            onChange={(e) => setFiltroFecha(e.target.value)}
-            className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-teal-400"
-          />
+          <input type="date" value={filtroFecha} onChange={(e) => setFiltroFecha(e.target.value)}
+            className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-teal-400" />
         </div>
         <div>
           <label className="block text-xs font-semibold text-gray-600 mb-1">Buscar paciente</label>
           <div className="relative">
             <Search className="absolute left-2 top-2.5 w-4 h-4 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Nombre o documento..."
-              value={busqueda}
-              onChange={(e) => setBusqueda(e.target.value)}
-              className="w-full border rounded-lg pl-8 pr-3 py-2 text-sm focus:ring-2 focus:ring-teal-400"
-            />
+            <input type="text" placeholder="Nombre o documento..." value={busqueda} onChange={(e) => setBusqueda(e.target.value)}
+              className="w-full border rounded-lg pl-8 pr-3 py-2 text-sm focus:ring-2 focus:ring-teal-400" />
           </div>
         </div>
         <div>
           <label className="block text-xs font-semibold text-gray-600 mb-1">Estado</label>
-          <div className="relative">
-            <Filter className="absolute left-2 top-2.5 w-4 h-4 text-gray-400" />
-            <select
-              value={filtroEstado}
-              onChange={(e) => setFiltroEstado(e.target.value)}
-              className="w-full border rounded-lg pl-8 pr-3 py-2 text-sm focus:ring-2 focus:ring-teal-400 appearance-none"
-            >
-              <option value="todos">Todos</option>
-              <option value="espera">En espera</option>
-              <option value="atendiendo">Atendiendo</option>
-              <option value="atendido">Atendido</option>
-            </select>
-          </div>
-        </div>
-        <div className="flex items-end">
-          <span className="text-sm text-gray-500">
-            {citasFiltradas.length} cita(s) encontrada(s)
-          </span>
+          <select value={filtroEstado} onChange={(e) => setFiltroEstado(e.target.value)}
+            className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-teal-400">
+            <option value="todos">Todos los estados</option>
+            {Object.entries(STATUS_CONFIG).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
+          </select>
         </div>
       </div>
 
       {/* Lista de citas */}
-      {citasFiltradas.length === 0 ? (
-        <div className="text-center py-12 text-gray-400">
-          <Calendar className="w-12 h-12 mx-auto mb-2 opacity-40" />
-          <p>No hay citas para esta fecha</p>
-        </div>
-      ) : (
-        <div className="space-y-2">
-          {citasFiltradas.map((cita) => {
-            const cfg = STATUS_CONFIG[cita.estado] || STATUS_CONFIG.espera;
-            const Icon = cfg.icon;
+      <div className="space-y-2">
+        {citasFiltradas.length === 0 ? (
+          <p className="text-center text-gray-400 py-8">No hay citas para esta fecha</p>
+        ) : (
+          citasFiltradas.map((cita) => {
+            const status = STATUS_CONFIG[cita.estado] || STATUS_CONFIG.espera;
             return (
-              <div
-                key={cita.id}
-                className="flex items-center justify-between bg-white border rounded-xl p-4 hover:shadow-md transition"
-              >
-                <div className="flex items-center gap-4">
-                  <div className="text-center min-w-[60px]">
-                    <div className="text-lg font-bold text-teal-700">{cita.hora || '--:--'}</div>
-                  </div>
+              <div key={cita.id} className="border rounded-lg p-3 flex items-center justify-between hover:bg-gray-50">
+                <div className="flex items-center gap-3">
+                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${status.color}`}>{status.label}</span>
                   <div>
-                    <p className="font-semibold text-gray-800">{cita.paciente || 'Sin nombre'}</p>
-                    <p className="text-xs text-gray-500">
-                      Doc: {cita.documento || 'N/A'} · Tipo: {cita.tipo || 'General'}
-                    </p>
-                    {cita.medico && (
-                      <p className="text-xs text-gray-400">Dr(a). {cita.medico}</p>
-                    )}
-                    {cita.notas && (
-                      <p className="text-xs text-gray-400 italic mt-1">{cita.notas}</p>
-                    )}
+                    <p className="font-bold text-sm text-gray-800">{cita.paciente || 'Sin nombre'}</p>
+                    <p className="text-xs text-gray-500">{cita.documento || 'N/A'} · {cita.empresa || ''}</p>
+                    <p className="text-[10px] text-gray-400">{cita.hora || '--:--'} · {cita.tipo || cita.tipoExamen || 'PERIODICO'}</p>
                   </div>
                 </div>
-
                 <div className="flex items-center gap-2">
-                  <span className={`px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1 ${cfg.color}`}>
-                    <Icon className="w-3 h-3" /> {cfg.label}
-                  </span>
-                  {cita.estado === 'espera' && (
-                    <button
-                      onClick={() => cambiarEstado(cita.id, 'atendiendo')}
-                      className="px-3 py-1 bg-blue-600 text-white rounded-lg text-xs hover:bg-blue-700 transition"
-                    >
-                      Llamar
+                  {/* FIX 1: Abrir HC desde agenda */}
+                  {onOpenHC && (
+                    <button onClick={() => onOpenHC(cita)}
+                      className="px-2 py-1 bg-purple-100 text-purple-700 rounded text-[10px] font-bold hover:bg-purple-200"
+                      title="Abrir Historia Clínica con datos completos">
+                      📋 Abrir HC
                     </button>
                   )}
-                  {cita.estado === 'atendiendo' && (
-                    <button
-                      onClick={() => cambiarEstado(cita.id, 'atendido')}
-                      className="px-3 py-1 bg-green-600 text-white rounded-lg text-xs hover:bg-green-700 transition"
-                    >
-                      Finalizar
-                    </button>
-                  )}
+                  {/* Cambiar estado */}
+                  <select value={cita.estado} onChange={(e) => cambiarEstado(cita.id, e.target.value)}
+                    className="p-1 border rounded text-[10px]">
+                    <option value="espera">En espera</option>
+                    <option value="atendiendo">Atendiendo</option>
+                    <option value="atendido">Atendido</option>
+                    <option value="no_asistio">No asistió</option>
+                  </select>
                 </div>
               </div>
             );
-          })}
-        </div>
-      )}
+          })
+        )}
+      </div>
     </div>
   );
 };
