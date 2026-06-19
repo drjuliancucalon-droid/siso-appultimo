@@ -1,55 +1,70 @@
 # BITÁCORA DE CONTEXTO — SISO OCUPASALUD
-Última actualización: 2026-06-19 12:32 (America/Santiago)
-Sprint actual: PRE-SPRINT → SPRINT 5 COMPLETADOS
-Porcentaje estimado de completitud: 42%
+Última actualización: 2026-06-19 15:37 (America/Santiago)
+Sprint actual: SPRINT 6 — Encuestas + Agenda + Pacientes (67% completado)
+Porcentaje estimado de completitud: 50%
 
 ## ESTADO DEL REPOSITORIO
-- Build: PASA — 1765 modules, 51 chunks, 7.68s + version.json
-- Tests: 172 tests, 152 pasan (88%), 20 fallidos
-  - Errores conocidos: localStorage en node, jest en vitest, imports legacy en sections/
-  - 0 suites con error de configuración ✅
+- Build: PASA — 1765 modules, 51 chunks, 3.64s + version.json
+- Tests: 172 total, 152 pasan (88%)
 - Rama: main
-- Último commit: fa85e99 — fix: deuda sprint4 cobertura 100% + testTube import + PrescriptionTab import arreglado
-- Worker D1: NO VERIFICADO
-- Deploy Cloudflare: NO VERIFICADO
+- Último commit: c1092d0 — sprint6(agenda): D1 connection + FIX 1 abrir HC desde agenda
+- Worker D1: ACTIVO en producción ✅
+- Deploy Cloudflare: siso-appultimo-arp.pages.dev ✅
 
-## COMPLETADO EN SESIONES ANTERIORES
-### PRE-SPRINT → SPRINT 5
-- SPE-001: Infraestructura y build reparado
-- SPR-001: d1Client.js con merge, chunking, retries, If-Match
-- SPR-002: Auth conectado a D1, admin_empresa, TOTP, CRUD usuarios
-- SPR-003: HC Ocupacional cierre bloqueante + paraclínicos + QR + signos vitales
-- SPR-004: HC General completo (100% cobertura de campos)
-- SPR-005: Portales WorkerPortal + PortalEmpresa con D1, cleanFirma, FIX 4 anti-popup
-- FIX-5: cleanFirma.js aplicado en 4 archivos de firma
+## COMPLETADO EN SPRINT 6 (ESTA SESIÓN)
 
-## DEUDAS TÉCNICAS RESUELTAS EN ESTA SESIÓN
-- DEUDA 1 ✅: GeneralHC.jsx cobertura 100% (44/44 campos) — +estadoGeneral +hallazgos en Examen Físico
-- DEUDA 2 ✅: TestTube import en OccupationalHC resuelto (3 tests afectados)
-- DEUDA 2 ✅: PrescriptionTab.jsx import de MedicamentoAutocomplete corregido
-- DEUDA 3: NO VERIFICADO — deploy en siso-refactor.pages.dev
-- DEUDA 4: NO VERIFICADO — Worker D1 health endpoint
+### PASO 1 — Pacientes D1 + anti-duplicados (commit: 3c92004)
+- **PatientsPage.jsx REFACTORIZADO**: lectura desde D1 con fallback jerárquico
+  - Principal: `d1Get('siso_db_patients_<userId>')`
+  - Fallback: `d1Get('siso_patients_<userId>')`
+  - Último recurso: localStorage
+- **Anti-duplicados**: validación de docNumero antes de crear
+- **Crear paciente**: formulario con d1WriteArrayMerge en `siso_db_patients_<userId>`
+- **Indicador de fuente**: D1 / D1 (legacy) / Local en UI
+
+### PASO 2+3 — Agenda D1 + FIX 1 (commit: c1092d0)
+- **AgendaPage.jsx REFACTORIZADO**: lectura desde D1 con fallback
+  - Principal: `d1Get('siso_agendados_<userId>')`
+  - Fallback: `d1Get('siso_agendados')` (clave compartida)
+  - Último recurso: localStorage
+- **Persistencia**: cambios de estado con d1WriteArrayMerge
+- **FIX 1**: Botón "📋 Abrir HC" en cada cita de la agenda
+  - Busca paciente en D1 por docNumero
+  - Navega con datos completos (nombres, documento, empresa, tipo, fecha)
+- **AgendaView.jsx REFACTORIZADO**: recibe appointments via props (ya no lee localStorage)
 
 ## EN CURSO
-- Ninguno. PRÓXIMO SPRINT: ENCUESTAS + AGENDA + PACIENTES
+- PASO 4 — ENCUESTAS (módulo nuevo, 0% completado)
+  - Página EncuestasPage.jsx
+  - Módulo src/modules/surveys/
+  - Store + D1 keys: siso_encuestas, siso_encuesta_resp_<token>
 
 ## PRÓXIMO PASO EXACTO
-Iniciar SPRINT 6 — ENCUESTAS + AGENDA + PACIENTES
+Crear módulo Encuestas desde cero:
+1. Crear SurveyPage con listado de encuestas + crear nueva
+2. Link público para responder encuesta
+3. Guardar respuestas en D1
+4. Importar respuestas a pacientes y agenda
 
 ## INVENTARIO DE COBERTURA
 ### Módulos completos ✅
-- Infraestructura PRE-SPRINT, d1Client, Auth + Router, HC Ocupacional (95%), HC General (100%), Portales (100%), FIX 5 + FIX 4
+- Infraestructura, d1Client, Auth, HC Ocupacional, HC General, Portales, FIX 5 + FIX 4
+- Pacientes SPRINT 6 (D1 + anti-duplicados)
+- Agenda SPRINT 6 (D1 + FIX 1)
 
-### Módulos parciales 🔶
-- Agenda, Pacientes, Encuestas (estructura existe pero necesita D1)
+### Módulos por crear ❌
+- Encuestas SPRINT 6 (PASO 4)
 
-### Módulos ausentes ❌
+### Módulos futuros
 - .github/workflows/deploy.yml
 
-## CONTEXTO TÉCNICO CLAVE PARA PRÓXIMA SESIÓN
-- La infraestructura D1 está completa y probada en worker y cliente
-- cleanFirma centralizado en src/shared/lib/utils/cleanFirma.js
-- JSZip ya importado para PortalEmpresa ZIP
-- TestTube ahora está importado en OccupationalHC.jsx (paraclínicos)
-- PrescriptionTab.jsx usa MedicamentoAutocomplete desde shared/components/
-- Las 6 claves D1 del portal se escriben en handleCloseHC y se leen desde WorkerPortal/PortalEmpresa
+## ARCHIVOS TOCADOS EN ÚLTIMA SESIÓN (SPRINT 6)
+- src/pages/PatientsPage.jsx: REWRITE completo con D1 + anti-duplicados
+- src/pages/AgendaPage.jsx: REWRITE completo con D1 + FIX 1
+- src/modules/agenda/components/AgendaView.jsx: Refactorizado para props
+
+## CONTEXTO TÉCNICO CLAVE PARA PASO 4 (ENCUESTAS)
+- Las claves D1 para encuestas no existen aún
+- Se necesita: siso_encuestas (array de definiciones), siso_encuesta_resp_<token> (respuesta)
+- El flujo completo es: crear encuesta → link público → responder → importar a pacientes/agenda
+- Debe seguir el mismo patrón D1: d1Get para lectura, d1WriteArrayMerge para escritura
