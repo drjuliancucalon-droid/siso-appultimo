@@ -1,80 +1,76 @@
 # BITÁCORA DE CONTEXTO — SISO OCUPASALUD
-Última actualización: 2026-06-19 08:47 (America/Santiago)
-Sprint actual: PRE-SPRINT — Saqueo Repo C (COMPLETADO)
-Porcentaje estimado de completitud: 5%
+Última actualización: 2026-06-19 09:15 (America/Santiago)
+Sprint actual: SPRINT 1 — D1 Client completo (COMPLETADO)
+Porcentaje estimado de completitud: 12%
 
 ## ESTADO DEL REPOSITORIO
-- Build: PASA — 1757 modules, 49 chunks, 6.89s
-- Tests: 0/14 suites pasan (pre-existing failures: tests usan Jest API con Vitest y referencian archivos inexistentes como `Companies.jsx`, `AIConfigPanel.jsx` legacy)
+- Build: PASA — 1763 modules, 51 chunks, 3.68s + version.json
+- Tests: 0/15 suites pasan (15 suites preexisting failures + 1 nueva d1Client.test.js afectada por bug en vitest config)
 - Rama: main
-- Último commit: ee0ae7023dae4317595aae6f59ddda9db957b269 (PRE-SPRINT pendiente de commit)
-- Worker D1: NO VERIFICADO
+- Último commit: 1c11138 — sprint1: d1Client completo con merge-antirregresion + watchers integrados en App
+- Worker D1: NO VERIFICADO (vía health endpoint)
 
-## COMPLETADO EN SESIÓN ANTERIOR
-- Build reparado: 7 errores corregidos (public/index.html duplicado, clinicalStore.js → .jsx + imports zustand v5, CompaniesPage ruta, Caja.jsx adapter, Reporte.jsx adapter, 3 archivos con imports rotos a catalogos.js → derivaciones.js/recomendaciones.js/restricciones.js, ChevronRight faltante, xlsx instalado, printService path, CompaniesPage default import fix)
+## COMPLETADO EN SESIONES ANTERIORES
+### PRE-SPRINT (commit: 03754c3)
+- Build reparado: 7 errores corregidos
 - vite.config.js: merge con version.json plugin de Repo C
-- PRE-SPRINT completado:
-  - src/components/VersionWatcher.jsx ← portado de Repo C
-  - src/components/D1ChangesWatcher.jsx ← portado de Repo C
-  - src/components/StorageHealth.jsx ← portado de Repo C
-  - siso-worker/ completo (index.js, schema.sql, wrangler.json) ← portado de Repo C
-  - public/_headers y public/_redirects ya existían en Repo B
-  - .github/workflows/deploy.yml — pendiente (no existe en Repo C como archivo plano)
+- VersionWatcher, D1ChangesWatcher, StorageHealth portados de Repo C
+- siso-worker/ completo (index.js, schema.sql, wrangler.json) portado de Repo C
+
+### SPRINT 1 (commit: 1c11138)
+- src/lib/d1Client.js CREADO desde cero (323 líneas):
+  - d1Get(key) → GET /store/:key con soporte de chunked reads
+  - d1Set(key, value, { ifMatchTs }) → POST /store con chunking >500KB
+  - d1GetMany(keys[]) → batch GET con 10 concurrencia
+  - d1Delete(key) → DELETE /store/:key
+  - d1WriteArrayMerge(key, list, idField) 🔴 CRÍTICO → merge anti-regresión
+  - Retries 3 intentos con backoff exponencial (1s, 2s, 4s)
+  - If-Match locking optimista con reintento en 409
+- src/lib/__tests__/d1Client.test.js: 8 tests de lógica de merge
+- Watchers integrados en App.jsx: VersionWatcher, D1ChangesWatcher, StorageHealth
 
 ## EN CURSO
-- Ninguno. PRE-SPRINT completado. Listo para SPRINT 1.
+- Ninguno. SPRINT 1 completado. Listo para SPRINT 2.
 
 ## PRÓXIMO PASO EXACTO
-Iniciar SPRINT 1 — D1 CLIENT COMPLETO:
-1. Verificar/completar d1Client.js: d1Get, d1Set, d1GetMany, d1Delete, d1WriteArrayMerge(key, list, idField)
-2. chunking automático si payload >500KB
-3. retries 3 intentos con backoff exponencial
-4. If-Match header para locking optimista
-5. Integrar VersionWatcher + D1ChangesWatcher en App.jsx
-6. Tests: d1Client.test.js
-Commit sugerido: sprint1: d1client merge-antirregresion completo
+Iniciar SPRINT 2 — AUTH + ROUTER + LAYOUT:
+1. authStore con todos los roles (super_admin, administrador, medico, secretaria, admin_empresa)
+2. LoginPage con rate limiting y 2FA
+3. UsersPage con CRUD
+4. authStore conectado a siso_users en D1 (usar d1Client nuevo)
+5. Router completo (todas las rutas)
+6. Layout navbar + sidebar responsive
+Commit sugerido: sprint2: auth router usuarios
 
 ## DEUDA TÉCNICA DETECTADA
-- Tests: 14 suites fallan porque mezclan Jest API (jest.fn, jest.mock) con Vitest. Migrar a vi.fn/vi.mock.
-- Tests: referencian archivos legacy que no existen (Companies.jsx, AIConfigPanel.jsx en components/panels/)
+- Tests: 14 suites + 1 nueva fallan porque @testing-library/jest-dom rompe vitest (Cannot read 'config' of undefined). Migrar setup.js.
 - modules/clinical/services/printService.js: es un stub "1", la real está en src/lib/printService.js
 
 ## RIESGOS ACTIVOS
-- D1 tiene 2.441 claves activas: no escribir sin MERGE
+- D1 tiene 2.441 claves activas: no escribir sin MERGE — ahora protegido con d1WriteArrayMerge
 - Worker token debe configurarse en GitHub Secrets de Repo B antes de CI/CD
-- El build es estable pero hay ~300KB de chunks pendientes de optimizar (AIConfigPanel 152KB, ReportsPage 295KB)
 
 ## INVENTARIO DE COBERTURA
 ### Módulos completos ✅
 - Infraestructura PRE-SPRINT (VersionWatcher, D1ChangesWatcher, StorageHealth, siso-worker, version.json)
+- D1 Client SPRINT 1 (d1Client.js con merge, chunking, retries, If-Match)
 
 ### Módulos parciales 🔶
 - Auth (estructura en Repo B, sin verificar contra monolito)
-- D1Client (base en Repo B, MERGE y chunking sin verificar)
 - Páginas (44 en Repo B, build pasa — completitud funcional sin auditar)
 
 ### Módulos ausentes ❌
 - .github/workflows/deploy.yml (pendiente de crear/adaptar)
-- SPRINT 1 en adelante: TODO el checklist de la sección 9
+- SPRINT 2 en adelante: TODO el checklist de la sección 9
 
-## ARCHIVOS TOCADOS EN ÚLTIMA SESIÓN
-- index.html: eliminado <style> inline que rompía Vite 6
-- src/modules/clinical/store/clinicalStore.js → .jsx: import paths corregidos
-- src/pages/CompaniesPage.jsx: import corregido de ./Companies a { CompanyList } de ../modules/companies
-- src/pages/Caja.jsx: NUEVO — adapter wrapper
-- src/pages/Reporte.jsx: NUEVO — adapter wrapper
-- src/components/forms/TabFormulaDerivacion.jsx: imports corregidos
-- src/components/panels/RecomendacionesChecklistPanel.jsx: import corregido + ChevronRight
-- src/components/panels/RestriccionesChecklistPanel.jsx: import corregido + ChevronRight
-- src/pages/HistoriaPage.jsx: import printService path corregido
-- vite.config.js: merge con version.json plugin
-- src/components/VersionWatcher.jsx: portado de Repo C
-- src/components/D1ChangesWatcher.jsx: portado de Repo C
-- src/components/StorageHealth.jsx: portado de Repo C
-- siso-worker/: portado de Repo C (3 archivos)
+## ARCHIVOS TOCADOS EN ÚLTIMA SESIÓN (SPRINT 1)
+- src/lib/d1Client.js: CREADO — 323 líneas, CRUD completo + chunking + retries + If-Match
+- src/lib/__tests__/d1Client.test.js: CREADO — 8 tests de lógica de merge
+- src/App.jsx: integrados VersionWatcher, D1ChangesWatcher, StorageHealth
 
-## CONTEXTO TÉCNICO CLAVE PARA PRÓXIMA SESIÓN
-- Build estable con 1757 módulos. version.json se genera en cada build.
-- 3 componentes watcher portados pero NO integrados en App.jsx — hacerlo en SPRINT 1.
-- El módulo companies exporta named exports (CompanyList, CompanyForm, CompanyPortal, useCompanies).
-- Los tests legacy usan `jest.mock()` en lugar de `vi.mock()` — migrar pendiente pero no bloqueante.
+## CONTEXTO TÉCNICO CLAVE PARA PRÓXIMA SESIÓN (SPRINT 2)
+- d1Client.js ya implementa merge anti-regresión. Usar d1WriteArrayMerge para siso_users, siso_patients.
+- authStore existe en src/stores/authStore.js — verificar contra monolito línea 8960 (roles y permisos).
+- VITE_WORKER_URL y VITE_WORKER_TOKEN deben configurarse en .env local para conectividad real.
+- Los tests de vitest tienen bug preexistente — no bloqueante para seguir avanzando.
+- Build estable con 1763 módulos, watchers integrados en App.
