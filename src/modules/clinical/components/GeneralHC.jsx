@@ -216,6 +216,12 @@ export const GeneralHC = ({
             onChange={handleChange} width="w-1/4" list="eps-list-gen" />
           <InputGroup label="Teléfono" name="telefono" value={data.telefono}
             onChange={handleChange} width="w-1/4" />
+          <SelectGroup label="Escolaridad" name="escolaridad" value={data.escolaridad}
+            onChange={handleChange}
+            options={['Primaria', 'Secundaria', 'Técnico', 'Tecnólogo', 'Universitario', 'Postgrado', 'Ninguna']}
+            width="w-1/4" />
+          <InputGroup label="Email" name="email" value={data.email}
+            onChange={handleChange} width="w-1/4" type="email" />
           <InputGroup label="Grupo Sanguíneo" name="grupoSanguineo" value={data.grupoSanguineo}
             onChange={handleChange} width="w-1/4" />
           <InputGroup label="Alergias Conocidas" name="alergias" value={data.alergias}
@@ -513,6 +519,55 @@ export const GeneralHC = ({
           </div>
         </div>
 
+        {/* ══════════════════════════════════════════════════════════ */}
+        {/* INCAPACIDAD                                              */}
+        {/* ══════════════════════════════════════════════════════════ */}
+        <SectionTitle title="Incapacidad Médica" icon={AlertCircle} color="red" />
+        <div className="bg-red-50 border border-red-200 rounded-xl p-3 mb-2 print:bg-transparent">
+          <label className="flex items-center gap-2 mb-2 cursor-pointer">
+            <input type="checkbox"
+              checked={!!(data.incapacidad?.aplica)}
+              onChange={(e) => setData((p) => ({ ...p, incapacidad: { ...p.incapacidad, aplica: e.target.checked } }))}
+              className="w-4 h-4 accent-red-600" />
+            <span className="text-xs font-black text-red-800 uppercase">Aplica Incapacidad</span>
+          </label>
+          {data.incapacidad?.aplica && (
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className="block text-[10px] font-bold text-gray-700 mb-0.5">Días</label>
+                <input type="number" value={data.incapacidad?.dias || ''}
+                  onChange={(e) => setData((p) => ({ ...p, incapacidad: { ...p.incapacidad, dias: e.target.value } }))}
+                  className="w-full p-1.5 border border-red-300 rounded text-xs outline-none"
+                  placeholder="Ej: 3" />
+              </div>
+              <div>
+                <label className="block text-[10px] font-bold text-gray-700 mb-0.5">Desde</label>
+                <input type="date" value={data.incapacidad?.desde || ''}
+                  onChange={(e) => setData((p) => ({ ...p, incapacidad: { ...p.incapacidad, desde: e.target.value } }))}
+                  className="w-full p-1.5 border border-red-300 rounded text-xs outline-none" />
+              </div>
+              <div>
+                <label className="block text-[10px] font-bold text-gray-700 mb-0.5">Hasta</label>
+                <input type="date" value={data.incapacidad?.hasta || ''}
+                  onChange={(e) => setData((p) => ({ ...p, incapacidad: { ...p.incapacidad, hasta: e.target.value } }))}
+                  className="w-full p-1.5 border border-red-300 rounded text-xs outline-none" />
+              </div>
+              <div>
+                <label className="block text-[10px] font-bold text-gray-700 mb-0.5">Origen</label>
+                <select value={data.incapacidad?.origen || 'Enfermedad General'}
+                  onChange={(e) => setData((p) => ({ ...p, incapacidad: { ...p.incapacidad, origen: e.target.value } }))}
+                  className="w-full p-1.5 border border-red-300 rounded text-xs outline-none">
+                  <option>Enfermedad General</option>
+                  <option>Accidente de Trabajo</option>
+                  <option>Accidente de Tránsito</option>
+                  <option>Enfermedad Laboral</option>
+                  <option>Maternidad</option>
+                </select>
+              </div>
+            </div>
+          )}
+        </div>
+
         <div className="print-section-break" />
 
         {/* ══════════════════════════════════════════════════════════ */}
@@ -600,6 +655,36 @@ export const GeneralHC = ({
               onChange={(e) => setData((p) => ({
                 ...p, plan: { ...p.plan, recomendaciones: e.target.value },
               }))} />
+          </div>
+          <div className="grid grid-cols-2 gap-2 mt-2">
+            <TextAreaGroup label="Prescripción / Medicamentos" name="planMeds"
+              value={data.plan?.medicamentos || ''}
+              onChange={(e) => setData((p) => ({
+                ...p, plan: { ...p.plan, medicamentos: e.target.value },
+              }))}
+              placeholder="Mg, presentación, dosis, frecuencia, duración..." />
+            <div className="space-y-2">
+              <TextAreaGroup label="Paraclínicos Solicitados" name="planParaclinicos"
+                value={data.plan?.paraclinicosSolicitados || ''}
+                onChange={(e) => setData((p) => ({
+                  ...p, plan: { ...p.plan, paraclinicosSolicitados: e.target.value },
+                }))}
+                placeholder="CUPS / examen, justificación..." rows={2} />
+              <TextAreaGroup label="Remisiones / Interconsultas" name="planRemisiones"
+                value={data.plan?.remisiones || ''}
+                onChange={(e) => setData((p) => ({
+                  ...p, plan: { ...p.plan, remisiones: e.target.value },
+                }))}
+                placeholder="Especialidad, motivo..." rows={2} />
+            </div>
+          </div>
+          <div className="mt-2">
+            <InputGroup label="Control en / Próxima Cita" name="planControlEn"
+              value={data.plan?.controlEn || ''}
+              onChange={(e) => setData((p) => ({
+                ...p, plan: { ...p.plan, controlEn: e.target.value },
+              }))}
+              width="w-1/3" placeholder="Ej: 7 días, 1 mes..." />
           </div>
 
           {/* P4 FIX: Restricciones y Recomendaciones con IA */}
