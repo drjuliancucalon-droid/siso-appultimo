@@ -152,26 +152,34 @@ export default function LoginPage() {
       const uName = user.trim();
       const pVal  = pass.trim();
 
+      console.log('[login] attempt', uName);
       // ── 1. SEED USERS (emergencia — siempre funciona) ───────────
       const seedMatch = SEED_USERS.find(
         u => (u.user === uName || u.usuario === uName) && u.activo !== false
       );
+      console.log('[login] seedMatch found', !!seedMatch, seedMatch?.role);
       if (seedMatch) {
         const ok = seedMatch.password === pVal
           || await _verifyHash(pVal, seedMatch.passHash, seedMatch.passSalt);
         if (ok) {
-          loginLocal({
-            id: seedMatch.id,
-            user: seedMatch.user,
-            nombre: seedMatch.nombre,
-            role: seedMatch.role,
-            license: seedMatch.license || 'libre',
-            licenseExpiry: seedMatch.licenseExpiry || null,
-            email: seedMatch.email || '',
-            activo: true,
-            secretariaPermisos: seedMatch.secretariaPermisos || null,
-          });
-          navigate('/dashboard', { replace: true });
+          try {
+            loginLocal({
+              id: seedMatch.id,
+              user: seedMatch.user,
+              nombre: seedMatch.nombre,
+              role: seedMatch.role,
+              license: seedMatch.license || 'libre',
+              licenseExpiry: seedMatch.licenseExpiry || null,
+              email: seedMatch.email || '',
+              activo: true,
+              secretariaPermisos: seedMatch.secretariaPermisos || null,
+            });
+            console.log('[login] ✅ loginLocal OK');
+            navigate('/dashboard', { replace: true });
+          } catch (d1Err) {
+            console.error('[login] ❌ loginLocal D1 error', d1Err.message);
+            throw d1Err;
+          }
           return;
         }
         // usuario encontrado pero contraseña incorrecta
@@ -239,6 +247,7 @@ export default function LoginPage() {
 
       navigate('/dashboard', { replace: true });
     } catch (err) {
+      console.error('[login] ❌ login error', err);
       setError(err.message || 'Error al iniciar sesión');
     } finally {
       setLoading(false);
