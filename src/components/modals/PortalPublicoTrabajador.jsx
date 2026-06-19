@@ -1,6 +1,7 @@
 ﻿// src/components/modals/PortalPublicoTrabajador.jsx
 import React from 'react';
 import { Search, CheckCircle2, AlertCircle, WifiOff, X } from 'lucide-react';
+import { cleanFirma } from '../../shared/lib/utils/cleanFirma';
 
 const PortalPublicoTrabajador = ({ sbUrl, sbKey, onVolver }) => {
   const { useState, useCallback, useRef } = React;
@@ -388,7 +389,7 @@ const PortalPublicoTrabajador = ({ sbUrl, sbKey, onVolver }) => {
                         ciudad: "Popayán",
                         email: "",
                       };
-                      const firma = resultado._firma || "";
+                      const firma = cleanFirma(resultado._firma) || "";
                       const _miIPS0 = currentUser?.empresaId
                         ? companies.find(
                             (c) => c.id === currentUser.empresaId
