@@ -67,7 +67,7 @@ const HC_TABS = [
 
 
 export default function HistoriaPage() {
-  const { id } = useParams();
+  const { id, patientId, docNumero } = useParams();
   const navigate = useNavigate();
   const currentUser = useAuthStore.getState().currentUser;
   const aiConfig = useMemo(() => useAIStore.getState().getConfig(), []);
@@ -91,12 +91,16 @@ export default function HistoriaPage() {
 
   // ═══ Load patient ═══
   const loaded = useRef(false);
+  const routePatientId = id || patientId || docNumero || '';
   useEffect(() => {
-    if (id && patients.length > 0 && !loaded.current) {
-      const p = patients.find((x) => x.docNumero === id || x.id === id);
+    if (routePatientId && patients.length > 0 && !loaded.current) {
+      const p = patients.find((x) =>
+        String(x?.docNumero) === String(routePatientId) ||
+        String(x?.id) === String(routePatientId)
+      );
       if (p) { setData(p); loaded.current = true; }
     }
-  }, [id, patients.length]);
+  }, [routePatientId, patients, setData]);
 
   // ═══ Dirty tracking + Auto-save ═══
   const [isDirty, setIsDirty] = useState(false);
@@ -511,6 +515,17 @@ export default function HistoriaPage() {
     } catch (e) { alert('Error FHIR: ' + e.message); }
   }, [data, activeDoctorData]);
 
+  // ═══ Handlers para inputs controlled (BUG-A-01) ═══
+  const handleChange = useCallback((e) => {
+    if (!e?.target?.name) return;
+    setData({ [e.target.name]: e.target.value });
+  }, [setData]);
+
+  const handleNameChange = useCallback((e) => {
+    if (!e?.target?.name) return;
+    setData({ [e.target.name]: e.target.value });
+  }, [setData]);
+
   // ═══ UI state ═══
   const [showConsentModal, setShowConsentModal] = useState(false);
   const [showRecomendacionesPanel, setShowRecomendacionesPanel] = useState(false);
@@ -713,13 +728,13 @@ export default function HistoriaPage() {
             onOpenHistory={() => {}}
             onOpenRecommendations={() => setShowRecomendacionesPanel(true)}
             onOpenRestrictions={() => setShowRestriccionesPanel(true)}
-            handleChange={null}
+            handleChange={handleChange}
             handleCompanySelect={(e) => {
               const comp = companies.find(c => c.id === e.target.value);
               if (comp) setData({ empresaId: comp.id, empresaNombre: comp.nombre, ...(comp.arl && { arl: comp.arl }), ...(comp.claseRiesgo && { nivelRiesgoARL: comp.claseRiesgo }) });
               else setData({ empresaId: 'particular', empresaNombre: '' });
             }}
-            handleNameChange={null} patientSuggestions={[]} selectPatientSuggestion={() => {}}
+            handleNameChange={handleNameChange} patientSuggestions={[]} selectPatientSuggestion={() => {}}
             historyNotification={null} isGenerating={isGenerating}
             isGeneratingReco={isGeneratingReco} isGeneratingRestr={isGeneratingRestr}
             showConsentModal={showConsentModal} setShowConsentModal={setShowConsentModal}
