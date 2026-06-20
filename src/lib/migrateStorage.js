@@ -13,9 +13,24 @@ const MIGRATION_FLAG = 'siso_migrated_v2';
  * Si cualquier escritura falla, NO marca y permite reintento.
  */
 export async function migrateLocalStorageToCloud(userId) {
-  if (localStorage.getItem(MIGRATION_FLAG) === 'true') {
-    console.log('[MIGRACIÓN R-1] Ya migrado para', userId);
-    return true;
+  const yaFue = localStorage.getItem(MIGRATION_FLAG) === 'true';
+  if (yaFue) {
+    // Verificar que realmente migró — si D1 vacío, resetear flag
+    try {
+      const { d1Get } = await import('./d1Client');
+      const { value } = await d1Get(`siso_db_patients_${userId}`);
+      if (!Array.isArray(value) || value.length === 0) {
+        console.warn('[MIGRACIÓN R-1] Flag existía pero D1 vacío — resetando');
+        localStorage.removeItem(MIGRATION_FLAG);
+      } else {
+        console.log('[MIGRACIÓN R-1] Ya migrado para', userId, `(${value.length} pacientes en D1)`);
+        return true;
+      }
+    } catch {
+      // Si D1 no responde, no resetear — reintentar en próximo login
+      console.warn('[MIGRACIÓN R-1] No se pudo verificar D1, reintentando en próximo login');
+      return false;
+    }
   }
 
   console.log('[MIGRACIÓN R-1] Iniciando migración localStorage → D1 para', userId);
