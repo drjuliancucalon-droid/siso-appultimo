@@ -7,6 +7,11 @@ export const useClinicalStore = create((set) => ({
     tipoHistoria: 'ocupacional',
     fechaExamen: new Date().toISOString().split('T')[0],
   },
-  setData: (updates) => set((state) => ({ data: { ...state.data, ...updates } })),
+  setData: (updates) => set((state) => ({
+    data: {
+      ...state.data,
+      ...(typeof updates === 'function' ? updates(state.data) : updates),
+    },
+  })),
   resetData: () => set({ data: { ...initialOccupPatientState, tipoHistoria: 'ocupacional', fechaExamen: new Date().toISOString().split('T')[0] } }),
 }));
