@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
+import { migrateLocalStorageToCloud } from '../lib/migrateStorage';
 import { Stethoscope, Eye, EyeOff, AlertCircle, Loader2, Shield } from 'lucide-react';
 
 // ── Helpers de hash (igual que el monolito) ─────────────────────

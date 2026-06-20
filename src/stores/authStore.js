@@ -4,6 +4,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { d1Get, d1Set, d1WriteArrayMerge } from '../lib/d1Client';
+import { migrateLocalStorageToCloud } from '../lib/migrateStorage';
 import { _sha256 } from '../shared/lib/crypto';
 import { _canUse, _secretariaPuede, PLAN_CONFIG, SECRETARIA_PERMISOS_DEFAULT } from '../shared/data/planConfig.js';
 
@@ -207,6 +208,11 @@ export const useAuthStore = create(
           lastActivity: Date.now(),
           mustChangePassword: !!cleanUser.mustChangePassword,
           twoFARequired: false,
+        });
+
+        // FASE R-1: Migración one-shot localStorage → D1
+        migrateLocalStorageToCloud(cleanUser.user).catch((e) => {
+          console.warn('[R-1] Migración falló en background:', e.message);
         });
 
         return cleanUser;
