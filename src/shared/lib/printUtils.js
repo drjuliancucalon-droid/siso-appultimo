@@ -3,6 +3,30 @@
 // Firma Digital, Certificados, Retención
 // ══════════════════════════════════════════════════════════════════════════
 import { _sanitize, _safeLogoUrl } from './security.js';
+
+/**
+ * _generarQRDataUrl(text)
+ * Genera una imagen QR en formato data:image/png;base64,... usando la
+ * librería `qrcode` (npm). Función asíncrona — await antes de renderizar.
+ *
+ * @param {string} text - Texto a codificar (ej: código de verificación)
+ * @param {number} [size=120] - Ancho/alto en píxeles
+ * @returns {Promise<string>} Data URL de la imagen PNG
+ */
+export async function _generarQRDataUrl(text, size = 120) {
+  if (!text) return '';
+  try {
+    const QRCode = (await import('qrcode')).default;
+    return await QRCode.toDataURL(text, {
+      width: size,
+      margin: 1,
+      color: { dark: '#065f46', light: '#ffffff' },
+    });
+  } catch (err) {
+    console.warn('[printUtils] QR generation failed:', err.message);
+    return '';
+  }
+}
 export const _ipsDocLeftHtml = (ipsData, docData, accentSafe) => {
   const ac = accentSafe || "#059669";
   if (ipsData) {
@@ -159,7 +183,8 @@ export const _generarCertificadoHTMLNormalizado = (
   data,
   doctorData,
   signature,
-  ipsData
+  ipsData,
+  qrDataUrl = ''
 ) => {
 const _dateRef = data.fechaCierre ? new Date(data.fechaCierre + "T12:00:00") : new Date();
   const fechaHoy = _dateRef.toLocaleDateString("es-CO", {
@@ -429,6 +454,9 @@ const _dateRef = data.fechaCierre ? new Date(data.fechaCierre + "T12:00:00") : n
     '<div class="cv-code">' +
     (data.codigoVerificacion || "--") +
     "</div>" +
+    (qrDataUrl
+      ? '<div class="qr-area" style="margin-top:6px;"><img src="' + qrDataUrl + '" alt="QR Verificación" style="width:90px;height:90px;display:block;margin:0 auto;" /><div style="font-size:6.5pt;color:#6b7280;margin-top:2px;">Escanea para verificar</div></div>'
+      : '') +
     "</div>" +
     '<div class="firma-col firma-med-box">' +
     sigImg +
@@ -451,12 +479,12 @@ const _dateRef = data.fechaCierre ? new Date(data.fechaCierre + "T12:00:00") : n
     "</div>" +
     "</div>" +
     "</div>" +
-    /* ── FOOTER ─────────────────────────────────────────────── */
+    /* ── FOOTER ──────────────────────────────────────────────── */
     '<div class="footer">' +
     "<span>Res. 1843/2025 · Res. 1995/1999 · Ley 23/1981 · Ley 1581/2012</span>" +
     "<span>SISO OcupaSalud v4.8</span>" +
     "</div>" +
-    /* ── CONSENTIMIENTO ─────────────────────────────────────── */
+    /* ── CONSENTIMIENTO ───────────────────────────────────── */
     '<div class="consent">El suscrito Médico Especialista en Salud Ocupacional, con licencia vigente, certifica que realizó el examen médico ocupacional registrado en este documento. ' +
     "El paciente fue informado de las medidas de protección de la confidencialidad de los resultados. " +
     "Las respuestas dadas fueron consideradas verídicas. " +

@@ -9,7 +9,7 @@ import { useSaveData } from '../hooks/useSaveData';
 import { printHC, generateHCPrintHTML, openPrintWindow, _printHCClean, PrintStyles, printSection } from '../lib/printService';
 import { initialOccupPatientState } from '../shared/data/initialStates';
 import { _sha256 } from '../shared/lib/crypto';
-import { _generarCertificadoHTMLNormalizado } from '../shared/lib/printUtils';
+import { _generarCertificadoHTMLNormalizado, _generarQRDataUrl } from '../shared/lib/printUtils';
 import { d1Set, d1WriteArrayMerge } from '../lib/d1Client';
 import { cleanFirma } from '../shared/lib/utils/cleanFirma';
 
@@ -18,7 +18,7 @@ import {
   ArrowLeft, Save, Printer, Loader2, CheckCircle, AlertTriangle,
   Stethoscope, FileText, Pill, GitBranch, TestTube, Paperclip,
   Hospital, Sparkles, Database, Heart, Lock, ClipboardList,
-  Download, Settings, X
+  Download, Settings, X, MessageCircle
 } from 'lucide-react';
 import { useClinicalStore } from '../modules/clinical/store/clinicalStore';
 // ═══ STATIC IMPORTS — NO React.lazy() ═══
@@ -537,14 +537,17 @@ export default function HistoriaPage() {
   });
 
   // ═══ Enviar multi-doc (F4-F5: combinación con page-break) ═══
-  const handleEnviar = useCallback(() => {
+  const handleEnviar = useCallback(async () => {
     const selected = Object.entries(enviarChecklist).filter(([_, v]) => v).map(([k]) => k);
     if (selected.length === 0) { alert('Selecciona al menos un documento'); return; }
 
     const sections = [];
     if (enviarChecklist.certificado) {
       try {
-        const certHtml = _generarCertificadoHTMLNormalizado(data, activeDoctorData, null, null);
+        const qrDataUrl = data.codigoVerificacion
+          ? await _generarQRDataUrl(data.codigoVerificacion)
+          : '';
+        const certHtml = _generarCertificadoHTMLNormalizado(data, activeDoctorData, null, null, qrDataUrl);
         if (certHtml) sections.push(certHtml);
       } catch { sections.push('<p>Certificado no disponible</p>'); }
     }
@@ -708,6 +711,23 @@ export default function HistoriaPage() {
       
 
           
+          {/* WhatsApp — enviar certificado/resultado al paciente */}
+          {(data.celular || data.telefono) && (
+            <a
+              href={`https://wa.me/57${(data.celular || data.telefono).replace(/\D/g, '')}?text=${encodeURIComponent(
+                `Hola ${data.nombres || 'Paciente'}, le informamos que su Historia Clínica Ocupacional ha sido procesada.` +
+                (data.codigoVerificacion ? ` Código de verificación: ${data.codigoVerificacion}` : '') +
+                ` — Dr. Julián Cucalón / SISO Salud Ocupacional`
+              )}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 px-3 py-2 text-[11px] font-bold text-green-700 bg-green-50 border border-green-200 hover:bg-green-100 rounded-xl transition-colors shadow-sm"
+              title="Enviar por WhatsApp al paciente"
+            >
+              <MessageCircle className="w-3.5 h-3.5" /> WhatsApp
+            </a>
+          )}
+
           <button onClick={handleCloseHC} className="flex items-center gap-1.5 px-4 py-2 text-[11px] uppercase tracking-wider font-black text-red-600 bg-red-50 hover:bg-red-100 hover:text-red-700 border border-red-100 rounded-xl transition-all ml-1 shadow-sm">
             <Lock className="w-3.5 h-3.5" /> Cerrar HC
           </button>
@@ -779,6 +799,7 @@ export default function HistoriaPage() {
             <RecomendacionesChecklistPanel data={data} setData={setData} onClose={() => setShowRecomendacionesPanel(false)} isGenerating={isGeneratingReco} />
           </div>
         </div>
+
       )}
       {showConsentModal && (
         <ConsentimientoModal data={data} estadoCerrada={data.estadoHistoria === 'Cerrada'}
@@ -786,7 +807,7 @@ export default function HistoriaPage() {
           onConfirmar={(campos) => { setData(campos); setShowConsentModal(false); }} />
       )}
 
-      {/* ═══ AI Config Modal ═══ */}
+      {/* AI Config Modal */}
       {showAIConfig && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setShowAIConfig(false)}>
           <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>

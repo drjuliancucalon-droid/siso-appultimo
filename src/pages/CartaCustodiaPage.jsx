@@ -4,6 +4,7 @@
 import React, { useState, useMemo, useCallback, useRef } from 'react';
 import { useBackendData, useBackendObject } from '../hooks/useBackendData';
 import { useAuthStore } from '../stores/authStore';
+import { d1WriteArrayMerge } from '../lib/d1Client';
 import {
   Printer, Save, Mail, Building2, Calendar,
   FileText, Check, ChevronDown, User, Info,
@@ -20,9 +21,7 @@ const formatDateEs = (isoDate) => {
   return `${d} de ${MONTHS_ES[m - 1]} de ${y}`;
 };
 
-const SB_URL = import.meta.env.VITE_SUPABASE_URL || 'https://yqrrktrgoijgzccrxnpz.supabase.co';
-const SB_KEY = import.meta.env.VITE_SUPABASE_KEY || 'sb_publishable_K88qYuJ9wsWjQqnIhLVK7Q_NroFvPI7';
-const sbH = { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}`, 'Content-Type': 'application/json' };
+// Supabase eliminado — almacenamiento migrado a D1 (PROMPT_MAESTRO constraint #7)
 
 // ─── Componente ────────────────────────────────────────────────────────────
 export default function CartaCustodiaPage() {
@@ -66,21 +65,20 @@ export default function CartaCustodiaPage() {
   const mesTexto  = MONTHS_ES[mesVal];
   const fechaTexto = formatDateEs(fechaCarta);
 
-  // ── Guardar en Supabase ──
+  // ── Guardar en D1 (migrado desde Supabase — PROMPT_MAESTRO constraint #7) ──
   const handleSave = useCallback(async () => {
     if (!selectedCompanyId) { alert('Selecciona una empresa primero'); return; }
     setSaving(true);
     try {
-      const res  = await fetch(`${SB_URL}/rest/v1/siso_store?key=eq.siso_cartas_custodia&select=value`, { headers: sbH });
-      const rows = await res.json();
-      const prev = Array.isArray(rows?.[0]?.value) ? rows[0].value : [];
+      const userId = currentUser?.id || 'drcucalon';
       const nueva = {
         id: `cust_${Date.now()}`,
         empresaId: selectedCompanyId,
         empresaNombre,
         empresaNit,
         fecha: fechaCarta,
-        mes: mesVal, anio: anioVal,
+        mes: mesVal,
+        anio: anioVal,
         mesTexto: MONTHS_ES[mesVal],
         medicoNombre: docNombre,
         medicoLicencia: docLicencia,
@@ -100,19 +98,15 @@ export default function CartaCustodiaPage() {
           mes: mesVal,
           anio: anioVal,
           fechaGeneracion: new Date().toISOString(),
-          tipoDocumento: 'Carta de Custodia'
-        }
+          tipoDocumento: 'Carta de Custodia',
+        },
       };
-      await fetch(`${SB_URL}/rest/v1/siso_store`, {
-        method: 'POST',
-        headers: { ...sbH, Prefer: 'resolution=merge-duplicates,return=minimal' },
-        body: JSON.stringify({ key: 'siso_cartas_custodia', value: [...prev, nueva], updated_at: new Date().toISOString() }),
-      });
+      await d1WriteArrayMerge(`siso_cartas_custodia_${userId}`, [nueva], 'id');
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
     } catch (e) { alert('Error guardando: ' + e.message); }
     finally { setSaving(false); }
-  }, [selectedCompanyId, empresaNombre, empresaNit, fechaCarta, mesVal, anioVal, docNombre, docLicencia, docCC, docTitulo, docCel, docEmail, docCiudad, ciudadDest]);
+  }, [currentUser, selectedCompanyId, empresaNombre, empresaNit, fechaCarta, mesVal, anioVal, docNombre, docLicencia, docCC, docTitulo, docCel, docEmail, docCiudad, ciudadDest]);
 
   const handleEmail = () => {
     const to  = selectedCompany?.email || selectedCompany?.correo || '';

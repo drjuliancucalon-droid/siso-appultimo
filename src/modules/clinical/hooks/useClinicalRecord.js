@@ -44,20 +44,50 @@ export const useClinicalRecord = ({
       estadoHistoria: 'Abierta',
     };
     if (patientData) {
+      // FIX 1 — Monolito línea 45517: spread COMPLETO del paciente al abrir HC desde agenda/lista
+      // NUNCA crear HC vacía si hay datos del paciente disponibles
       Object.assign(base, {
+        // ── Identificación ────────────────────────
         nombres: patientData.nombres || '',
         docTipo: patientData.docTipo || 'CC',
         docNumero: patientData.docNumero || '',
         fechaNacimiento: patientData.fechaNacimiento || '',
         edad: patientData.edad || '',
         genero: patientData.genero || '',
+        estadoCivil: patientData.estadoCivil || '',
+        escolaridad: patientData.escolaridad || '',
+        grupoEtnico: patientData.grupoEtnico || '',
+        identidadGenero: patientData.identidadGenero || '',
+        grupoSanguineo: patientData.grupoSanguineo || '',
+        lateralidad: patientData.lateralidad || '',
+        foto: patientData.foto || '',
+        // ── Contacto y residencia ─────────────────
+        telefono: patientData.telefono || '',
         celular: patientData.celular || '',
+        email: patientData.email || '',
+        residencia: patientData.residencia || '',
+        zonaResidencia: patientData.zonaResidencia || '',
+        estrato: patientData.estrato || '',
+        tipoVivienda: patientData.tipoVivienda || '',
+        // ── Socioeconómico ────────────────────────
+        numPersonasCargo: patientData.numPersonasCargo || '',
+        ingresosMensuales: patientData.ingresosMensuales || '',
+        // ── Prestaciones sociales ──────────────────
         eps: patientData.eps || '',
-        arl: patientData.arl || '',
         afp: patientData.afp || '',
+        arl: patientData.arl || '',
+        nivelRiesgoARL: patientData.nivelRiesgoARL || '',
+        // ── Empresa y cargo ───────────────────────
         cargo: patientData.cargo || '',
+        dependencia: patientData.dependencia || '',
+        tipoContrato: patientData.tipoContrato || '',
+        turnoTrabajo: patientData.turnoTrabajo || '',
+        antiguedadEmpresa: patientData.antiguedadEmpresa || '',
+        actividadEconomicaTrabajador: patientData.actividadEconomicaTrabajador || '',
         empresaId: patientData.empresaId || 'particular',
-        empresaNombre: patientData.empresaNombre || '',
+        empresaNombre: patientData.empresaNombre || 'PARTICULAR / INDEPENDIENTE',
+        empresaNit: patientData.empresaNit || patientData.nit || '',
+        actividadEconomica: patientData.actividadEconomica || '',
       });
     }
     setData(base);

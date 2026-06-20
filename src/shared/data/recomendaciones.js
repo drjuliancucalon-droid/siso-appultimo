@@ -158,6 +158,55 @@ export const RECOMENDACIONES_CATALOG = {
       },
     ],
   },
+  cardiovascular: {
+    label: "Cardiovascular / Metab\u00f3lico",
+    icon: "\u2764\ufe0f",
+    color: "red",
+    items: [
+      { id: "rc_01", texto: "Control peri\u00f3dico de presi\u00f3n arterial: m\u00ednimo cada 3 meses si tiene hipertensi\u00f3n conocida; anual si es normotenso." },
+      { id: "rc_02", texto: "Restricci\u00f3n de sodio en dieta: <2 g/d\u00eda (equivalente a <5 g de sal/d\u00eda) seg\u00fan gu\u00edas colombianas de HTA." },
+      { id: "rc_03", texto: "Monitoreo de glicemia en ayunas semestral si tiene factores de riesgo para diabetes mellitus tipo 2." },
+      { id: "rc_04", texto: "Perfil lip\u00eddico anual; reducir consumo de grasas saturadas y trans. Meta LDL <100 mg/dL en paciente de riesgo." },
+      { id: "rc_05", texto: "Adherencia estricta a tratamiento antihipertensivo, antidiab\u00e9tico o hipolipemiante indicado. No suspender sin orden m\u00e9dica." },
+      { id: "rc_06", texto: "Evitar consumo de bebidas energizantes, cafe\u00edna en exceso (>3 tazas/d\u00eda) y alcohol durante tratamiento cardiovascular activo." },
+    ],
+  },
+  respiratorio: {
+    label: "Respiratorio / Pulmonar",
+    icon: "🫑",
+    color: "blue",
+    items: [
+      { id: "rr_01", texto: "Uso correcto de inhaladores: inspiraci\u00f3n lenta y profunda, apnea 10 seg, exhalaci\u00f3n lenta (t\u00e9cnica supervisada)." },
+      { id: "rr_02", texto: "Evitar exposici\u00f3n a humo de tabaco, incienso, le\u00f1a y contaminantes del aire en domicilio y transporte." },
+      { id: "rr_03", texto: "Vacunaci\u00f3n antiinfluenza anual y antineumoc\u00f3cica seg\u00fan esquema EPS en pacientes con patolog\u00eda respiratoria cr\u00f3nica." },
+      { id: "rr_04", texto: "Control espironom\u00e9trico semestral para seguimiento de funci\u00f3n pulmonar mientras persista exposici\u00f3n a riesgo respiratorio." },
+      { id: "rr_05", texto: "Lavado nasal con soluci\u00f3n salina isot\u00f3nica dos veces al d\u00eda en ambientes con polvo u otros irritantes respiratorios." },
+    ],
+  },
+  visual: {
+    label: "Visual / Auditivo",
+    icon: "\ud83d\udc41\ufe0f",
+    color: "purple",
+    items: [
+      { id: "rv_01", texto: "Control optonom\u00e9trico anual con refracci\u00f3n; correcci\u00f3n actualizada obligatoria para tareas visuales de precisi\u00f3n." },
+      { id: "rv_02", texto: "Regla 20-20-20 en trabajo con pantallas: cada 20 minutos, mirar a 6 metros durante 20 segundos." },
+      { id: "rv_03", texto: "Audiometr\u00eda de control anual en trabajadores con exposici\u00f3n a ruido \u226580 dB. Uso de protecci\u00f3n auditiva certificada." },
+      { id: "rv_04", texto: "Uso obligatorio de gafas de seguridad certificadas (ANSI Z87.1 / EN 166) en \u00e1reas con proyecci\u00f3n de part\u00edculas o radiaci\u00f3n." },
+      { id: "rv_05", texto: "Iluminaci\u00f3n adecuada en puesto de trabajo: m\u00ednimo 500 lux para oficina, 1000 lux para trabajo de precisi\u00f3n (Res. 2400/1979)." },
+    ],
+  },
+  capacitacion: {
+    label: "Capacitaci\u00f3n y Prevenci\u00f3n",
+    icon: "\ud83d\udcda",
+    color: "emerald",
+    items: [
+      { id: "rk_01", texto: "Participar en la capacitaci\u00f3n anual de SG-SST de la empresa (art. 11 Decreto 1072/2015)." },
+      { id: "rk_02", texto: "Reportar todo accidente de trabajo e incidente dentro de las primeras 24 horas al \u00e1rea de SST y ARL." },
+      { id: "rk_03", texto: "Conocer el plan de emergencias de la empresa: puntos de encuentro, rutas de evacuaci\u00f3n y primeros auxilios b\u00e1sicos." },
+      { id: "rk_04", texto: "Uso correcto y obligatorio de todos los elementos de protecci\u00f3n personal (EPP) asignados seg\u00fan matriz de peligros del cargo." },
+      { id: "rk_05", texto: "Notificar al m\u00e9dico laboral y al \u00e1rea SST cualquier cambio en diagn\u00f3stico m\u00e9dico o inicio de nuevo tratamiento farmacol\u00f3gico." },
+    ],
+  }
 };
 
 export const DEFAULT_RECOMENDACIONES_SELECTED = {

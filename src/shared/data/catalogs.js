@@ -194,19 +194,46 @@ export const SPECIALTIES_LIST = [
 ].sort();
 
 export const NORMAL_DESCRIPTIONS_SYSTEMS = {
-  cabeza: "Normocéfalo, sin deformidades, sin masas palpables ni dolor a la palpación.",
-  ojos: "Pupilas isocóricas normorreactivas, conjuntivas rosadas, escleróticas blancas, movimientos oculares conservados.",
-  oidos: "Pabellones auriculares sin lesiones, conductos auditivos permeables, membranas timpánicas íntegras.",
-  nariz: "Tabique centrado, mucosa húmeda rosada, sin pólipos ni secreciones patológicas, permeabilidad nasal conservada.",
-  boca: "Mucosa oral húmeda rosada, orofaringe sin eritema, amígdalas no hipertróficas, dentición conservada.",
-  cuello: "Cuello simétrico, sin adenopatías palpables, tráquea centrada, tiroides no palpable, pulsos carotídeos simétricos.",
-  torax: "Simétrico, normoexpansible, sin deformidades costales, mamas sin masas palpables.",
-  corazon: "Ruidos cardíacos rítmicos, de buena intensidad, sin soplos, no se palpan thrill.",
-  pulmones: "Murmullo vesicular presente y simétrico bilateralmente, sin agregados pulmonares (no sibilancias, no estertores).",
-  abdomen: "Blando, depresible, no doloroso a la palpación, sin masas, sin organomegalias, ruidos intestinales presentes.",
-  genitourinario: "Sin puño-percusión renal positiva, región inguinal sin masas ni hernias palpables.",
-  columna: "Sin escoliosis, sin cifosis patológica, movilidad conservada en todos los planos, no dolor a la palpación de apófisis espinosas.",
-  extremidades: "Simétricas, bien conformadas, sin edemas, pulsos periféricos presentes y simétricos, llenado capilar <2 seg.",
-  piel: "Tegumentos de coloración normal, hidratados, sin lesiones activas, sin cicatrices patológicas.",
-  neurologico: "Orientado en tiempo, lugar y persona. Pares craneales sin alteraciones. Fuerza y sensibilidad conservadas, marcha normal, coordinación adecuada.",
+  // Tegumentos
+  pielFaneras:            "Tegumentos hidratados, coloraci\u00f3n normal, sin lesiones activas, cicatrices ni dermatosis. Faneras (u\u00f1as y cabello) sin alteraciones tr\u00f3ficas.",
+  ganglios:               "Sin adenopat\u00edas palpables en cadenas cervical, axilar, inguinal ni epitroclear. Ausencia de esplenomegalia.",
+  // Cabeza y cuello
+  cabeza:                 "Normalc\u00e9falo, sin deformidades craneales, sin masas palpables ni dolor a la palpaci\u00f3n.",
+  ojos:                   "Pupilas isoc\u00f3ricas normorreactivas, conjuntivas rosadas, escler\u00f3ticas blancas, movimientos oculares conservados, sin nistagmo.",
+  oidos:                  "Pabellones auriculares sin lesiones, conductos auditivos permeables, membranas gimp\u00e1nicas \u00edntegras, audici\u00f3n conservada bilateralmente.",
+  nariz:                  "Tabique centrado, mucosa nasal h\u00fameda rosada, sin p\u00f3lipos ni secreciones patol\u00f3gicas, permeabilidad nasal conservada.",
+  bocaOrofaringe:         "Mucosa oral h\u00fameda rosada, orofaringe sin eritema, am\u00edgdalas no hipertr\u00f3ficas (grado I), dentici\u00f3n conservada, sin lesiones en lengua ni paladar.",
+  cuello:                 "Cuello sim\u00e9trico, movilidad completa, sin adenopat\u00edas, tr\u00e1quea centrada, pulsos carot\u00eddeos sim\u00e9tricos, sin ingurgitaci\u00f3n yugular.",
+  tiroides:               "Gl\u00e1ndula tiroides no palpable, sin bocio, sin n\u00f3dulos, sin soplo tiroideo.",
+  // T\u00f3rax
+  torax:                  "Sim\u00e9trico, normoexpansible, sin deformidades costales, expansibilidad tor\u00e1cica sim\u00e9trica.",
+  mamario:                "Sin masas palpables, sin secreci\u00f3n por pez\u00f3n, sin cambios cut\u00e1neos patol\u00f3gicos. (Consignar si no aplica.)",
+  cardiovascular:         "Ruidos card\u00edacos r\u00edtmicos de buena intensidad, sin soplos, no se palpan fr\u00e9mitos. FC y PA dentro de l\u00edmites normales.",
+  pulmonar:               "Murmullo vesicular presente y sim\u00e9trico bilateralmente, sin sibilancias, sin estertores, percusi\u00f3n resonante.",
+  // Abdomen y pelvis
+  abdomen:                "Blando, depresible, no doloroso a la palpaci\u00f3n, sin masas, sin organomegalias, ruidos intestinales presentes y normales.",
+  genitourinario:         "Sin pu\u00f1o-percusi\u00f3n renal positiva bilateralmente. Regi\u00f3n inguinal sin masas ni hernias. Puntos ureterales indoloros.",
+  // Columna y extremidades
+  columna:                "Sin escoliosis ni cifosis patol\u00f3gica. Movilidad cervical y dorsal conservada en todos los planos, sin dolor a la palpaci\u00f3n de ap\u00f3fisis espinosas.",
+  lumbar:                 "Sin contractura paravertebral, movilidad lumbar conservada. Sin dolor a la palpaci\u00f3n de ap\u00f3fisis espinosas L1-S1. Sch\u00f6ber >4 cm.",
+  extremidadesSuperiores: "Sim\u00e9tricas, movilidad y fuerza conservadas en hombros, codos, mu\u00f1ecas y manos. Sin edemas, sin signos de s\u00edndrome del canal carpiano.",
+  extremidadesInferiores: "Sim\u00e9tricas, sin edemas. Caderas, rodillas y tobillos con movilidad y fuerza conservadas. Llenado capilar <2 seg., pulsos popl\u00edteos y pedios presentes.",
+  vascularPeriferico:     "Pulsos perif\u00e9ricos presentes, sim\u00e9tricos y de amplitud normal. Sin soplos vasculares. Sin signos de insuficiencia venosa perif\u00e9rica.",
+  osteoarticular:         "Sin articulaciones inflamadas ni derrame articular. Arcos de movimiento conservados. Sin crepitaci\u00f3n patol\u00f3gica.",
+  musculoEsqueletico:     "Masa muscular conservada y sim\u00e9trica, tono normal, fuerza 5/5 en los cuatro miembros. Sin atrofias ni hipertrofias patol\u00f3gicas.",
+  // Sistema nervioso
+  neurologico:            "Orientado en tiempo, lugar y persona. Pares craneales I\u2013XII sin alteraciones. Fuerza y sensibilidad conservadas. Marcha normal. Reflejos osteotendinosos ++.",
+  psiquiatrico:           "Alerta, consciente, juicio de realidad conservado. Sin alteraciones del \u00e1nimo, pensamiento, percepci\u00f3n ni memoria. Afecto apropiado.",
+  // Otros sistemas
+  respiratorioAlto:       "V\u00eda a\u00e9rea superior permeable, sin obstrucci\u00f3n ni estridor. Senos paranasales sin dolor a la percusi\u00f3n. Sin rinorrea ni epistaxis activa.",
+  digestivo:              "Sin alteraciones del tr\u00e1nsito intestinal referidas, sin n\u00e1useas ni v\u00f3mitos activos. H\u00e1bito intestinal normal. Sin sangrado digestivo.",
+  endocrino:              "Sin signos cl\u00ednicos de disfunci\u00f3n tiroidea, suprarrenal ni hipofisaria. Sin poliuria, polidipsia ni polifagia.",
+  hematologico:           "Sin palidez mucosa sugestiva de anemia. Sin equimosis espont\u00e1neas ni petequias. Sin adenopat\u00edas sist\u00e9micas.",
+  inmunologico:           "Sin signos de inmunodeficiencia. Sin reacciones al\u00e9rgicas recurrentes severas referidas. Sin enfermedades autoinmunes activas conocidas.",
+  // Retrocompatibilidad (registros anteriores con claves viejas)
+  boca:        "Mucosa oral h\u00fameda rosada, orofaringe sin eritema, am\u00edgdalas no hipertr\u00f3ficas, dentici\u00f3n conservada.",
+  corazon:     "Ruidos card\u00edacos r\u00edtmicos, de buena intensidad, sin soplos, no se palpan thrill.",
+  pulmones:    "Murmullo vesicular presente y sim\u00e9trico bilateralmente, sin agregados pulmonares (no sibilancias, no estertores).",
+  extremidades:"Sim\u00e9tricas, bien conformadas, sin edemas, pulsos perif\u00e9ricos presentes y sim\u00e9tricos, llenado capilar <2 seg.",
+  piel:        "Tegumentos de coloraci\u00f3n normal, hidratados, sin lesiones activas, sin cicatrices patol\u00f3gicas.",
 };
