@@ -22,9 +22,13 @@ function _isAdminEmpresa(role) {
  * Si no existe, inicializa con seed users del monolito (línea 9085-9200).
  */
 async function _loadUsersFromD1() {
-  const { value } = await d1Get(SISO_USERS_KEY);
-  if (Array.isArray(value) && value.length > 0) {
-    return value;
+  try {
+    const { value } = await d1Get(SISO_USERS_KEY);
+    if (Array.isArray(value) && value.length > 0) {
+      return value;
+    }
+  } catch (err) {
+    console.warn('[authStore] D1 unreachable, usando seed local:', err.message);
   }
   // Seed users fieles al monolito
   const seed = [
