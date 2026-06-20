@@ -15,28 +15,30 @@ const ALLOWED_ORIGINS = [
 // dirigido al alias original).
 const DEFAULT_ORIGIN = ALLOWED_ORIGINS[0];
 
-function corsHeaders(origin) {
-  // Match exacto contra la lista O cualquier subdomio bajo
-  // *.ocupasaludparadesplegar.pages.dev y *.ocupasaludparadesplegar-f4q.pages.dev
-  // (preview deploys de Cloudflare Pages usan hash.proyecto.pages.dev).
-  const allowed =
-    ALLOWED_ORIGINS.includes(origin) ||
-    (origin && origin.endsWith(".ocupasaludparadesplegar.pages.dev")) ||
-    (origin && origin.endsWith(".ocupasaludparadesplegar-f4q.pages.dev")) ||
-        (origin && origin.endsWith(".siso-appultimo-arp.pages.dev"));
+function isAllowedOrigin(origin) {
+  if (!origin) return false;
+  if (ALLOWED_ORIGINS.includes(origin)) return true;
+  if (origin.endsWith('.ocupasaludparadesplegar.pages.dev')) return true;
+  if (origin.endsWith('.ocupasaludparadesplegar-f4q.pages.dev')) return true;
+  if (origin.endsWith('.siso-appultimo-arp.pages.dev')) return true; // BUG-A-08 preview URLs
+  return false;
+}
+
+function getCorsHeaders(origin) {
+  const allow = isAllowedOrigin(origin) ? origin : DEFAULT_ORIGIN;
   return {
-    "Access-Control-Allow-Origin": allowed ? origin : DEFAULT_ORIGIN,
-    "Access-Control-Allow-Methods": "GET,POST,DELETE,OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type,X-Siso-Token",
-    "Access-Control-Max-Age": "86400",
-    "Content-Type": "application/json",
+    'Access-Control-Allow-Origin': allow,
+    'Access-Control-Allow-Headers': 'Content-Type, X-Siso-Token',
+    'Access-Control-Allow-Methods': 'GET,POST,OPTIONS,DELETE',
+    'Access-Control-Max-Age': '86400',
+    'Content-Type': 'application/json',
   };
 }
 
 export default {
   async fetch(request, env) {
     const origin = request.headers.get("Origin") || "";
-    const headers = corsHeaders(origin);
+    const headers = getCorsHeaders(origin);
 
     // OPTIONS preflight
     if (request.method === "OPTIONS") {

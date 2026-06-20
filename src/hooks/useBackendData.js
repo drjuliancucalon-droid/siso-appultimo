@@ -52,6 +52,33 @@ export function useBackendData(endpoint, localStorageKey, dataField) {
         }
       }
 
+      const getLegacyPatientsFallback = () => {
+        try {
+          const legacy = JSON.parse(localStorage.getItem('siso_db_patients') || '[]');
+          return Array.isArray(legacy) ? legacy : [];
+        } catch {
+          return [];
+        }
+      };
+
+      const getCompaniesFallback = () => {
+        let userId = 'drcucalon';
+        try {
+          const authRaw = JSON.parse(localStorage.getItem('siso-auth') || '{}');
+          userId = authRaw?.state?.currentUser?.user || userId;
+        } catch {}
+        try {
+          const withUser = JSON.parse(localStorage.getItem(`siso_companies_${userId}`) || '[]');
+          if (Array.isArray(withUser) && withUser.length > 0) return withUser;
+        } catch {}
+        try {
+          const legacy = JSON.parse(localStorage.getItem('siso_companies') || '[]');
+          return Array.isArray(legacy) ? legacy : [];
+        } catch {
+          return [];
+        }
+      };
+
       // Try Supabase directly (transition mode — uses anon key like monolith)
       try {
         const sbUrl = import.meta.env.VITE_SUPABASE_URL || 'https://yqrrktrgoijgzccrxnpz.supabase.co';
@@ -103,7 +130,26 @@ export function useBackendData(endpoint, localStorageKey, dataField) {
           if (res.ok) {
             const rows = await res.json();
             if (!cancelled && rows?.[0]?.value) {
-              const items = Array.isArray(rows[0].value) ? rows[0].value : [];
+              let items = Array.isArray(rows[0].value) ? rows[0].value : [];
+
+              // BUG-A-02: pacientes cloud 0/1 (QA) -> fallback legacy
+              if (endpoint === '/data/patients' && items.length <= 1) {
+                const legacyPatients = getLegacyPatientsFallback();
+                if (legacyPatients.length > 0) {
+                  console.warn('[useBackendData] /data/patients en cloud <=1; usando localStorage legacy');
+                  items = legacyPatients;
+                }
+              }
+
+              // BUG-A-03: empresas vacías -> fallback localStorage user/legacy
+              if (endpoint === '/data/companies' && items.length === 0) {
+                const fallbackCompanies = getCompaniesFallback();
+                if (fallbackCompanies.length > 0) {
+                  console.warn('[useBackendData] /data/companies vacío en cloud; usando localStorage');
+                  items = fallbackCompanies;
+                }
+              }
+
               setData(items);
               setSource('supabase-direct');
               try { localStorage.setItem(localStorageKey, JSON.stringify(items)); } catch {}
@@ -119,8 +165,22 @@ export function useBackendData(endpoint, localStorageKey, dataField) {
       // Fallback to localStorage
       if (!cancelled) {
         try {
-          const stored = JSON.parse(localStorage.getItem(localStorageKey) || '[]');
-          setData(Array.isArray(stored) ? stored : []);
+          let stored = JSON.parse(localStorage.getItem(localStorageKey) || '[]');
+          stored = Array.isArray(stored) ? stored : [];
+
+          // BUG-A-02: pacientes fallback definitivo
+          if (endpoint === '/data/patients' && stored.length <= 1) {
+            const legacyPatients = getLegacyPatientsFallback();
+            if (legacyPatients.length > 0) stored = legacyPatients;
+          }
+
+          // BUG-A-03: empresas fallback definitivo
+          if (endpoint === '/data/companies' && stored.length === 0) {
+            const fallbackCompanies = getCompaniesFallback();
+            if (fallbackCompanies.length > 0) stored = fallbackCompanies;
+          }
+
+          setData(stored);
           setSource('local');
         } catch {
           setData([]);

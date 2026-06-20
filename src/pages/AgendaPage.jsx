@@ -1,5 +1,5 @@
 // src/pages/AgendaPage.jsx — Agenda with backend data + Sala de espera
-import React from 'react';
+import React, { useCallback, useState, useEffect } from 'react';
 import { AgendaView } from '../modules/agenda/components/AgendaView';
 import { QueueManager } from '../modules/agenda/components/QueueManager';
 import { useAuthStore } from '../stores/authStore';
@@ -12,6 +12,15 @@ export default function AgendaPage() {
     '/data/agenda', 'siso_agendados', 'appointments'
   );
 
+  const [citas, setCitas] = useState([]);
+  useEffect(() => {
+    if (Array.isArray(appointments)) setCitas(appointments);
+  }, [appointments]);
+
+  const handleAppointmentsChange = useCallback((next) => {
+    setCitas(Array.isArray(next) ? next : []);
+  }, []);
+
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
       <div className="flex items-center justify-between mb-6">
@@ -20,7 +29,7 @@ export default function AgendaPage() {
           <h1 className="text-2xl font-bold text-gray-800">Agenda</h1>
           {!loading && (
             <span className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">
-              {appointments.length} citas
+              {citas.length} citas
             </span>
           )}
         </div>
@@ -52,7 +61,11 @@ export default function AgendaPage() {
             <h2 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
               <Calendar className="w-4 h-4" /> Calendario de Citas
             </h2>
-            <AgendaView currentUser={currentUser} />
+            <AgendaView
+              currentUser={currentUser}
+              appointments={citas}
+              onAppointmentsChange={handleAppointmentsChange}
+            />
           </div>
         </>
       )}
