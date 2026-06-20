@@ -58,7 +58,7 @@ export default function PatientsPage() {
     finally { setCreating(false); }
   }, [newPatient, patients, userId]);
 
-  const handleSelectPatient = (p) => { if (p?.docNumero) navigate(`/patients/${p.docNumero}/hc`); };
+  const handleSelectPatient = (p) => { if (p?.docNumero) navigate(`/patients`); };
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
