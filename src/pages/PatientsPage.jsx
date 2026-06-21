@@ -33,7 +33,13 @@ export default function PatientsPage() {
         try { const { value: v } = await d1Get(`siso_patients_${userId}`); if (Array.isArray(v) && v.length > 0) { list = v; if (!cancelled) setSource('d1-fallback'); } } catch {}
       }
       if (list.length === 0 && !cancelled) {
-        try { const raw = localStorage.getItem('siso_pacientes'); if (raw) { const p = JSON.parse(raw); if (Array.isArray(p)) list = p; } } catch {}
+        try {
+          // Try user-namespaced key first, then legacy monolith key
+          const raw = localStorage.getItem(`siso_db_patients_${userId}`)
+            || localStorage.getItem('siso_db_patients')
+            || localStorage.getItem('siso_pacientes');
+          if (raw) { const p = JSON.parse(raw); if (Array.isArray(p)) list = p; }
+        } catch {}
         if (!cancelled) setSource('local');
       }
       if (!cancelled) { setPatients(list); setLoading(false); }
@@ -58,7 +64,7 @@ export default function PatientsPage() {
     finally { setCreating(false); }
   }, [newPatient, patients, userId]);
 
-  const handleSelectPatient = (p) => { if (p?.docNumero) navigate(`/patients`); };
+  const handleSelectPatient = (p) => { if (p?.docNumero) navigate(`/patients/${encodeURIComponent(p.docNumero)}/hc`); };
 
   return (
     <div className="p-6 max-w-7xl mx-auto">

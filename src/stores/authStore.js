@@ -33,7 +33,7 @@ async function _loadUsersFromD1() {
   // Seed users fieles al monolito
   const seed = [
     {
-      id: 1, user: 'drcucalon', passHash: 'b7cb6abb0a3eb230c725327ff0d42a720f6efeee7cb2120a5a9db4c057d645c0',
+      id: 1, user: 'drcucalon', passHash: '49679f37304820e18bae7ed12292e42a7722a7d1a55f12e41b1abca5cc5162fd',
       name: 'Dr. Julian Cucalon', nombre: 'Dr. Julian Cucalon', role: 'super_admin',
       orgId: 'ORG-001', license: 'clinica', licenseExpiry: '2099-12-31', licenseStarted: '2026-01-01',
       porcentajeHonorarios: 100, secretariaPermisos: { ...SECRETARIA_PERMISOS_DEFAULT }, activo: true,
