@@ -1,10 +1,13 @@
 // src/pages/TelemedicinePage.jsx
 // Secretary gate + PlanGate + VideoConsult
 // B-07 — Fiel al monolito líneas 30966-31001 (gate)
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { VideoConsult } from '../modules/telemedicine/components/VideoConsult';
 import { useAuthStore } from '../stores/authStore';
+import { useAIStore } from '../stores/aiStore';
+import { profesiogramaIA } from '../modules/ai/services/aiAnalysis';
+import { Sparkles, Loader2, Activity, Briefcase, Building2, AlertTriangle } from 'lucide-react';
 
 export default function TelemedicinePage() {
   const navigate = useNavigate();
