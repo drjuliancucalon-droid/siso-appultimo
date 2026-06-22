@@ -4,6 +4,8 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { ErrorBoundary } from '../components/ErrorBoundary';
+import { useAIStore } from '../stores/aiStore';
+import { AIConfigPanel } from '../modules/ai/components/AIConfigPanel';
 import { useAuthStore } from '../stores/authStore';
 import { useUIStore } from '../stores/uiStore';
 import { ConnectionBadge } from '../shared/lib/connectionStatus';
@@ -49,6 +51,9 @@ export default function Layout() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
   const [showMensajesDrawer, setShowMensajesDrawer] = useState(false);
+  const [showAIConfig, setShowAIConfig] = useState(false);
+  const { activeProvider, keys: aiKeys } = useAIStore();
+  const aiConfig = { activeProvider, keys: aiKeys };
   const { data: doctor } = useBackendObject('/data/doctor', 'siso_doctor_data', 'doctor');
   const tabsRef = useRef(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
@@ -193,6 +198,16 @@ export default function Layout() {
               </div>
             )}
 
+            {/* Config IA global */}
+            <button
+              onClick={() => setShowAIConfig(true)}
+              className="flex items-center gap-1 px-2 py-1 bg-violet-50 hover:bg-violet-100 text-violet-700 rounded-lg text-[10px] font-bold transition-colors border border-violet-200"
+              title="Configurar proveedor de IA"
+            >
+              <BrainCircuit className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Config IA</span>
+            </button>
+
             {/* Messages badge */}
             <button onClick={() => setShowMensajesDrawer(true)} className="relative p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors" title="Mensajes">
               <MessageCircle className="w-4 h-4" />
@@ -299,6 +314,26 @@ export default function Layout() {
           <Outlet />
         </ErrorBoundary>
       </main>
+
+      {/* AI Config Modal — global, accesible desde cualquier módulo */}
+      {showAIConfig && (
+        <div className="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4" onClick={() => setShowAIConfig(false)}>
+          <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <AIConfigPanel
+              aiConfig={aiConfig}
+              onSave={(newConfig) => {
+                const store = useAIStore.getState();
+                if (newConfig.activeProvider) store.setActiveProvider(newConfig.activeProvider);
+                if (newConfig.keys) Object.entries(newConfig.keys).forEach(([p, k]) => store.setKey(p, k));
+                const userId = useAuthStore.getState().currentUser?.user;
+                if (userId) store.saveToD1(userId).catch(() => {});
+                setShowAIConfig(false);
+              }}
+              onClose={() => setShowAIConfig(false)}
+            />
+          </div>
+        </div>
+      )}
 
       <MensajesDrawer isOpen={showMensajesDrawer} onClose={() => setShowMensajesDrawer(false)} />
     </div>
