@@ -329,6 +329,22 @@ export const optimizeSchedule = async (agendaData, aiConfig) => {
 };
 
 // ═══════════════════════ FASE 4 — DAILY SUMMARY DASHBOARD ════════════════════
+// ═══════════════════════ FASE 5 — GENERATE PROPOSAL ═════════════════════════
+export const generateProposal = async (proposalData, aiConfig) => {
+  const prompt = `Eres especialista en salud ocupacional colombiana con experiencia en propuestas comerciales para empresas. Genera una propuesta económica profesional para servicios de medicina ocupacional.\nDATOS DE LA EMPRESA:\n- Nombre: ${proposalData.empresa}\n- NIT: ${proposalData.nit}\n- No. trabajadores: ${proposalData.numTrabajadores}\n- Actividad económica: ${proposalData.actividadEconomica}\n- Clase de riesgo ARL: ${proposalData.claseRiesgo}\n- Servicios requeridos: ${JSON.stringify(proposalData.servicios)}\n- Ciudad: ${proposalData.ciudad}\nGenera propuesta económica conforme a Res. 1843/2025.\nDevuelve ÚNICAMENTE JSON:\n{"introduccion":"","serviciosDetallados":[{"nombre":"","descripcion":"","frecuencia":"","precioUnitario":0,"cantidad":0,"subtotal":0}],"totalSinIVA":0,"iva":0,"totalConIVA":0,"condicionesComerciales":"","validezDias":30,"observaciones":""}`;
+  const systemPrompt = 'Eres especialista en servicios de salud ocupacional colombiana. Precios en COP. Responde SOLO JSON.';
+  const raw = await callAIWithFailover(prompt, systemPrompt, aiConfig);
+  return parseAIJSON(raw);
+};
+
+// ═══════════════════════ FASE 6 — PROFESIOGRAMA IA ══════════════════════════
+export const profesiogramaIA = async (cargoData, aiConfig) => {
+  const prompt = `Eres médico especialista en Medicina del Trabajo colombiano con más de 15 años de experiencia en profesiogramas. Genera un profesiograma conforme a Res. 1843/2025 Art. 29.\nDATOS DEL CARGO:\n- Nombre del cargo: ${cargoData.cargo}\n- Empresa: ${cargoData.empresa}\n- Actividad económica: ${cargoData.actividadEconomica}\n- Descripción de tareas: ${cargoData.tareas}\n- Riesgos identificados: ${JSON.stringify(cargoData.riesgos)}\n- Periodicidad examen médico: ${cargoData.periodicidad}\nGenera profesiograma completo.\nDevuelve ÚNICAMENTE JSON:\n{"cargo":"","empresa":"","examenesRequeridos":[{"nombre":"","cups":"","frecuencia":"Ingreso/Anual/Retiro","obligatorio":true,"justificacion":""}],"aptitudFisica":{"vision":"","audicion":"","capacidadFisica":"","saludMental":""},"restriccionesGenerales":[""],"factoresRiesgo":[{"tipo":"","nivel":"Alto/Medio/Bajo","control":""}],"sveProgramas":[""],"periodicidadExamen":"","normativaAplicable":["Res. 1843/2025"]}`;
+  const systemPrompt = 'Eres médico ocupacional colombiano experto en profesiogramas. Res. 1843/2025. Responde SOLO JSON.';
+  const raw = await callAIWithFailover(prompt, systemPrompt, aiConfig);
+  return parseAIJSON(raw);
+};
+
 export const dailySummary = async (dashboardData, aiConfig) => {
   const prompt = `Eres médico especialista en Medicina del Trabajo con más de 15 años de experiencia. Analiza los datos del día y genera un resumen ejecutivo para el médico.\nDATOS DEL DÍA:\n- Pacientes atendidos hoy: ${dashboardData.pacientesHoy}\n- Citas pendientes: ${dashboardData.citasPendientes}\n- HCs abiertas sin cerrar: ${dashboardData.hcSinCerrar}\n- Empresas activas: ${dashboardData.empresasActivas}\n- Alertas de salud identificadas: ${JSON.stringify(dashboardData.alertas)}\n- Ingresos del día: ${dashboardData.ingresosDia}\nGenera resumen ejecutivo del día con:\n1. Situación actual de la consulta\n2. Prioridades para las próximas horas\n3. Alertas médicas a atender\n4. Recomendaciones operativas\nDevuelve ÚNICAMENTE JSON:\n{"resumen":"","prioridades":[""],"alertasMedicas":[""],"recomendacionesOperativas":[""],"indicadorDelDia":""}`;
   const systemPrompt = 'Eres médico especialista en Medicina del Trabajo colombiano. Responde SOLO con JSON.';

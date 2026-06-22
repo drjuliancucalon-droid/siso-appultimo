@@ -1,7 +1,9 @@
 // src/pages/CotizacionesPage.jsx — Quotations
 // T-02: Completar Cotizaciones - PDF firmado + Estados
 import React, { useState } from 'react';
-import { FileText, Plus, Printer, Trash2, DollarSign, Building2, Send, CheckCircle, XCircle, FileSignature } from 'lucide-react';
+import { FileText, Plus, Printer, Trash2, DollarSign, Building2, Send, CheckCircle, XCircle, FileSignature, Sparkles, Loader2 } from 'lucide-react';
+import { useAIStore } from '../stores/aiStore';
+import { generateProposal } from '../modules/ai/services/aiAnalysis';
 import { useBackendData } from '../hooks/useBackendData';
 import { openPrintWindow } from '../lib/printService';
 
@@ -68,6 +70,27 @@ export default function CotizacionesPage() {
   const { data: doctor } = useBackendObject('/data/doctor', 'siso_doctor_data', 'doctor');
   const [form, setForm] = useState({ empresa: '', servicios: '', valor: '', vigencia: '30 días', observaciones: '' });
   const [showForm, setShowForm] = useState(false);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiResult, setAiResult] = useState(null);
+  const [aiError, setAiError] = useState(null);
+
+  const handleIAProposal = async () => {
+    if (!form.empresa) { setAiError('Seleccione una empresa primero'); return; }
+    const aiConfig = useAIStore.getState().getConfig();
+    if (!useAIStore.getState().hasAnyKey()) { setAiError('Configura tu proveedor de IA en ⚙️'); return; }
+    setAiLoading(true); setAiError(null);
+    try {
+      const result = await generateProposal({
+        empresa: form.empresa, nit: 'N/E', numTrabajadores: 'N/E',
+        actividadEconomica: 'N/E', claseRiesgo: 'I',
+        servicios: form.servicios ? [form.servicios] : ['Exámenes ocupacionales'],
+        ciudad: 'N/E'
+      }, aiConfig);
+      setAiResult(result);
+      if (result) { setForm(p => ({ ...p, servicios: result.introduccion||p.servicios, valor: result.totalConIVA ? String(result.totalConIVA) : p.valor })); }
+    } catch (e) { setAiError(e.message||'Error IA'); }
+    finally { setAiLoading(false); }
+  };
 
   const handleSave = () => {
     if (!form.empresa || !form.servicios) { alert('Empresa y servicios son requeridos'); return; }
@@ -93,7 +116,16 @@ export default function CotizacionesPage() {
     <div className="p-6 max-w-4xl mx-auto">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3"><DollarSign className="w-6 h-6 text-emerald-600" /><h1 className="text-2xl font-bold text-gray-800">Cotizaciones</h1></div>
-        <button onClick={() => setShowForm(!showForm)} className="flex items-center gap-1 px-3 py-2 bg-emerald-600 text-white rounded-lg text-sm font-bold"><Plus className="w-4 h-4" /> Nueva</button>
+        <div className="flex items-center gap-2">
+          {showForm && (
+            <button onClick={handleIAProposal} disabled={aiLoading}
+              className="flex items-center gap-1 px-3 py-2 bg-indigo-600 text-white rounded-lg text-sm font-bold disabled:opacity-50">
+              {aiLoading ? <Loader2 size={14} className="animate-spin"/> : <Sparkles size={14}/>}
+              {aiLoading ? 'Generando...' : 'IA Propuesta'}
+            </button>
+          )}
+          <button onClick={() => setShowForm(!showForm)} className="flex items-center gap-1 px-3 py-2 bg-emerald-600 text-white rounded-lg text-sm font-bold"><Plus className="w-4 h-4" /> Nueva</button>
+        </div>
       </div>
       {showForm && (
         <div className="bg-white border rounded-xl p-5 mb-6 space-y-3">
