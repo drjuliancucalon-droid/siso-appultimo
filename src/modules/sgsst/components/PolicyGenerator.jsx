@@ -9,9 +9,11 @@ import {
   FileText, ChevronRight, ChevronLeft, Check, Building2, Factory,
   AlertTriangle, Target, Eye, Edit3, Printer, Save, History,
   Download, Award, UserCheck, Clock, Plus, Trash2, CheckCircle2,
-  XCircle, Info, PenTool, ArrowRight
+  XCircle, Info, PenTool, ArrowRight, Sparkles, Loader2
 } from 'lucide-react';
 import { politicasCRUD, getCompanyConfig, generarPoliticaSST } from '../services/sgsstService';
+import { useAIStore } from '../../../stores/aiStore';
+import { generatePolicy } from '../../ai/services/aiAnalysis';
 
 const PolicyGenerator = () => {
   const [step, setStep] = useState(0);
@@ -32,6 +34,28 @@ const PolicyGenerator = () => {
   const [approvalDate, setApprovalDate] = useState('');
   const [approvalComments, setApprovalComments] = useState('');
   const printRef = useRef(null);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiResult, setAiResult] = useState(null);
+  const [aiError, setAiError] = useState(null);
+
+  const handleIAPolicy = async () => {
+    const aiConfig = useAIStore.getState().getConfig();
+    if (!useAIStore.getState().hasAnyKey()) { setAiError('Configura tu proveedor de IA en ⚙️ Config IA'); return; }
+    setAiLoading(true); setAiError(null);
+    try {
+      const result = await generatePolicy({
+        nombre: companyInfo.nombre || 'N/E',
+        nit: companyInfo.nit || 'N/E',
+        sector: companyInfo.sector || (companyInfo.sectorOtro || 'N/E'),
+        actividad: companyInfo.sector || 'N/E',
+        workers: companyInfo.numTrabajadores || 'N/E',
+        claseRiesgo: companyInfo.arl ? 'I' : 'I',
+        sedes: companyInfo.direccion || 'Principal'
+      }, aiConfig);
+      setAiResult(result);
+    } catch (e) { setAiError(e.message || 'Error al generar con IA'); }
+    finally { setAiLoading(false); }
+  };
 
   const riskOptions = [
     'Físico (Ruido, vibraciones, iluminación, temperaturas)',

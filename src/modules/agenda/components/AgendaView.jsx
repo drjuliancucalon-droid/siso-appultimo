@@ -1,6 +1,8 @@
 // src/modules/agenda/components/AgendaView.jsx — SPRINT 6: D1-powered
 import React, { useState, useMemo } from 'react';
-import { Calendar, Search, CheckCircle, Clock, User, Filter } from 'lucide-react';
+import { Calendar, Search, CheckCircle, Clock, User, Filter, Sparkles, Loader2 } from 'lucide-react';
+import { useAIStore } from '../../../stores/aiStore';
+import { optimizeSchedule } from '../../ai/services/aiAnalysis';
 
 const STATUS_CONFIG = {
   espera: { label: 'En espera', color: 'bg-yellow-100 text-yellow-800', icon: Clock },
@@ -13,6 +15,26 @@ export const AgendaView = ({ currentUser, appointments = [], onAppointmentsChang
   const [filtroFecha, setFiltroFecha] = useState(new Date().toISOString().slice(0, 10));
   const [busqueda, setBusqueda] = useState('');
   const [filtroEstado, setFiltroEstado] = useState('todos');
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiResult, setAiResult] = useState(null);
+  const [aiError, setAiError] = useState(null);
+
+  const handleOptimizarIA = async () => {
+    const aiConfig = useAIStore.getState().getConfig();
+    if (!useAIStore.getState().hasAnyKey()) { setAiError('Configura tu proveedor de IA en ⚙️'); return; }
+    setAiLoading(true); setAiError(null);
+    try {
+      const agendaData = {
+        totalCitas: appointments.length,
+        porTipo: appointments.reduce((acc, c) => { acc[c.tipoExamen||'Sin tipo'] = (acc[c.tipoExamen||'Sin tipo']||0)+1; return acc; }, {}),
+        porEmpresa: appointments.reduce((acc, c) => { acc[c.empresa||'Sin empresa'] = (acc[c.empresa||'Sin empresa']||0)+1; return acc; }, {}),
+        horarioInicio: '07:00', horarioFin: '17:00', medicos: 1
+      };
+      const result = await optimizeSchedule(agendaData, aiConfig);
+      setAiResult(result);
+    } catch (e) { setAiError(e.message||'Error IA'); }
+    finally { setAiLoading(false); }
+  };
 
   const cambiarEstado = (id, nuevoEstado) => {
     const actualizadas = appointments.map((c) =>
@@ -38,6 +60,28 @@ export const AgendaView = ({ currentUser, appointments = [], onAppointmentsChang
       <h2 className="text-lg font-black text-gray-800 flex items-center gap-2">
         <Calendar className="w-5 h-5 text-teal-600" /> Agenda de Citas
       </h2>
+
+      {/* ── Botón IA Optimizar Agenda (FASE 3) ── */}
+      <div className="flex flex-wrap items-center gap-2">
+        <button onClick={handleOptimizarIA} disabled={aiLoading}
+          className="flex items-center gap-2 px-3 py-2 bg-indigo-600 text-white rounded-lg text-sm hover:bg-indigo-700 disabled:opacity-50">
+          {aiLoading ? <Loader2 size={14} className="animate-spin"/> : <Sparkles size={14}/>}
+          {aiLoading ? 'Analizando...' : 'IA Optimizar Agenda'}
+        </button>
+        {aiError && <span className="text-sm text-red-600">{aiError}</span>}
+      </div>
+      {aiResult && (
+        <div className="p-4 bg-indigo-50 rounded-lg border border-indigo-200 text-sm">
+          <h4 className="font-semibold text-indigo-800 mb-2">Optimización IA de Agenda</h4>
+          {aiResult.alertas?.length > 0 && (
+            <div className="mb-2"><p className="font-medium text-amber-700">Alertas:</p><ul className="list-disc ml-4 text-amber-600">{aiResult.alertas.map((a,i)=><li key={i}>{a}</li>)}</ul></div>
+          )}
+          {aiResult.recomendaciones?.length > 0 && (
+            <div className="mb-2"><p className="font-medium text-indigo-700">Recomendaciones:</p><ul className="list-disc ml-4 text-gray-700">{aiResult.recomendaciones.map((r,i)=><li key={i}>{r}</li>)}</ul></div>
+          )}
+          <p className="text-gray-500 text-xs mt-2">Eficiencia estimada: {aiResult.eficienciaEstimada}</p>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
         <div>

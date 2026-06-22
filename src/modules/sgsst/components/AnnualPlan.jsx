@@ -8,9 +8,11 @@ import React, { useState, useMemo } from 'react';
 import {
   Calendar, Plus, Edit3, Trash2, ChevronLeft, ChevronRight, Filter,
   CheckCircle2, Clock, AlertTriangle, X, Save, Printer, Download,
-  Users, Target, Info, BarChart3, AlertCircle
+  Users, Target, Info, BarChart3, AlertCircle, Sparkles, Loader2
 } from 'lucide-react';
 import { actividadesCRUD } from '../services/sgsstService';
+import { useAIStore } from '../../../stores/aiStore';
+import { generateAnnualPlan } from '../../ai/services/aiAnalysis';
 
 const MESES = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
 const MESES_FULL = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
@@ -40,6 +42,23 @@ const AnnualPlan = () => {
   const [filterCategoria, setFilterCategoria] = useState('');
   const [filterEstado, setFilterEstado] = useState('');
   const [viewMode, setViewMode] = useState('gantt'); // gantt | list
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiResult, setAiResult] = useState(null);
+  const [aiError, setAiError] = useState(null);
+
+  const handleIAPlan = async () => {
+    const aiConfig = useAIStore.getState().getConfig();
+    if (!useAIStore.getState().hasAnyKey()) { setAiError('Configura tu proveedor de IA en ⚙️ Config IA'); return; }
+    setAiLoading(true); setAiError(null);
+    try {
+      const result = await generateAnnualPlan({
+        nombre: 'Empresa', nit: 'N/E', sector: 'N/E',
+        workers: 'N/E', claseRiesgo: 'I'
+      }, aiConfig);
+      setAiResult(result);
+    } catch (e) { setAiError(e.message || 'Error IA'); }
+    finally { setAiLoading(false); }
+  };
 
   const emptyForm = {
     nombre: '',

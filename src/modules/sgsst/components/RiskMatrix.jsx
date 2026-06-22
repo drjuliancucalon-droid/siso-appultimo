@@ -8,8 +8,10 @@ import React, { useState, useMemo } from 'react';
 import {
   AlertTriangle, Plus, Edit3, Trash2, Filter, Printer, Search,
   ChevronDown, ChevronUp, X, Save, Info, Eye, BarChart3,
-  Download, Lightbulb, Shield, CheckCircle2, ArrowRight
+  Download, Lightbulb, Shield, CheckCircle2, ArrowRight, Sparkles, Loader2
 } from 'lucide-react';
+import { useAIStore } from '../../../stores/aiStore';
+import { evaluateGTC45 } from '../../ai/services/aiAnalysis';
 import {
   riesgosCRUD,
   CATEGORIAS_PELIGROS,
@@ -24,6 +26,20 @@ import {
 
 const RiskMatrix = () => {
   const [riesgos, setRiesgos] = useState(riesgosCRUD.getAll());
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiResult, setAiResult] = useState(null);
+  const [aiError, setAiError] = useState(null);
+
+  const handleIAGTC45 = async () => {
+    const aiConfig = useAIStore.getState().getConfig();
+    if (!useAIStore.getState().hasAnyKey()) { setAiError('Configura tu proveedor de IA en ⚙️ Config IA'); return; }
+    setAiLoading(true); setAiError(null);
+    try {
+      const result = await evaluateGTC45({ company: 'N/E', area: 'N/E', risks: JSON.stringify(riesgos.slice(0, 10)) }, aiConfig);
+      setAiResult(result);
+    } catch (e) { setAiError(e.message || 'Error IA'); }
+    finally { setAiLoading(false); }
+  };
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [showHeatMap, setShowHeatMap] = useState(false);
@@ -212,6 +228,11 @@ const RiskMatrix = () => {
           </p>
         </div>
         <div className="flex gap-2 flex-wrap">
+          <button onClick={handleIAGTC45} disabled={aiLoading}
+            className="flex items-center gap-2 px-3 py-2 bg-indigo-600 text-white rounded-lg text-sm hover:bg-indigo-700 disabled:opacity-50">
+            {aiLoading ? <Loader2 size={14} className="animate-spin"/> : <Sparkles size={14}/>}
+            {aiLoading ? 'Evaluando...' : 'IA Evaluar GTC-45'}
+          </button>
           <button onClick={() => setShowHeatMap(!showHeatMap)}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium ${showHeatMap ? 'bg-orange-600 text-white' : 'bg-gray-100 hover:bg-gray-200 text-gray-700'}`}>
             <BarChart3 className="w-4 h-4" /> Mapa de Calor

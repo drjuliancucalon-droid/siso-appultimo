@@ -320,6 +320,22 @@ export const generateRecommendations = async (hcData, aiConfig) => {
   return callAIWithFailover(prompt, DEFAULT_SYSTEM_PROMPT, aiConfig);
 };
 
+// ═══════════════════════ FASE 3 — OPTIMIZE AGENDA ═══════════════════════════
+export const optimizeSchedule = async (agendaData, aiConfig) => {
+  const prompt = `Eres especialista en Medicina del Trabajo y gestión de consultas médicas ocupacionales en Colombia. Analiza la agenda médica y genera recomendaciones de optimización.\nDATOS DE AGENDA:\n- Total citas del día: ${agendaData.totalCitas}\n- Citas por tipo de examen: ${JSON.stringify(agendaData.porTipo)}\n- Citas por empresa: ${JSON.stringify(agendaData.porEmpresa)}\n- Horario disponible: ${agendaData.horarioInicio} a ${agendaData.horarioFin}\n- Médicos disponibles: ${agendaData.medicos}\nDevuelve ÚNICAMENTE JSON:\n{"distribucionOptima":[{"hora":"08:00","tipo":"INGRESO/PERIODICO/EGRESO","empresa":"","duracionMin":30,"justificacion":""}],"alertas":[""],"recomendaciones":[""],"tiempoEsperaPromedio":"","eficienciaEstimada":""}`;
+  const systemPrompt = 'Eres especialista en gestión de consultas médicas ocupacionales colombianas. Responde SOLO con JSON.';
+  const raw = await callAIWithFailover(prompt, systemPrompt, aiConfig);
+  return parseAIJSON(raw);
+};
+
+// ═══════════════════════ FASE 4 — DAILY SUMMARY DASHBOARD ════════════════════
+export const dailySummary = async (dashboardData, aiConfig) => {
+  const prompt = `Eres médico especialista en Medicina del Trabajo con más de 15 años de experiencia. Analiza los datos del día y genera un resumen ejecutivo para el médico.\nDATOS DEL DÍA:\n- Pacientes atendidos hoy: ${dashboardData.pacientesHoy}\n- Citas pendientes: ${dashboardData.citasPendientes}\n- HCs abiertas sin cerrar: ${dashboardData.hcSinCerrar}\n- Empresas activas: ${dashboardData.empresasActivas}\n- Alertas de salud identificadas: ${JSON.stringify(dashboardData.alertas)}\n- Ingresos del día: ${dashboardData.ingresosDia}\nGenera resumen ejecutivo del día con:\n1. Situación actual de la consulta\n2. Prioridades para las próximas horas\n3. Alertas médicas a atender\n4. Recomendaciones operativas\nDevuelve ÚNICAMENTE JSON:\n{"resumen":"","prioridades":[""],"alertasMedicas":[""],"recomendacionesOperativas":[""],"indicadorDelDia":""}`;
+  const systemPrompt = 'Eres médico especialista en Medicina del Trabajo colombiano. Responde SOLO con JSON.';
+  const raw = await callAIWithFailover(prompt, systemPrompt, aiConfig);
+  return parseAIJSON(raw);
+};
+
 // ══════════════════════════════════════════════════════════════════════════════
 // analyzeGeneralHC — HC medicina general
 // Ref. monolito: generateAIGeneral() App.jsx líneas 15227+
