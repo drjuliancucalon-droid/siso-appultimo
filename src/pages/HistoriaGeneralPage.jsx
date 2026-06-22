@@ -250,7 +250,13 @@ export default function HistoriaGeneralPage() {
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setShowAIConfig(false)}>
           <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <AIConfigPanel aiConfig={aiConfig}
-              onSave={(cfg) => { const s = useAIStore.getState(); if (cfg.activeProvider) s.setActiveProvider(cfg.activeProvider); if (cfg.keys) Object.entries(cfg.keys).forEach(([p,k]) => s.setKey(p,k)); setShowAIConfig(false); }}
+              onSave={(cfg) => {
+                const s = useAIStore.getState();
+                if (cfg.activeProvider) s.setActiveProvider(cfg.activeProvider);
+                if (cfg.keys) Object.entries(cfg.keys).forEach(([p,k]) => s.setKey(p,k));
+                s.saveToD1(currentUser?.user).catch(() => {});
+                setShowAIConfig(false);
+              }}
               onClose={() => setShowAIConfig(false)} />
           </div>
         </div>

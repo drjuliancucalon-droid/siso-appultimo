@@ -160,6 +160,11 @@ export const useAuthStore = create(
           twoFARequired: !!user.twoFAEnabled && !user._twoFAVerified,
         });
 
+        // Sincronizar AI keys desde D1 en background (no bloquea el login)
+        import('./aiStore').then(({ useAIStore }) => {
+          useAIStore.getState().loadFromD1(user.user);
+        }).catch(() => {});
+
         return user;
       },
 
@@ -218,6 +223,11 @@ export const useAuthStore = create(
         migrateLocalStorageToCloud(cleanUser.user).catch((e) => {
           console.warn('[R-1] Migración falló en background:', e.message);
         });
+
+        // Sincronizar AI keys desde D1 en background
+        import('./aiStore').then(({ useAIStore }) => {
+          useAIStore.getState().loadFromD1(cleanUser.user);
+        }).catch(() => {});
 
         return cleanUser;
       },

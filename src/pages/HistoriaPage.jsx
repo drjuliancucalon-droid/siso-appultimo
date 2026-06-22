@@ -817,6 +817,7 @@ export default function HistoriaPage() {
                 const store = useAIStore.getState();
                 if (newConfig.activeProvider) store.setActiveProvider(newConfig.activeProvider);
                 if (newConfig.keys) Object.entries(newConfig.keys).forEach(([p, k]) => store.setKey(p, k));
+                store.saveToD1(currentUser?.user).catch(() => {});
                 setShowAIConfig(false);
               }}
               onClose={() => setShowAIConfig(false)}

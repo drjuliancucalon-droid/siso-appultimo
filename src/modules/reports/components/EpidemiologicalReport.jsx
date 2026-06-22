@@ -1,3 +1,4 @@
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useAuthStore } from '../../../stores/authStore';
 import { Download, FileText, BarChart3, Users, Activity, Briefcase, Calendar, Sparkles, Loader2, AlertCircle } from 'lucide-react';
 import { useAIStore } from '../../../stores/aiStore';
