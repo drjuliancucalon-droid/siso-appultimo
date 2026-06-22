@@ -144,14 +144,11 @@ async function _chunkGet(key, ts) {
   );
 
   const rows = resp.json || (Array.isArray(resp) ? resp : []);
-  if (!rows || rows.length === 0) return { value: null, ts: null };
+  const row = rows?.[0] || null;
+  const value = row?.value ?? null;
 
-  const row = rows[0];
-  const value = row.value;
-
-  // Check if chunked
+  // ── Formato Platform A: manifest en la clave principal ──────────────
   if (value && typeof value === 'object' && value._chunked) {
-    // Reassemble from chunks
     const totalChunks = value._chunks || 1;
     let assembled = '';
     for (let i = 0; i < totalChunks; i++) {
@@ -175,7 +172,49 @@ async function _chunkGet(key, ts) {
     }
   }
 
-  return { value, ts: row.ts || null };
+  // ── Formato monolito: manifest en key__meta, chunks en key__c0..cN ──
+  // Se activa cuando la clave principal está vacía/null
+  if (!value) {
+    try {
+      const metaResp = await _retry(
+        () =>
+          fetch(`${WORKER_URL}/store/${encodeURIComponent(key + '__meta')}`, {
+            method: 'GET',
+            headers: _authHeaders(),
+          }).then(_checkResponse),
+        `d1Get meta (${key})`
+      );
+      const metaRows = metaResp.json || (Array.isArray(metaResp) ? metaResp : []);
+      const meta = metaRows?.[0]?.value;
+      if (meta && (meta.chunked || meta.count)) {
+        const count = meta.count || meta.chunks || 1;
+        let assembled = '';
+        for (let i = 0; i < count; i++) {
+          const chunkResp = await _retry(
+            () =>
+              fetch(`${WORKER_URL}/store/${encodeURIComponent(key + '__c' + i)}`, {
+                method: 'GET',
+                headers: _authHeaders(),
+              }).then(_checkResponse),
+            `d1Get monolith-chunk ${i}/${count} (${key})`
+          );
+          const chunkRows = chunkResp.json || (Array.isArray(chunkResp) ? chunkResp : []);
+          const chunkVal = chunkRows?.[0]?.value;
+          if (typeof chunkVal === 'string') assembled += chunkVal;
+          else if (chunkVal?.data) assembled += chunkVal.data;
+        }
+        try {
+          return { value: JSON.parse(assembled), ts: metaRows[0]?.ts || null };
+        } catch {
+          return { value: assembled, ts: null };
+        }
+      }
+    } catch {
+      // Meta no existe → clave realmente vacía
+    }
+  }
+
+  return { value, ts: row?.ts || null };
 }
 
 async function _checkResponse(response) {

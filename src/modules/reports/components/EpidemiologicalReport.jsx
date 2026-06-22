@@ -1,6 +1,8 @@
 import React, { useState, useMemo } from 'react';
 import { useAuthStore } from '../../../stores/authStore';
-import { Download, FileText, BarChart3, Users, Activity, Briefcase, Calendar } from 'lucide-react';
+import { Download, FileText, BarChart3, Users, Activity, Briefcase, Calendar, Sparkles, Loader2, AlertCircle } from 'lucide-react';
+import { useAIStore } from '../../../stores/aiStore';
+import { analyzeEpidemiologicalData } from '../../ai/services/aiAnalysis';
 import { saveAs } from 'file-saver';
 import * as XLSX from 'xlsx';
 
@@ -26,6 +28,39 @@ export default function ReportsPage() {
   const [filterEmpresa, setFilterEmpresa] = useState('');
   const [filterFechaInicio, setFilterFechaInicio] = useState('');
   const [filterFechaFin, setFilterFechaFin] = useState('');
+
+  // ── SPRINT IA FASE 1: Estado para análisis IA ──────────────────
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [iaResult, setIaResult] = useState('');
+  const [iaError, setIaError] = useState('');
+
+  const handleGenerateEpiReport = async () => {
+    const { canUse, getConfig } = useAIStore.getState();
+    if (!canUse('ia_analisis')) {
+      alert('🔒 El análisis IA requiere plan Pro ($79.000/mes). Ve a Planes para actualizar.');
+      return;
+    }
+    if (filteredData.length === 0) {
+      setIaError('No hay datos para analizar. Ajuste los filtros.');
+      return;
+    }
+    const aiConfig = getConfig();
+    if (!useAIStore.getState().hasAnyKey()) {
+      alert('⚠️ Configure al menos un proveedor de IA en el panel de configuración (⚙️).');
+      return;
+    }
+    setIsGenerating(true);
+    setIaError('');
+    setIaResult('');
+    try {
+      const result = await analyzeEpidemiologicalData(filteredData, aiConfig);
+      setIaResult(result);
+    } catch (err) {
+      setIaError('Error IA: ' + (err.message || 'desconocido'));
+    } finally {
+      setIsGenerating(false);
+    }
+  };
 
   // Filtrado Maestro (Igual que el monolito)
   const filteredData = useMemo(() => {
@@ -136,13 +171,39 @@ export default function ReportsPage() {
           </h1>
           <p className="text-sm text-gray-500">Módulo idéntico al monolito ocupasalud</p>
         </div>
-        <button 
-          onClick={handleExportExcel}
-          className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 shadow"
-        >
-          <Download size={18} /> Exportar Excel
-        </button>
+        <div className="flex items-center gap-2">
+          <button 
+            onClick={handleGenerateEpiReport}
+            disabled={isGenerating}
+            className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 shadow disabled:opacity-50"
+          >
+            {isGenerating ? <Loader2 size={18} className="animate-spin" /> : <Sparkles size={18} />}
+            {isGenerating ? 'Analizando...' : 'IA Análisis Epidemiológico'}
+          </button>
+          <button 
+            onClick={handleExportExcel}
+            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 shadow"
+          >
+            <Download size={18} /> Exportar Excel
+          </button>
+        </div>
       </div>
+
+      {/* ── Panel de Resultados IA (SPRINT IA FASE 1) ── */}
+      {iaError && (
+        <div className="mb-6 bg-red-50 border border-red-200 rounded-xl p-4 flex items-center gap-2 text-sm text-red-800">
+          <AlertCircle size={18} /> {iaError}
+        </div>
+      )}
+      {iaResult && (
+        <div className="mb-6 bg-white border border-indigo-200 rounded-xl p-6 shadow-sm">
+          <div className="flex items-center gap-2 mb-3">
+            <Sparkles size={18} className="text-indigo-600" />
+            <h3 className="text-sm font-black text-indigo-800">Análisis Epidemiológico IA</h3>
+          </div>
+          <pre className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed font-sans">{iaResult}</pre>
+        </div>
+      )}
 
       {/* Filtros Globales */}
       <div className="bg-white p-4 rounded shadow mb-6 grid grid-cols-1 md:grid-cols-4 gap-4">
