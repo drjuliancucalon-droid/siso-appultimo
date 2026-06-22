@@ -787,19 +787,49 @@ export default function HistoriaPage() {
 
       {/* ═══ Panels: Restricciones, Recomendaciones, Consentimiento ═══ */}
       {showRestriccionesPanel && (
-        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4" onClick={() => setShowRestriccionesPanel(false)}>
-          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-            <RestriccionesChecklistPanel data={data} setData={setData} onClose={() => setShowRestriccionesPanel(false)} isGenerating={isGeneratingRestr} />
-          </div>
-        </div>
+        <RestriccionesChecklistPanel
+          selected={data.restriccionesChecklist || {}}
+          onChange={(updater) =>
+            setData((p) => ({
+              ...p,
+              restriccionesChecklist:
+                typeof updater === 'function'
+                  ? updater(p.restriccionesChecklist || {})
+                  : updater,
+            }))
+          }
+          onGenerate={onGenerateRestrictions}
+          onApply={() => {
+            const cat = data.restriccionesChecklist || {};
+            // Import catalog items inline to build text
+            const selected = Object.entries(cat).filter(([, v]) => v).map(([k]) => k);
+            if (selected.length > 0) {
+              // The text will be appended/replaced in analisisRestricciones by onGenerateRestrictions
+              // Here just close — IA text is the canonical source
+            }
+            setShowRestriccionesPanel(false);
+          }}
+          isGenerating={isGeneratingRestr}
+          onClose={() => setShowRestriccionesPanel(false)}
+        />
       )}
       {showRecomendacionesPanel && (
-        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4" onClick={() => setShowRecomendacionesPanel(false)}>
-          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-            <RecomendacionesChecklistPanel data={data} setData={setData} onClose={() => setShowRecomendacionesPanel(false)} isGenerating={isGeneratingReco} />
-          </div>
-        </div>
-
+        <RecomendacionesChecklistPanel
+          selected={data.recomendacionesChecklist || {}}
+          onChange={(updater) =>
+            setData((p) => ({
+              ...p,
+              recomendacionesChecklist:
+                typeof updater === 'function'
+                  ? updater(p.recomendacionesChecklist || {})
+                  : updater,
+            }))
+          }
+          onGenerate={onGenerateRecommendations}
+          onApply={() => setShowRecomendacionesPanel(false)}
+          isGenerating={isGeneratingReco}
+          onClose={() => setShowRecomendacionesPanel(false)}
+        />
       )}
       {showConsentModal && (
         <ConsentimientoModal data={data} estadoCerrada={data.estadoHistoria === 'Cerrada'}
