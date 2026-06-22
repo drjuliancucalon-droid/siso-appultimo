@@ -7,6 +7,7 @@ import { d1Get, d1Set, d1WriteArrayMerge } from '../lib/d1Client';
 import { migrateLocalStorageToCloud } from '../lib/migrateStorage';
 import { _sha256 } from '../shared/lib/crypto';
 import { _canUse, _secretariaPuede, PLAN_CONFIG, SECRETARIA_PERMISOS_DEFAULT } from '../shared/data/planConfig.js';
+import { useAIStore } from './aiStore';
 
 const MAX_LOGIN_ATTEMPTS = 5;
 const BLOCK_DURATION_MS = 15 * 60 * 1000;
@@ -161,9 +162,7 @@ export const useAuthStore = create(
         });
 
         // Sincronizar AI keys desde D1 en background (no bloquea el login)
-        import('./aiStore').then(({ useAIStore }) => {
-          useAIStore.getState().loadFromD1(user.user);
-        }).catch(() => {});
+        try { useAIStore.getState().loadFromD1(user.user); } catch (_) {}
 
         return user;
       },
@@ -225,9 +224,7 @@ export const useAuthStore = create(
         });
 
         // Sincronizar AI keys desde D1 en background
-        import('./aiStore').then(({ useAIStore }) => {
-          useAIStore.getState().loadFromD1(cleanUser.user);
-        }).catch(() => {});
+        try { useAIStore.getState().loadFromD1(cleanUser.user); } catch (_) {}
 
         return cleanUser;
       },

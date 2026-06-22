@@ -2,80 +2,41 @@
 // Replaces: aiConfig, showAIConfig, aiStatus from monolith
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { d1Get, d1Set } from '../lib/d1Client';
 
 export const useAIStore = create(
   persist(
     (set, get) => ({
-      // ── State ──────────────────────────────────
       activeProvider: 'gemini',
-      keys: {
-        gemini: '',
-        groq: '',
-        together: '',
-        openrouter: '',
-      },
+      keys: { gemini: '', groq: '', together: '', openrouter: '' },
       showConfig: false,
-      status: null, // null | 'loading' | 'ok' | 'error'
-
-      // ── Actions ────────────────────────────────
+      status: null,
       setActiveProvider: (provider) => set({ activeProvider: provider }),
-
-      setKey: (provider, key) => set((s) => ({
-        keys: { ...s.keys, [provider]: key },
-      })),
-
+      setKey: (provider, key) => set((s) => ({ keys: { ...s.keys, [provider]: key } })),
       setShowConfig: (show) => set({ showConfig: show }),
       setStatus: (status) => set({ status }),
-
-      getConfig: () => {
+      getConfig: () => { const { activeProvider, keys } = get(); return { activeProvider, keys }; },
+      hasAnyKey: () => Object.values(get().keys).some((k) => k?.trim()?.length > 0),
+      loadFromD1: (userId) => {
+        if (!userId) return;
+        d1Get('siso_ai_keys_' + userId).then(({ value }) => {
+          if (!value || typeof value !== 'object') return;
+          const k = { ...get().keys };
+          if (value.gemini) k.gemini = value.gemini;
+          if (value.groq) k.groq = value.groq;
+          if (value.together) k.together = value.together;
+          if (value.openrouter) k.openrouter = value.openrouter;
+          set({ keys: k });
+          if (value.activeProvider) set({ activeProvider: value.activeProvider });
+        }).catch((e) => console.warn('[aiStore] loadFromD1:', e.message));
+      },
+      saveToD1: (userId) => {
+        if (!userId) return;
         const { activeProvider, keys } = get();
-        return { activeProvider, keys };
-      },
-
-      // Check if any provider is configured
-      hasAnyKey: () => {
-        const { keys } = get();
-        return Object.values(keys).some((k) => k?.trim()?.length > 0);
-      },
-
-      // Sincroniza keys desde D1 al iniciar sesión
-      loadFromD1: async (userId) => {
-        if (!userId) return;
-        try {
-          const { d1Get } = await import('../lib/d1Client');
-          const { value } = await d1Get(`siso_ai_keys_${userId}`);
-          if (value && typeof value === 'object') {
-            const safeKeys = { ...get().keys };
-            if (value.gemini)     safeKeys.gemini     = value.gemini;
-            if (value.groq)       safeKeys.groq       = value.groq;
-            if (value.together)   safeKeys.together   = value.together;
-            if (value.openrouter) safeKeys.openrouter = value.openrouter;
-            set({ keys: safeKeys });
-            if (value.activeProvider) set({ activeProvider: value.activeProvider });
-          }
-        } catch (e) {
-          console.warn('[aiStore] No se pudo cargar keys de D1:', e.message);
-        }
-      },
-
-      // Persiste keys en D1 tras Guardar Configuración
-      saveToD1: async (userId) => {
-        if (!userId) return;
-        try {
-          const { d1Set } = await import('../lib/d1Client');
-          const { activeProvider, keys } = get();
-          await d1Set(`siso_ai_keys_${userId}`, { activeProvider, ...keys });
-        } catch (e) {
-          console.warn('[aiStore] No se pudo guardar keys en D1:', e.message);
-        }
+        d1Set('siso_ai_keys_' + userId, { activeProvider, ...keys })
+          .catch((e) => console.warn('[aiStore] saveToD1:', e.message));
       },
     }),
-    {
-      name: 'siso-ai-config',
-      partialize: (state) => ({
-        activeProvider: state.activeProvider,
-        keys: state.keys,
-      }),
-    }
+    { name: 'siso-ai-config', partialize: (s) => ({ activeProvider: s.activeProvider, keys: s.keys }) }
   )
 );
