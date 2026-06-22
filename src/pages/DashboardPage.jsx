@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { useAIStore } from '../stores/aiStore';
 import { dailySummary } from '../modules/ai/services/aiAnalysis';
+import { AIConfigPanel } from '../modules/ai/components/AIConfigPanel';
 
 const QUICK_ACTIONS = [
   { path: '/hc/new', icon: Stethoscope, label: 'Nueva HC', color: 'from-emerald-600 to-teal-500', desc: 'Historia Clínica' },
@@ -33,6 +34,7 @@ export default function DashboardPage() {
   const [aiLoading, setAiLoading] = React.useState(false);
   const [aiResult, setAiResult] = React.useState(null);
   const [aiError, setAiError] = React.useState(null);
+  const [showAIConfig, setShowAIConfig] = React.useState(false);
 
   // Calculate stats
   const today = new Date().toISOString().split('T')[0];
@@ -44,9 +46,12 @@ export default function DashboardPage() {
 
   const displayName = doctor?.nombre || currentUser?.nombre || currentUser?.user || 'Doctor';
 
+  const { activeProvider, keys: aiKeys } = useAIStore();
+  const aiConfig = React.useMemo(() => ({ activeProvider, keys: aiKeys }), [activeProvider, aiKeys]);
+  const hasKey = Object.values(aiKeys || {}).some(k => k?.trim()?.length > 0);
+
   const handleIADailySummary = async () => {
-    const aiConfig = useAIStore.getState().getConfig();
-    if (!useAIStore.getState().hasAnyKey()) { setAiError('Configura tu proveedor de IA en ⚙️'); return; }
+    if (!hasKey) { setShowAIConfig(true); return; }
     setAiLoading(true); setAiError(null);
     try {
       const dashboardData = {
@@ -62,6 +67,7 @@ export default function DashboardPage() {
   };
 
   return (
+    <>
     <div className="p-6 max-w-7xl mx-auto space-y-6">
       {/* Welcome banner */}
       <div className="bg-gradient-to-r from-emerald-700 via-emerald-600 to-teal-500 rounded-2xl p-6 text-white shadow-lg relative overflow-hidden">
@@ -105,6 +111,45 @@ export default function DashboardPage() {
 
       {/* Quick Actions */}
       <div>
+        {/* ═══ CONFIG IA — Panel de estado y configuración (como en el monolito) ═══ */}
+        <div className="mb-4">
+          <div className={`flex items-center justify-between p-4 rounded-2xl border-2 ${
+            hasKey
+              ? 'bg-gradient-to-r from-indigo-50 to-purple-50 border-indigo-200'
+              : 'bg-amber-50 border-amber-200'
+          }`}>
+            <div className="flex items-center gap-3">
+              <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                hasKey ? 'bg-indigo-600' : 'bg-amber-500'
+              }`}>
+                <span className="text-white text-lg">🤖</span>
+              </div>
+              <div>
+                <p className="text-sm font-black text-gray-800">Inteligencia Artificial</p>
+                {hasKey ? (
+                  <p className="text-xs text-indigo-700 font-bold">
+                    ✅ Proveedor activo: <span className="capitalize">{activeProvider}</span>
+                  </p>
+                ) : (
+                  <p className="text-xs text-amber-700 font-bold">
+                    ⚠️ Sin configurar — Las funciones IA no funcionarán
+                  </p>
+                )}
+              </div>
+            </div>
+            <button
+              onClick={() => setShowAIConfig(true)}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-black transition-all ${
+                hasKey
+                  ? 'bg-indigo-600 hover:bg-indigo-700 text-white'
+                  : 'bg-amber-500 hover:bg-amber-600 text-white animate-pulse'
+              }`}
+            >
+              ⚙️ {hasKey ? 'Cambiar Config IA' : 'Configurar IA ahora'}
+            </button>
+          </div>
+        </div>
+
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-lg font-bold text-gray-800">Acciones Rápidas</h2>
           <button onClick={handleIADailySummary} disabled={aiLoading}
@@ -429,5 +474,27 @@ export default function DashboardPage() {
         )}
       </div>
     </div>
+
+      {/* Modal Config IA */}
+      {showAIConfig && (
+        <div className="fixed inset-0 bg-black/60 z-[200] flex items-center justify-center p-4"
+          onClick={() => setShowAIConfig(false)}>
+          <div onClick={(e) => e.stopPropagation()}>
+            <AIConfigPanel
+              aiConfig={aiConfig}
+              onSave={(newConfig) => {
+                const store = useAIStore.getState();
+                if (newConfig.activeProvider) store.setActiveProvider(newConfig.activeProvider);
+                if (newConfig.keys) Object.entries(newConfig.keys).forEach(([p, k]) => store.setKey(p, k));
+                const userId = JSON.parse(localStorage.getItem('siso-auth') || '{}')?.state?.currentUser?.user;
+                if (userId) store.saveToD1(userId).catch(() => {});
+                setShowAIConfig(false);
+              }}
+              onClose={() => setShowAIConfig(false)}
+            />
+          </div>
+        </div>
+      )}
+    </>
   );
 }

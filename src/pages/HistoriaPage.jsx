@@ -809,8 +809,9 @@ export default function HistoriaPage() {
 
       {/* AI Config Modal */}
       {showAIConfig && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setShowAIConfig(false)}>
-          <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 bg-black/60 z-[200] flex items-center justify-center p-4"
+          onClick={() => setShowAIConfig(false)}>
+          <div onClick={(e) => e.stopPropagation()}>
             <AIConfigPanel
               aiConfig={aiConfig}
               onSave={(newConfig) => {

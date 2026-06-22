@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Brain, Loader2, FileText, AlertTriangle, Shield, Clipboard } from 'lucide-react';
 import { _ss, sps } from '../../../shared/lib/storage';
+import { useAIStore } from '../../../stores/aiStore';
+import { callAIWithFailover } from '../../ai/services/aiAnalysis';
 
 const NIVELES_RIESGO = ['I - Mínimo', 'II - Bajo', 'III - Medio', 'IV - Alto', 'V - Máximo'];
 
@@ -50,11 +52,14 @@ export const ProfesiogramaAI = () => {
 
     try {
       // Intentar usar IA configurada
-      const aiKeys = sps('siso_ai_keys', {});
-      const geminiKey = aiKeys?.gemini;
+      const aiConfig = useAIStore.getState().getConfig();
+      if (!useAIStore.getState().hasAnyKey()) {
+        setError('⚠️ Configura tu proveedor de IA en el Dashboard → Config IA');
+        setCargando(false);
+        return;
+      }
 
-      if (geminiKey) {
-        const prompt = `Eres un médico especialista en salud ocupacional en Colombia. Genera un profesiograma para:
+      const prompt = `Eres un médico especialista en salud ocupacional en Colombia. Genera un profesiograma para:
 - Cargo: ${cargo}
 - Área: ${area || 'General'}
 - Nivel de riesgo: ${nivelRiesgo}
@@ -72,21 +77,14 @@ Responde SOLO en formato JSON (sin markdown) con esta estructura:
   "normativa": ["Decreto 1072/2015", "Res. 0312/2019"]
 }`;
 
-        const res = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              contents: [{ parts: [{ text: prompt }] }],
-              generationConfig: { temperature: 0.3 },
-            }),
-          }
-        );
+      // Usar callAIWithFailover para aprovechar todos los proveedores configurados
+      const aiText = await callAIWithFailover(prompt, 'Eres un médico especialista en salud ocupacional.', aiConfig);
+      const fake_res_ok = true;
+      if (fake_res_ok) {
 
         if (res.ok) {
-          const data = await res.json();
-          const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+          // aiText viene directamente de callAIWithFailover
+          const text = aiText || '';
           const jsonMatch = text.match(/\{[\s\S]*\}/);
           if (jsonMatch) {
             const parsed = JSON.parse(jsonMatch[0]);
