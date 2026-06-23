@@ -863,3 +863,15 @@ export default function HistoriaPage() {
     </div>
   );
 }
+veProvider(newConfig.activeProvider);
+                if (newConfig.keys) Object.entries(newConfig.keys).forEach(([p, k]) => store.setKey(p, k));
+                await store.saveToD1(currentUser?.user);
+              }}
+              onClose={() => setShowAIConfig(false)}
+            />
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

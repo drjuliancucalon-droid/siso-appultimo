@@ -78,6 +78,17 @@ export default function ReportsPage() {
       .catch(() => setEmitidoInfo(null));
   }, [filterEmpresa, patients]);
 
+  // Filtrado Maestro (Igual que el monolito)
+  const filteredData = useMemo(() => {
+    return patients.filter(p => {
+      const matchEmpresa = filterEmpresa ? p.empresa?.toLowerCase().includes(filterEmpresa.toLowerCase()) : true;
+      const fechaExamen = p.fechaExamen || p.fechaCreacion;
+      const matchInicio = filterFechaInicio ? fechaExamen >= filterFechaInicio : true;
+      const matchFin = filterFechaFin ? fechaExamen <= filterFechaFin : true;
+      return matchEmpresa && matchInicio && matchFin;
+    });
+  }, [patients, filterEmpresa, filterFechaInicio, filterFechaFin]);
+
   const handleDescargarZip = useCallback(async () => {
     if (filteredData.length === 0) { alert('No hay certificados con los filtros actuales.'); return; }
     try {
@@ -129,17 +140,6 @@ export default function ReportsPage() {
       setIsGenerating(false);
     }
   };
-
-  // Filtrado Maestro (Igual que el monolito)
-  const filteredData = useMemo(() => {
-    return patients.filter(p => {
-      const matchEmpresa = filterEmpresa ? p.empresa?.toLowerCase().includes(filterEmpresa.toLowerCase()) : true;
-      const fechaExamen = p.fechaExamen || p.fechaCreacion;
-      const matchInicio = filterFechaInicio ? fechaExamen >= filterFechaInicio : true;
-      const matchFin = filterFechaFin ? fechaExamen <= filterFechaFin : true;
-      return matchEmpresa && matchInicio && matchFin;
-    });
-  }, [patients, filterEmpresa, filterFechaInicio, filterFechaFin]);
 
   // --- LÓGICA DE CÁLCULO (Réplica del Monolito) ---
 

@@ -90,12 +90,14 @@ export default function EncuestasTab({ companies = [], currentUser }) {
 
     setSaving(true);
     try {
-      const empresaObj = companies.find(c => c.id === formEmpresa);
+      const empresaObj = companies.find(c =>
+        c.nit === formEmpresa || c.id === formEmpresa || c.nombre === formEmpresa
+      );
       const enc = {
         id: `enc_${Date.now()}`,
         nombre: formNombre.trim(),
         descripcion: formDesc.trim(),
-        empresaId: formEmpresa,
+        empresaId: empresaObj?.nit || empresaObj?.id || formEmpresa,
         empresaNombre: empresaObj?.nombre || '',
         tipoExamen: formTipo,
         fechaLimite: formFecha,
@@ -307,8 +309,8 @@ export default function EncuestasTab({ companies = [], currentUser }) {
                   className="w-full p-2 border rounded-lg text-xs"
                 >
                   <option value="">— Seleccione empresa —</option>
-                  {companies.map(c => (
-                    <option key={c.id} value={c.id}>{c.nombre}</option>
+                  {companies.map((c, i) => (
+                    <option key={c.nit || c.id || i} value={c.nit || c.id || c.nombre}>{c.nombre}</option>
                   ))}
                 </select>
               </div>

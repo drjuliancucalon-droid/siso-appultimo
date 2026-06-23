@@ -158,7 +158,10 @@ export default function CompaniesSection({ ctx }) {
               )}
               {companies.map((c, i) => {
                 const pac = patientsList.filter(
-                  (p) => p.empresaId === c.id || p.empresaNit === c.nit
+                  (p) => p.empresaId === c.id ||
+                    (c.nit && p.empresaNit === c.nit) ||
+                    p.empresa?.toLowerCase() === c.nombre?.toLowerCase() ||
+                    p.empresaNombre?.toLowerCase() === c.nombre?.toLowerCase()
                 ).length;
                 const medResp = medicos.find(
                   (m) => m.user === c.medicoResponsableId
@@ -1700,7 +1703,7 @@ export default function CompaniesSection({ ctx }) {
                         onClick={() => setPortalActivadoInfo(null)}
                             className="flex-1 py-2.5 bg-gray-100 text-gray-600 text-xs font-black rounded-xl hover:bg-gray-200"
                       >
-                        ✓ Cerrar
+                                              ✓ Cerrar
                       </button>
                     </div>
                   </div>
