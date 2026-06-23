@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../../stores/authStore';
 import { d1Get } from '../../../lib/d1Client';
-import { Download, FileText, BarChart3, Users, Activity, Briefcase, Calendar, Sparkles, Loader2, AlertCircle, Send, Archive, CheckCircle2, TrendingUp } from 'lucide-react';
+import { Download, FileText, BarChart3, Users, Activity, Briefcase, Calendar, Sparkles, Loader2, AlertCircle, Send, Archive, CheckCircle2, TrendingUp, Scale } from 'lucide-react';
 import { useAIStore } from '../../../stores/aiStore';
 import { analyzeEpidemiologicalData } from '../../ai/services/aiAnalysis';
 import { saveAs } from 'file-saver';
@@ -25,13 +25,55 @@ const PctBar = ({ label, pct }) => (
   </div>
 );
 
+// Etiquetas legibles para riesgos
+const LABELS_RIESGOS = {
+  fisicos: 'Físico', quimicos: 'Químico', biologicos: 'Biológico',
+  mecanicos: 'Mecánico', biomecanicos: 'Biomecánico', psicosocial: 'Psicosocial',
+  seguridad: 'Seguridad', locativos: 'Locativo',
+};
+
+// Helper: obtiene riesgos activos como array de strings
+const getRiesgosActivos = (p) =>
+  Object.entries(p.riesgos || {}).filter(([, v]) => v).map(([k]) => LABELS_RIESGOS[k] || k);
+
+// Helper: detecta si hay hallazgos físicos anormales
+const tieneHallazgos = (p) => {
+  const efs = p.examenFisicoSistemas || {};
+  return Object.values(efs).some(s => s.estado !== 'Normal' || (s.hallazgo && s.hallazgo.trim() !== ''));
+};
+
+// Helper: normaliza concepto aptitud
+const caUpper = (p) => (p.conceptoAptitud || '').toUpperCase();
+const esApto = (p) => caUpper(p).includes('APTO') && !caUpper(p).includes('RESTRICCI');
+const esRestricciones = (p) => caUpper(p).includes('RESTRICCI');
+const esNoApto = (p) => caUpper(p).includes('NO APT');
+
+// Normativa por CIE-10
+const getNormativa = (cie10, riesgos) => {
+  const cie = (cie10 || '').toUpperCase();
+  if (cie.startsWith('M') || cie.startsWith('G54') || cie.startsWith('G56'))
+    return { norma: 'GTC-45 · Dec.1477/2014', obligacion: 'Programa prevención DME obligatorio' };
+  if (cie.startsWith('H8') || cie.startsWith('H9'))
+    return { norma: 'Res.8321/1983 · Dec.1477/2014', obligacion: 'Audiometría periódica + EPP auditivo' };
+  if (cie.startsWith('J') || cie.startsWith('Z57'))
+    return { norma: 'Res.1843/2025 Art.10', obligacion: 'Espirometría periódica obligatoria' };
+  if (cie.startsWith('F') || cie.startsWith('Z73'))
+    return { norma: 'Res.2404/2019', obligacion: 'Batería riesgo psicosocial obligatoria' };
+  if (cie.startsWith('E1'))
+    return { norma: 'Res.0312/2019', obligacion: 'Control metabólico + restricciones laborales' };
+  if ((riesgos || []).includes('Biomecánico'))
+    return { norma: 'GTC-45', obligacion: 'Vigilancia osteomuscular activa' };
+  return { norma: 'Dec. 1477/2014', obligacion: 'Vigilancia epidemiológica activa' };
+};
+
 export default function ReportsPage() {
   const navigate = useNavigate();
   const { currentUser } = useAuthStore();
+  const userId = currentUser?.user || currentUser?.id || 'drcucalon';
 
   const [patients, setPatients] = useState(() => {
     try {
-      const stored = localStorage.getItem(`siso_patients_${currentUser?.user}`);
+      const stored = localStorage.getItem(`siso_patients_${userId}`);
       if (stored) return JSON.parse(stored);
     } catch (_) {}
     return [];
@@ -39,30 +81,31 @@ export default function ReportsPage() {
 
   const [companies, setCompanies] = useState([]);
   const [usersList, setUsersList] = useState([]);
+  const [selectedCerts, setSelectedCerts] = useState(new Set());
 
   // SIEMPRE cargar desde D1 (localStorage solo es caché inicial)
   useEffect(() => {
-    if (!currentUser?.user) return;
-    d1Get(`siso_patients_${currentUser.user}`)
+    if (!userId) return;
+    d1Get(`siso_patients_${userId}`)
       .then(({ value }) => {
         if (Array.isArray(value) && value.length > 0) {
           setPatients(value);
-          try { localStorage.setItem(`siso_patients_${currentUser.user}`, JSON.stringify(value)); } catch (_) {}
+          try { localStorage.setItem(`siso_patients_${userId}`, JSON.stringify(value)); } catch (_) {}
         }
       })
       .catch(() => {});
-    d1Get(`siso_companies_${currentUser.user}`)
+    d1Get(`siso_companies_${userId}`)
       .then(({ value }) => { if (Array.isArray(value)) setCompanies(value); })
       .catch(() => {
         try {
-          const raw = localStorage.getItem(`siso_companies_${currentUser.user}`);
+          const raw = localStorage.getItem(`siso_companies_${userId}`);
           if (raw) setCompanies(JSON.parse(raw));
         } catch (_) {}
       });
     d1Get('siso_users')
       .then(({ value }) => { if (Array.isArray(value)) setUsersList(value); })
       .catch(() => {});
-  }, [currentUser?.user]);
+  }, [userId]);
 
   const [reportType, setReportType] = useState('resumen');
   const [filterEmpresa, setFilterEmpresa] = useState('');
@@ -76,11 +119,20 @@ export default function ReportsPage() {
   const [iaError, setIaError] = useState('');
   const [emitidoInfo, setEmitidoInfo] = useState(null);
 
+  // BUG-R1 FIX: usar p.empresaNombre en lugar de p.empresa
   useEffect(() => {
     if (!filterEmpresa) { setEmitidoInfo(null); return; }
-    const empMatch = patients.find(p => p.empresa?.toLowerCase() === filterEmpresa.toLowerCase());
-    if (!empMatch) return;
-    const nit = empMatch.empresaNit || empMatch.nit || '';
+    // Buscar por localStorage primero (indicador local de emision)
+    const empMatch = patients.find(p =>
+      (p.empresaNombre || '').toLowerCase() === filterEmpresa.toLowerCase()
+    );
+    const localKey = `siso_emitido_${empMatch?.empresaId || filterEmpresa}`;
+    const localSaved = localStorage.getItem(localKey);
+    if (localSaved) {
+      try { setEmitidoInfo(JSON.parse(localSaved)); return; } catch (_) {}
+    }
+    // Fallback: consultar D1 portal
+    const nit = empMatch?.empresaNit || empMatch?.nit || '';
     if (!nit) return;
     d1Get(`siso_portal_empresa_atenciones_${nit}`)
       .then(({ value }) => {
@@ -98,11 +150,11 @@ export default function ReportsPage() {
     [usersList]
   );
 
-  // Filtrado Maestro
+  // BUG-R1 FIX: filtrar por p.empresaNombre
   const filteredData = useMemo(() => {
     return patients.filter(p => {
       const matchEmpresa = filterEmpresa
-        ? p.empresa?.toLowerCase().includes(filterEmpresa.toLowerCase())
+        ? (p.empresaNombre || '').toLowerCase().includes(filterEmpresa.toLowerCase())
         : true;
       const matchMedico = filterMedico
         ? (p.medicoId === filterMedico || p.medicoUser === filterMedico || p.medico === filterMedico)
@@ -120,11 +172,12 @@ export default function ReportsPage() {
       const JSZip = (await import('jszip')).default;
       const zip = new JSZip();
       filteredData.forEach((p, i) => {
+        // BUG-R2 FIX: usar p.nombres y p.empresaNombre
         const content = [
           'SISO OcupaSalud — Certificado de Aptitud',
-          `Paciente: ${p.nombreCompleto || '—'}`,
+          `Paciente: ${p.nombres || '—'}`,
           `Documento: ${p.docNumero || '—'}`,
-          `Empresa: ${p.empresa || '—'}`,
+          `Empresa: ${p.empresaNombre || '—'}`,
           `Tipo: ${p.tipoExamen || '—'}`,
           `Concepto: ${p.conceptoAptitud || '—'}`,
           `Fecha: ${p.fechaExamen || '—'}`,
@@ -137,6 +190,19 @@ export default function ReportsPage() {
       alert('Error generando ZIP: ' + (err.message || 'verifique jszip'));
     }
   }, [filteredData, filterEmpresa]);
+
+  const handleEnviarTodo = useCallback(() => {
+    // Guardar indicador emitido en localStorage
+    if (filteredData.length > 0) {
+      const p0 = filteredData[0];
+      const localKey = `siso_emitido_${p0.empresaId || filterEmpresa}`;
+      const info = { fecha: new Date().toISOString(), count: filteredData.length };
+      localStorage.setItem(localKey, JSON.stringify(info));
+      setEmitidoInfo(info);
+    }
+    const nit = filteredData[0]?.empresaNit || filteredData[0]?.nit || '';
+    navigate(`/portal-certificados${nit ? `?nit=${nit}` : ''}`);
+  }, [filteredData, filterEmpresa, navigate]);
 
   const handleGenerateEpiReport = async () => {
     const { canUse, getConfig } = useAIStore.getState();
@@ -161,21 +227,25 @@ export default function ReportsPage() {
     }
   };
 
-  // --- CÁLCULOS ---
+  // --- CÁLCULOS CORREGIDOS ---
   const total = filteredData.length;
 
   const stats = useMemo(() => {
-    const aptos = filteredData.filter(p => p.conceptoAptitud?.includes('APTO') && !p.conceptoAptitud.includes('RESTRICCIONES')).length;
-    const conRestricciones = filteredData.filter(p => p.conceptoAptitud?.includes('RESTRICCIONES')).length;
-    const noAptos = filteredData.filter(p => p.conceptoAptitud?.includes('NO APTO')).length;
-    const conHallazgos = filteredData.filter(p => p.hallazgos && Object.keys(p.hallazgos).some(k => p.hallazgos[k])).length;
-    const conRiesgos = filteredData.filter(p => Array.isArray(p.riesgosLaborales) && p.riesgosLaborales.length > 0).length;
+    // BUG-R4 FIX: case-insensitive para conceptoAptitud
+    const aptos = filteredData.filter(esApto).length;
+    const conRestricciones = filteredData.filter(esRestricciones).length;
+    const noAptos = filteredData.filter(esNoApto).length;
+    // BUG-R3 FIX: usar examenFisicoSistemas real
+    const conHallazgos = filteredData.filter(tieneHallazgos).length;
+    // BUG-R3 FIX: usar p.riesgos objeto real
+    const conRiesgos = filteredData.filter(p => p.riesgos && Object.values(p.riesgos).some(Boolean)).length;
     const edadPromedio = total > 0
       ? Math.round(filteredData.reduce((s, p) => s + (Number(p.edad) || 0), 0) / total)
       : 0;
     const tasaNoAptos = total > 0 ? ((noAptos / total) * 100).toFixed(1) : '0';
+    // BUG-R1 FIX: usar empresaNombre
     const porEmpresa = filteredData.reduce((acc, curr) => {
-      const emp = curr.empresa || 'Sin Empresa';
+      const emp = curr.empresaNombre || 'Sin Empresa';
       acc[emp] = (acc[emp] || 0) + 1;
       return acc;
     }, {});
@@ -202,7 +272,8 @@ export default function ReportsPage() {
     filteredData.forEach(p => {
       if (p.incapacidad?.aplica && p.incapacidad?.dias > 0) {
         totalDias += p.incapacidad.dias;
-        casos.push({ paciente: p.nombreCompleto, empresa: p.empresa, dias: p.incapacidad.dias, motivo: p.incapacidad.motivo });
+        // BUG-R2 FIX: usar p.nombres y p.empresaNombre
+        casos.push({ paciente: p.nombres, empresa: p.empresaNombre, dias: p.incapacidad.dias, motivo: p.incapacidad.motivo || p.diagnosticoPrincipal || '—' });
       }
     });
     return { totalDias, casos };
@@ -244,10 +315,54 @@ export default function ReportsPage() {
     };
   }, [filteredData, total]);
 
-  // Perfil Clínico
+  // Perfil Clínico extendido (FASE B — campos reales)
   const perfilClinico = useMemo(() => {
     if (total === 0) return null;
     const pct = (n) => `${((n / total) * 100).toFixed(0)}%`;
+
+    // Tensión Arterial (p.ta = "120/80")
+    const taGroups = { 'Normal (<130/85)': 0, 'Pre-HTA (130-139)': 0, 'HTA I (140-159)': 0, 'No registrado': 0 };
+    filteredData.forEach(p => {
+      const ta = (p.ta || '').trim();
+      if (!ta) { taGroups['No registrado']++; return; }
+      const sys = parseInt(ta.split('/')[0]) || 0;
+      if (sys < 130) taGroups['Normal (<130/85)']++;
+      else if (sys < 140) taGroups['Pre-HTA (130-139)']++;
+      else taGroups['HTA I (140-159)']++;
+    });
+
+    // Antecedentes patológicos (p.antecedentesAgrupados)
+    const antLabels = { patologicos: 'Patológicos', quirurgicos: 'Quirúrgicos', traumaticos: 'Traumáticos', farmacologicos: 'Farmacológicos', alergicos: 'Alérgicos' };
+    const antCounts = Object.fromEntries(Object.keys(antLabels).map(k => [k, 0]));
+    filteredData.forEach(p => {
+      const ant = p.antecedentesAgrupados || {};
+      Object.keys(antLabels).forEach(k => { if (ant[k]?.val) antCounts[k]++; });
+    });
+
+    // Hábitos (p.habitos)
+    const habitosCount = { fuma: 0, alcohol: 0, psicoactivas: 0, deporte: 0 };
+    filteredData.forEach(p => {
+      const h = p.habitos || {};
+      if ((h.fuma || 'No') !== 'No') habitosCount.fuma++;
+      if ((h.alcohol || 'No') !== 'No') habitosCount.alcohol++;
+      if ((h.psicoactivas || 'No') !== 'No') habitosCount.psicoactivas++;
+      if ((h.deporte || 'No') !== 'No') habitosCount.deporte++;
+    });
+
+    // Sistemas alterados (p.examenFisicoSistemas)
+    const sistemasAlt = {};
+    filteredData.forEach(p => {
+      const efs = p.examenFisicoSistemas || {};
+      Object.entries(efs).forEach(([sys, val]) => {
+        if (val.estado !== 'Normal' || (val.hallazgo && val.hallazgo.trim())) {
+          sistemasAlt[sys] = (sistemasAlt[sys] || 0) + 1;
+        }
+      });
+    });
+    const sistemasAltOrdenados = Object.entries(sistemasAlt)
+      .sort((a, b) => b[1] - a[1])
+      .map(([sys, n]) => ({ label: sys.replace(/([A-Z])/g, ' $1').trim(), pct: pct(n), count: n }));
+
     return {
       imc: [
         { label: 'Normal (18.5-24.9)', pct: pct(filteredData.filter(p => { const i = Number(p.imc); return i >= 18.5 && i < 25; }).length) },
@@ -255,26 +370,44 @@ export default function ReportsPage() {
         { label: 'Obesidad (≥30)', pct: pct(filteredData.filter(p => Number(p.imc) >= 30).length) },
         { label: 'No registrado', pct: pct(filteredData.filter(p => !p.imc).length) },
       ],
+      ta: Object.entries(taGroups).map(([label, n]) => ({ label, pct: pct(n), count: n })),
+      // BUG-R4 FIX: case-insensitive
       aptitud: [
-        { label: 'APTO', pct: pct(filteredData.filter(p => p.conceptoAptitud?.includes('APTO') && !p.conceptoAptitud.includes('RESTRICCIONES')).length) },
-        { label: 'CON RESTRICCIONES', pct: pct(filteredData.filter(p => p.conceptoAptitud?.includes('RESTRICCIONES')).length) },
-        { label: 'NO APTO', pct: pct(filteredData.filter(p => p.conceptoAptitud?.includes('NO APTO')).length) },
+        { label: 'APTO', pct: pct(filteredData.filter(esApto).length) },
+        { label: 'CON RESTRICCIONES', pct: pct(filteredData.filter(esRestricciones).length) },
+        { label: 'NO APTO', pct: pct(filteredData.filter(esNoApto).length) },
       ],
       top5CIE10: morbilidadData.slice(0, 5),
       conHallazgos: stats.conHallazgos,
       pctHallazgos: pct(stats.conHallazgos),
       conRiesgos: stats.conRiesgos,
       pctRiesgos: pct(stats.conRiesgos),
+      antecedentes: Object.entries(antLabels).map(([k, label]) => ({ label, pct: pct(antCounts[k]), count: antCounts[k] })),
+      habitos: [
+        { label: 'Fumadores', pct: pct(habitosCount.fuma), count: habitosCount.fuma },
+        { label: 'Alcohol', pct: pct(habitosCount.alcohol), count: habitosCount.alcohol },
+        { label: 'Psicoactivas', pct: pct(habitosCount.psicoactivas), count: habitosCount.psicoactivas },
+        { label: 'Deporte / Actividad Física', pct: pct(habitosCount.deporte), count: habitosCount.deporte },
+      ],
+      sistemasAlterados: sistemasAltOrdenados,
     };
   }, [filteredData, total, morbilidadData, stats]);
 
-  // Exportaciones
+  // Exportaciones — BUG-R2 FIX: campos correctos
   const handleExportExcel = () => {
     const dataToExport = filteredData.map(p => ({
-      Fecha: p.fechaExamen, Paciente: p.nombreCompleto, Documento: p.docNumero,
-      Empresa: p.empresa, Cargo: p.cargo, Tipo_Examen: p.tipoExamen,
-      Diagnostico_Principal: p.diagnosticoPrincipal, Concepto_Aptitud: p.conceptoAptitud,
-      Vigencia_Meses: p.vigencia, ARL: p.arl, Riesgo: p.nivelRiesgo,
+      Fecha: p.fechaExamen,
+      Paciente: p.nombres,
+      Documento: p.docNumero,
+      Empresa: p.empresaNombre,
+      Cargo: p.cargo,
+      Tipo_Examen: p.tipoExamen,
+      Diagnostico_Principal: p.diagnosticoPrincipal,
+      Concepto_Aptitud: p.conceptoAptitud,
+      Vigencia_Meses: p.vigencia,
+      ARL: p.arl,
+      Riesgo: p.nivelRiesgoARL,
+      Riesgos_Laborales: getRiesgosActivos(p).join(', '),
     }));
     const ws = XLSX.utils.json_to_sheet(dataToExport);
     const wb = XLSX.utils.book_new();
@@ -285,7 +418,7 @@ export default function ReportsPage() {
   const handleExportCSV = () => {
     const headers = ['Fecha', 'Paciente', 'Documento', 'Empresa', 'Cargo', 'Tipo Examen', 'Concepto Aptitud', 'Diagnóstico Principal'];
     const rows = filteredData.map(p => [
-      p.fechaExamen || '', p.nombreCompleto || '', p.docNumero || '', p.empresa || '',
+      p.fechaExamen || '', p.nombres || '', p.docNumero || '', p.empresaNombre || '',
       p.cargo || '', p.tipoExamen || '', p.conceptoAptitud || '', p.diagnosticoPrincipal || '',
     ].map(v => `"${String(v).replace(/"/g, '""')}"`));
     const csv = [headers, ...rows].map(r => r.join(',')).join('\n');
@@ -323,11 +456,7 @@ export default function ReportsPage() {
           </button>
           {filterEmpresa && (
             <button
-              onClick={() => {
-                const emp = patients.find(p => p.empresa?.toLowerCase() === filterEmpresa.toLowerCase());
-                const nit = emp?.empresaNit || emp?.nit || '';
-                navigate(`/portal-certificados${nit ? `?nit=${nit}` : ''}`);
-              }}
+              onClick={handleEnviarTodo}
               className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 text-xs font-bold"
             >
               <Send size={14} /> Enviar TODO
@@ -379,7 +508,7 @@ export default function ReportsPage() {
         </div>
       )}
 
-      {/* Filtros */}
+      {/* Filtros — BUG-R1 FIX: dropdown usa empresaNombre del paciente como fallback */}
       <div className="bg-white p-3 rounded-lg shadow-sm mb-3 grid grid-cols-2 md:grid-cols-5 gap-2">
         <div>
           <label className="block text-[9px] font-bold text-gray-500 mb-1 uppercase">Empresa</label>
@@ -389,7 +518,7 @@ export default function ReportsPage() {
               ? companies.map((c, i) => (
                   <option key={c.nit || c.id || i} value={c.nombre}>{c.nombre}</option>
                 ))
-              : [...new Set(patients.map(p => p.empresa).filter(Boolean))].sort().map((emp, i) => (
+              : [...new Set(patients.map(p => p.empresaNombre).filter(Boolean))].sort().map((emp, i) => (
                   <option key={i} value={emp}>{emp}</option>
                 ))
             }
@@ -483,7 +612,8 @@ export default function ReportsPage() {
           { id: 'morbilidad', label: 'Morbilidad', icon: Activity },
           { id: 'ausentismo', label: 'Ausentismo', icon: Calendar },
           { id: 'empresas', label: 'Por Empresa', icon: Briefcase },
-          { id: 'marcolegal', label: '⚖️ Marco Legal', icon: TrendingUp },
+          { id: 'certificados', label: '📄 Certificados', icon: FileText },
+          { id: 'marcolegal', label: '⚖️ Marco Legal', icon: Scale },
         ].map(tab => (
           <button key={tab.id} onClick={() => setReportType(tab.id)}
             className={`flex items-center gap-1 px-3 py-2.5 text-xs font-bold border-b-2 transition-colors whitespace-nowrap ${
@@ -496,7 +626,7 @@ export default function ReportsPage() {
 
       <div className="bg-white rounded-lg shadow-sm p-4 min-h-[300px]">
 
-        {/* RESUMEN EJECUTIVO */}
+        {/* RESUMEN EJECUTIVO — BUG-R2 FIX */}
         {reportType === 'resumen' && (
           <div className="overflow-x-auto">
             <table className="w-full text-xs text-left">
@@ -508,13 +638,13 @@ export default function ReportsPage() {
                 </tr>
               </thead>
               <tbody>
-                {filteredData.slice(0, 20).map((p, i) => (
+                {filteredData.slice(0, 50).map((p, i) => (
                   <tr key={i} className="border-b hover:bg-gray-50">
                     <td className="p-2">{formatDate(p.fechaExamen)}</td>
-                    <td className="p-2 font-medium">{p.nombreCompleto}</td>
-                    <td className="p-2 text-gray-600 truncate max-w-[120px]">{p.empresa}</td>
+                    <td className="p-2 font-medium">{p.nombres || '—'}</td>
+                    <td className="p-2 text-gray-600 truncate max-w-[120px]">{p.empresaNombre || '—'}</td>
                     <td className="p-2"><span className="px-1.5 py-0.5 bg-gray-100 rounded text-[10px]">{p.tipoExamen}</span></td>
-                    <td className={`p-2 font-bold ${p.conceptoAptitud?.includes('NO') ? 'text-red-600' : 'text-green-600'}`}>
+                    <td className={`p-2 font-bold ${esNoApto(p) ? 'text-red-600' : esRestricciones(p) ? 'text-yellow-600' : 'text-green-600'}`}>
                       {(p.conceptoAptitud || '').slice(0, 20)}{(p.conceptoAptitud || '').length > 20 ? '…' : ''}
                     </td>
                     <td className="p-2 text-gray-500">{p.diagnosticoPrincipal}</td>
@@ -523,11 +653,11 @@ export default function ReportsPage() {
               </tbody>
             </table>
             {total === 0 && <p className="text-center py-8 text-gray-400 text-sm">No hay datos con los filtros actuales.</p>}
-            {total > 20 && <p className="text-center py-2 text-gray-400 text-[10px]">Mostrando 20 de {total}. Exporte para ver todos.</p>}
+            {total > 50 && <p className="text-center py-2 text-gray-400 text-[10px]">Mostrando 50 de {total}. Exporte para ver todos.</p>}
           </div>
         )}
 
-        {/* DIAGNÓSTICO */}
+        {/* DIAGNÓSTICO — FASE A + B + C */}
         {reportType === 'diagnostico' && (
           <div>
             <p className="text-[9px] text-gray-400 mb-4">⚠ Res.1843/2025 Art.19 - Confidencial · {total} trabajadores evaluados</p>
@@ -535,6 +665,7 @@ export default function ReportsPage() {
               ? <p className="text-center py-8 text-gray-400 text-sm">Aplique filtros para ver el diagnóstico.</p>
               : (
                 <>
+                  {/* SECCIÓN 1 */}
                   <h3 className="font-black text-gray-800 mb-3 text-xs uppercase tracking-wider border-b pb-1.5">
                     1. PERFIL SOCIODEMOGRÁFICO Y OCUPACIONAL
                   </h3>
@@ -561,6 +692,7 @@ export default function ReportsPage() {
                     ))}
                   </div>
 
+                  {/* SECCIÓN 2 */}
                   <h3 className="font-black text-gray-800 mb-3 text-xs uppercase tracking-wider border-b pb-1.5">
                     2. PERFIL CLÍNICO Y DE SALUD
                   </h3>
@@ -569,6 +701,11 @@ export default function ReportsPage() {
                       <div className="bg-gray-50 rounded-xl p-3">
                         <p className="text-[9px] font-black text-gray-600 uppercase tracking-wider mb-2">IMC</p>
                         {perfilClinico.imc.map((item, i) => <PctBar key={i} label={item.label} pct={item.pct} />)}
+                      </div>
+                      {/* NUEVA-R1a: Tensión Arterial */}
+                      <div className="bg-red-50 rounded-xl p-3">
+                        <p className="text-[9px] font-black text-red-700 uppercase tracking-wider mb-2">TENSIÓN ARTERIAL</p>
+                        {perfilClinico.ta.filter(i => i.count > 0).map((item, i) => <PctBar key={i} label={item.label} pct={item.pct} />)}
                       </div>
                       <div className="bg-gray-50 rounded-xl p-3">
                         <p className="text-[9px] font-black text-gray-600 uppercase tracking-wider mb-2">CONCEPTO APTITUD</p>
@@ -584,20 +721,39 @@ export default function ReportsPage() {
                         ))}
                       </div>
                       <div className="bg-orange-50 rounded-xl p-3">
-                        <p className="text-[9px] font-black text-orange-700 uppercase tracking-wider mb-1">HALLAZGOS FÍSICOS</p>
+                        <p className="text-[9px] font-black text-orange-700 uppercase tracking-wider mb-1">HALLAZGOS FÍSICOS ANORMALES</p>
                         <p className="text-2xl font-black text-orange-800">{perfilClinico.conHallazgos}</p>
                         <p className="text-[10px] text-orange-600">{perfilClinico.pctHallazgos} del total</p>
                       </div>
                       <div className="bg-purple-50 rounded-xl p-3">
-                        <p className="text-[9px] font-black text-purple-700 uppercase tracking-wider mb-1">RIESGOS ACTIVOS</p>
+                        <p className="text-[9px] font-black text-purple-700 uppercase tracking-wider mb-1">RIESGOS LABORALES ACTIVOS</p>
                         <p className="text-2xl font-black text-purple-800">{perfilClinico.conRiesgos}</p>
                         <p className="text-[10px] text-purple-600">{perfilClinico.pctRiesgos} del total</p>
                       </div>
+                      {/* NUEVA-R1b: Antecedentes Patológicos */}
+                      <div className="bg-blue-50 rounded-xl p-3">
+                        <p className="text-[9px] font-black text-blue-700 uppercase tracking-wider mb-2">ANTECEDENTES PATOLÓGICOS</p>
+                        {perfilClinico.antecedentes.filter(a => a.count > 0).map((item, i) => <PctBar key={i} label={item.label} pct={item.pct} />)}
+                        {perfilClinico.antecedentes.every(a => a.count === 0) && <p className="text-[10px] text-blue-500">Sin antecedentes registrados</p>}
+                      </div>
+                      {/* NUEVA-R1c: Hábitos */}
+                      <div className="bg-green-50 rounded-xl p-3">
+                        <p className="text-[9px] font-black text-green-700 uppercase tracking-wider mb-2">ESTILOS DE VIDA Y HÁBITOS</p>
+                        {perfilClinico.habitos.map((item, i) => <PctBar key={i} label={item.label} pct={item.pct} />)}
+                      </div>
+                      {/* NUEVA-R1d: Revisión sistemas alterados */}
+                      {perfilClinico.sistemasAlterados.length > 0 && (
+                        <div className="bg-yellow-50 rounded-xl p-3">
+                          <p className="text-[9px] font-black text-yellow-700 uppercase tracking-wider mb-2">REVISIÓN POR SISTEMAS (ALTERADOS)</p>
+                          {perfilClinico.sistemasAlterados.slice(0, 8).map((item, i) => <PctBar key={i} label={item.label} pct={item.pct} />)}
+                        </div>
+                      )}
                     </div>
                   )}
 
+                  {/* SECCIÓN 3: IA */}
                   {iaResult && (
-                    <div>
+                    <div className="mb-6">
                       <h3 className="font-black text-gray-800 mb-2 text-xs uppercase tracking-wider border-b pb-1.5">
                         3. ANÁLISIS INTELIGENTE IA
                       </h3>
@@ -607,7 +763,7 @@ export default function ReportsPage() {
                     </div>
                   )}
                   {!iaResult && (
-                    <div className="text-center py-4">
+                    <div className="text-center py-4 mb-6">
                       <button onClick={handleGenerateEpiReport} disabled={isGenerating}
                         className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-xs font-bold mx-auto disabled:opacity-50">
                         {isGenerating ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
@@ -615,6 +771,69 @@ export default function ReportsPage() {
                       </button>
                     </div>
                   )}
+
+                  {/* SECCIÓN 4: MATRIZ LEGAL INDIVIDUAL POR TRABAJADOR (NUEVA-R2) */}
+                  <h3 className="font-black text-gray-800 mb-3 text-xs uppercase tracking-wider border-b pb-1.5 flex items-center gap-2">
+                    <Scale size={14} className="text-indigo-600" />
+                    4. MATRIZ LEGAL DE CONDICIONES DE SALUD — POR TRABAJADOR
+                  </h3>
+                  <p className="text-[9px] text-gray-400 mb-3">Res. 1843/2025 Art. 17 · Dec. 1477/2014 · Confidencial</p>
+                  <div className="overflow-x-auto mb-4">
+                    <table className="w-full text-[10px] text-left border-collapse">
+                      <thead>
+                        <tr className="bg-indigo-50 text-indigo-800 uppercase text-[9px]">
+                          <th className="p-2 font-black border border-indigo-100">#</th>
+                          <th className="p-2 font-black border border-indigo-100">Trabajador</th>
+                          <th className="p-2 font-black border border-indigo-100">Doc.</th>
+                          <th className="p-2 font-black border border-indigo-100">Edad</th>
+                          <th className="p-2 font-black border border-indigo-100">Riesgos Ocupacionales</th>
+                          <th className="p-2 font-black border border-indigo-100">Diagnóstico CIE-10</th>
+                          <th className="p-2 font-black border border-indigo-100">Concepto</th>
+                          <th className="p-2 font-black border border-indigo-100">Restricciones / Recomendaciones</th>
+                          <th className="p-2 font-black border border-indigo-100">Normativa</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {filteredData.map((p, i) => {
+                          const riesgos = getRiesgosActivos(p);
+                          const { norma, obligacion } = getNormativa(p.diagnosticoPrincipal, riesgos);
+                          const ca = (p.conceptoAptitud || '').toUpperCase();
+                          const conceptoColor = ca.includes('NO APT') ? 'text-red-700 font-black'
+                            : ca.includes('RESTRICCI') ? 'text-yellow-700 font-black'
+                            : ca.includes('APT') ? 'text-green-700 font-black'
+                            : 'text-gray-600';
+                          return (
+                            <tr key={i} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                              <td className="p-2 border border-gray-100 font-bold text-indigo-600">{i + 1}</td>
+                              <td className="p-2 border border-gray-100 font-medium">{p.nombres || '—'}</td>
+                              <td className="p-2 border border-gray-100">{p.docNumero || '—'}</td>
+                              <td className="p-2 border border-gray-100 text-center">{p.edad || '—'}</td>
+                              <td className="p-2 border border-gray-100">
+                                {riesgos.length > 0
+                                  ? riesgos.map((r, j) => <span key={j} className="inline-block bg-purple-100 text-purple-700 rounded px-1 mr-0.5 mb-0.5">{r}</span>)
+                                  : <span className="text-gray-400">—</span>}
+                              </td>
+                              <td className="p-2 border border-gray-100">
+                                <div className="font-medium">{p.diagnosticoPrincipal || '—'}</div>
+                                {p.diagnosticoSecundario1 && <div className="text-gray-500">{p.diagnosticoSecundario1}</div>}
+                              </td>
+                              <td className={`p-2 border border-gray-100 ${conceptoColor}`}>
+                                {p.conceptoAptitud || '—'}
+                              </td>
+                              <td className="p-2 border border-gray-100 text-gray-700">
+                                {p.analisisRestricciones || p.recomendaciones || <span className="text-gray-400">Sin restricciones</span>}
+                              </td>
+                              <td className="p-2 border border-gray-100">
+                                <div className="text-indigo-700 font-medium">{norma}</div>
+                                <div className="text-gray-500">{obligacion}</div>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                    {filteredData.length === 0 && <p className="text-center py-6 text-gray-400 text-sm">Seleccione una empresa y rango de fechas para ver la matriz.</p>}
+                  </div>
                 </>
               )
             }
@@ -645,7 +864,7 @@ export default function ReportsPage() {
           </div>
         )}
 
-        {/* AUSENTISMO */}
+        {/* AUSENTISMO — BUG-R2 FIX */}
         {reportType === 'ausentismo' && (
           <div>
             <div className="p-4 bg-orange-50 rounded-lg mb-4 border border-orange-200 inline-block">
@@ -675,7 +894,7 @@ export default function ReportsPage() {
           </div>
         )}
 
-        {/* POR EMPRESA */}
+        {/* POR EMPRESA — BUG-R1 FIX */}
         {reportType === 'empresas' && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {Object.entries(stats.porEmpresa).sort((a, b) => b[1] - a[1]).map(([emp, count]) => (
@@ -693,7 +912,113 @@ export default function ReportsPage() {
               </div>
             ))}
             {Object.keys(stats.porEmpresa).length === 0 && (
-                            <p className="col-span-full text-center py-8 text-gray-400 text-sm">No hay datos agrupados por empresa.</p>
+              <p className="col-span-full text-center py-8 text-gray-400 text-sm">No hay datos agrupados por empresa.</p>
+            )}
+          </div>
+        )}
+
+        {/* CERTIFICADOS POR EMPRESA (NUEVA-R3) */}
+        {reportType === 'certificados' && (
+          <div>
+            {!filterEmpresa && (
+              <div className="text-center py-10 text-gray-400">
+                <FileText size={40} className="mx-auto mb-3 opacity-30" />
+                <p className="text-sm">Seleccione una empresa en el filtro para ver sus certificados</p>
+              </div>
+            )}
+            {filterEmpresa && (
+              <>
+                <div className="mb-3">
+                  <h3 className="font-black text-gray-800 text-sm mb-1">
+                    Certificados de Aptitud — {filterEmpresa}
+                  </h3>
+                  <p className="text-[10px] text-gray-500">{filteredData.length} trabajadores evaluados</p>
+                </div>
+                {/* Botones de acción */}
+                <div className="flex flex-wrap gap-2 mb-3 pb-3 border-b">
+                  <button
+                    onClick={() => setSelectedCerts(new Set(filteredData.map((_, i) => i)))}
+                    className="px-3 py-1.5 bg-gray-100 text-gray-700 rounded text-xs font-bold hover:bg-gray-200"
+                  >
+                    ☑ Seleccionar todos
+                  </button>
+                  <button
+                    onClick={() => setSelectedCerts(new Set())}
+                    className="px-3 py-1.5 bg-gray-100 text-gray-700 rounded text-xs font-bold hover:bg-gray-200"
+                  >
+                    ☐ Deseleccionar
+                  </button>
+                  <button onClick={() => window.print()}
+                    className="flex items-center gap-1 px-3 py-1.5 bg-gray-600 text-white rounded text-xs font-bold hover:bg-gray-700">
+                    🖨️ Imprimir ({selectedCerts.size})
+                  </button>
+                  <button onClick={handleDescargarZip}
+                    className="flex items-center gap-1 px-3 py-1.5 bg-red-600 text-white rounded text-xs font-bold hover:bg-red-700">
+                    <Archive size={13} /> Todos en ZIP ({filteredData.length})
+                  </button>
+                  <button
+                    onClick={() => {
+                      const empData = companies.find(c => c.nombre === filterEmpresa);
+                      const email = empData?.email || '';
+                      if (email) window.open(`mailto:${email}?subject=Certificados Aptitud - ${filterEmpresa}&body=Adjunto certificados de aptitud laboral.`, '_blank');
+                      else alert('No hay email registrado para esta empresa.');
+                    }}
+                    className="flex items-center gap-1 px-3 py-1.5 bg-blue-600 text-white rounded text-xs font-bold hover:bg-blue-700">
+                    <Send size={13} /> Email Empresa
+                  </button>
+                  <button
+                    onClick={() => {
+                      const resumen = filteredData
+                        .filter((_, i) => selectedCerts.has(i) || selectedCerts.size === 0)
+                        .map(p => `• ${p.nombres || '—'} — ${p.conceptoAptitud || '—'}`)
+                        .join('\n');
+                      const msg = encodeURIComponent(`📋 *Certificados Aptitud - ${filterEmpresa}*\n\n${resumen}\n\n📅 ${new Date().toLocaleDateString('es-CO')}`);
+                      window.open(`https://wa.me/?text=${msg}`, '_blank');
+                    }}
+                    className="flex items-center gap-1 px-3 py-1.5 bg-green-600 text-white rounded text-xs font-bold hover:bg-green-700">
+                    📱 WhatsApp ({selectedCerts.size || filteredData.length})
+                  </button>
+                </div>
+
+                {/* Lista de trabajadores */}
+                <div className="space-y-2">
+                  {filteredData.map((p, i) => {
+                    const isSelected = selectedCerts.has(i);
+                    const ca = (p.conceptoAptitud || '').toUpperCase();
+                    const bgConcepto = ca.includes('NO APT') ? 'bg-red-100 text-red-700'
+                      : ca.includes('RESTRICCI') ? 'bg-yellow-100 text-yellow-700'
+                      : ca.includes('APT') ? 'bg-green-100 text-green-700'
+                      : 'bg-gray-100 text-gray-600';
+                    return (
+                      <div key={i}
+                        className={`flex items-center gap-3 p-3 rounded-lg border transition ${isSelected ? 'border-indigo-400 bg-indigo-50' : 'border-gray-100 bg-white hover:bg-gray-50'}`}>
+                        <input type="checkbox" checked={isSelected}
+                          onChange={() => setSelectedCerts(prev => {
+                            const next = new Set(prev);
+                            if (next.has(i)) next.delete(i); else next.add(i);
+                            return next;
+                          })}
+                          className="w-4 h-4 accent-indigo-600 cursor-pointer" />
+                        <span className="text-[10px] font-black text-gray-400 w-5">{i + 1}</span>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-bold text-gray-800 text-xs truncate">{p.nombres || '—'}</p>
+                          <p className="text-[10px] text-gray-500">{p.docNumero} · {p.cargo || '—'} · {p.tipoExamen || '—'}</p>
+                        </div>
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-black ${bgConcepto}`}>
+                          {(p.conceptoAptitud || '—').slice(0, 18)}
+                        </span>
+                        <span className="text-[10px] text-gray-400">{formatDate(p.fechaExamen)}</span>
+                        <button
+                          onClick={() => navigate(`/certificado?id=${p.id}`)}
+                          className="px-2 py-1 bg-indigo-50 text-indigo-700 rounded text-[10px] font-bold hover:bg-indigo-100 whitespace-nowrap">
+                          Ver / PDF
+                        </button>
+                      </div>
+                    );
+                  })}
+                  {filteredData.length === 0 && <p className="text-center py-8 text-gray-400 text-sm">No hay pacientes con la empresa seleccionada.</p>}
+                </div>
+              </>
             )}
           </div>
         )}
@@ -740,25 +1065,7 @@ export default function ReportsPage() {
                     </thead>
                     <tbody>
                       {morbilidadData.slice(0, 10).map((item, i) => {
-                        const cie = (item.codigo || '').toUpperCase();
-                        let norma = 'Dec. 1477/2014';
-                        let obligacion = 'Vigilancia epidemiológica activa';
-                        if (cie.startsWith('M') || cie.startsWith('G54') || cie.startsWith('G56')) {
-                          norma = 'GTC-45 · Dec.1477/2014';
-                          obligacion = 'Programa prevención DME obligatorio';
-                        } else if (cie.startsWith('H8') || cie.startsWith('H9')) {
-                          norma = 'Res.8321/1983 · Dec.1477/2014';
-                          obligacion = 'Audiometría periódica + EPP auditivo';
-                        } else if (cie.startsWith('J') || cie.startsWith('Z57')) {
-                          norma = 'Res.1843/2025 Art.10';
-                          obligacion = 'Espirometría periódica obligatoria';
-                        } else if (cie.startsWith('F') || cie.startsWith('Z73')) {
-                          norma = 'Res.2404/2019';
-                          obligacion = 'Batería riesgo psicosocial obligatoria';
-                        } else if (cie.startsWith('E1')) {
-                          norma = 'Res.0312/2019';
-                          obligacion = 'Control metabólico + restricciones laborales';
-                        }
+                        const { norma, obligacion } = getNormativa(item.codigo, []);
                         return (
                           <tr key={i} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
                             <td className="p-2 border border-gray-100 font-bold text-indigo-600">{i + 1}</td>
