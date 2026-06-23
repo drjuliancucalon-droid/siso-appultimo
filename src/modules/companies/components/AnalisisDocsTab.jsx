@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAIStore } from '../../../stores/aiStore';
 import { analyzeEpidemiologicalData } from '../../ai/services/aiAnalysis';
 import { Sparkles, Loader2, FileText, Users, ChevronDown, ChevronRight, CheckCircle2, XCircle } from 'lucide-react';
@@ -21,6 +22,8 @@ export default function AnalisisDocsTab({ companies = [], patientsList = [], cur
   const [generatingIA, setGeneratingIA] = useState(null); // key del bloque generando
   const [iaResults, setIaResults] = useState({}); // { key: resultado }
   const [cartasGeneradas, setCartasGeneradas] = useState({}); // { key: true }
+
+  const navigate = useNavigate();
 
   // Detectar bloques periódicos
   const bloques = useMemo(() => {
@@ -70,52 +73,18 @@ export default function AnalisisDocsTab({ companies = [], patientsList = [], cur
     }
   };
 
+  // BUG-ANA1 fix: navegar a CartaCustodiaPage con empresa/mes preseleccionados
+  // CartaCustodiaPage leerá sessionStorage y prellenará los campos
   const handleGenerarCarta = (bloque) => {
-    // Genera una carta de custodia básica como texto
-    const fecha = new Date().toLocaleDateString('es-CO', { year: 'numeric', month: 'long', day: 'numeric' });
-    const [año, mes] = bloque.mes.split('-');
-    const meses = ['','Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-    const mesNombre = meses[parseInt(mes)] || mes;
-    const carta = [
-      `CARTA DE CUSTODIA DE DOCUMENTOS MÉDICOS OCUPACIONALES`,
-      ``,
-      `Fecha: ${fecha}`,
-      ``,
-      `Empresa: ${bloque.empresa}`,
-      `NIT: ${bloque.nit || 'N/D'}`,
-      `Periodo evaluado: ${mesNombre} ${año}`,
-      `Número de trabajadores evaluados: ${bloque.pacientes.length}`,
-      ``,
-      `Por medio de la presente, SISO OcupaSalud certifica que se han realizado y`,
-      `custodiado los siguientes documentos para el periodo indicado:`,
-      ``,
-      `- Historia(s) clínica(s) ocupacional(es): ${bloque.pacientes.length}`,
-      `- Informe sociodemográfico de condiciones de salud`,
-      `- Certificado(s) de aptitud laboral: ${bloque.pacientes.length}`,
-      ``,
-      `Trabajadores incluidos:`,
-      ...bloque.pacientes.map((p, i) => `  ${i+1}. ${p.nombreCompleto || 'N/D'} — ${p.docNumero || 'N/D'} — ${p.cargo || 'N/D'}`),
-      ``,
-      `Los documentos se encuentran bajo custodia médica según lo establecido`,
-      `en la Resolución 8430 de 1993 y demás normativa vigente en SST.`,
-      ``,
-      `Atentamente,`,
-      ``,
-      `${currentUser?.name || 'Médico Ocupacional'}`,
-      `${currentUser?.especialidad || 'Médico Especialista en SST'}`,
-      `RM: ${currentUser?.registroMedico || 'N/D'}`,
-    ].join('\n');
-
-    // Descargar como txt
-    const blob = new Blob([carta], { type: 'text/plain;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `carta_custodia_${bloque.empresa.replace(/\s+/g,'_').slice(0,20)}_${bloque.mes}.txt`;
-    a.click();
-    URL.revokeObjectURL(url);
+    try {
+      sessionStorage.setItem('siso_carta_preselect', JSON.stringify({
+        empresa: bloque.empresa,
+        nit: bloque.nit,
+        mes: bloque.mes,  // formato 'YYYY-MM'
+      }));
+    } catch (_) {}
     setCartasGeneradas(prev => ({ ...prev, [bloque.key]: true }));
-    if (showAlert) showAlert('✅ Carta de custodia generada y descargada.');
+    navigate('/carta-custodia');
   };
 
   return (

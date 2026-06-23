@@ -483,6 +483,7 @@ export default function ReportsPage() {
           { id: 'morbilidad', label: 'Morbilidad', icon: Activity },
           { id: 'ausentismo', label: 'Ausentismo', icon: Calendar },
           { id: 'empresas', label: 'Por Empresa', icon: Briefcase },
+          { id: 'marcolegal', label: '⚖️ Marco Legal', icon: TrendingUp },
         ].map(tab => (
           <button key={tab.id} onClick={() => setReportType(tab.id)}
             className={`flex items-center gap-1 px-3 py-2.5 text-xs font-bold border-b-2 transition-colors whitespace-nowrap ${
@@ -692,8 +693,109 @@ export default function ReportsPage() {
               </div>
             ))}
             {Object.keys(stats.porEmpresa).length === 0 && (
-              <p className="col-span-full text-center py-8 text-gray-400 text-sm">No hay datos agrupados por empresa.</p>
+                            <p className="col-span-full text-center py-8 text-gray-400 text-sm">No hay datos agrupados por empresa.</p>
             )}
+          </div>
+        )}
+
+        {/* MARCO LEGAL */}
+        {reportType === 'marcolegal' && (
+          <div>
+            <p className="text-[9px] text-gray-400 mb-4">Marco normativo SST aplicable · Res. 1843/2025 · Dec. 1072/2015</p>
+
+            <div className="mb-5">
+              <h3 className="text-xs font-black text-gray-800 uppercase mb-3 border-b pb-1.5">📋 Normativa SST Aplicable</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {[
+                  { norma: 'Resolución 1843/2025', desc: 'Evaluaciones médicas ocupacionales. Norma vigente. Deroga Res. 2346/2007 y 1918/2009.', color: 'indigo' },
+                  { norma: 'Decreto 1072/2015 Art. 2.2.4.6', desc: 'Obligaciones del empleador en el Sistema de Gestión SST. Exámenes obligatorios.', color: 'blue' },
+                  { norma: 'Resolución 0312/2019', desc: 'Estándares mínimos del SG-SST. Tabla de valores límite para evaluaciones periódicas.', color: 'teal' },
+                  { norma: 'Ley 1562/2012', desc: 'Sistema General de Riesgos Laborales. Define enfermedad laboral y accidente de trabajo.', color: 'purple' },
+                  { norma: 'Decreto 1477/2014', desc: 'Tabla de enfermedades laborales. Lista de agentes de riesgo y enfermedades.', color: 'rose' },
+                  { norma: 'Resolución 2400/1979', desc: 'Estatuto de Seguridad Industrial. Higiene industrial y ergonomía.', color: 'amber' },
+                  { norma: 'Ley 527/1999 + Decreto 2364/2012', desc: 'Validez jurídica de documentos y firmas electrónicas. Base legal del certificado digital.', color: 'emerald' },
+                  { norma: 'Resolución 1918/2009 (derogada)', desc: 'Referencia histórica para registros anteriores a abril 2025.', color: 'gray' },
+                ].map(({ norma, desc, color }) => (
+                  <div key={norma} className={`bg-${color}-50 border border-${color}-200 rounded-xl p-3`}>
+                    <p className={`text-[10px] font-black text-${color}-800 mb-1`}>{norma}</p>
+                    <p className={`text-[10px] text-${color}-700 leading-relaxed`}>{desc}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {morbilidadData.length > 0 && (
+              <div className="mb-5">
+                <h3 className="text-xs font-black text-gray-800 uppercase mb-3 border-b pb-1.5">⚖️ Matriz Legal — Diagnósticos Detectados</h3>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-[10px] text-left border-collapse">
+                    <thead>
+                      <tr className="bg-indigo-50 text-indigo-800 uppercase text-[9px]">
+                        <th className="p-2 font-black border border-indigo-100">#</th>
+                        <th className="p-2 font-black border border-indigo-100">CIE-10</th>
+                        <th className="p-2 font-black border border-indigo-100">Casos</th>
+                        <th className="p-2 font-black border border-indigo-100">Normativa</th>
+                        <th className="p-2 font-black border border-indigo-100">Obligación Empleador</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {morbilidadData.slice(0, 10).map((item, i) => {
+                        const cie = (item.codigo || '').toUpperCase();
+                        let norma = 'Dec. 1477/2014';
+                        let obligacion = 'Vigilancia epidemiológica activa';
+                        if (cie.startsWith('M') || cie.startsWith('G54') || cie.startsWith('G56')) {
+                          norma = 'GTC-45 · Dec.1477/2014';
+                          obligacion = 'Programa prevención DME obligatorio';
+                        } else if (cie.startsWith('H8') || cie.startsWith('H9')) {
+                          norma = 'Res.8321/1983 · Dec.1477/2014';
+                          obligacion = 'Audiometría periódica + EPP auditivo';
+                        } else if (cie.startsWith('J') || cie.startsWith('Z57')) {
+                          norma = 'Res.1843/2025 Art.10';
+                          obligacion = 'Espirometría periódica obligatoria';
+                        } else if (cie.startsWith('F') || cie.startsWith('Z73')) {
+                          norma = 'Res.2404/2019';
+                          obligacion = 'Batería riesgo psicosocial obligatoria';
+                        } else if (cie.startsWith('E1')) {
+                          norma = 'Res.0312/2019';
+                          obligacion = 'Control metabólico + restricciones laborales';
+                        }
+                        return (
+                          <tr key={i} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                            <td className="p-2 border border-gray-100 font-bold text-indigo-600">{i + 1}</td>
+                            <td className="p-2 border border-gray-100 font-medium">{item.codigo}</td>
+                            <td className="p-2 border border-gray-100 text-center font-black">{item.cantidad}</td>
+                            <td className="p-2 border border-gray-100 text-gray-600">{norma}</td>
+                            <td className="p-2 border border-gray-100 text-gray-700">{obligacion}</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            <div>
+              <h3 className="text-xs font-black text-gray-800 uppercase mb-3 border-b pb-1.5">🗂️ Obligaciones por Tipo de Examen (Res. 1843/2025)</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                {[
+                  { tipo: 'INGRESO', color: 'emerald', items: ['Antes de iniciar contrato', 'Determinar aptitud para el cargo', 'Identificar condiciones preexistentes', 'Historia clínica ocupacional (Art. 8)'] },
+                  { tipo: 'PERIÓDICO', color: 'blue', items: ['Según riesgo del cargo (mínimo anual nivel III-V)', 'Detectar cambios estado de salud', 'Monitorear exposición a riesgos', 'Bloque ≥3 trabajadores: informe + carta custodia'] },
+                  { tipo: 'EGRESO / RETIRO', color: 'orange', items: ['Al finalizar vínculo laboral', 'Identificar daños a la salud por trabajo', 'Dentro de los 5 días hábiles del retiro (Art. 12)', 'Base para reclamaciones de EL'] },
+                ].map(({ tipo, color, items }) => (
+                  <div key={tipo} className={`bg-${color}-50 border border-${color}-200 rounded-xl p-3`}>
+                    <p className={`text-[10px] font-black text-${color}-800 uppercase mb-2`}>{tipo}</p>
+                    <ul className="space-y-1">
+                      {items.map((item, i) => (
+                        <li key={i} className={`text-[10px] text-${color}-700 flex items-start gap-1`}>
+                          <span className="mt-0.5 flex-shrink-0">·</span>{item}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         )}
 

@@ -1,13 +1,13 @@
 // src/pages/CartaCustodiaPage.jsx
 // Módulo Carta de Custodia — Historias Clínicas Ocupacionales
 // Réplica exacta del documento oficial emitido por el Dr. Julián Cucalón
-import React, { useState, useMemo, useCallback, useRef } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { useBackendData, useBackendObject } from '../hooks/useBackendData';
 import { useAuthStore } from '../stores/authStore';
-import { d1WriteArrayMerge } from '../lib/d1Client';
+import { d1Get, d1WriteArrayMerge } from '../lib/d1Client';
 import {
   Printer, Save, Mail, Building2, Calendar,
-  FileText, Check, ChevronDown, User, Info,
+  FileText, Check, User, Info, History,
 } from 'lucide-react';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────
@@ -26,8 +26,10 @@ const formatDateEs = (isoDate) => {
 // ─── Componente ────────────────────────────────────────────────────────────
 export default function CartaCustodiaPage() {
   const { currentUser } = useAuthStore();
-  const { data: companies } = useBackendData('/data/companies', 'siso_companies_drcucalon', 'companies');
-  const { data: doctor }    = useBackendObject('/data/doctor', 'siso_doctor_data_drcucalon', 'doctor');
+  // BUG-C1 fix: userId dinámico (no hardcodeado a drcucalon)
+  const userId = currentUser?.user || currentUser?.id || 'drcucalon';
+  const { data: companies } = useBackendData('/data/companies', `siso_companies_${userId}`, 'companies');
+  const { data: doctor }    = useBackendObject('/data/doctor',  `siso_doctor_data_${userId}`, 'doctor');
   const { data: signature } = useBackendObject('/data/doctor_signature', 'siso_doctor_signature', 'signature');
 
   // ── Estado del formulario ──
@@ -39,6 +41,45 @@ export default function CartaCustodiaPage() {
   const [ciudadDest, setCiudadDest] = useState('Ciudad');
   const [saving, setSaving]   = useState(false);
   const [saved, setSaved]     = useState(false);
+  const [cartasHistorial, setCartasHistorial] = useState([]);
+  const [showHistorial, setShowHistorial] = useState(false);
+
+  // ── Preselect desde AnalisisDocsTab (BUG-ANA1) ──
+  useEffect(() => {
+    const raw = sessionStorage.getItem('siso_carta_preselect');
+    if (!raw) return;
+    try {
+      const { empresa, nit, mes } = JSON.parse(raw);
+      sessionStorage.removeItem('siso_carta_preselect');
+      if (mes) {
+        const [anio, mesNum] = mes.split('-');
+        setMesVal(Number(mesNum) - 1);
+        setAnioVal(Number(anio));
+      }
+      if (empresa || nit) {
+        const timer = setInterval(() => {
+          if (!companies || companies.length === 0) return;
+          const found = companies.find(c =>
+            (nit && c.nit === nit) || c.nombre === empresa
+          );
+          if (found) {
+            setSelectedCompanyId(found.id);
+            if (found.ciudad) setCiudadDest(found.ciudad);
+          }
+          clearInterval(timer);
+        }, 300);
+        return () => clearInterval(timer);
+      }
+    } catch (_) {}
+  }, [companies]);
+
+  // ── Historial de cartas guardadas (NUEVA-3) ──
+  useEffect(() => {
+    if (!userId) return;
+    d1Get(`siso_cartas_custodia_${userId}`)
+      .then(({ value }) => { if (Array.isArray(value)) setCartasHistorial(value); })
+      .catch(() => {});
+  }, [userId, saved]);
 
   // ── Datos del médico ──
   const docNombreRaw  = doctor?.nombre  || currentUser?.nombre || 'JULIAN CUCALON';
@@ -70,7 +111,6 @@ export default function CartaCustodiaPage() {
     if (!selectedCompanyId) { alert('Selecciona una empresa primero'); return; }
     setSaving(true);
     try {
-      const userId = currentUser?.id || 'drcucalon';
       const nueva = {
         id: `cust_${Date.now()}`,
         empresaId: selectedCompanyId,
@@ -249,6 +289,25 @@ export default function CartaCustodiaPage() {
             className="w-full flex items-center justify-center gap-2 py-2.5 bg-white border-2 border-sky-300 text-sky-700 rounded-lg text-xs font-bold hover:bg-sky-50 disabled:opacity-40 transition">
             <Mail className="w-4 h-4" /> Enviar por Email
           </button>
+          {cartasHistorial.length > 0 && (
+            <button onClick={() => setShowHistorial(v => !v)}
+              className="w-full flex items-center justify-center gap-2 py-2 bg-gray-50 border border-gray-200 text-gray-600 rounded-lg text-xs font-bold hover:bg-gray-100">
+              <History className="w-3.5 h-3.5" /> {showHistorial ? 'Ocultar' : 'Ver'} Historial ({cartasHistorial.length})
+            </button>
+          )}
+          {showHistorial && cartasHistorial.length > 0 && (
+            <div className="border border-gray-200 rounded-lg overflow-hidden">
+              <p className="text-[9px] font-black text-gray-600 px-2 py-1.5 bg-gray-50 uppercase">Cartas emitidas</p>
+              <div className="max-h-48 overflow-y-auto">
+                {[...cartasHistorial].sort((a, b) => (b.savedAt || '').localeCompare(a.savedAt || '')).map((c, i) => (
+                  <div key={c.id || i} className="px-2 py-1.5 border-b border-gray-100 last:border-0">
+                    <p className="text-[10px] font-bold text-gray-800 truncate">{c.empresaNombre}</p>
+                    <p className="text-[9px] text-gray-500">{c.mesTexto} {c.anio} · {c.savedAt ? new Date(c.savedAt).toLocaleDateString('es-CO') : ''}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
