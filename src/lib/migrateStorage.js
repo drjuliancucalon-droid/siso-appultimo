@@ -18,7 +18,7 @@ export async function migrateLocalStorageToCloud(userId) {
     // Verificar que realmente migró — si D1 vacío, resetear flag
     try {
       const { d1Get } = await import('./d1Client');
-      const { value } = await d1Get(`siso_db_patients_${userId}`);
+      const { value } = await d1Get(`siso_patients_${userId}`);
       // BUG-A-02: considerar 0 o 1 (registro QA) como migración inválida
       if (!Array.isArray(value) || value.length <= 1) {
         console.warn('[MIGRACIÓN R-1] Flag activo pero D1 con 0/1 registros — resetando para re-migrar');
@@ -44,7 +44,7 @@ export async function migrateLocalStorageToCloud(userId) {
       const pacientes = JSON.parse(raw);
       if (Array.isArray(pacientes) && pacientes.length > 0) {
         console.log(`[MIGRACIÓN R-1] Migrando ${pacientes.length} pacientes...`);
-        await d1WriteArrayMerge(`siso_db_patients_${userId}`, pacientes, 'docNumero');
+        await d1WriteArrayMerge(`siso_patients_${userId}`, pacientes, 'docNumero');
         console.log(`[MIGRACIÓN R-1] ✅ Pacientes migrados`);
       }
     }

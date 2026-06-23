@@ -28,14 +28,14 @@ export default function PatientsPage() {
     (async () => {
       setLoading(true);
       let list = [];
-      try { const { value: v } = await d1Get(`siso_db_patients_${userId}`); if (Array.isArray(v) && v.length > 0) { list = v; if (!cancelled) setSource('d1'); } } catch {}
+      try { const { value: v } = await d1Get(`siso_patients_${userId}`); if (Array.isArray(v) && v.length > 0) { list = v; if (!cancelled) setSource('d1'); } } catch {}
       if (list.length === 0 && !cancelled) {
         try { const { value: v } = await d1Get(`siso_patients_${userId}`); if (Array.isArray(v) && v.length > 0) { list = v; if (!cancelled) setSource('d1-fallback'); } } catch {}
       }
       if (list.length === 0 && !cancelled) {
         try {
           // Try user-namespaced key first, then legacy monolith key
-          const raw = localStorage.getItem(`siso_db_patients_${userId}`)
+          const raw = localStorage.getItem(`siso_patients_${userId}`)
             || localStorage.getItem('siso_db_patients')
             || localStorage.getItem('siso_pacientes');
           if (raw) { const p = JSON.parse(raw); if (Array.isArray(p)) list = p; }
@@ -56,7 +56,7 @@ export default function PatientsPage() {
     setCreating(true);
     try {
       const paciente = { id: `pac_${Date.now()}`, nombres: newPatient.nombres.trim(), docNumero: docClean, docTipo: newPatient.docTipo||'CC', empresaNombre: newPatient.empresaNombre?.trim()||'', cargo: newPatient.cargo?.trim()||'', tipoExamen: newPatient.tipoExamen||'PERIODICO', fechaExamen: newPatient.fechaExamen||new Date().toISOString().split('T')[0], fechaRegistro: new Date().toISOString(), _medicoId: userId };
-      await d1WriteArrayMerge(`siso_db_patients_${userId}`, [paciente], 'docNumero');
+      await d1WriteArrayMerge(`siso_patients_${userId}`, [paciente], 'docNumero');
       setPatients(prev => [paciente, ...prev]);
       setNewPatient({ nombres:'', docNumero:'', docTipo:'CC', empresaNombre:'', cargo:'', tipoExamen:'PERIODICO', fechaExamen: new Date().toISOString().split('T')[0] });
       setShowCreateForm(false); setSource('d1');
