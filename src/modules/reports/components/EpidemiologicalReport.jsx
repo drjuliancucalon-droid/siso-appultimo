@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useAuthStore } from '../../../stores/authStore';
+import { d1Get } from '../../../lib/d1Client';
 import { Download, FileText, BarChart3, Users, Activity, Briefcase, Calendar, Sparkles, Loader2, AlertCircle } from 'lucide-react';
 import { useAIStore } from '../../../stores/aiStore';
 import { analyzeEpidemiologicalData } from '../../ai/services/aiAnalysis';
@@ -20,9 +21,30 @@ export default function ReportsPage() {
   // NOTA: En siso-appultimo, deberías usar tus hooks existentes: usePatients(), useAgendas(), etc.
   // Para este parche, asumimos que obtienes los datos del contexto global o localStorage si no hay DB conectada aún.
   const [patients, setPatients] = useState(() => {
-    const stored = localStorage.getItem(`siso_patients_${currentUser?.user}`);
-    return stored ? JSON.parse(stored) : [];
+    // Carga inicial desde localStorage (rápida)
+    try {
+      const stored = localStorage.getItem(`siso_patients_${currentUser?.user}`);
+      if (stored) return JSON.parse(stored);
+    } catch (_) {}
+    return [];
   });
+
+  // Carga desde D1 si localStorage está vacío o incompleto
+  useEffect(() => {
+    if (!currentUser?.user) return;
+    const localKey = `siso_patients_${currentUser.user}`;
+    const localRaw = localStorage.getItem(localKey);
+    const localData = localRaw ? (() => { try { return JSON.parse(localRaw); } catch { return []; } })() : [];
+    if (localData.length > 0) return; // Ya tenemos datos locales
+
+    d1Get(`siso_patients_${currentUser.user}`)
+      .then(({ value }) => {
+        if (Array.isArray(value) && value.length > 0) {
+          setPatients(value);
+        }
+      })
+      .catch(() => {});
+  }, [currentUser?.user]);
   
   const [reportType, setReportType] = useState('resumen'); // resumen, morbilidad, ausentismo, empresa
   const [filterEmpresa, setFilterEmpresa] = useState('');

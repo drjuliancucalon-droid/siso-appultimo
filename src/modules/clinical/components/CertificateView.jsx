@@ -3,7 +3,8 @@
 // Res. 1843/2025 (deroga Res. 2346/2007)
 // Port FIEL del monolito renderCertificado (líneas 22562-23321)
 // ═══════════════════════════════════════════════════════════════════════════
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import QRCode from 'qrcode';
 import { FileText, Lock } from 'lucide-react';
 import { BrandLogo } from '../../../shared/components/ui/BrandLogo';
 import { DoctorSignature } from '../../../shared/components/ui/DoctorSignature';
@@ -21,6 +22,19 @@ export const CertificateView = ({
   onDownloadRDA,
   onPrintCarnet,
 }) => {
+  // SPR-A2: QR generado localmente con paquete qrcode (sin API externa)
+  const [qrDataUrl, setQrDataUrl] = useState('');
+  useEffect(() => {
+    if (!data?.codigoVerificacion) return;
+    const domain = typeof import.meta !== 'undefined' && import.meta.env?.VITE_STABLE_DOMAIN
+      ? import.meta.env.VITE_STABLE_DOMAIN
+      : 'https://siso-appultimo-arp.pages.dev';
+    const url = `${domain}/verificar/${data.codigoVerificacion}`;
+    QRCode.toDataURL(url, { width: 120, margin: 1, color: { dark: '#065f46', light: '#ffffff' } })
+      .then(setQrDataUrl)
+      .catch(() => setQrDataUrl(''));
+  }, [data?.codigoVerificacion]);
+
   // Helper: badge normal/anormal
   const badNorm = (v, normal = 'Normal') =>
     v && v !== normal ? 'font-bold text-red-700' : 'text-gray-700';
@@ -261,12 +275,10 @@ export const CertificateView = ({
           {/* QR Code */}
           {data.codigoVerificacion && (
             <div className="flex-shrink-0 bg-white p-1 rounded-lg border border-emerald-200">
-              <img
-                src={`https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(`${import.meta.env.VITE_STABLE_DOMAIN || 'https://siso-appultimo-arp.pages.dev'}/verificar/${data.codigoVerificacion}`)}`}
-                alt="QR Verificación"
-                className="w-20 h-20 rounded"
-                loading="lazy"
-              />
+              {qrDataUrl
+                ? <img src={qrDataUrl} alt="QR Verificación" className="w-20 h-20 rounded" />
+                : <div className="w-20 h-20 rounded bg-gray-100 flex items-center justify-center text-[9px] text-gray-400">QR...</div>
+              }
             </div>
           )}
         </div>

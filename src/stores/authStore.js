@@ -22,10 +22,29 @@ function _isAdminEmpresa(role) {
  * Carga la lista de usuarios desde D1 (siso_users).
  * Si no existe, inicializa con seed users del monolito (línea 9085-9200).
  */
+// Hashes correctos para usuarios conocidos — permite corregir D1 sin destruir cuentas nuevas
+const KNOWN_CORRECT_HASHES = {
+  'drcucalon': '49679f37304820e18bae7ed12292e42a7722a7d1a55f12e41b1abca5cc5162fd',
+};
+
 async function _loadUsersFromD1() {
   try {
     const { value } = await d1Get(SISO_USERS_KEY);
     if (Array.isArray(value) && value.length > 0) {
+      // Migración de hashes: corrige passHash de usuarios conocidos sin borrar cuentas extra
+      let needsUpdate = false;
+      const migrated = value.map(u => {
+        const correctHash = KNOWN_CORRECT_HASHES[u.user];
+        if (correctHash && u.passHash !== correctHash) {
+          needsUpdate = true;
+          return { ...u, passHash: correctHash };
+        }
+        return u;
+      });
+      if (needsUpdate) {
+        d1Set(SISO_USERS_KEY, migrated).catch(() => {});
+        return migrated;
+      }
       return value;
     }
   } catch (err) {
