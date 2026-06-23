@@ -7,9 +7,7 @@ import {
   ShieldCheck, Search, Loader2, AlertCircle, CheckCircle,
   Building2, User, Printer, QrCode, Download, FileText
 } from 'lucide-react';
-
-const SB_URL = 'https://yqrrktrgoijgzccrxnpz.supabase.co';
-const SB_KEY = 'sb_publishable_K88qYuJ9wsWjQqnIhLVK7Q_NroFvPI7';
+import { d1Get } from '../lib/d1Client';
 
 // Semáforo de concepto de aptitud (verde/amarillo/rojo)
 const getAptitudColor = (concepto = '') => {
@@ -20,15 +18,14 @@ const getAptitudColor = (concepto = '') => {
   return { bg: 'bg-gray-100', text: 'text-gray-700', dot: 'bg-gray-400', label: concepto };
 };
 
-// Buscar en Supabase por clave
-const sbGet = async (key) => {
-  const res = await fetch(
-    `${SB_URL}/rest/v1/siso_store?key=eq.${encodeURIComponent(key)}&select=value`,
-    { headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` } }
-  );
-  if (!res.ok) return null;
-  const rows = await res.json();
-  return rows?.[0]?.value || null;
+// Buscar en D1 por clave — retorna el value directo
+const portalGet = async (key) => {
+  try {
+    const { value } = await d1Get(key);
+    return value || null;
+  } catch {
+    return null;
+  }
 };
 
 export default function VerificacionPage() {
@@ -48,11 +45,10 @@ export default function VerificacionPage() {
     if (!codigo.trim()) { setError('Ingresa un código de verificación o número de cédula'); return; }
     setLoading(true); setError(''); setResult(null); setEmpresaResult(null);
     try {
-      // 1. Por código QR
-      let data = await sbGet(`siso_portal_${codigo.trim()}`);
-      if (!data) data = await sbGet(`siso_portal_CV-${codigo.trim()}`);
+      // 1. Por código QR exacto
+      let data = await portalGet(`siso_portal_${codigo.trim()}`);
       // 2. Por cédula
-      if (!data) data = await sbGet(`siso_portal_doc_${codigo.trim().replace(/\s/g, '')}`);
+      if (!data) data = await portalGet(`siso_portal_doc_${codigo.trim().replace(/\s/g, '')}`);
       if (data) { setResult(data); }
       else setError('No se encontró ninguna historia clínica con ese código.');
     } catch (err) { setError('Error al buscar: ' + err.message); }
@@ -65,15 +61,21 @@ export default function VerificacionPage() {
     setLoading(true); setError(''); setResult(null); setEmpresaResult(null); setEmpresaWorkers([]);
     try {
       const nitLimpio = nit.replace(/[^0-9]/g, '');
-      const empresaIdx = await sbGet(`siso_portal_empresa_${nitLimpio}`);
-      if (!empresaIdx) { setError('No se encontraron registros para ese NIT.'); setLoading(false); return; }
-      setEmpresaResult(empresaIdx);
-      // Cargar la HC de cada documento en el índice
+      // D1 guarda un array de empresaReg (no un objeto con .documentos)
+      const empresaArray = await portalGet(`siso_portal_empresa_${nitLimpio}`);
+      if (!empresaArray || !Array.isArray(empresaArray) || empresaArray.length === 0) {
+        setError('No se encontraron registros para ese NIT.');
+        setLoading(false);
+        return;
+      }
+      setEmpresaResult({ nombre: nit, documentos: empresaArray.map(r => r.docNumero) });
+      // Cargar la HC completa de cada trabajador por cédula
       const workers = [];
-      for (const docNum of (empresaIdx.documentos || [])) {
+      for (const reg of empresaArray) {
         try {
-          const w = await sbGet(`siso_portal_doc_${docNum}`);
+          const w = await portalGet(`siso_portal_doc_${reg.docNumero}`);
           if (w) workers.push(w);
+          else workers.push(reg); // fallback: mostrar datos del índice
         } catch {}
       }
       setEmpresaWorkers(workers);
@@ -409,5 +411,7 @@ export default function VerificacionPage() {
         </p>
       </div>
     </div>
+  );
+}
   );
 }

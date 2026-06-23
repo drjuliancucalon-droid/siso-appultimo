@@ -74,6 +74,11 @@ export default function HistoriaPage() {
   const { data: patients } = useBackendData('/data/patients', 'siso_db_patients', 'patients');
   const { data: companies } = useBackendData('/data/companies', 'siso_companies', 'companies');
   const { data: doctor } = useBackendObject('/data/doctor', 'siso_doctor_data', 'doctor');
+  const { data: signatureRaw } = useBackendObject('/data/doctor_signature', 'siso_doctor_signature', 'signature');
+  const activeSignature = useMemo(() => {
+    if (!signatureRaw) return null;
+    return typeof signatureRaw === 'string' ? signatureRaw : signatureRaw?.data || null;
+  }, [signatureRaw]);
 
   // ═══ State ═══
   const { data, setData } = useClinicalStore();
@@ -741,7 +746,7 @@ export default function HistoriaPage() {
         {activeTab === 'form' && (
           <OccupationalHC
             data={data} setData={setData} companies={companies} currentUser={currentUser}
-            aiConfig={aiConfig} activeDoctorData={activeDoctorData} activeSignature={null}
+            aiConfig={aiConfig} activeDoctorData={activeDoctorData} activeSignature={activeSignature}
             onGenerateAI={onGenerateAI} onGenerateRestrictions={onGenerateRestrictions}
             onGenerateRecommendations={onGenerateRecommendations}
             onOpenConsent={() => setShowConsentModal(true)}
@@ -763,13 +768,13 @@ export default function HistoriaPage() {
           />
         )}
         {activeTab === 'certificado' && (
-          <CertificateView data={data} activeDoctorData={activeDoctorData} activeSignature={null} currentUser={currentUser} />
+          <CertificateView data={data} activeDoctorData={activeDoctorData} activeSignature={activeSignature} currentUser={currentUser} />
         )}
         {activeTab === 'formulaTab' && (
-          <TabFormulaDerivacion data={data} setData={setData} activeDoctorData={activeDoctorData} activeSignature={null} forceTab="formula" currentUser={currentUser} companies={companies} />
+          <TabFormulaDerivacion data={data} setData={setData} activeDoctorData={activeDoctorData} activeSignature={activeSignature} forceTab="formula" currentUser={currentUser} companies={companies} />
         )}
         {activeTab === 'derivacionTab' && (
-          <TabFormulaDerivacion data={data} setData={setData} activeDoctorData={activeDoctorData} activeSignature={null} forceTab="derivacion" currentUser={currentUser} companies={companies} />
+          <TabFormulaDerivacion data={data} setData={setData} activeDoctorData={activeDoctorData} activeSignature={activeSignature} forceTab="derivacion" currentUser={currentUser} companies={companies} />
         )}
         {activeTab === 'solicitudExamenes' && (
           <ExamRequestTab patientData={data} doctorData={activeDoctorData} />
@@ -847,6 +852,18 @@ export default function HistoriaPage() {
               onSave={async (newConfig) => {
                 const store = useAIStore.getState();
                 if (newConfig.activeProvider) store.setActiveProvider(newConfig.activeProvider);
+                if (newConfig.keys) Object.entries(newConfig.keys).forEach(([p, k]) => store.setKey(p, k));
+                await store.saveToD1(currentUser?.user);
+              }}
+              onClose={() => setShowAIConfig(false)}
+            />
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+veProvider(newConfig.activeProvider);
                 if (newConfig.keys) Object.entries(newConfig.keys).forEach(([p, k]) => store.setKey(p, k));
                 await store.saveToD1(currentUser?.user);
               }}

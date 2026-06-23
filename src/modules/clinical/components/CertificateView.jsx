@@ -284,23 +284,7 @@ export const CertificateView = ({
         </div>
       )}
 
-      {/* Signos Vitales en Certificado */}
-      {(data.fc || data.fr || data.ta || data.temp || data.peso || data.talla || data.imc) && (
-        <div className="mb-4 border border-gray-200 rounded-xl overflow-hidden">
-          <div className="bg-blue-100 px-3 py-1.5 font-black text-xs uppercase text-blue-800">
-            Signos Vitales y Antropometría
-          </div>
-          <div className="p-3 grid grid-cols-3 gap-x-4 gap-y-1 text-[10px]">
-            {data.fc && <div className={rowCls}><span className="text-gray-500">FC (lpm)</span><span className="font-semibold">{data.fc}</span></div>}
-            {data.fr && <div className={rowCls}><span className="text-gray-500">FR (rpm)</span><span className="font-semibold">{data.fr}</span></div>}
-            {data.ta && <div className={rowCls}><span className="text-gray-500">T/A (mmHg)</span><span className="font-semibold">{data.ta}</span></div>}
-            {data.temp && <div className={rowCls}><span className="text-gray-500">Temp. (°C)</span><span className="font-semibold">{data.temp}</span></div>}
-            {data.peso && <div className={rowCls}><span className="text-gray-500">Peso (kg)</span><span className="font-semibold">{data.peso}</span></div>}
-            {data.talla && <div className={rowCls}><span className="text-gray-500">Talla (cm)</span><span className="font-semibold">{data.talla}</span></div>}
-            {data.imc && <div className={rowCls}><span className="text-gray-500">IMC (kg/m²)</span><span className="font-semibold">{data.imc}</span></div>}
-          </div>
-        </div>
-      )}
+      {/* Signos Vitales eliminados del certificado — solo van en el expediente HC */}
 
       {/* ── Firmas ──────────────────────────────────────────────── */}
       <div className="mt-6 flex justify-between items-end px-4 print-break-avoid">
