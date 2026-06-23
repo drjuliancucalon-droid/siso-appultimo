@@ -1,15 +1,18 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Building2,
   LogOut,
+  BarChart3,
 } from 'lucide-react';
 import { _secretariaPuede, _secretariaMedicoAsignado } from '../shared/data/planConfig';
 import { _sha256 } from '../shared/lib/crypto';
 import InputGroup from '../shared/ui/InputGroup';
 import { initialCompanyState } from '../shared/data/initialStates';
 import EncuestasTab from '../modules/companies/components/EncuestasTab';
+import AnalisisDocsTab from '../modules/companies/components/AnalisisDocsTab';
 
 export default function CompaniesSection({ ctx }) {
+  const [showAnalisisDocs, setShowAnalisisDocs] = useState(false);
   const {
     ARL_LIST,
     _syncCompanies,
@@ -94,6 +97,32 @@ export default function CompaniesSection({ ctx }) {
       );
     })();
     // companiesTab, editingCompany are component-level state (avoid React #310)
+
+    // ── Análisis Docs: vista separada ──
+    if (showAnalisisDocs) {
+      return (
+        <div className="min-h-screen bg-gray-50 font-sans">
+          <div className="max-w-5xl mx-auto px-4 py-6">
+            <div className="flex items-center gap-3 mb-4">
+              <button onClick={() => setShowAnalisisDocs(false)}
+                className="text-gray-500 font-bold text-sm flex items-center gap-1 hover:text-gray-700">
+                ← Volver
+              </button>
+              <h2 className="text-lg font-black text-gray-800 flex items-center gap-2">
+                <BarChart3 size={20} className="text-indigo-600" /> Análisis Documentación Portal
+              </h2>
+            </div>
+            <AnalisisDocsTab
+              companies={companies}
+              patientsList={patientsList}
+              currentUser={currentUser}
+              showAlert={showAlert}
+            />
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div className="min-h-screen bg-gray-50 font-sans">
         {/* navbar rendered by App.jsx */}
@@ -103,13 +132,53 @@ export default function CompaniesSection({ ctx }) {
               <Building2 className="w-5 h-5" /> Empresas / Convenios (
               {_visibleCompanies.length})
             </h2>
-            <button
-              onClick={() => goBack()}
-              className="text-gray-500 font-bold text-sm flex items-center gap-1"
-            >
-              <LogOut className="rotate-180 w-4 h-4" /> Volver
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setShowAnalisisDocs(true)}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-xs font-black hover:bg-indigo-700"
+              >
+                <BarChart3 size={14} /> Análisis Docs
+              </button>
+              <button
+                onClick={() => goBack()}
+                className="text-gray-500 font-bold text-sm flex items-center gap-1"
+              >
+                <LogOut className="rotate-180 w-4 h-4" /> Volver
+              </button>
+            </div>
           </div>
+          {/* Alerta: empresas sin contraseña de portal */}
+          {companies.filter(c => c.portalActivo && !c.portalCode).length > 0 && (
+            <div className="bg-amber-50 border border-amber-300 rounded-xl p-3 mb-3 flex items-center justify-between gap-3">
+              <div>
+                <p className="text-xs font-black text-amber-800">🔑 Empresas sin contraseña de portal detectadas</p>
+                <p className="text-[10px] text-amber-700">
+                  {companies.filter(c => c.portalActivo && !c.portalCode).length} empresa(s) tienen portal activo sin código de acceso.
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+                  const rand = (n) => Array.from({ length: n }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+                  const upd = companies.map(c => {
+                    if (c.portalActivo && !c.portalCode) {
+                      const nit4 = (c.nit || '').replace(/\D/g, '').slice(-4) || rand(4);
+                      return { ...c, portalCode: `EMP-${nit4}-${rand(4)}` };
+                    }
+                    return c;
+                  });
+                  setCompanies(upd);
+                  _syncCompanies(upd);
+                  const count = upd.filter(c => c.portalActivo && c.portalCode).length;
+                  showAlert(`✅ Códigos generados para ${count} empresas.`);
+                }}
+                className="flex-shrink-0 px-3 py-1.5 bg-amber-600 text-white text-xs font-black rounded-lg hover:bg-amber-700"
+              >
+                🔑 Activar todas
+              </button>
+            </div>
+          )}
+
           {/* Alerta convenios próximos a vencer */}
           {conveniosAlerta.length > 0 && (
             <div className="bg-amber-50 border border-amber-300 rounded-xl p-3 mb-4 flex items-center gap-3">
@@ -334,6 +403,15 @@ export default function CompaniesSection({ ctx }) {
                             className="text-[10px] bg-white border border-indigo-200 text-indigo-600 px-2 py-0.5 rounded-full font-bold hover:bg-indigo-50"
                           >
                             📨 Ver instrucciones
+                          </button>
+                          <button
+                            onClick={() => {
+                              const base = window.location.href.split('#')[0];
+                              window.open(`${base}#portalempresa?code=${c.portalCode}`, '_blank');
+                            }}
+                            className="text-[10px] bg-white border border-green-200 text-green-700 px-2 py-0.5 rounded-full font-bold hover:bg-green-50"
+                          >
+                            🏢 Abrir Portal
                           </button>
                         </>
                       ) : c.portalActivo ? (

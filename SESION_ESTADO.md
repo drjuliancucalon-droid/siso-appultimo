@@ -1,129 +1,120 @@
-# SESION_ESTADO.md — Estado Persistente del Proyecto SISO
-
-> Última actualización: 2026-06-20
-> Plataforma A: `siso-appultimo-arp.pages.dev` | Repo: `C:\Users\JQK3\Desktop\siso-appultimo`
-> Plataforma B (referencia): monolito `ocupasaludparadesplegar`
+# SESION_ESTADO.md — Documento maestro persistente SISO OcupaSalud
+# ⚠️ LEER ESTE ARCHIVO AL INICIO DE CADA SESIÓN NUEVA
+# Actualizado automáticamente cada sesión
 
 ---
 
-## 🔐 SEGURIDAD — REGLAS PERMANENTES
+## PLATAFORMA
+- **Repo local**: `C:\Users\JQK3\Desktop\siso-appultimo`
+- **URL producción**: `https://siso-appultimo-arp.pages.dev`
+- **Monolito referencia**: `https://ocupasaludparadesplegar-f4q.pages.dev`
+- **Worker D1**: `https://siso-api.dr-juliancucalon.workers.dev` (header `X-Siso-Token`)
+- **Cloudflare Pages**: construye con `npm run build` — NO sirve dist comprometido
 
-- ❌ No exponer VITE_WORKER_TOKEN en ningún log, informe ni output
-- ❌ No cambiar CF_API_TOKEN ni otros secrets salvo estricta necesidad
+## SEGURIDAD (PERMANENTE — NO CAMBIAR NUNCA)
+- ❌ No exponer VITE_WORKER_TOKEN en ningún log
+- ❌ No cambiar CF_API_TOKEN ni secrets salvo necesidad crítica
 - ❌ No cambiar claves D1 ni nombres de rutas
-- ❌ No mezclar cambios de dominio/infra con otros sprints funcionales
-- ⚠️ Si VITE_WORKER_TOKEN no existe en env, detener y pedir al usuario
+- ❌ No mezclar cambios dominio/infra con sprints funcionales
+- ✅ Si VITE_WORKER_TOKEN no existe → detener y pedir al usuario
+
+## CLAVES D1
+- `siso_companies_${userId}`
+- `siso_patients_${userId}`
+- `siso_users`
+- `siso_encuestas`
+- `siso_encuesta_resps_${encId}`
+- `siso_portal_empresa_atenciones_${nit}`
 
 ---
 
-## 🏗️ ARQUITECTURA
+## ESTADO ACTUAL (sesión 2026-06-22)
 
-| Concepto | Valor |
-|---|---|
-| Worker URL | `https://siso-api.dr-juliancucalon.workers.dev` |
-| Auth header | `X-Siso-Token: <VITE_WORKER_TOKEN>` |
-| D1 client | `src/lib/d1Client.js` — `d1Get`, `d1Set`, `d1WriteArrayMerge` |
-| Chunk threshold | 500KB |
-| Zustand persist key | `siso-auth` |
-| SHA-256("Siso2025*") | `49679f37304820e18bae7ed12292e42a7722a7d1a55f12e41b1abca5cc5162fd` |
+### ✅ CAMBIOS IMPLEMENTADOS Y BUILD EXITOSO
 
-### Convención de claves D1
-- Pacientes: `siso_db_patients_<userId>` (ej. `siso_db_patients_drcucalon`)
-- Empresas: `siso_companies_<userId>`
-- Usuarios: `siso_users`
-- Atenciones: `siso_atenciones_cerradas_<userId>`
-- Facturas: `siso_saved_bills_<userId>`
+#### EpidemiologicalReport.jsx — REESCRITO COMPLETO (703 líneas)
+- `src/modules/reports/components/EpidemiologicalReport.jsx`
+- ✅ R1: Siempre carga desde D1 (eliminado early-return bug)
+- ✅ R2: filterEmpresa ahora es `<select>` con empresas de D1/monolito
+- ✅ R3: Stats expandidas: conHallazgos, conRiesgos, edadPromedio, tasaNoAptos
+- ✅ R4: Perfil Sociodemográfico con 11 variables + PctBar
+- ✅ R5: Perfil Clínico (IMC, aptitud, CIE-10, hallazgos, riesgos)
+- ✅ R6: Módulo precios (único / individual / por fecha)
+- ✅ R7: handleExportCSV + botón imprimir
+- ✅ Tendencia mensual bar chart
+- ✅ TOP 5 CIE-10 summary
+- ✅ filterMedico desde usersList
+- ✅ Tab "📊 Diagnóstico" nuevo
+- ✅ "🏢 Abrir Portal" directo desde empresa (tab empresas)
 
----
+#### AnalisisDocsTab.jsx — CREADO NUEVO (268 líneas)
+- `src/modules/companies/components/AnalisisDocsTab.jsx`
+- ✅ Detecta bloques periódicos (≥3 PERIODICO mismo mes/empresa)
+- ✅ Stats: BLOQUES DETECTADOS / COMPLETOS / INCOMPLETOS / INDIVIDUALES
+- ✅ Por bloque: expandir lista trabajadores, Generar con IA, Generar carta custodia
+- ✅ Carta de custodia descarga como .txt
+- ✅ Estado INF (informe) + CUS (carta) por bloque
 
-## 🐛 BUGS ENCONTRADOS Y ESTADO
-
-### ✅ RESUELTOS
-
-| Bug | Archivo | Fix |
-|---|---|---|
-| Login seed hash incorrecto | `authStore.js` L36 | Hash cambiado a `49679f37...` |
-| PatientsPage localStorage fallback clave errónea (`siso_pacientes`) | `PatientsPage.jsx` L36 | Cadena fallback multi-clave: `siso_db_patients_${userId}` → `siso_db_patients` → `siso_pacientes` |
-| PatientsPage `handleSelectPatient` navega a `/patients` en vez del HC | `PatientsPage.jsx` L67 | Ruta corregida a `/patients/${docNumero}/hc` |
-| CompaniesPage no fetcha datos (0 empresas siempre) | `CompaniesPage.jsx` | Reescrito con hook D1 + localStorage fallback |
-| D1 hash drcucalon incorrecto en `siso_users` | D1 remoto | Actualizado vía POST directo al worker en sesión anterior |
-
-### 🔴 PENDIENTES
-
-| Bug | Síntoma | Causa | Archivo |
-|---|---|---|---|
-| Caja muestra $0 | `siso_atenciones_cerradas` vacío | Auto-registro al cerrar HC puede no estar disparando `d1WriteArrayMerge` | `HistoriaPage.jsx` |
-| Reportes sin datos | 0 gráficas | Downstream de bug Pacientes (ya resuelto) — verificar tras deploy |
-| D1 `siso_db_patients_drcucalon` vacío | 373 pacientes en localStorage sin migrar | Migración chunked pendiente | — |
+#### CompaniesSection.jsx — ACTUALIZADO (1794 líneas)
+- `src/sections/CompaniesSection.jsx`
+- ✅ E1: Import AnalisisDocsTab + estado showAnalisisDocs
+- ✅ E2: Botón "📊 Análisis Docs" en header
+- ✅ E3: Vista separada AnalisisDocsTab con botón Volver
+- ✅ E4: Alerta "🔑 Activar todas" para empresas sin código de portal
+- ✅ E5: Botón "🏢 Abrir Portal" por empresa en modal instrucciones
 
 ---
 
-## 📦 ESTADO DE DATOS D1
+## SPRINTS PENDIENTES (próximas sesiones)
 
-| Clave D1 | Entradas | Observación |
-|---|---|---|
-| `siso_users` | 1+ | Hash drcucalon correcto tras fix sesión anterior |
-| `siso_db_patients_drcucalon` | 0 | 373 pacientes en `localStorage.siso_db_patients` sin migrar |
-| `siso_companies_drcucalon` | 35 | Disponible — CompaniesPage ahora lo lee |
-| `siso_companies` (legacy) | 34 | localStorage fallback |
-| `siso_atenciones_cerradas` | 0 | Pendiente investigar |
-| `siso_saved_bills_drcucalon` | ? | Facturas existen pero Caja usa otra fuente |
+### PRIORIDAD ALTA
+- Sprint A3: Expandir PhysicalExam.jsx a 29 sistemas (actualmente incompleto)
+- Sprint A4: Completar RecommendationsPanel y RestrictionsPanel
+- Sprint C4: CartaCustodiaPage — migrar Supabase → D1
 
----
+### PRIORIDAD MEDIA
+- Sprint D1: Agregar link WhatsApp (wa.me) al certificado
+- Sprint D2: Auto-registro en caja al cerrar HC
+- Sprint B: Encuestas — ver respuestas individuales + importar pacientes desde encuesta
 
-## 🚀 SPRINTS
-
-### Sprint A+C+D — ✅ COMPROMETIDO (pendiente push)
-- A1: `useClinicalRecord.js` — initNewRecord() con 30+ campos
-- A2: `printUtils.js` — QR real en certificado
-- A3: `initialStates.js` — 29 sistemas (Res.1843/2025)
-- A3: `catalogs.js` — NORMAL_DESCRIPTIONS_SYSTEMS 29 entradas
-- A4: `recomendaciones.js` — 4 nuevas categorías
-- C4: `CartaCustodiaPage.jsx` — migrado a d1WriteArrayMerge
-- D1: `HistoriaPage.jsx` — botón WhatsApp
-
-### Sprint de Paridad (esta sesión) — fixes críticos
-- Fix CompaniesPage.jsx — D1 fetch + localStorage fallback
-- Fix authStore.js seed hash
-- Fix PatientsPage localStorage fallback clave
-- Fix PatientsPage handleSelectPatient ruta HC
-
-### Sprint B (#37) — 🔴 PENDIENTE
-- Encuestas — expansión
+### PRIORIDAD BAJA
+- Reportes: Exportar PDF Tabla, Matriz Legal, Marco Normativo SST
+- AnalisisDocsTab: Integrar con generación PDF real (no solo txt)
 
 ---
 
-## 📋 TAREAS PENDIENTES PRIORITARIAS
+## ARCHIVOS CRÍTICOS A CONOCER
 
-1. **git push origin main** — disparar deploy Cloudflare (Sprint A+C+D + fixes de paridad)
-2. **Migrar 373 pacientes a D1** — `localStorage.siso_db_patients` (4MB) → `siso_db_patients_drcucalon` (chunked)
-3. **Verificar Caja** — investigar por qué `siso_atenciones_cerradas` está vacío
-4. **Verificar Reportes** tras deploy (downstream de fix Pacientes)
-5. **Sprint B** — Encuestas (#37)
-
----
-
-## 🔑 CREDENCIALES DE PRUEBA
-
-- Usuario: `drcucalon`
-- Contraseña: `Siso2025*`
-- URL Plataforma A: `https://siso-appultimo-arp.pages.dev`
+| Archivo | Líneas | Estado |
+|---------|--------|--------|
+| src/modules/reports/components/EpidemiologicalReport.jsx | 703 | ✅ Reescrito |
+| src/sections/CompaniesSection.jsx | 1794 | ✅ Actualizado |
+| src/modules/companies/components/AnalisisDocsTab.jsx | 268 | ✅ Nuevo |
+| src/modules/companies/components/EncuestasTab.jsx | 638 | ✅ OK |
+| src/pages/CompaniesPage.jsx | 128 | ✅ OK (sin cambios) |
+| src/pages/HistoriaPage.jsx | 865 | ✅ Fix duplicado previo |
+| PROTOCOLO_QUIRURGICO_REPORTES_EMPRESAS.md | — | ✅ Referencia |
 
 ---
 
-## 📁 ARCHIVOS CRÍTICOS
+## PATRÓN DE DATOS (para nuevas sesiones)
+- **ctx**: CompaniesSection espera objeto ctx con TODO el estado/helpers desde CompaniesPage.jsx
+- **Patient-company match**: empresaId, empresaNit, empresa (string), empresaNombre
+- **D1 siempre primero**: cargar desde D1, localStorage solo como caché/fallback
+- **TDZ**: declarar const ANTES de usarlos (no después de funciones que los referencian)
+- **Bloque periódico**: ≥3 PERIODICO mismo empresa/mes → requiere INF + CUS
 
-```
-src/stores/authStore.js          — auth, seed users, D1 sync
-src/lib/d1Client.js              — d1Get, d1Set, d1WriteArrayMerge
-src/pages/PatientsPage.jsx       — lista pacientes + D1 fetch
-src/pages/CompaniesPage.jsx      — lista empresas + D1 fetch ← reescrito
-src/modules/clinical/hooks/useClinicalRecord.js
-src/pages/HistoriaPage.jsx       — HC completo + QR + WhatsApp
-src/pages/CartaCustodiaPage.jsx  — carta custodia → D1
-src/shared/data/catalogs.js      — sistemas físico, descriptores normales
-src/shared/data/initialStates.js — estados iniciales HC
-src/shared/data/recomendaciones.js — catálogo recomendaciones
-src/shared/lib/crypto.js         — _sha256
-src/shared/lib/printUtils.js     — QR, impresión
+---
+
+## COMMITS REALIZADOS (esta sesión)
+Pendiente hacer commit desde PowerShell:
+
+```powershell
+cd C:\Users\JQK3\Desktop\siso-appultimo
+git add src/modules/reports/components/EpidemiologicalReport.jsx
+git add src/modules/companies/components/AnalisisDocsTab.jsx
+git add src/sections/CompaniesSection.jsx
+git add SESION_ESTADO.md
+git commit -m "feat: Reportes completo + AnalisisDocs + Empresas portales mejorados"
+git push
 ```
