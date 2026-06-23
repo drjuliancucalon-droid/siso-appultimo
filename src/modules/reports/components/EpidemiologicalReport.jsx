@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../../stores/authStore';
 import { d1Get } from '../../../lib/d1Client';
-import { Download, FileText, BarChart3, Users, Activity, Briefcase, Calendar, Sparkles, Loader2, AlertCircle } from 'lucide-react';
+import { Download, FileText, BarChart3, Users, Activity, Briefcase, Calendar, Sparkles, Loader2, AlertCircle, Send, Archive, CheckCircle2 } from 'lucide-react';
 import { useAIStore } from '../../../stores/aiStore';
 import { analyzeEpidemiologicalData } from '../../ai/services/aiAnalysis';
 import { saveAs } from 'file-saver';
@@ -15,6 +16,7 @@ const formatDate = (dateString) => {
 };
 
 export default function ReportsPage() {
+  const navigate = useNavigate();
   const { currentUser } = useAuthStore();
   
   // Estados locales simulando datos del monolito (En producción, esto viene de hooks de backend)
@@ -55,6 +57,50 @@ export default function ReportsPage() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [iaResult, setIaResult] = useState('');
   const [iaError, setIaError] = useState('');
+
+  // Badge "Emitido" (monolito): fecha y conteo del portal empresa
+  const [emitidoInfo, setEmitidoInfo] = useState(null);
+
+  useEffect(() => {
+    if (!filterEmpresa) { setEmitidoInfo(null); return; }
+    const empMatch = patients.find(p => p.empresa?.toLowerCase() === filterEmpresa.toLowerCase());
+    if (!empMatch) return;
+    const nit = empMatch.empresaNit || empMatch.nit || '';
+    if (!nit) return;
+    d1Get(`siso_portal_empresa_atenciones_${nit}`)
+      .then(({ value }) => {
+        if (Array.isArray(value) && value.length > 0) {
+          const ultimo = value.reduce((max, v) =>
+            new Date(v.fecha || 0) > new Date(max.fecha || 0) ? v : max, value[0]);
+          setEmitidoInfo({ fecha: ultimo.fecha || '', count: value.length, nit });
+        } else setEmitidoInfo(null);
+      })
+      .catch(() => setEmitidoInfo(null));
+  }, [filterEmpresa, patients]);
+
+  const handleDescargarZip = useCallback(async () => {
+    if (filteredData.length === 0) { alert('No hay certificados con los filtros actuales.'); return; }
+    try {
+      const JSZip = (await import('jszip')).default;
+      const zip = new JSZip();
+      filteredData.forEach((p, i) => {
+        const content = [
+          'SISO OcupaSalud — Certificado de Aptitud',
+          `Paciente: ${p.nombreCompleto || '—'}`,
+          `Documento: ${p.docNumero || '—'}`,
+          `Empresa: ${p.empresa || '—'}`,
+          `Tipo: ${p.tipoExamen || '—'}`,
+          `Concepto: ${p.conceptoAptitud || '—'}`,
+          `Fecha: ${p.fechaExamen || '—'}`,
+        ].join('\n');
+        zip.file(`certificado_${i + 1}_${p.docNumero || i}.txt`, content);
+      });
+      const blob = await zip.generateAsync({ type: 'blob' });
+      saveAs(blob, `certificados_${filterEmpresa || 'todos'}_${new Date().toISOString().slice(0, 10)}.zip`);
+    } catch (err) {
+      alert('Error generando ZIP: ' + (err.message || 'verifique jszip'));
+    }
+  }, [filteredData, filterEmpresa]);
 
   const handleGenerateEpiReport = async () => {
     const { canUse, getConfig } = useAIStore.getState();
@@ -202,11 +248,46 @@ export default function ReportsPage() {
             {isGenerating ? <Loader2 size={18} className="animate-spin" /> : <Sparkles size={18} />}
             {isGenerating ? 'Analizando...' : 'IA Análisis Epidemiológico'}
           </button>
-          <button 
+          <button
             onClick={handleExportExcel}
             className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 shadow"
           >
             <Download size={18} /> Exportar Excel
+          </button>
+
+          {filterEmpresa && (
+            <button
+              onClick={() => {
+                const emp = patients.find(p => p.empresa?.toLowerCase() === filterEmpresa.toLowerCase());
+                const nit = emp?.empresaNit || emp?.nit || '';
+                navigate(`/portal-certificados${nit ? `?nit=${nit}` : ''}`);
+              }}
+              className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded hover:bg-emerald-700 shadow text-sm font-bold"
+            >
+              <Send size={16} /> Enviar TODO a Empresa
+            </button>
+          )}
+
+          {emitidoInfo && (
+            <div className="flex items-center gap-1.5 px-3 py-2 bg-blue-50 border border-blue-200 text-blue-700 rounded text-xs font-bold">
+              <CheckCircle2 size={14} className="text-blue-500" />
+              Emitido
+              {emitidoInfo.fecha && (
+                <span className="text-blue-500 ml-1">
+                  el {new Date(emitidoInfo.fecha).toLocaleDateString('es-CO')}
+                </span>
+              )}
+              <span className="bg-blue-200 text-blue-800 px-1.5 py-0.5 rounded-full text-[10px] ml-1">
+                {emitidoInfo.count} doc(s)
+              </span>
+            </div>
+          )}
+
+          <button
+            onClick={handleDescargarZip}
+            className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 shadow text-sm font-bold"
+          >
+            <Archive size={16} /> Descargar ZIP
           </button>
         </div>
       </div>

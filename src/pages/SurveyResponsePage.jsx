@@ -1,7 +1,7 @@
 // src/pages/SurveyResponsePage.jsx — SPRINT 6 FASE 4.2: Respuesta pública de encuestas
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { d1Get, d1Set } from '../lib/d1Client';
+import { d1Get, d1Set, d1WriteArrayMerge } from '../lib/d1Client';
 import { ClipboardList, Loader2, CheckCircle, AlertCircle, Send } from 'lucide-react';
 
 const SURVEYS_KEY = 'siso_encuestas';
@@ -79,6 +79,8 @@ export default function SurveyResponsePage() {
       };
 
       await d1Set(`siso_encuesta_resp_${responseToken}`, respuesta);
+      // Indexar en array por encuesta para que EncuestasTab pueda listar
+      await d1WriteArrayMerge(`siso_encuesta_resps_${encuesta.id}`, [respuesta], 'token');
       setSent(true);
     } catch (err) {
       setError('Error al enviar: ' + (err.message || 'desconocido'));
@@ -194,6 +196,7 @@ export default function SurveyResponsePage() {
           </form>
         </div>
 
+       
         <p className="text-center text-[10px] text-gray-400 pb-8">
           SISO OcupaSalud Pro · Res. 1843/2025 · Esta encuesta es anónima
         </p>

@@ -5,7 +5,9 @@ import {
 } from 'lucide-react';
 import { _secretariaPuede, _secretariaMedicoAsignado } from '../shared/data/planConfig';
 import { _sha256 } from '../shared/lib/crypto';
-import InputGroup from '../components/ui/InputGroup';
+import InputGroup from '../shared/ui/InputGroup';
+import { initialCompanyState } from '../shared/data/initialStates';
+import EncuestasTab from '../modules/companies/components/EncuestasTab';
 
 export default function CompaniesSection({ ctx }) {
   const {
@@ -130,6 +132,7 @@ export default function CompaniesSection({ ctx }) {
               { k: "lista", l: "🏢 Empresas" },
               { k: "nueva", l: "➕ Nueva Empresa" },
               { k: "convenios", l: "🤝 Convenios" },
+              { k: "encuestas", l: "📋 Encuestas" },
             ].map((t) => (
               <button
                 key={t.k}
@@ -1434,6 +1437,11 @@ export default function CompaniesSection({ ctx }) {
               <option key={o} value={o} />
             ))}
           </datalist>
+
+          {/* TAB: ENCUESTAS */}
+          {companiesTab === "encuestas" && (
+            <EncuestasTab companies={companies} currentUser={currentUser} />
+          )}
         </div>
 
         {/* ═══ MODAL PORTAL ACTIVADO ═══ */}
@@ -1690,7 +1698,7 @@ export default function CompaniesSection({ ctx }) {
                       </button>
                       <button
                         onClick={() => setPortalActivadoInfo(null)}
-                        className="flex-1 py-2.5 bg-gray-100 text-gray-600 text-xs font-black rounded-xl hover:bg-gray-200"
+                            className="flex-1 py-2.5 bg-gray-100 text-gray-600 text-xs font-black rounded-xl hover:bg-gray-200"
                       >
                         ✓ Cerrar
                       </button>

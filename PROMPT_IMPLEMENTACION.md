@@ -500,16 +500,4 @@ Al TERMINAR cada cambio:
 1. Cambiar `[ ]` a `[x]` en `## ESTADO DE SESIÓN` para ese ítem
 2. Actualizar `Última sesión:` con la fecha de hoy
 3. Actualizar `Commit activo:` con el nuevo hash
-4. Si se encontró un bug nuevo, agregarlo al listado con `[ ] PENDIENTE`
-5. Guardar este archivo
-
-Al INICIAR una sesión nueva:
-1. Leer `## ESTADO DE SESIÓN` para saber dónde se quedó
-2. Buscar el PRIMER ítem `[ ] PENDIENTE` en orden de prioridad (🔴 antes que 🟡 antes que 🟠)
-3. Ejecutar ese ítem completo antes de pasar al siguiente
-4. No hacer más de 2 ítems por sesión sin confirmar con el usuario
-
----
-
-*Documento generado: 2026-06-22 — Auditoría IA v1 + Sprints pendientes*
-*Fuentes: INFORME_IA_AUDIT.md + SESION_ESTADO.md + historial de sesiones*
+4. Si se encontró un bug nuevo, agregarlo al listado con `[ ] PENDIENT
