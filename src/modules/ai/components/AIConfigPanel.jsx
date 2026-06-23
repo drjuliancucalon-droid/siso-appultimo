@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BrainCircuit, X, Activity, Save } from 'lucide-react';
+import { BrainCircuit, X, Activity, Save, CheckCircle, Cloud } from 'lucide-react';
 import { AI_PROVIDERS } from '../../../shared/lib/aiProviders';
 
 /**
@@ -16,6 +16,7 @@ export const AIConfigPanel = ({ aiConfig, onSave, onClose }) => {
   const [showKey, setShowKey] = useState({});
   const [activeGuide, setActiveGuide] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [savedState, setSavedState] = useState(null); // null | 'ok' | 'error'
 
   const PROVIDER_INFO = {
     gemini: {
@@ -100,7 +101,17 @@ export const AIConfigPanel = ({ aiConfig, onSave, onClose }) => {
 
   const handleSave = async () => {
     setSaving(true);
-    try { await onSave(cfg); } finally { setSaving(false); }
+    setSavedState(null);
+    try {
+      await onSave(cfg);
+      setSavedState('ok');
+      setTimeout(() => { setSavedState(null); onClose(); }, 2000);
+    } catch (e) {
+      setSavedState('error');
+      console.error('[AIConfigPanel] save error:', e);
+    } finally {
+      setSaving(false);
+    }
   };
 
   const anyWorking = Object.values(testStatus).some((s) => s.ok === true);
@@ -230,16 +241,35 @@ export const AIConfigPanel = ({ aiConfig, onSave, onClose }) => {
       </div>
 
       {/* Footer */}
-      <div className="flex gap-2 p-4 border-t bg-gray-50 flex-shrink-0">
-        <button onClick={onClose}
-          className="py-2.5 px-5 border-2 border-gray-300 rounded-xl text-sm font-bold text-gray-700 hover:bg-gray-100 transition-colors">
-          Cancelar
-        </button>
-        <button onClick={handleSave} disabled={saving}
-          className="flex-1 py-2.5 bg-indigo-600 text-white rounded-xl text-sm font-black hover:bg-indigo-700 flex items-center justify-center gap-2 transition-colors disabled:opacity-60">
-          <Save className="w-4 h-4" />
-          {saving ? 'Guardando...' : '💾 Guardar Configuración'}
-        </button>
+      <div className="flex-shrink-0">
+        {/* Banner de estado guardado */}
+        {savedState === 'ok' && (
+          <div className="mx-4 mb-3 flex items-center gap-3 bg-emerald-50 border border-emerald-300 rounded-xl px-4 py-3 animate-fade-in">
+            <CheckCircle className="w-5 h-5 text-emerald-600 flex-shrink-0" />
+            <div>
+              <p className="text-sm font-black text-emerald-800">✅ ¡Configuración guardada en D1!</p>
+              <p className="text-xs text-emerald-600">Activa en toda la app · Sincronizada con tu cuenta · Cerrando...</p>
+            </div>
+            <Cloud className="w-4 h-4 text-emerald-400 ml-auto" />
+          </div>
+        )}
+        {savedState === 'error' && (
+          <div className="mx-4 mb-3 bg-red-50 border border-red-300 rounded-xl px-4 py-3">
+            <p className="text-sm font-black text-red-800">⚠️ Error al guardar en D1</p>
+            <p className="text-xs text-red-600">Las claves se guardaron localmente. Verifica tu conexión e intenta de nuevo.</p>
+          </div>
+        )}
+        <div className="flex gap-2 p-4 border-t bg-gray-50">
+          <button onClick={onClose} disabled={saving}
+            className="py-2.5 px-5 border-2 border-gray-300 rounded-xl text-sm font-bold text-gray-700 hover:bg-gray-100 transition-colors disabled:opacity-50">
+            Cancelar
+          </button>
+          <button onClick={handleSave} disabled={saving || savedState === 'ok'}
+            className="flex-1 py-2.5 bg-indigo-600 text-white rounded-xl text-sm font-black hover:bg-indigo-700 flex items-center justify-center gap-2 transition-colors disabled:opacity-60">
+            <Save className="w-4 h-4" />
+            {saving ? '⏳ Guardando en D1...' : savedState === 'ok' ? '✅ Guardado' : '💾 Guardar en D1'}
+          </button>
+        </div>
       </div>
     </div>
   );

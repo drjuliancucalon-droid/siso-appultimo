@@ -482,13 +482,12 @@ export default function DashboardPage() {
           <div onClick={(e) => e.stopPropagation()}>
             <AIConfigPanel
               aiConfig={aiConfig}
-              onSave={(newConfig) => {
+              onSave={async (newConfig) => {
                 const store = useAIStore.getState();
                 if (newConfig.activeProvider) store.setActiveProvider(newConfig.activeProvider);
                 if (newConfig.keys) Object.entries(newConfig.keys).forEach(([p, k]) => store.setKey(p, k));
                 const userId = JSON.parse(localStorage.getItem('siso-auth') || '{}')?.state?.currentUser?.user;
-                if (userId) store.saveToD1(userId).catch(() => {});
-                setShowAIConfig(false);
+                if (userId) await store.saveToD1(userId);
               }}
               onClose={() => setShowAIConfig(false)}
             />

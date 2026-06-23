@@ -844,12 +844,11 @@ export default function HistoriaPage() {
           <div onClick={(e) => e.stopPropagation()}>
             <AIConfigPanel
               aiConfig={aiConfig}
-              onSave={(newConfig) => {
+              onSave={async (newConfig) => {
                 const store = useAIStore.getState();
                 if (newConfig.activeProvider) store.setActiveProvider(newConfig.activeProvider);
                 if (newConfig.keys) Object.entries(newConfig.keys).forEach(([p, k]) => store.setKey(p, k));
-                store.saveToD1(currentUser?.user).catch(() => {});
-                setShowAIConfig(false);
+                await store.saveToD1(currentUser?.user);
               }}
               onClose={() => setShowAIConfig(false)}
             />

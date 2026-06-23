@@ -322,13 +322,13 @@ export default function Layout() {
           <div onClick={(e) => e.stopPropagation()}>
             <AIConfigPanel
               aiConfig={aiConfig}
-              onSave={(newConfig) => {
+              onSave={async (newConfig) => {
                 const store = useAIStore.getState();
                 if (newConfig.activeProvider) store.setActiveProvider(newConfig.activeProvider);
                 if (newConfig.keys) Object.entries(newConfig.keys).forEach(([p, k]) => store.setKey(p, k));
                 const userId = useAuthStore.getState().currentUser?.user;
-                if (userId) store.saveToD1(userId).catch(() => {});
-                setShowAIConfig(false);
+                if (userId) await store.saveToD1(userId);
+                // Panel shows success banner 2s then calls onClose itself
               }}
               onClose={() => setShowAIConfig(false)}
             />

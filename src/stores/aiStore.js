@@ -30,11 +30,10 @@ export const useAIStore = create(
           if (value.activeProvider) set({ activeProvider: value.activeProvider });
         }).catch((e) => console.warn('[aiStore] loadFromD1:', e.message));
       },
-      saveToD1: (userId) => {
+      saveToD1: async (userId) => {
         if (!userId) return;
         const { activeProvider, keys } = get();
-        d1Set('siso_ai_keys_' + userId, { activeProvider, ...keys })
-          .catch((e) => console.warn('[aiStore] saveToD1:', e.message));
+        return d1Set('siso_ai_keys_' + userId, { activeProvider, ...keys });
       },
     }),
     { name: 'siso-ai-config', partialize: (s) => ({ activeProvider: s.activeProvider, keys: s.keys }) }
