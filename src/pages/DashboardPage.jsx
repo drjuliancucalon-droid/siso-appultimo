@@ -1,6 +1,6 @@
 // src/pages/DashboardPage.jsx — Dashboard with real data from backend
 // B-14: Plan gate wrappers for SVE/ARL/Telemedicina cards + plan status banner
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
 import { useBackendData, useBackendObject } from '../hooks/useBackendData';
@@ -8,7 +8,7 @@ import { PLAN_CONFIG } from '../shared/data/planConfig';
 import {
   Users, Building2, Calendar, FileText, FileCheck, BarChart3,
   Shield, Stethoscope, Activity, AlertTriangle, TrendingUp,
-  Cloud, HardDrive, Video, Sparkles, Loader2
+  Cloud, HardDrive, Video, Sparkles, Loader2, Search, ExternalLink, Lock, CheckCircle, XCircle, Clock
 } from 'lucide-react';
 import { useAIStore } from '../stores/aiStore';
 import { dailySummary } from '../modules/ai/services/aiAnalysis';
@@ -22,6 +22,211 @@ const QUICK_ACTIONS = [
   { path: '/reports', icon: BarChart3, label: 'Reportes', color: 'from-teal-700 to-teal-500', desc: 'Epidemiología' },
   { path: '/sgsst', icon: Shield, label: 'SG-SST', color: 'from-emerald-800 to-emerald-600', desc: 'Gestión SST' },
 ];
+
+
+// ─────────────────────────────────────────────────────────────
+// UltimosPacientes — 30 últimos pacientes, idéntico al monolito
+// ─────────────────────────────────────────────────────────────
+function getInitials(p) {
+  const ap = p.apellidos || '';
+  const nm = p.nombres || p.nombreCompleto || '';
+  const parts = (ap + ' ' + nm).trim().split(' ').filter(Boolean);
+  if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return '??';
+}
+
+function getAvatarColor(nombre) {
+  const colors = [
+    'bg-emerald-500','bg-teal-500','bg-cyan-500','bg-blue-500',
+    'bg-indigo-500','bg-violet-500','bg-purple-500','bg-fuchsia-500',
+  ];
+  let h = 0;
+  for (let c of (nombre || '')) h = (h * 31 + c.charCodeAt(0)) & 0xffff;
+  return colors[h % colors.length];
+}
+
+function TipoExamenBadge({ tipo }) {
+  const map = {
+    'INGRESO':         'bg-blue-100 text-blue-800',
+    'PERIODICO':       'bg-indigo-100 text-indigo-800',
+    'PERIÓDICO':       'bg-indigo-100 text-indigo-800',
+    'EGRESO':          'bg-orange-100 text-orange-800',
+    'POST-INCAPACIDAD':'bg-yellow-100 text-yellow-800',
+    'POST INCAPACIDAD':'bg-yellow-100 text-yellow-800',
+    'REUBICACION':     'bg-purple-100 text-purple-800',
+    'REUBICACIÓN':     'bg-purple-100 text-purple-800',
+  };
+  const t = (tipo || '').toUpperCase();
+  const cls = map[t] || 'bg-gray-100 text-gray-700';
+  return <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap ${cls}`}>{tipo || '—'}</span>;
+}
+
+function ConceptoBadge({ concepto }) {
+  const c = (concepto || '').toUpperCase();
+  if (c.includes('NO APTO'))
+    return <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black bg-red-100 text-red-700 whitespace-nowrap"><XCircle className="w-2.5 h-2.5" />NO APTO</span>;
+  if (c.includes('RESTRICC'))
+    return <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black bg-yellow-100 text-yellow-700 whitespace-nowrap"><Clock className="w-2.5 h-2.5" />CON RESTRICCIONES</span>;
+  if (c.includes('APTO'))
+    return <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-100 text-emerald-700 whitespace-nowrap"><CheckCircle className="w-2.5 h-2.5" />APTO</span>;
+  return <span className="inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold bg-gray-100 text-gray-600 whitespace-nowrap">{concepto || 'Pendiente'}</span>;
+}
+
+function EstadoHCBadge({ estado }) {
+  const e = (estado || '').toLowerCase();
+  if (e === 'cerrada')
+    return <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-50 text-emerald-600"><Lock className="w-2.5 h-2.5" />Cerrada</span>;
+  return <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-50 text-amber-700"><Clock className="w-2.5 h-2.5" />Abierta</span>;
+}
+
+function UltimosPacientes({ patients, navigate }) {
+  const [busqueda, setBusqueda] = useState('');
+
+  const sorted = useMemo(() => {
+    if (!Array.isArray(patients)) return [];
+    return [...patients].sort((a, b) => {
+      const fa = a.fechaExamen || a.fechaCreacion || '';
+      const fb = b.fechaExamen || b.fechaCreacion || '';
+      return fb.localeCompare(fa);
+    });
+  }, [patients]);
+
+  const filtered = useMemo(() => {
+    if (!busqueda.trim()) return sorted.slice(0, 30);
+    const q = busqueda.toLowerCase();
+    return sorted.filter(p =>
+      (p.nombres || '').toLowerCase().includes(q) ||
+      (p.apellidos || '').toLowerCase().includes(q) ||
+      (p.nombreCompleto || '').toLowerCase().includes(q) ||
+      (p.empresa || '').toLowerCase().includes(q) ||
+      (p.empresaNombre || '').toLowerCase().includes(q) ||
+      (p.docNumero || '').toLowerCase().includes(q) ||
+      (p.cargo || '').toLowerCase().includes(q)
+    ).slice(0, 30);
+  }, [sorted, busqueda]);
+
+  const handleAbrirHC = (p) => {
+    if (p.docNumero) navigate(`/patients/${encodeURIComponent(p.docNumero)}/hc`);
+  };
+
+  return (
+    <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden" style={{ gridColumn: '1 / -1' }}>
+      {/* Header */}
+      <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b border-gray-100">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center">
+            <Users className="w-4 h-4 text-emerald-600" />
+          </div>
+          <div>
+            <h3 className="font-black text-gray-800 text-sm">Últimos Pacientes Atendidos</h3>
+            <p className="text-[10px] text-gray-400">
+              {patients?.length > 0 ? `${filtered.length} de ${patients.length} registros` : 'Sin registros'}
+            </p>
+          </div>
+        </div>
+        {/* Buscador */}
+        <div className="relative w-56">
+          <Search className="w-3.5 h-3.5 text-gray-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
+          <input
+            type="text"
+            placeholder="Buscar por nombre, empresa, doc..."
+            value={busqueda}
+            onChange={e => setBusqueda(e.target.value)}
+            className="w-full pl-7 pr-3 py-1.5 text-[11px] border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-300 outline-none"
+          />
+        </div>
+      </div>
+
+      {filtered.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-12 text-gray-400">
+          <Users className="w-10 h-10 mb-3 opacity-30" />
+          <p className="text-sm font-bold">{busqueda ? 'Sin resultados para esa búsqueda' : 'No hay pacientes registrados'}</p>
+          {busqueda && <button onClick={() => setBusqueda('')} className="mt-2 text-xs text-emerald-600 underline">Limpiar filtro</button>}
+        </div>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="w-full text-xs">
+            <thead>
+              <tr className="bg-gray-50 text-gray-500 border-b border-gray-100 text-[10px] uppercase tracking-wide">
+                <th className="text-left py-2.5 px-3 font-black">Paciente</th>
+                <th className="text-left py-2.5 px-3 font-black">Documento</th>
+                <th className="text-left py-2.5 px-3 font-black">Empresa / Cargo</th>
+                <th className="text-left py-2.5 px-3 font-black">Tipo Examen</th>
+                <th className="text-left py-2.5 px-3 font-black">Concepto Aptitud</th>
+                <th className="text-left py-2.5 px-3 font-black">Estado HC</th>
+                <th className="text-left py-2.5 px-3 font-black">Fecha</th>
+                <th className="text-center py-2.5 px-3 font-black">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map((p, idx) => {
+                const nombre = [p.apellidos, p.nombres].filter(Boolean).join(', ') || p.nombreCompleto || 'Sin nombre';
+                const initials = getInitials(p);
+                const avatarColor = getAvatarColor(nombre);
+                const fecha = p.fechaExamen || p.fechaCreacion || '';
+                const fechaFmt = fecha ? fecha.split('-').reverse().join('/') : '—';
+                const empresa = p.empresaNombre || p.empresa || '—';
+                const cargo = p.cargo || p.perfilCargo || '';
+                const doc = [p.tipoDocumento, p.docNumero].filter(Boolean).join(' ') || '—';
+                return (
+                  <tr
+                    key={p.id || p.docNumero || idx}
+                    className="border-b border-gray-50 hover:bg-emerald-50/40 transition-colors cursor-pointer group"
+                    onClick={() => handleAbrirHC(p)}
+                  >
+                    {/* Paciente */}
+                    <td className="py-2.5 px-3">
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <div className={`w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center text-white text-[10px] font-black ${avatarColor}`}>
+                          {initials}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="font-bold text-gray-800 truncate max-w-[160px] text-[11px]">{nombre}</p>
+                        </div>
+                      </div>
+                    </td>
+                    {/* Documento */}
+                    <td className="py-2.5 px-3 text-gray-500 font-mono text-[10px] whitespace-nowrap">{doc}</td>
+                    {/* Empresa / Cargo */}
+                    <td className="py-2.5 px-3">
+                      <p className="text-gray-700 font-semibold text-[11px] truncate max-w-[140px]">{empresa}</p>
+                      {cargo && <p className="text-gray-400 text-[9px] truncate max-w-[140px]">{cargo}</p>}
+                    </td>
+                    {/* Tipo Examen */}
+                    <td className="py-2.5 px-3 whitespace-nowrap">
+                      <TipoExamenBadge tipo={p.tipoExamen} />
+                    </td>
+                    {/* Concepto */}
+                    <td className="py-2.5 px-3 whitespace-nowrap">
+                      <ConceptoBadge concepto={p.conceptoAptitud} />
+                    </td>
+                    {/* Estado HC */}
+                    <td className="py-2.5 px-3 whitespace-nowrap">
+                      <EstadoHCBadge estado={p.estadoHistoria || p.estado} />
+                    </td>
+                    {/* Fecha */}
+                    <td className="py-2.5 px-3 text-gray-400 text-[10px] whitespace-nowrap">{fechaFmt}</td>
+                    {/* Acciones */}
+                    <td className="py-2.5 px-3 text-center">
+                      <button
+                        onClick={e => { e.stopPropagation(); handleAbrirHC(p); }}
+                        disabled={!p.docNumero}
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-black bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors opacity-0 group-hover:opacity-100"
+                      >
+                        <ExternalLink className="w-3 h-3" /> Abrir HC
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function DashboardPage() {
   const navigate = useNavigate();
@@ -358,51 +563,8 @@ export default function DashboardPage() {
         );
       })()}
 
-      {/* D-04: Últimos Pacientes (como monolito) */}
-      <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
-        <h3 className="font-bold text-gray-800 mb-3 flex items-center gap-2">
-          <Users className="w-4 h-4 text-emerald-600" />
-          Últimos Pacientes Atendidos
-        </h3>
-        {patients && patients.length > 0 ? (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="text-gray-500 border-b text-xs">
-                  <th className="text-left py-2 px-2">Paciente</th>
-                  <th className="text-left py-2 px-2">Empresa</th>
-                  <th className="text-left py-2 px-2">Tipo</th>
-                  <th className="text-left py-2 px-2">Fecha</th>
-                  <th className="text-left py-2 px-2">Concepto</th>
-                </tr>
-              </thead>
-              <tbody>
-                {patients.slice(0, 5).map((p) => (
-                  <tr key={p.id} className="border-b hover:bg-gray-50">
-                    <td className="py-2 px-2 font-medium">{p.nombres || 'Sin nombre'}</td>
-                    <td className="py-2 px-2 text-gray-600">{p.empresaNombre || p.empresa || '-'}</td>
-                    <td className="py-2 px-2">
-                      <span className="px-2 py-0.5 bg-blue-50 text-blue-600 rounded text-xs">{p.tipoExamen || '-'}</span>
-                    </td>
-                    <td className="py-2 px-2 text-gray-500 text-xs">{p.fechaExamen || '-'}</td>
-                    <td className="py-2 px-2">
-                      <span className={`px-2 py-0.5 rounded text-xs ${
-                        p.conceptoAptitud?.includes('APTO') ? 'bg-green-50 text-green-600' :
-                        p.conceptoAptitud?.includes('NO APTO') ? 'bg-red-50 text-red-600' :
-                        'bg-yellow-50 text-yellow-600'
-                      }`}>
-                        {p.conceptoAptitud || '-'}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <p className="text-gray-400 text-sm">No hay pacientes registrados</p>
-        )}
-      </div>
+      {/* D-04: Últimos 30 Pacientes Atendidos — fiel al monolito */}
+      <UltimosPacientes patients={patients} navigate={navigate} />
 
       {/* D-05: Próximas Citas (como monolito) */}
       <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
