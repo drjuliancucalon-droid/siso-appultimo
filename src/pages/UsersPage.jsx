@@ -1,8 +1,10 @@
 // src/pages/UsersPage.jsx — Gestión completa de usuarios con stats y PBKDF2
+// GAP-U01 FIX: Migrado de Supabase → D1 (mismo patrón que rest del sistema)
 import React, { useState, useMemo, useCallback } from 'react';
 import { UserList } from '../modules/users/components/UserList';
 import { UserForm } from '../modules/users/components/UserForm';
 import { useAuthStore } from '../stores/authStore';
+import { d1Get, d1WriteArrayMerge } from '../lib/d1Client';
 import { Settings, Loader2, Cloud, HardDrive } from 'lucide-react';
 
 const USERS_KEY = 'siso_users';
@@ -14,22 +16,12 @@ const saveLocal = (d) => {
   try { localStorage.setItem(USERS_KEY, JSON.stringify(d)); } catch {}
 };
 
-// Guarda en Supabase directamente (sin necesitar el hook useBackendData)
-const saveSupabase = async (data) => {
+// Guarda en D1 (reemplaza Supabase)
+const saveD1 = async (data) => {
   try {
-    const SB_URL = import.meta.env.VITE_SUPABASE_URL;
-    const SB_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
-    if (!SB_URL || !SB_KEY) return;
-    await fetch(`${SB_URL}/rest/v1/siso_store`, {
-      method: 'POST',
-      headers: {
-        apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}`,
-        'Content-Type': 'application/json', Prefer: 'resolution=merge-duplicates',
-      },
-      body: JSON.stringify({ key: USERS_KEY, value: data }),
-    });
+    await d1WriteArrayMerge(USERS_KEY, data, 'id');
   } catch (e) {
-    console.warn('Supabase save users error:', e.message);
+    console.warn('D1 save users error:', e.message);
   }
 };
 
@@ -37,41 +29,26 @@ export default function UsersPage() {
   const { currentUser } = useAuthStore();
   const isSuperAdmin = currentUser?.role === 'super_admin';
 
-  // Carga inicial desde localStorage + Supabase
-  const [users, setUsers] = useState(() => {
-    const local = loadLocal();
-    // Si hay locales úsalos; Supabase se carga en useEffect
-    return local;
-  });
+  // Carga inicial desde localStorage; D1 se carga en useEffect
+  const [users, setUsers] = useState(() => loadLocal());
   const [loading, setLoading] = useState(true);
   const [source, setSource]   = useState('local');
   const [showForm, setShowForm]     = useState(false);
   const [editingUser, setEditingUser] = useState(null);
 
-  // Cargar desde Supabase al montar
+  // Cargar desde D1 al montar
   React.useEffect(() => {
     let mounted = true;
     const load = async () => {
       try {
-        const SB_URL = import.meta.env.VITE_SUPABASE_URL;
-        const SB_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
-        if (SB_URL && SB_KEY) {
-          const r = await fetch(
-            `${SB_URL}/rest/v1/siso_store?key=eq.${USERS_KEY}&select=value`,
-            { headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` } }
-          );
-          if (r.ok) {
-            const rows = await r.json();
-            const sbUsers = rows?.[0]?.value;
-            if (Array.isArray(sbUsers) && sbUsers.length > 0 && mounted) {
-              setUsers(sbUsers);
-              saveLocal(sbUsers);
-              setSource('backend');
-            }
-          }
+        const { value } = await d1Get(USERS_KEY);
+        if (Array.isArray(value) && value.length > 0 && mounted) {
+          setUsers(value);
+          saveLocal(value);
+          setSource('d1');
         }
       } catch (e) {
-        console.warn('Error cargando usuarios:', e.message);
+        console.warn('Error cargando usuarios desde D1:', e.message);
       } finally {
         if (mounted) setLoading(false);
       }
@@ -124,7 +101,7 @@ export default function UsersPage() {
   const persist = useCallback((updated) => {
     setUsers(updated);
     saveLocal(updated);
-    saveSupabase(updated);
+    saveD1(updated);
   }, []);
 
   const handleAdd = useCallback(() => { setEditingUser(null); setShowForm(true); }, []);
@@ -172,8 +149,8 @@ export default function UsersPage() {
           </div>
         </div>
         <div className="flex items-center gap-1 text-xs text-gray-400">
-          {source === 'backend'
-            ? <><Cloud className="w-3 h-3 text-emerald-500" /><span>Supabase</span></>
+          {source === 'd1'
+            ? <><Cloud className="w-3 h-3 text-emerald-500" /><span>D1</span></>
             : <><HardDrive className="w-3 h-3" /><span>Local</span></>}
         </div>
       </div>

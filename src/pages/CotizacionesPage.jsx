@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { FileText, Plus, Printer, Trash2, DollarSign, Building2, Send, CheckCircle, XCircle, FileSignature, Sparkles, Loader2 } from 'lucide-react';
 import { useAIStore } from '../stores/aiStore';
 import { generateProposal } from '../modules/ai/services/aiAnalysis';
-import { useBackendData } from '../hooks/useBackendData';
+import { useBackendData, useBackendObject } from '../hooks/useBackendData';
 import { openPrintWindow } from '../lib/printService';
 
 const STORAGE_KEY = 'siso_cotizaciones';
@@ -208,6 +208,6 @@ export default function CotizacionesPage() {
           </div>
         ))}
       </div>
-    </div>
+       </div>
   );
 }
