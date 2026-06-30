@@ -8,7 +8,8 @@ import { PLAN_CONFIG } from '../shared/data/planConfig';
 import {
   Users, Building2, Calendar, FileText, FileCheck, BarChart3,
   Shield, Stethoscope, Activity, AlertTriangle, TrendingUp,
-  Cloud, HardDrive, Video, Sparkles, Loader2, Search, ExternalLink, Lock, CheckCircle, XCircle, Clock
+  Cloud, HardDrive, Video, Sparkles, Loader2, Search, ExternalLink, Lock, CheckCircle, XCircle, Clock,
+  FileSearch, UserCheck, Heart, Receipt, Unlock
 } from 'lucide-react';
 import { useAIStore } from '../stores/aiStore';
 import { dailySummary } from '../modules/ai/services/aiAnalysis';
@@ -313,6 +314,72 @@ export default function DashboardPage() {
           })()}
         </div>
       </div>
+
+      {/* ═══ BANNER IPS — usuario con empresaId (como monolito L25682-25710) ═══ */}
+      {currentUser?.empresaId && (() => {
+        const _miEmpBanner = companies.find(c => c.id === currentUser.empresaId);
+        return (
+          <div className="bg-gradient-to-r from-teal-600 to-cyan-600 rounded-xl p-4 text-white shadow-lg">
+            <div className="flex items-center gap-3">
+              <div className="bg-white/20 p-2.5 rounded-xl">
+                <Building2 className="w-7 h-7 text-white" />
+              </div>
+              <div>
+                <p className="font-black text-lg tracking-tight">
+                  {_miEmpBanner?.nombre || 'IPS'}
+                </p>
+                <p className="text-teal-100 text-xs">
+                  NIT: {_miEmpBanner?.nit || '-'} · {_miEmpBanner?.ciudad || ''}
+                  {' '}
+                  {currentUser.role === 'admin_empresa' ? 'Admin IPS'
+                    : currentUser.role === 'medico' ? 'Médico IPS'
+                    : 'Secretaria IPS'}
+                </p>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* ═══ PLAN STATUS BANNER con progreso HC (como monolito L25759-25822) ═══ */}
+      {(() => {
+        const plan = PLAN_CONFIG[currentUser?.license || 'libre'] || PLAN_CONFIG.libre;
+        const hcUsadas = patients.filter(p => p.fechaExamen).length;
+        const pct = plan.maxHC < 9999 ? Math.round((hcUsadas / plan.maxHC) * 100) : -1;
+        const _expDays = currentUser?.licenseExpiry
+          ? Math.ceil((new Date(currentUser.licenseExpiry) - new Date()) / 86400000) : 99;
+        const isExpiring = plan.price > 0 && _expDays >= 0 && _expDays <= 7 ? _expDays : false;
+        const colorMap = { libre: 'gray', starter: 'teal', pro: 'blue', clinica: 'purple' };
+        const col = colorMap[currentUser?.license || 'libre'] || 'gray';
+        return (
+          <div className={`mt-0 flex flex-wrap items-center gap-3 px-4 py-2.5 rounded-xl bg-${col}-50 border border-${col}-200`}>
+            <span className={`font-black text-sm text-${col}-700`}>{plan.label}</span>
+            <span className="text-gray-400 text-xs">·</span>
+            {plan.maxHC < 9999 ? (
+              <span className={`text-xs font-bold ${pct >= 100 ? 'text-red-600' : pct >= 80 ? 'text-amber-600' : 'text-gray-600'}`}>
+                📋 {hcUsadas}/{plan.maxHC} HC {pct >= 80 && '⚠️'}
+                {pct >= 0 && (
+                  <span className="ml-2 w-20 h-1.5 bg-gray-200 rounded-full inline-block align-middle">
+                    <span className={`block h-full rounded-full ${pct >= 100 ? 'bg-red-500' : pct >= 80 ? 'bg-amber-500' : 'bg-emerald-500'}`}
+                      style={{ width: `${Math.min(pct, 100)}%` }} />
+                  </span>
+                )}
+              </span>
+            ) : (
+              <span className="text-xs text-gray-500">📋 HC ilimitadas</span>
+            )}
+            {isExpiring !== false && isExpiring >= 0 && (
+              <span className="text-xs font-bold text-amber-600">⚠ Vence en {isExpiring}d</span>
+            )}
+            {plan.price === 0 && (
+              <button onClick={() => navigate('/planes')}
+                className={`ml-auto text-xs font-black bg-${col}-600 text-white px-3 py-1 rounded-lg hover:opacity-90 transition`}>
+                ⭐ Ver planes
+              </button>
+            )}
+          </div>
+        );
+      })()}
 
       {/* Quick Actions */}
       <div>
