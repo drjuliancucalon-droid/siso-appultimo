@@ -773,10 +773,16 @@ export default function ReportsPage() {
                   )}
 
                   {/* SECCIÓN 4: MATRIZ LEGAL INDIVIDUAL POR TRABAJADOR (NUEVA-R2) */}
-                  <h3 className="font-black text-gray-800 mb-3 text-xs uppercase tracking-wider border-b pb-1.5 flex items-center gap-2">
-                    <Scale size={14} className="text-indigo-600" />
-                    4. MATRIZ LEGAL DE CONDICIONES DE SALUD — POR TRABAJADOR
-                  </h3>
+                  <div className="flex items-center justify-between mb-3 border-b pb-1.5">
+                    <h3 className="font-black text-gray-800 text-xs uppercase tracking-wider flex items-center gap-2">
+                      <Scale size={14} className="text-indigo-600" />
+                      4. MATRIZ LEGAL DE CONDICIONES DE SALUD — POR TRABAJADOR
+                    </h3>
+                    <button onClick={() => window.print()}
+                      className="no-print flex items-center gap-1 px-3 py-1 bg-indigo-600 text-white rounded text-[10px] font-bold hover:bg-indigo-700">
+                      🖨️ Imprimir Matriz
+                    </button>
+                  </div>
                   <p className="text-[9px] text-gray-400 mb-3">Res. 1843/2025 Art. 17 · Dec. 1477/2014 · Confidencial</p>
                   <div className="overflow-x-auto mb-4">
                     <table className="w-full text-[10px] text-left border-collapse">

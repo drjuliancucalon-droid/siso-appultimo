@@ -206,25 +206,69 @@ export default function EncuestasTab({ companies = [], currentUser }) {
     alert(`✅ ${upd.length} trabajadores agendados.`);
   }, [importados]);
 
-  // ── Descargar PDF respuestas ──────────────────────────────────────
+  // ── Descargar PDF respuestas (HTML imprimible premium) ────────────
   const descargarPDF = useCallback((enc) => {
     const resps = respuestas[enc.id] || [];
-    const lines = [
-      `ENCUESTA: ${enc.nombre}`,
-      `Empresa: ${enc.empresaNombre || '—'}  |  Tipo: ${enc.tipoExamen || '—'}  |  Fecha límite: ${enc.fechaLimite || '—'}`,
-      `Total respuestas: ${resps.length}`,
-      '─'.repeat(60),
-      ...resps.map((r, i) =>
-        `#${i + 1} — ${r.respondidoEn ? new Date(r.respondidoEn).toLocaleString('es-CO') : ''}\n` +
-        (r.respuestas || []).map(rv => `  · ${rv.preguntaId}: ${rv.respuesta}`).join('\n')
-      ),
-    ].join('\n');
+    const html = `<!DOCTYPE html>
+<html lang="es">
+<head><meta charset="UTF-8"><title>Encuesta: ${enc.nombre}</title>
+<style>
+  @page { margin: 1.5cm; size: A4 portrait; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; color: #1a1a2e; line-height: 1.6; max-width: 800px; margin: 0 auto; padding: 20px; }
+  .header { text-align: center; border-bottom: 3px solid #4f46e5; padding-bottom: 15px; margin-bottom: 25px; }
+  .header h1 { font-size: 20pt; font-weight: 900; color: #4f46e5; margin: 0 0 8px; }
+  .header .meta { font-size: 9pt; color: #6b7280; display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; }
+  .header .meta span { background: #f3f4f6; padding: 4px 12px; border-radius: 20px; }
+  .total { text-align: center; font-size: 24pt; font-weight: 900; color: #059669; margin: 20px 0; }
+  .respuesta { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 15px; margin-bottom: 12px; }
+  .respuesta .num { font-weight: 900; color: #4f46e5; font-size: 10pt; margin-bottom: 8px; }
+  .respuesta .item { padding: 6px 0; border-bottom: 1px solid #f3f4f6; font-size: 10pt; }
+  .respuesta .item:last-child { border-bottom: none; }
+  .pregunta { font-weight: 700; color: #374151; }
+  .valor { color: #6b7280; margin-left: 6px; }
+  .footer { text-align: center; margin-top: 30px; padding-top: 15px; border-top: 1px solid #e5e7eb; font-size: 8pt; color: #9ca3af; }
+  @media print { body { padding: 0; } .no-print { display: none; } }
+  button { background: #4f46e5; color: #fff; border: none; padding: 12px 24px; border-radius: 10px; font-weight: 700; cursor: pointer; font-size: 11pt; margin: 20px auto; display: block; }
+  button:hover { background: #4338ca; }
+</style></head>
+<body>
+  <div class="header">
+    <h1>📋 ${enc.nombre}</h1>
+    <div class="meta">
+      <span>🏢 ${enc.empresaNombre || 'Sin empresa'}</span>
+      <span>📌 ${enc.tipoExamen || '—'}</span>
+      <span>📅 Límite: ${enc.fechaLimite || '—'}</span>
+    </div>
+  </div>
+  <div class="total">📊 ${resps.length} respuesta(s)</div>
+  ${resps.map((r, i) => `
+    <div class="respuesta">
+      <div class="num">#${i + 1} — ${r.respondidoEn ? new Date(r.respondidoEn).toLocaleString('es-CO') : 'Sin fecha'}</div>
+      ${(r.respuestas || []).map(rv => `
+        <div class="item">
+          <span class="pregunta">${rv.preguntaId || 'Pregunta'}:</span>
+          <span class="valor">${rv.respuesta || '—'}</span>
+        </div>
+      `).join('')}
+    </div>
+  `).join('')}
+  <button class="no-print" onclick="window.print()">🖨️ Imprimir / Guardar PDF</button>
+  <div class="footer">SISO OcupaSalud Pro · Encuesta generada ${new Date().toLocaleDateString('es-CO')} · Res. 1843/2025</div>
+  <script>window.onload = () => { setTimeout(() => window.print(), 500); }</script>
+</body></html>`;
 
-    const blob = new Blob([lines], { type: 'text/plain;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = `encuesta_${enc.id}.txt`; a.click();
-    URL.revokeObjectURL(url);
+    const win = window.open('', '_blank', 'width=900,height=700');
+    if (win) {
+      win.document.write(html);
+      win.document.close();
+    } else {
+      // fallback: descargar como .html
+      const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = `encuesta_${enc.id}.html`; a.click();
+      URL.revokeObjectURL(url);
+    }
   }, [respuestas]);
 
   // ── Helpers pregunta ──────────────────────────────────────────────

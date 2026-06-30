@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAIStore } from '../../../stores/aiStore';
 import { analyzeEpidemiologicalData } from '../../ai/services/aiAnalysis';
-import { Sparkles, Loader2, FileText, Users, ChevronDown, ChevronRight, CheckCircle2, XCircle } from 'lucide-react';
+  import { Sparkles, Loader2, FileText, Users, ChevronDown, ChevronRight, CheckCircle2, XCircle, Printer } from 'lucide-react';
 
 /**
  * AnalisisDocsTab — Módulo de bloques documentales
@@ -197,7 +197,33 @@ export default function AnalisisDocsTab({ companies = [], patientsList = [], cur
                       {/* Resultado IA */}
                       {iaResults[bloque.key] && (
                         <div className="mt-3 bg-indigo-50 rounded-lg p-3">
-                          <p className="text-[9px] font-black text-indigo-700 uppercase mb-1">Informe Sociodemográfico IA</p>
+                          <div className="flex items-center justify-between mb-1">
+                            <p className="text-[9px] font-black text-indigo-700 uppercase">Informe Sociodemográfico IA</p>
+                            <button
+                              onClick={() => {
+                                const html = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Informe ${bloque.empresa}</title>
+<style>@page{margin:2cm}body{font-family:Arial,sans-serif;color:#1a1a2e;max-width:800px;margin:0 auto;padding:20px}
+h1{font-size:18pt;color:#4f46e5;border-bottom:3px solid #4f46e5;padding-bottom:10px}
+h2{font-size:12pt;color:#374151;margin-top:20px}.meta{color:#6b7280;font-size:9pt;margin-bottom:15px}
+pre{white-space:pre-wrap;font-size:10pt;line-height:1.6;background:#f9fafb;padding:16px;border-radius:8px}
+.footer{text-align:center;margin-top:30px;font-size:8pt;color:#9ca3af;border-top:1px solid #e5e7eb;padding-top:10px}
+button{background:#4f46e5;color:#fff;border:none;padding:10px 20px;border-radius:8px;font-weight:700;cursor:pointer;margin:20px auto;display:block}@media print{button{display:none}}
+</style></head><body>
+<h1>📊 Informe Sociodemográfico</h1>
+<div class="meta">🏢 ${bloque.empresa} · NIT ${bloque.nit || 'N/D'} · ${bloque.mes} · ${bloque.pacientes.length} trabajadores</div>
+<h2>Análisis IA</h2><pre>${iaResults[bloque.key]}</pre>
+<h2>Trabajadores incluidos</h2><pre>${bloque.pacientes.map((p,i) => `${i+1}. ${p.nombreCompleto || 'N/D'} — CC ${p.docNumero || '—'} — ${p.cargo || '—'}`).join('\n')}</pre>
+<button onclick="window.print()">🖨️ Imprimir / Guardar PDF</button>
+<div class="footer">SISO OcupaSalud Pro · Generado ${new Date().toLocaleDateString('es-CO')} · Res. 1843/2025</div>
+<script>setTimeout(()=>window.print(),300)</script></body></html>`;
+                                const w = window.open('', '_blank', 'width=900,height=700');
+                                if (w) { w.document.write(html); w.document.close(); }
+                              }}
+                              className="flex items-center gap-1 px-2 py-0.5 bg-indigo-600 text-white rounded text-[9px] font-bold hover:bg-indigo-700"
+                            >
+                              <Printer size={10} /> Imprimir
+                            </button>
+                          </div>
                           <pre className="text-[10px] text-gray-700 whitespace-pre-wrap font-sans leading-relaxed max-h-60 overflow-y-auto">
                             {iaResults[bloque.key]}
                           </pre>
