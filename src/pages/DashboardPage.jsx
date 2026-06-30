@@ -381,6 +381,36 @@ export default function DashboardPage() {
         );
       })()}
 
+      {/* ═══ INDICADOR MÉDICO DE TURNO (como monolito L25716-25748) ═══ */}
+      {currentUser?.role && ['super_admin', 'administrador'].includes(currentUser.role) && (
+        <div className="flex items-center justify-end gap-2 mt-2">
+          {(() => {
+            // Obtener médico de turno desde localStorage
+            const storedTurno = (() => { try { return JSON.parse(localStorage.getItem('siso_medico_turno') || 'null'); } catch { return null; } })();
+            const usersFromStorage = (() => { try { return JSON.parse(localStorage.getItem('siso_users') || '[]'); } catch { return []; } })();
+            const turnoMedicoNombre = storedTurno
+              ? (usersFromStorage.find(u => u.user === storedTurno.user)?.nombre || storedTurno.user)
+              : null;
+            return storedTurno ? (
+              <div onClick={() => navigate('/users')}
+                className="flex items-center gap-2 bg-green-50 border border-green-200 rounded-xl px-3 py-1.5 cursor-pointer hover:bg-green-100 transition"
+                title="Click para cambiar médico de turno">
+                <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                <span className="text-xs font-black text-green-700">
+                  🩺 Turno: {turnoMedicoNombre}
+                </span>
+              </div>
+            ) : (
+              <div onClick={() => navigate('/users')}
+                className="flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-xl px-3 py-1.5 cursor-pointer hover:bg-amber-100 transition"
+                title="Click para asignar médico de turno">
+                <span className="text-xs text-amber-600 font-bold">⚠ Sin médico de turno</span>
+              </div>
+            );
+          })()}
+        </div>
+      )}
+
       {/* Quick Actions */}
       <div>
         {/* ═══ CONFIG IA — Panel de estado y configuración (como en el monolito) ═══ */}
