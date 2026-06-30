@@ -53,13 +53,13 @@
 |---|-------|---------------------|--------------------------|
 | 1 | **Login** | `T17-03-30` | `T17-03-58` |
 | 2 | **Dashboard** | `T17-04-59` | `T17-05-48` |
-| 3 | **HC Ocupacional** | ⬜ (misma lógica) | `T17-06-41` |
-| 4 | **Pacientes** | ⬜ | `T17-07-45` |
-| 5 | **Empresas** | ⬜ | `T17-08-22` |
-| 6 | **Reportes** | ⬜ | `T17-09-00` |
-| 7 | **Facturación** | ⬜ | `T17-09-37` |
-| 8 | **Usuarios** | ⬜ | `T17-10-06` |
-| 9 | **Configuración** | ⬜ | `T17-10-32` |
+| 3 | **HC Ocupacional** | `T17-21-22` | `T17-06-41` |
+| 4 | **Pacientes** | `T17-13-51` | `T17-07-45` |
+| 5 | **Empresas** | `T17-15-14` | `T17-08-22` |
+| 6 | **Reportes** | `T17-16-03` | `T17-09-00` |
+| 7 | **Facturación** | `T17-14-28` | `T17-09-37` |
+| 8 | **Usuarios** | `T17-19-25` | `T17-10-06` |
+| 9 | **Configuración** | `T17-20-31` | `T17-10-32` |
 
 > Los timestamps son `T{HH}-{MM}-{SS}` del nombre completo: `screenshot-2026-06-30T...png`
 
@@ -67,11 +67,10 @@
 - [x] Cambios compilan sin errores (1817 módulos)
 - [x] Screenshots comparativos de Login y Dashboard (monolito + refactorizado)
 - [x] Screenshots de las 7 vistas restantes del refactorizado
-- [ ] Screenshots del monolito para Pacientes, Empresas, Reportes, Facturación, Usuarios, Configuración
+- [x] Screenshots del monolito para TODAS las 9 vistas ✅
 - [x] Commit realizado y pusheado (890f7f6)
 
 ### Pendientes para próxima sesión
-- Screenshots del monolito para las vistas 4-9 (HC Ocupacional a Configuración)
 - Login: Agregar botones "Configurar IA" y "Restaurar Copia" (presentes en monolito, ausentes en refactorizado)
 - Sprint D1: Link WhatsApp al certificado
 - Sprint D2: Auto-registro en caja al cerrar HC
