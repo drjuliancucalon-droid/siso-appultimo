@@ -163,7 +163,7 @@ export default function EncuestasTab({ companies = [], currentUser }) {
     }
   }, [expandedId, respuestas]);
 
-  // ── Importar pacientes desde Excel ───────────────────────────────
+  // ── Importar pacientes desde Excel (con anti-duplicados por documento) ──
   const handleExcelImport = useCallback(async (encId, file) => {
     if (!file) return;
     try {
@@ -176,7 +176,7 @@ export default function EncuestasTab({ companies = [], currentUser }) {
       const workers = rows.map((r, i) => ({
         id: `imp_${encId}_${Date.now()}_${i}`,
         nombre: r['Nombre'] || r['nombre'] || r['NOMBRE'] || '',
-        documento: r['Documento'] || r['documento'] || r['CC'] || r['cedula'] || '',
+        documento: String(r['Documento'] || r['documento'] || r['CC'] || r['cedula'] || '').trim(),
         genero: r['Género'] || r['Genero'] || r['genero'] || r['GENERO'] || '',
         cargo: r['Cargo'] || r['cargo'] || r['CARGO'] || '',
         eps: r['EPS'] || r['eps'] || '',
@@ -186,15 +186,56 @@ export default function EncuestasTab({ companies = [], currentUser }) {
 
       if (workers.length === 0) { alert('No se encontraron filas válidas.'); return; }
 
+      // ═══ ANTI-DUPLICADOS: validar contra pacientes existentes en D1 ═══
+      let pacientesExistentesDocs = new Set();
+      try {
+        const { value: existingPatients } = await d1Get(`siso_db_patients_${userId}`);
+        if (Array.isArray(existingPatients)) {
+          existingPatients.forEach(p => {
+            if (p.docNumero) pacientesExistentesDocs.add(String(p.docNumero).trim());
+          });
+        }
+      } catch (_) {}
+      // Fallback a localStorage si D1 no responde
+      if (pacientesExistentesDocs.size === 0) {
+        try {
+          const local = JSON.parse(localStorage.getItem(`siso_db_patients_${userId}`) || '[]');
+          local.forEach(p => { if (p.docNumero) pacientesExistentesDocs.add(String(p.docNumero).trim()); });
+        } catch (_) {}
+      }
+
+      // ═══ ANTI-DUPLICADOS: validar contra importados de esta misma encuesta ═══
       const existentes = importados[encId] || [];
-      const merged = [...existentes, ...workers];
-      await d1WriteArrayMerge(`siso_encuesta_importados_${encId}`, workers, 'id');
+      const docsExistentes = new Set(existentes.map(w => w.documento).filter(Boolean));
+
+      const duplicados = [];
+      const nuevos = [];
+      workers.forEach(w => {
+        const doc = w.documento;
+        if (doc && (pacientesExistentesDocs.has(doc) || docsExistentes.has(doc))) {
+          duplicados.push(w.nombre || doc);
+        } else {
+          if (doc) docsExistentes.add(doc);
+          nuevos.push(w);
+        }
+      });
+
+      if (nuevos.length === 0) {
+        alert(`⚠️ Todos los trabajadores ya existen en el sistema (${duplicados.length} duplicados detectados). No se importó ninguno.`);
+        return;
+      }
+
+      const merged = [...existentes, ...nuevos];
+      await d1WriteArrayMerge(`siso_encuesta_importados_${encId}`, nuevos, 'id');
       setImportados(prev => ({ ...prev, [encId]: merged }));
-      alert(`✅ ${workers.length} trabajadores importados.`);
+
+      let msg = `✅ ${nuevos.length} trabajadores importados.`;
+      if (duplicados.length > 0) msg += `\n⚠️ ${duplicados.length} omitidos por duplicado (ya existen en el sistema).`;
+      alert(msg);
     } catch (err) {
       alert('Error al leer Excel: ' + (err.message || 'verifique el formato'));
     }
-  }, [importados]);
+  }, [importados, userId]);
 
   // ── Agendar todos (marca importados como "Agendado") ─────────────
   const agendarTodos = useCallback(async (encId) => {
