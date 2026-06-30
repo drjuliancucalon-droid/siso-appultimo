@@ -205,7 +205,8 @@ export default function ReportsPage() {
   }, [filteredData, filterEmpresa, navigate]);
 
   const handleGenerateEpiReport = async () => {
-    const { canUse, getConfig } = useAIStore.getState();
+    const { canUse } = useAuthStore.getState();
+    const { getConfig } = useAIStore.getState();
     if (!canUse('ia_analisis')) {
       alert('🔒 El análisis IA requiere plan Pro. Ve a Planes para actualizar.');
       return;
