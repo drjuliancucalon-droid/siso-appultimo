@@ -1,10 +1,12 @@
 // src/pages/LoginPage.jsx — Login page with ocupasalud original color scheme
 // Palette: emerald-600 → teal-500 gradient (from monolith BrandLogo + LoginForm)
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
 import { migrateLocalStorageToCloud } from '../lib/migrateStorage';
-import { Stethoscope, Eye, EyeOff, AlertCircle, Loader2, Shield } from 'lucide-react';
+import { Stethoscope, Eye, EyeOff, AlertCircle, Loader2, Shield, BrainCircuit, UploadCloud } from 'lucide-react';
+import { AIConfigPanel } from '../modules/ai/components/AIConfigPanel';
+import { useAIStore } from '../stores/aiStore';
 
 // ── Helpers de hash (igual que el monolito) ─────────────────────
 const _sha256 = async (str) => {
@@ -133,6 +135,30 @@ export default function LoginPage() {
   const [showPass, setShowPass] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showAIConfig, setShowAIConfig] = useState(false);
+  const fileInputRef = useRef(null);
+  const { activeProvider, keys: aiKeys } = useAIStore();
+  const aiConfig = React.useMemo(() => ({ activeProvider, keys: aiKeys }), [activeProvider, aiKeys]);
+
+  // ── Importar datos desde archivo JSON (Restaurar Copia) ───────
+  const handleImportData = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const text = await file.text();
+      const data = JSON.parse(text);
+      // Guardar en localStorage y D1
+      if (data.siso_users) localStorage.setItem('siso_users', JSON.stringify(data.siso_users));
+      if (data.siso_companies) localStorage.setItem('siso_companies', JSON.stringify(data.siso_companies));
+      if (data.siso_patients) localStorage.setItem('siso_patients', JSON.stringify(data.siso_patients));
+      if (data.siso_db_patients) localStorage.setItem('siso_db_patients', JSON.stringify(data.siso_db_patients));
+      alert('✅ Datos restaurados exitosamente. Los usuarios importados ya están disponibles para iniciar sesión.');
+    } catch (err) {
+      alert('❌ Error al leer el archivo: ' + err.message);
+    } finally {
+      e.target.value = '';
+    }
+  };
 
   React.useEffect(() => {
     if (isAuthenticated) navigate('/dashboard', { replace: true });
@@ -350,12 +376,58 @@ export default function LoginPage() {
               ⚠️ Intentos fallidos: {loginAttempts}/5
             </p>
           )}
+
+          {/* ── Acciones adicionales (como el monolito) ── */}
+          <div className="mt-4 space-y-2">
+            <button
+              type="button"
+              onClick={() => setShowAIConfig(true)}
+              className="w-full bg-indigo-50 text-indigo-700 border border-indigo-200 py-2 rounded-xl font-bold text-xs flex items-center justify-center gap-2 hover:bg-indigo-100 transition"
+            >
+              <BrainCircuit className="w-4 h-4" /> Configurar IA (Recomendado)
+            </button>
+            <input
+              type="file"
+              ref={fileInputRef}
+              style={{ display: "none" }}
+              accept=".json"
+              onChange={handleImportData}
+            />
+            <button
+              type="button"
+              onClick={() => fileInputRef.current.click()}
+              className="w-full bg-gray-50 text-gray-600 border border-gray-200 py-2 rounded-xl font-bold text-xs flex items-center justify-center gap-2 hover:bg-gray-100 transition"
+            >
+              <UploadCloud className="w-4 h-4" /> Restaurar Copia
+            </button>
+          </div>
         </div>
 
         <p className="text-center text-xs text-gray-400 mt-6">
           SISO OcupaSalud Pro v2.0 — Res. 1843/2025 · Decreto 1072/2015
         </p>
       </div>
+
+      {/* ── Modal Configuración IA ── */}
+      {showAIConfig && (
+        <div className="fixed inset-0 bg-black/60 z-[200] flex items-center justify-center p-4"
+          onClick={() => setShowAIConfig(false)}>
+          <div onClick={(e) => e.stopPropagation()}>
+            <AIConfigPanel
+              aiConfig={aiConfig}
+              onSave={async (newConfig) => {
+                const store = useAIStore.getState();
+                if (newConfig.activeProvider) store.setActiveProvider(newConfig.activeProvider);
+                if (newConfig.keys) Object.entries(newConfig.keys).forEach(([p, k]) => store.setKey(p, k));
+                const userId = 'drcucalon';
+                try { await store.saveToD1(userId); } catch (_) {}
+                setShowAIConfig(false);
+              }}
+              onClose={() => setShowAIConfig(false)}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
