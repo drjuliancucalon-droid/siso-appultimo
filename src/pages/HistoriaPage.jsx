@@ -107,6 +107,21 @@ export default function HistoriaPage() {
     }
   }, [routePatientId, patients, setData]);
 
+  // ═══ historyNotification — cuenta HC previas del paciente (como monolito L27081-27098) ═══
+  const historyNotification = useMemo(() => {
+    if (!routePatientId) return null;
+    const previas = patients.filter(p =>
+      p.docNumero && routePatientId &&
+      String(p.docNumero) === String(routePatientId) &&
+      p.fechaExamen
+    ).length;
+    return previas > 1 ? previas : null; // >1 porque la actual cuenta como 1
+  }, [patients, routePatientId]);
+
+  const handleOpenHistoryModal = useCallback((docNum) => {
+    if (!docNum) return;
+  }, []);
+
   // ═══ Dirty tracking + Auto-save ═══
   const [isDirty, setIsDirty] = useState(false);
   const prevDataRef = useRef(JSON.stringify(data));
@@ -760,7 +775,7 @@ export default function HistoriaPage() {
               else setData({ empresaId: 'particular', empresaNombre: '' });
             }}
             handleNameChange={handleNameChange} patientSuggestions={[]} selectPatientSuggestion={() => {}}
-            historyNotification={null} isGenerating={isGenerating}
+            historyNotification={historyNotification} isGenerating={isGenerating}
             isGeneratingReco={isGeneratingReco} isGeneratingRestr={isGeneratingRestr}
             showConsentModal={showConsentModal} setShowConsentModal={setShowConsentModal}
             showRecomendacionesPanel={showRecomendacionesPanel} setShowRecomendacionesPanel={setShowRecomendacionesPanel}
