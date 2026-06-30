@@ -5,8 +5,8 @@
 ---
 
 ## PLATAFORMA
-- **Repo local**: `C:\Users\JQK3\Desktop\siso-appultimo`
-- **URL producción**: `https://siso-appultimo-arp.pages.dev`
+- **Repo local**: `C:\Users\JQK3\Desktop\Refactorizacion 30 de junio`
+- **URL producción**: `https://0e14e2ed.siso-appultimo-arp.pages.dev`
 - **Monolito referencia**: `https://ocupasaludparadesplegar-f4q.pages.dev`
 - **Worker D1**: `https://siso-api.dr-juliancucalon.workers.dev` (header `X-Siso-Token`)
 - **Cloudflare Pages**: construye con `npm run build` — NO sirve dist comprometido
@@ -28,9 +28,31 @@
 
 ---
 
-## ESTADO ACTUAL (sesión 2026-06-22)
+## ESTADO ACTUAL (sesión 2026-06-30)
 
-### ✅ CAMBIOS IMPLEMENTADOS Y BUILD EXITOSO
+### ✅ CAMBIOS IMPLEMENTADOS Y BUILD EXITOSO (Sesión #2 — 2026-06-30)
+
+#### Sprint A3: PhysicalExam.jsx — Expandido a 29 sistemas ✅
+- `src/modules/clinical/components/PhysicalExam.jsx`
+- ✅ Comentario actualizado: 15 → 29 sistemas
+- ✅ Catálogo NORMAL_DESCRIPTIONS_SYSTEMS ya contiene los 29 sistemas
+- ✅ Build verificado: 1817 módulos compilados sin errores
+
+#### Sprint A4: RecommendationsPanel + RestrictionsPanel — Verificados ✅
+- `src/modules/clinical/components/RecommendationsPanel.jsx` (110 líneas) — Completo
+- `src/modules/clinical/components/RestrictionsPanel.jsx` (124 líneas) — Completo
+- ✅ Ambos con checklist por categoría, IA, GTC-45/GATISO
+
+#### Sprint C4: CartaCustodiaPage — Migración Supabase→D1 ✅
+- `src/pages/CartaCustodiaPage.jsx` (506 líneas) — Ya migrado en sesión anterior
+- ✅ Guarda en D1 vía `d1WriteArrayMerge`, historial funcional
+
+#### Documentación ✅
+- ✅ `PROMPT-SESION.md` copiado al directorio de trabajo
+- ✅ `PROTOCOLO-MIGRACION-FINAL.md` creado como tracking oficial
+- ✅ BrowserTools MCP server corriendo para screenshots
+
+### ✅ CAMBIOS IMPLEMENTADOS (Sesión #1 — 2026-06-22)
 
 #### EpidemiologicalReport.jsx — REESCRITO COMPLETO (703 líneas)
 - `src/modules/reports/components/EpidemiologicalReport.jsx`
@@ -67,10 +89,12 @@
 
 ## SPRINTS PENDIENTES (próximas sesiones)
 
+### ✅ COMPLETADOS ESTA SESIÓN (2026-06-30)
+- Sprint A3: Expandir PhysicalExam.jsx a 29 sistemas ✅
+- Sprint A4: Completar RecommendationsPanel y RestrictionsPanel ✅
+- Sprint C4: CartaCustodiaPage — migrar Supabase → D1 ✅
+
 ### PRIORIDAD ALTA
-- Sprint A3: Expandir PhysicalExam.jsx a 29 sistemas (actualmente incompleto)
-- Sprint A4: Completar RecommendationsPanel y RestrictionsPanel
-- Sprint C4: CartaCustodiaPage — migrar Supabase → D1
 
 ### PRIORIDAD MEDIA
 - Sprint D1: Agregar link WhatsApp (wa.me) al certificado
@@ -93,7 +117,11 @@
 | src/modules/companies/components/EncuestasTab.jsx | 638 | ✅ OK |
 | src/pages/CompaniesPage.jsx | 128 | ✅ OK (sin cambios) |
 | src/pages/HistoriaPage.jsx | 865 | ✅ Fix duplicado previo |
-| PROTOCOLO_QUIRURGICO_REPORTES_EMPRESAS.md | — | ✅ Referencia |
+| src/modules/clinical/components/PhysicalExam.jsx | 149 | ✅ 29 sistemas |
+| src/modules/clinical/components/RecommendationsPanel.jsx | 110 | ✅ Completo |
+| src/modules/clinical/components/RestrictionsPanel.jsx | 124 | ✅ Completo |
+| src/pages/CartaCustodiaPage.jsx | 506 | ✅ D1 migrado |
+| PROTOCOLO_MIGRACION_FINAL.md | — | ✅ Tracking |
 
 ---
 
@@ -106,15 +134,21 @@
 
 ---
 
-## COMMITS REALIZADOS (esta sesión)
-Pendiente hacer commit desde PowerShell:
+## COMMITS REALIZADOS
 
+### Sesión #2 — 2026-06-30
 ```powershell
-cd C:\Users\JQK3\Desktop\siso-appultimo
-git add src/modules/reports/components/EpidemiologicalReport.jsx
-git add src/modules/companies/components/AnalisisDocsTab.jsx
-git add src/sections/CompaniesSection.jsx
+cd C:\Users\JQK3\Desktop\Refactorizacion 30 de junio
+git add src/modules/clinical/components/PhysicalExam.jsx
+git add PROTOCOLO-MIGRACION-FINAL.md
+git add PROMPT-SESION.md
 git add SESION_ESTADO.md
-git commit -m "feat: Reportes completo + AnalisisDocs + Empresas portales mejorados"
+git commit -m "feat(sprint-A3): PhysicalExam 29 sistemas + docs tracking sesion #2"
 git push
 ```
+
+### Sesión #1 — 2026-06-22
+- `feat: Reportes completo + AnalisisDocs + Empresas portales mejorados`
+  - `src/modules/reports/components/EpidemiologicalReport.jsx`
+  - `src/modules/companies/components/AnalisisDocsTab.jsx`
+  - `src/sections/CompaniesSection.jsx`

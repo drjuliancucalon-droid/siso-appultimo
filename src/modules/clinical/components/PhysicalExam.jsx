@@ -4,7 +4,7 @@ import { SectionTitle } from '../../../shared/components/ui/SectionTitle';
 import { NORMAL_DESCRIPTIONS_SYSTEMS } from '../../../shared/data/catalogs';
 
 /**
- * PhysicalExam — Examen Físico por Sistemas (15 sistemas)
+ * PhysicalExam — Examen Físico por Sistemas (29 sistemas)
  * Res. 1843/2025.  Cada sistema: Normal/Anormal toggle + hallazgo.
  * Auto-rellena descripciones normales de NORMAL_DESCRIPTIONS_SYSTEMS.
  *
