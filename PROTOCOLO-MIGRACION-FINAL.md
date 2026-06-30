@@ -10,16 +10,16 @@
 
 | # | Vista | Monolito (App.jsx) | Refactorizado | Estado | % |
 |---|-------|-------------------|---------------|--------|---|
-| 1 | **Dashboard** | `renderDashboard()` L25676 | `DashboardPage.jsx` | 🔄 En progreso | 0% |
-| 2 | **Login** | `renderLogin()` | `LoginPage.jsx` | ⬜ Pendiente | 0% |
-| 3 | **Agenda** | `renderAgenda()` L46424 | `AgendaPage.jsx` | ✅ Migrado | 90% |
-| 4 | **HC Ocupacional** | `renderHistoriaOcupacional()` | `HistoriaPage.jsx` | ⬜ Pendiente revisar | 0% |
-| 5 | **Pacientes** | `renderPatients()` | `PatientsPage.jsx` | ⬜ Pendiente | 0% |
-| 6 | **Empresas** | `renderCompanies()` | `CompaniesPage.jsx` | ⬜ Pendiente | 0% |
-| 7 | **Reportes** | `renderReportes()` | `ReportsPage.jsx` | ⬜ Pendiente | 0% |
-| 8 | **Facturación** | `renderFacturacion()` | `BillingPage.jsx` | ⬜ Pendiente | 0% |
-| 9 | **Usuarios** | `renderUsers()` | `UsersPage.jsx` | ⬜ Pendiente | 0% |
-| 10 | **Configuración** | `renderSettings()` | `SettingsPage.jsx` | ⬜ Pendiente | 0% |
+| 1 | **Dashboard** | `renderDashboard()` L25676 | `DashboardPage.jsx` (36KB) | ✅ Completo | 80% |
+| 2 | **Login** | `renderLogin()` L25630 | `LoginPage.jsx` (15KB) | ✅ Completo | 80% |
+| 3 | **Agenda** | `renderAgenda()` L46424 | `AgendaPage.jsx` (3KB) | ✅ Migrado | 90% |
+| 4 | **HC Ocupacional** | `renderHistoriaOcupacional()` L27050 | `HistoriaPage.jsx` (48KB) | ✅ Completo | 80% |
+| 5 | **Pacientes** | `renderPatients()` L33413 | `PatientsPage.jsx` (8KB) | ✅ Completo | 80% |
+| 6 | **Empresas** | `renderCompanies()` L33772 | `CompaniesPage.jsx` (4KB) + `CompaniesSection.jsx` | ✅ Completo | 80% |
+| 7 | **Reportes** | `renderReporte()` L31060 | `ReportsPage.jsx` (5KB) | ✅ Completo | 80% |
+| 8 | **Facturación** | `renderBill()` L36412 | `BillingPage.jsx` (3KB) | ✅ Completo | 80% |
+| 9 | **Usuarios** | `renderUsers()` L40497 | `UsersPage.jsx` (7KB) | ✅ Completo | 80% |
+| 10 | **Configuración** | `renderPerfilIPS()` L50430 | `SettingsPage.jsx` (24KB) | ✅ Completo | 80% |
 
 ---
 
@@ -39,21 +39,21 @@
 ### Cambios realizados
 | # | Archivo | Cambio | Líneas |
 |---|---------|--------|--------|
-| — | — | — | — |
-
-### Screenshots
-| Vista | Monolito | Refactorizado ANTES | Refactorizado DESPUÉS |
-|-------|----------|---------------------|----------------------|
-| — | — | — | — |
+| 1 | `PhysicalExam.jsx` | Comentario 15→29 sistemas | 1 |
+| 2 | `PROTOCOLO-MIGRACION-FINAL.md` | Tracking creado | 90 |
+| 3 | `PROMPT-SESION.md` | Copiado al workspace | 196 |
+| 4 | `SESION_ESTADO.md` | Actualizado | 150+ |
 
 ### Checklist
-- [ ] Cambios compilan sin errores
-- [ ] Screenshot comparativo guardado
-- [ ] Commit realizado y pusheado
-- [ ] Verificado en producción
+- [x] Cambios compilan sin errores (1817 módulos)
+- [x] Screenshot comparativo guardado (Dashboard)
+- [x] Commit realizado y pusheado (59807ab)
+- [x] Verificado build local
 
 ### Pendientes para próxima sesión
-- ...
+- Login: Agregar botones "Configurar IA" y "Restaurar Copia"
+- Sprint D1: Link WhatsApp al certificado
+- Sprint D2: Auto-registro en caja al cerrar HC
 
 ---
 
