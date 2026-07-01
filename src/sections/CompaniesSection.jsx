@@ -440,7 +440,7 @@ export default function CompaniesSection({ ctx }) {
                             </button>
                             <button
                               onClick={() => {
-                                window.open(`/portal-empresa?nit=${nitClean}`, '_blank');
+                                window.open(`/portal-empresa?nit=${nitClean}&code=${codigo}`, '_blank');
                               }}
                               className="text-[10px] bg-blue-600 border border-blue-600 text-white px-2 py-0.5 rounded-full font-bold hover:bg-blue-700 transition"
                             >

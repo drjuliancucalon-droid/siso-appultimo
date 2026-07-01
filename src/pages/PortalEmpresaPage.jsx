@@ -1,11 +1,13 @@
 // src/pages/PortalEmpresaPage.jsx — SPRINT 5: Portal Empresa conectado a D1
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { Building2, Loader2, Download, Lock } from 'lucide-react';
+import { useSearchParams } from 'react-router-dom';
 import { d1Get } from '../lib/d1Client';
 import { CompanyPortal } from '../modules/companies/components/CompanyPortal';
 import { useBackendData } from '../hooks/useBackendData';
 
 export default function PortalEmpresaPage() {
+  const [searchParams] = useSearchParams();
   const { data: companies } = useBackendData('/data/companies', 'siso_companies', 'companies');
   const { data: patients } = useBackendData('/data/patients', 'siso_db_patients', 'patients');
 
@@ -16,6 +18,46 @@ export default function PortalEmpresaPage() {
   const [periodo, setPeriodo] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const autoLoginRef = useRef(false);
+
+  // ═══ AUTO-LOGIN: detecta ?nit=X&code=Y y autentica automáticamente ═══
+  useEffect(() => {
+    const nitParam = searchParams.get('nit');
+    const codeParam = searchParams.get('code');
+    if (nitParam && codeParam && !autoLoginRef.current) {
+      autoLoginRef.current = true;
+      setNit(nitParam);
+      setCodigoPortal(codeParam);
+      // Trigger login after a short delay to ensure state is set
+      setTimeout(() => {
+        const nitClean = nitParam.replace(/[^0-9]/g, '');
+        if (nitClean && codeParam.trim()) {
+          setLoading(true);
+          (async () => {
+            try {
+              const { value: companyData } = await d1Get('siso_companies_shared');
+              const shared = Array.isArray(companyData) ? companyData : [];
+              let company = shared.find(c => (c.nit||'').replace(/[^0-9]/g,'') === nitClean);
+              if (!company && companies?.length) {
+                company = companies.find(c => (c.nit||'').replace(/[^0-9]/g,'') === nitClean);
+              }
+              if (!company) { setError('Empresa no encontrada. Verifique el NIT.'); setLoading(false); return; }
+              if (company.portalCode !== codeParam.trim() && company.codigoPortal !== codeParam.trim()) {
+                setError('Código de portal incorrecto.'); setLoading(false); return;
+              }
+              setAuthenticated(company);
+              const { value: ats } = await d1Get(`siso_portal_empresa_atenciones_${nitClean}`);
+              setAtenciones(Array.isArray(ats) ? ats : []);
+              const { value: docs } = await d1Get(`siso_portal_empresa_docs_${nitClean}`);
+              const d = Array.isArray(docs) ? docs : [];
+              if (d.length > 0) setPeriodo(d[d.length-1].periodo||'');
+            } catch(e) { setError('Error: '+(e.message||'desconocido')); }
+            finally { setLoading(false); }
+          })();
+        }
+      }, 100);
+    }
+  }, [searchParams, companies]);
 
   const handleLogin = useCallback(async () => {
     const nitClean = nit.replace(/[^0-9]/g, '');
