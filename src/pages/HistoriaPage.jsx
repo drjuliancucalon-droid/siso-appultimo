@@ -418,10 +418,39 @@ export default function HistoriaPage() {
 
     // Claves 4-6 solo si hay NIT
     if (nitClean && nitClean.length >= 3) {
-      // Clave 4 (array — MERGE)
+      // ═══ CLAVE 4: objeto enriquecido {atenciones, _firma, _doctorData, nombre, nit} (como monolito L16365-16388) ═══
       try {
-        await d1WriteArrayMerge(`siso_portal_empresa_atenciones_${nitClean}`, [atencion], 'id');
-        console.log(`${logPrefix} ✅ empresa_atenciones`);
+        // LEER existente primero para hacer merge incremental
+        let grupoExistente = { atenciones: [], _firma: data._firmaDigital || null, _doctorData: portalData._doctorData, nombre: data.empresaNombre, nit: nitClean };
+        try {
+          const { value: existente } = await d1Get(`siso_portal_empresa_atenciones_${nitClean}`);
+          if (existente && typeof existente === 'object') {
+            grupoExistente = existente;
+            // Unir atenciones - sin duplicar por docNumero
+            const docsExistentes = new Set((grupoExistente.atenciones || []).map(a => String(a?.docNumero || '').trim()));
+            if (!docsExistentes.has(atencion.docNumero)) {
+              grupoExistente.atenciones = [...(grupoExistente.atenciones || []), atencion];
+            } else {
+              // Reemplazar la existente
+              grupoExistente.atenciones = (grupoExistente.atenciones || []).map(a =>
+                String(a?.docNumero || '').trim() === atencion.docNumero ? atencion : a
+              );
+            }
+            if (!grupoExistente._firma) grupoExistente._firma = data._firmaDigital || null;
+            if (!grupoExistente._doctorData?.nombre) grupoExistente._doctorData = portalData._doctorData;
+          }
+        } catch (_) {
+          // No existe aún, usar el nuevo
+          grupoExistente = {
+            atenciones: [atencion],
+            _firma: data._firmaDigital || null,
+            _doctorData: portalData._doctorData,
+            nombre: data.empresaNombre,
+            nit: nitClean,
+          };
+        }
+        await d1Set(`siso_portal_empresa_atenciones_${nitClean}`, grupoExistente);
+        console.log(`${logPrefix} ✅ empresa_atenciones (objeto)`);
       } catch (e) { failedKeys.push(`empresa_atenciones: ${e.message}`); console.warn(`${logPrefix} ❌ empresa_atenciones:`, e.message); }
 
       // Clave 5 (array — MERGE)
