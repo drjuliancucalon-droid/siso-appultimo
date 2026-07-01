@@ -148,11 +148,13 @@ export default function LoginPage() {
       const text = await file.text();
       const data = JSON.parse(text);
       // Guardar en localStorage y D1
-      if (data.siso_users) localStorage.setItem('siso_users', JSON.stringify(data.siso_users));
-      if (data.siso_companies) localStorage.setItem('siso_companies', JSON.stringify(data.siso_companies));
-      if (data.siso_patients) localStorage.setItem('siso_patients', JSON.stringify(data.siso_patients));
-      if (data.siso_db_patients) localStorage.setItem('siso_db_patients', JSON.stringify(data.siso_db_patients));
-      alert('✅ Datos restaurados exitosamente. Los usuarios importados ya están disponibles para iniciar sesión.');
+      let importados = 0; let errores = 0;
+      try { if (data.siso_users) { localStorage.setItem('siso_users', JSON.stringify(data.siso_users)); importados++; } } catch { errores++; }
+      try { if (data.siso_companies) { localStorage.setItem('siso_companies', JSON.stringify(data.siso_companies)); importados++; } } catch { errores++; }
+      try { if (data.siso_patients) { localStorage.setItem('siso_patients', JSON.stringify(data.siso_patients)); importados++; } } catch { errores++; }
+      try { if (data.siso_db_patients) { localStorage.setItem('siso_db_patients', JSON.stringify(data.siso_db_patients)); importados++; } } catch { errores++; }
+      const msg = `✅ ${importados} datos restaurados exitosamente.`;
+      alert(errores > 0 ? msg + `\n⚠️ ${errores} dato(s) no se pudieron guardar (almacenamiento lleno). Limpie datos antiguos desde Configuración.` : msg + ' Los usuarios importados ya están disponibles para iniciar sesión.');
     } catch (err) {
       alert('❌ Error al leer el archivo: ' + err.message);
     } finally {
