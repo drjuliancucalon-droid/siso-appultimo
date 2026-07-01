@@ -372,57 +372,87 @@ export default function CompaniesSection({ ctx }) {
                         )}
                       </div>
                     )}
-                    {/* Portal status */}
+                    {/* ═══ INDICADOR DE DOCUMENTOS (como monolito L34112) ═══ */}
+                    {(() => {
+                      const certCount = patientsList.filter(p => p.empresaId === c.id || (c.nit && p.empresaNit === c.nit) || p.empresaNombre?.toLowerCase() === c.nombre?.toLowerCase()).length;
+                      const nitClean = (c.nit || '').replace(/[^0-9]/g, '');
+                      // Verificar si hay informe sociodemográfico para esta empresa
+                      let _tieneInforme = false; let _tieneCustodia = false; let _tieneCuenta = false;
+                      try {
+                        const docsRaw = localStorage.getItem(`siso_portal_empresa_docs_${nitClean}`);
+                        if (docsRaw) {
+                          const docs = JSON.parse(docsRaw);
+                          _tieneInforme = !!(docs.informe || docs.periodos?.some(pp => pp.informe));
+                          _tieneCustodia = !!(docs.custodia || docs.periodos?.some(pp => pp.custodia));
+                          _tieneCuenta = !!(docs.cuenta || docs.periodos?.some(pp => pp.cuenta));
+                        }
+                      } catch (_) {}
+                      const docsCheck = [
+                        { label: '📄 Certif', ok: certCount > 0 },
+                        { label: '📊 Sociodem', ok: _tieneInforme },
+                        { label: '📁 Custodia', ok: _tieneCustodia },
+                        { label: '🧾 Cuenta', ok: _tieneCuenta },
+                      ];
+                      const okCount = docsCheck.filter(d => d.ok).length;
+                      const faltantes = docsCheck.filter(d => !d.ok).map(d => d.label.split(' ')[1] || d.label).join(', ');
+                      return (
+                        <div className="mt-2 flex items-center gap-2 flex-wrap">
+                          {docsCheck.map(d => (
+                            <span key={d.label} className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold border ${d.ok ? 'bg-green-50 border-green-200 text-green-700' : 'bg-red-50 border-red-200 text-red-400'}`}>
+                              {d.ok ? '✅' : '✗'} {d.label}
+                            </span>
+                          ))}
+                          <span className={`text-[10px] font-bold ${okCount === 4 ? 'text-green-600' : okCount >= 2 ? 'text-amber-600' : 'text-red-500'}`}>
+                            {okCount}/4{faltantes && okCount < 4 ? ` · falta: ${faltantes}` : ''}
+                          </span>
+                        </div>
+                      );
+                    })()}
+
+                    {/* Portal status — como monolito L34112-34160 */}
                     <div className="mt-2 flex items-center gap-2 flex-wrap">
-                      {c.portalActivo && c.portalCode ? (
-                        <>
-                          <span className="text-[10px] bg-indigo-100 border border-indigo-300 text-indigo-700 px-2 py-0.5 rounded-full font-black">
-                            🌐 Portal ACTIVO
+                      {(() => {
+                        const nitClean = (c.nit || '').replace(/[^0-9]/g, '');
+                        const codigo = c.portalCode || null;
+                        return codigo ? (
+                          <>
+                            <span className="text-[10px] bg-indigo-100 border border-indigo-300 text-indigo-700 px-2 py-0.5 rounded-full font-black">
+                              🔑 Portal
+                            </span>
+                            <span className="text-[10px] text-gray-500 font-bold">NIT:</span>
+                            <span className="text-[10px] font-mono font-black text-gray-700 bg-gray-50 border border-gray-200 px-2 py-0.5 rounded-full">
+                              {nitClean || c.nit}
+                            </span>
+                            <span className="text-[10px] text-gray-500 font-bold">Contraseña:</span>
+                            <span className="text-[10px] font-mono font-black text-indigo-800 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded-full">
+                              {codigo}
+                            </span>
+                            <button
+                              onClick={() => {
+                                const txt = 'NIT: ' + (nitClean || c.nit) + '\nContraseña: ' + codigo;
+                                if (navigator.clipboard) {
+                                  navigator.clipboard.writeText(txt).then(() => showAlert('✅ Copiado:\n' + txt));
+                                } else showAlert(txt);
+                              }}
+                              className="text-[10px] bg-white border border-indigo-200 text-indigo-600 px-2 py-0.5 rounded-full font-bold hover:bg-indigo-50 transition"
+                            >
+                              📋 Copiar
+                            </button>
+                            <button
+                              onClick={() => {
+                                window.open(`/portal-empresa?nit=${nitClean}`, '_blank');
+                              }}
+                              className="text-[10px] bg-blue-600 border border-blue-600 text-white px-2 py-0.5 rounded-full font-bold hover:bg-blue-700 transition"
+                            >
+                              🏢 Abrir Portal
+                            </button>
+                          </>
+                        ) : (
+                          <span className="text-[10px] bg-gray-100 border border-gray-200 text-gray-400 px-2 py-0.5 rounded-full font-bold">
+                            🔒 Sin contraseña - se genera al emitir documentos
                           </span>
-                          <span className="text-[10px] font-mono font-black text-indigo-800 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded-full">
-                            {c.portalCode}
-                          </span>
-                          <button
-                            onClick={() => {
-                              if (navigator.clipboard) {
-                                navigator.clipboard
-                                  .writeText(c.portalCode)
-                                  .then(() =>
-                                    showAlert(
-                                      "✅ Código " + c.portalCode + " copiado."
-                                    )
-                                  );
-                              } else showAlert("Código: " + c.portalCode);
-                            }}
-                            className="text-[10px] bg-white border border-indigo-200 text-indigo-600 px-2 py-0.5 rounded-full font-bold hover:bg-indigo-50"
-                          >
-                            📋 Copiar código
-                          </button>
-                          <button
-                            onClick={() => setPortalActivadoInfo(c)}
-                            className="text-[10px] bg-white border border-indigo-200 text-indigo-600 px-2 py-0.5 rounded-full font-bold hover:bg-indigo-50"
-                          >
-                            📨 Ver instrucciones
-                          </button>
-                          <button
-                            onClick={() => {
-                              const base = window.location.href.split('#')[0];
-                              window.open(`${base}#portalempresa?code=${c.portalCode}`, '_blank');
-                            }}
-                            className="text-[10px] bg-white border border-green-200 text-green-700 px-2 py-0.5 rounded-full font-bold hover:bg-green-50"
-                          >
-                            🏢 Abrir Portal
-                          </button>
-                        </>
-                      ) : c.portalActivo ? (
-                        <span className="text-[10px] bg-amber-100 border border-amber-300 text-amber-700 px-2 py-0.5 rounded-full font-black">
-                          🔑 Portal activo - sin código (editar para generar)
-                        </span>
-                      ) : (
-                        <span className="text-[10px] bg-gray-100 border border-gray-200 text-gray-500 px-2 py-0.5 rounded-full font-bold">
-                          🔒 Portal desactivado
-                        </span>
-                      )}
+                        );
+                      })()}
                     </div>
                   </div>
                 );
