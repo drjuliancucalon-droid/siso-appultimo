@@ -133,6 +133,8 @@ export default function HistoriaPage() {
   useEffect(() => {
     const interval = setInterval(() => {
       if (isDirty && data.nombres) {
+        // CAMBIO 3: No intentar guardar en D1 si no hay internet (evita intentos fallidos)
+        if (typeof navigator !== 'undefined' && !navigator.onLine) return; // esperar a reconectar
         const userId = currentUser?.user || 'drcucalon';
         const toSave = { ...data, medicoId: userId, fechaModificacion: new Date().toISOString(), autoSaved: true };
         save('/write/hc/save', toSave, `siso_patients_${userId}`).then((r) => {
@@ -684,6 +686,7 @@ export default function HistoriaPage() {
             {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} {data.id ? 'Guardar Cambios' : 'Crear Historia'}
           </button>
           {lastSaveStatus === 'ok' && <span className="text-xs text-emerald-600 font-bold flex items-center gap-1.5"><CheckCircle className="w-4 h-4" /> OK</span>}
+          {lastSaveStatus === 'local-only' && <span className="text-xs text-amber-600 font-bold flex items-center gap-1.5" title="Guardado en el navegador. Se sincronizará al reconectar."><AlertTriangle className="w-4 h-4" /> Sin conexión</span>}
           {isDirty && <span className="text-[10px] uppercase tracking-wider text-amber-600 font-black flex items-center gap-1.5 px-3 py-1 bg-amber-50 rounded-lg animate-pulse"><AlertTriangle className="w-3.5 h-3.5" /> Sin guardar</span>}
         </div>
 

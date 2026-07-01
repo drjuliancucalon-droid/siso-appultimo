@@ -91,6 +91,16 @@ export function useSaveData() {
         return { ok: true, source: 'd1', key: d1Key };
       } catch (e) {
         console.warn('[useSaveData] D1 write fallo:', e.message);
+        // Encolar operación offline si hay internet pero D1 falló, o si no hay internet
+        if (typeof navigator !== 'undefined' && !navigator.onLine) {
+          try {
+            const { enqueueSync } = await import('../shared/lib/syncManager');
+            await enqueueSync('upsert', d1Key, itemToSave);
+          } catch (_) {}
+        }
+        setSaving(false);
+        setLastSaveStatus('local-only');
+        return { ok: true, source: 'local-only', key: d1Key };
       }
     }
 
