@@ -394,6 +394,85 @@ export default function ReportsPage() {
     };
   }, [filteredData, total, morbilidadData, stats]);
 
+  // ═══ IMPRIMIR INFORME COMPLETO (CAMBIO 1) ═══
+  const handlePrintReport = useCallback(() => {
+    const reportHTML = `
+<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Informe SISO - Diagnóstico Condiciones de Salud</title>
+<style>
+@page{size:letter portrait;margin:1.5cm}
+*{box-sizing:border-box;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+body{font-family:'Segoe UI',Arial,sans-serif;color:#111;font-size:10pt;line-height:1.5;max-width:900px;margin:0 auto;padding:20px}
+.header{border-bottom:3px solid #4f46e5;padding-bottom:15px;margin-bottom:20px;display:flex;justify-content:space-between}
+.header h1{font-size:18pt;color:#4f46e5;margin:0;font-weight:900}
+.header .meta{font-size:9pt;color:#6b7280;text-align:right}
+h2{font-size:13pt;color:#111;border-bottom:2px solid #e5e7eb;padding-bottom:5px;margin:25px 0 10px;font-weight:900;text-transform:uppercase}
+h3{font-size:9pt;color:#6b7280;margin:15px 0 8px;text-transform:uppercase;letter-spacing:0.05em;font-weight:700}
+.card-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:15px}
+.card{background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:10px}
+.card .title{font-size:7pt;color:#6b7280;text-transform:uppercase;font-weight:700;margin-bottom:4px}
+.card .item{display:flex;justify-content:space-between;align-items:center;margin-bottom:3px}
+.card .item .label{font-size:8pt;color:#374151;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-right:8px}
+.card .item .bar-container{width:60px;height:6px;background:#e5e7eb;border-radius:3px;overflow:hidden;flex-shrink:0}
+.card .item .bar{height:100%;background:#4f46e5;border-radius:3px}
+.card .item .pct{font-size:7pt;font-weight:700;color:#4f46e5;width:35px;text-align:right;flex-shrink:0}
+table{width:100%;border-collapse:collapse;font-size:8pt;margin:10px 0 20px}
+th{background:#4f46e5;color:#fff;padding:6px 8px;text-align:left;font-weight:700;text-transform:uppercase;font-size:7pt}
+td{padding:5px 8px;border-bottom:1px solid #e5e7eb}
+tr:nth-child(even){background:#f9fafb}
+.stats-row{display:flex;gap:10px;margin-bottom:15px}
+.stat-box{flex:1;padding:12px;border-radius:8px;text-align:center;border:1px solid}
+.stat-box .val{font-size:20pt;font-weight:900}
+.stat-box .lbl{font-size:7pt;color:#6b7280;text-transform:uppercase;margin-top:2px}
+.footer{text-align:center;margin-top:30px;padding-top:15px;border-top:2px solid #4f46e5;font-size:8pt;color:#6b7280}
+.footer .dr{font-weight:900;color:#4f46e5;font-size:10pt;margin:0}
+.footer p{margin:2px 0}
+@media print{body{padding:0}}
+</style></head><body>
+<div class="header">
+  <div><h1>📊 DIAGNÓSTICO DE CONDICIONES DE SALUD</h1><p style="font-size:9pt;color:#6b7280;margin:4px 0 0">${filterEmpresa || 'Todas las empresas'} · ${total} trabajadores evaluados</p></div>
+  <div class="meta">Fecha: ${new Date().toLocaleDateString('es-CO')}<br>Res. 1843/2025 · Dec. 1072/2014<br>Confidencial</div>
+</div>
+
+<div class="stats-row">
+  <div class="stat-box" style="background:#eff6ff;border-color:#bfdbfe"><div class="val" style="color:#1e40af">${total}</div><div class="lbl">Total Evaluados</div></div>
+  <div class="stat-box" style="background:#ecfdf5;border-color:#a7f3d0"><div class="val" style="color:#065f46">${stats.aptos}</div><div class="lbl">Aptos</div></div>
+  <div class="stat-box" style="background:#fef3c7;border-color:#fde68a"><div class="val" style="color:#92400e">${stats.conRestricciones}</div><div class="lbl">Con Restricciones</div></div>
+  <div class="stat-box" style="background:#fef2f2;border-color:#fecaca"><div class="val" style="color:#991b1b">${stats.noAptos}</div><div class="lbl">No Aptos</div></div>
+  <div class="stat-box" style="background:#f5f3ff;border-color:#ddd6fe"><div class="val" style="color:#5b21b6">${stats.edadPromedio}a</div><div class="lbl">Edad Promedio</div></div>
+</div>
+
+${perfilSocio ? `
+<h2>1. PERFIL SOCIODEMOGRÁFICO Y OCUPACIONAL</h2>
+<div class="card-grid">
+${[{title:'GÉNERO',data:perfilSocio.genero},{title:'RANGO ETARIO',data:perfilSocio.rangoEtario},{title:'ESCOLARIDAD',data:perfilSocio.escolaridad},{title:'ESTADO CIVIL',data:perfilSocio.estadoCivil},{title:'TIPO CONTRATO',data:perfilSocio.tipoContrato},{title:'TURNO',data:perfilSocio.turno}].map(s=>`
+<div class="card"><div class="title">${s.title}</div>${(s.data||[]).filter(d=>d.count>0).slice(0,6).map(d=>`<div class="item"><span class="label">${d.label}</span><div class="bar-container"><div class="bar" style="width:${Math.min(parseInt(d.pct)||0,100)}%"></div></div><span class="pct">${d.pct}</span></div>`).join('')}</div>`).join('')}
+</div>` : ''}
+
+${perfilClinico ? `
+<h2>2. PERFIL CLÍNICO Y DE SALUD</h2>
+<div class="card-grid">
+<div class="card"><div class="title">IMC</div>${perfilClinico.imc.map(d=>`<div class="item"><span class="label">${d.label}</span><div class="bar-container"><div class="bar" style="width:${Math.min(parseInt(d.pct)||0,100)}%"></div></div><span class="pct">${d.pct}</span></div>`).join('')}</div>
+<div class="card"><div class="title">APTITUD</div>${perfilClinico.aptitud.map(d=>`<div class="item"><span class="label">${d.label}</span><div class="bar-container"><div class="bar" style="width:${Math.min(parseInt(d.pct)||0,100)}%"></div></div><span class="pct">${d.pct}</span></div>`).join('')}</div>
+<div class="card"><div class="title">TOP CIE-10</div>${perfilClinico.top5CIE10.map((d,i)=>`<div class="item"><span class="label">${d.codigo}</span><span class="pct">${d.cantidad}</span></div>`).join('')}</div>
+</div>` : ''}
+
+${iaResult ? `<h2>3. ANÁLISIS INTELIGENTE IA</h2><div style="background:#eef2ff;border:1px solid #c7d2fe;border-radius:8px;padding:12px;margin-bottom:20px"><pre style="white-space:pre-wrap;font-size:9pt;color:#3730a3;margin:0">${iaResult.replace(/</g,'<').replace(/>/g,'>')}</pre></div>` : ''}
+
+<h2>4. MATRIZ LEGAL DE CONDICIONES DE SALUD</h2>
+<table><thead><tr><th>#</th><th>Trabajador</th><th>Doc.</th><th>Edad</th><th>Riesgos</th><th>Diagnóstico</th><th>Concepto</th><th>Normativa</th></tr></thead><tbody>
+${filteredData.map((p,i)=>{const riesgos=getRiesgosActivos(p);const {norma}=getNormativa(p.diagnosticoPrincipal,riesgos);return`<tr><td>${i+1}</td><td>${p.nombres||'—'}</td><td>${p.docNumero||'—'}</td><td>${p.edad||'—'}</td><td>${riesgos.length>0?riesgos.join(', '):'—'}</td><td>${p.diagnosticoPrincipal||'—'}</td><td>${p.conceptoAptitud||'—'}</td><td>${norma}</td></tr>`}).join('')}
+</tbody></table>
+
+<div class="footer">
+  <p class="dr">${currentUser?.nombre || 'MÉDICO OCUPACIONAL'}</p>
+  <p>Médico Especialista en Salud Ocupacional</p>
+  <p>SISO OcupaSalud Pro · Informe generado ${new Date().toLocaleDateString('es-CO')} · Res. 1843/2025</p>
+</div>
+</body></html>`;
+    const w = window.open('', '_blank', 'width=900,height=700');
+    if (w) { w.document.write(reportHTML); w.document.close(); }
+  }, [total, stats, perfilSocio, perfilClinico, iaResult, filteredData, filterEmpresa, currentUser]);
+
   // Exportaciones — BUG-R2 FIX: campos correctos
   const handleExportExcel = () => {
     const dataToExport = filteredData.map(p => ({
@@ -452,8 +531,8 @@ export default function ReportsPage() {
           <button onClick={handleExportCSV} className="flex items-center gap-1.5 px-3 py-1.5 bg-teal-600 text-white rounded-lg hover:bg-teal-700 text-xs font-bold">
             <FileText size={14} /> CSV
           </button>
-          <button onClick={() => window.print()} className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-600 text-white rounded-lg hover:bg-gray-700 text-xs font-bold">
-            🖨️ Imprimir
+          <button onClick={handlePrintReport} className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-600 text-white rounded-lg hover:bg-gray-700 text-xs font-bold">
+            🖨️ Imprimir Informe
           </button>
           {filterEmpresa && (
             <button
