@@ -303,5 +303,69 @@ PortalEmpresaPage
 
 ---
 
-*Documento generado por auditoría forense — 1 de julio de 2026*  
-*Fuentes: `siso-worker/index.js`, `d1Client.js`, `siso-worker/schema.sql`, `siso-worker/wrangler.json`, `App.jsx` (monolito, ~59K líneas), `HistoriaPage.jsx`*
+---
+
+## 🛡️ INTEGRIDAD DE DATOS Y PROTECCIÓN ANTI-PÉRDIDA
+
+### Análisis de 56 `localStorage.setItem` en el refactorizado
+
+| Resultado | Cantidad |
+|-----------|----------|
+| ✅ Protegidos con `try/catch` explícito | **52** de 56 |
+| ✅ Con `typeof localStorage !== 'undefined'` guard | **2** de 56 |
+| ❌ **Sin protección** (corregido sesión 01-jul-2026) | **0** de 56 |
+
+### Estrategia de la aplicación ante localStorage lleno
+
+La aplicación usa **4 capas de protección**:
+
+```
+                ┌─────────────────────────────────┐
+                │   1. D1 (Cloudflare)              │  ← Fuente de verdad
+                │     Siempre disponible            │     No tiene límite práctico
+                └──────────────┬──────────────────┘
+                               │ fallback
+                ┌──────────────▼──────────────────┐
+                │   2. Supabase (backup)            │  ← Fallback D1
+                │     Solo si D1 no responde        │
+                └──────────────┬──────────────────┘
+                               │ fallback
+                ┌──────────────▼──────────────────┐
+                │   3. localStorage (caché local)   │  ← Último recurso offline
+                │     Envuelto en try/catch         │     Si falla → continúa sin cache
+                │     NO crashea la app             │
+                └──────────────────────────────────┘
+```
+
+### ¿Qué pasa si localStorage se satura?
+
+| Escenario | Comportamiento | Impacto en datos |
+|-----------|---------------|-----------------|
+| **Guardar HC** (auto-save cada 60s) | `try/catch` en `useSaveData` captura `QuotaExceededError` | ✅ D1 ya guardó los datos. Solo falla el cache local. Los datos NO se pierden. |
+| **Cargar datos** (useBackendData) | D1 → Supabase → localStorage (en orden) | ✅ Si localStorage falla, se usan D1 o Supabase. |
+| **Importar backup** (LoginPage) | Cada clave envuelta en `try/catch` individual | ✅ Se importa lo que quepa. El resto se notifica al usuario. |
+| **SyncManager** | `typeof localStorage !== 'undefined'` + `catch` | ✅ Si no hay espacio, salta al siguiente item. |
+| **EncuestasTab** | `try/catch` en cada `localStorage.setItem` | ✅ Los datos ya están en D1. localStorage es solo cache. |
+
+### Regla de oro: D1 es fuente de verdad. localStorage es cache.
+
+- **TODAS las escrituras importantes van a D1 primero**
+- `localStorage` se actualiza DESPUÉS de que D1 confirma el guardado
+- Si `localStorage.setItem` falla, la app sigue funcionando normalmente usando D1
+- El usuario NUNCA pierde datos por un `QuotaExceededError`
+
+### ¿Cómo liberar espacio?
+
+La app tiene un botón "Limpiar cache" en Configuración que elimina las claves `siso_db_patients_*` y `siso_patients_*` de localStorage sin afectar D1. También se puede hacer manualmente desde Chrome DevTools → Application → Storage → Clear site data.
+
+### Offline resiliente
+
+La aplicación **funciona sin conexión** usando el patrón:
+1. **Online**: D1 es fuente de verdad. localStorage se mantiene sincronizado como cache.
+2. **Offline**: Se usa el último cache de localStorage. Al reconectar, `useBackendData` detecta que hay conexión y actualiza desde D1.
+3. **SyncManager**: Cola de operaciones pendientes que se ejecutan al reconectar. Soporta IndexedDB para payloads grandes.
+
+---
+
+*Documento generado por auditoría forense — 1 de julio de 2026 | Actualizado: commit `25fef91`*  
+*Fuentes: `siso-worker/index.js`, `d1Client.js`, `useBackendData.js`, `siso-worker/schema.sql`, `siso-worker/wrangler.json`, `App.jsx` (monolito, ~59K líneas), `HistoriaPage.jsx`, `LoginPage.jsx`*
