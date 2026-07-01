@@ -124,33 +124,50 @@ export default function PortalEmpresaPage() {
   // ═══ CARGAR DOCUMENTOS (cuentas, custodia, informes) ═══
   const cargarDocumentos = async (nitClean) => {
     setDocsLoading(true);
+    const userId = (() => { try { const s = JSON.parse(localStorage.getItem('siso-auth') || '{}'); return s?.state?.currentUser?.user || 'drcucalon'; } catch { return 'drcucalon'; } })();
+
     try {
-      // Cuentas de cobro
-      const cajaKey = `siso_caja_movs_drcucalon`;
-      const { value: cajaRaw } = await d1Get(cajaKey);
-      const cajaMovs = Array.isArray(cajaRaw) ? cajaRaw : [];
-      const cuentas = cajaMovs
-        .filter(m => (m.empresaClienteNombre || '').toLowerCase().includes(nitClean) ||
-                     (m.empresaClienteId || '').includes(nitClean))
-        .slice(0, 20);
+      // Cuentas de cobro — leer siso_saved_bills (igual que el monolito)
+      const billsKey = `siso_saved_bills_${userId}`;
+      let cuentas = [];
+      try {
+        const { value: billsRaw } = await d1Get(billsKey);
+        const bills = Array.isArray(billsRaw) ? billsRaw : [];
+        // También leer caja_movs por si hay auto-billing
+        const { value: cajaRaw } = await d1Get(`siso_caja_movs_${userId}`);
+        const cajaMovs = Array.isArray(cajaRaw) ? cajaRaw : [];
+        // Unir ambas fuentes y filtrar por NIT de empresa
+        const todas = [...bills, ...cajaMovs];
+        cuentas = todas
+          .filter(m => {
+            const idMatch = (m.empresaClienteId || '').replace(/[^0-9]/g, '') === nitClean;
+            const nombreMatch = (m.empresaClienteNombre || '').toLowerCase().includes(nitClean);
+            return idMatch || !idMatch && nombreMatch;
+          })
+          .slice(0, 30);
+      } catch (_) {}
       setDocsCuentas(cuentas);
 
       // Cartas de custodia
-      const custKey = `siso_cartas_custodia_drcucalon`;
-      const { value: custRaw } = await d1Get(custKey);
-      const custodias = Array.isArray(custRaw) ? custRaw.filter(c =>
-        (c.empresaNit || '').replace(/[^0-9]/g, '') === nitClean ||
-        (c.nit || '').replace(/[^0-9]/g, '') === nitClean
-      ) : [];
+      let custodias = [];
+      try {
+        const custKey = `siso_cartas_custodia_${userId}`;
+        const { value: custRaw } = await d1Get(custKey);
+        custodias = Array.isArray(custRaw) ? custRaw.filter(c => {
+          const nitC = (c.empresaNit || c.nit || '').replace(/[^0-9]/g, '');
+          return nitC === nitClean || nitC.includes(nitClean) || nitClean.includes(nitC);
+        }) : [];
+      } catch (_) {}
       setDocsCustodia(custodias);
 
-      // Informes
-      const infKey = `siso_informes_drcucalon`;
-      const { value: infRaw } = await d1Get(infKey);
-      const informes = Array.isArray(infRaw) ? infRaw.filter(i =>
-        (i.empresaNit || '').replace(/[^0-9]/g, '') === nitClean ||
-        (i.nit || '').replace(/[^0-9]/g, '') === nitClean
-      ) : [];
+      // Informes sociodemográficos — desde siso_portal_empresa_docs_{nit} (como monolito)
+      let informes = [];
+      try {
+        const { value: docsRaw } = await d1Get(`siso_portal_empresa_docs_${nitClean}`);
+        const docs = Array.isArray(docsRaw) ? docsRaw : [];
+        // Filtrar solo los que son informes
+        informes = docs.filter(d => d.tipo === 'informe' || d.informe || !d.custodia);
+      } catch (_) {}
       setDocsInformes(informes);
     } catch (_) {}
     finally { setDocsLoading(false); }
