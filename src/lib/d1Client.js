@@ -367,6 +367,21 @@ export async function d1WriteArrayMerge(key, list, idField = 'id') {
     const { value: currentValue, ts } = await d1Get(key);
     const currentList = Array.isArray(currentValue) ? currentValue : [];
 
+    // 🔴 FIX: Si la clave NO existe (primera escritura), escribir directamente sin If-Match
+    if (!currentValue && list.length > 0) {
+      try {
+        await d1Set(key, list);
+        return { ok: true, merged: list.length, total: list.length, firstWrite: true };
+      } catch (err) {
+        if (err.status === 409 && attempts < maxAttempts) {
+          console.warn(`[d1Client] d1WriteArrayMerge(${key}) firstWrite fallo (409), reintento ${attempts}/${maxAttempts}...`);
+          await _sleep(BASE_DELAY * Math.pow(2, attempts - 1));
+          continue;
+        }
+        throw err;
+      }
+    }
+
     // 2) Merge
     const merged = [];
     const seenIds = new Set();
