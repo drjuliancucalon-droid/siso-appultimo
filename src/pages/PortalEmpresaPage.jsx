@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Building2, Loader2, Download, Search, FileText, BarChart3, Users, Activity, Printer, Shield, TrendingUp, CheckSquare, Square } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 import { d1Get } from '../lib/d1Client';
+import { _generarCertificadoHTMLNormalizado, _generarQRDataUrl } from '../shared/lib/printUtils';
 
 // ── Helpers ──────────────────────────────────────────────────────────────
 const colorAptitud = (c = '') => {

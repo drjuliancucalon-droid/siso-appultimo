@@ -744,7 +744,7 @@ export default function HistoriaPage() {
                     { key: 'certificado', label: 'Certificado Ocupacional', has: !!data.conceptoAptitud, icon: "??" },
                     { key: 'historia', label: 'Historia Cl�nica Completa', has: true, icon: "??" },
                     { key: 'formula', label: 'F�rmula / Prescripci�n', has: !!(data.formulaMedicamentos?.length), icon: "??" },
-                    { key: 'derivacion', label: 'Interconsulta', has: !!(data.derivaciones?.length), icon: "??" },
+                    { key: 'derivacion', label: 'Derivaci\u00f3n / Interconsulta', has: !!(data.derivaciones?.length), icon: "??" },
                     { key: 'examenes', label: 'Solicitud Ex�menes', has: !!(data.examenesSolicitados?.length), icon: "??" },
                   ].map(({ key, label, has, icon }) => (
                     <label key={key} className={`flex items-center gap-3 text-xs p-2 rounded-lg cursor-pointer transition-colors ${has ? 'hover:bg-gray-50' : 'opacity-50 grayscale'}`}>
