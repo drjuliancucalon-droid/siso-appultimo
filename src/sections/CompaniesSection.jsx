@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { _secretariaPuede, _secretariaMedicoAsignado } from '../shared/data/planConfig';
 import { _sha256 } from '../shared/lib/crypto';
+import { d1Set } from '../lib/d1Client';
 import InputGroup from '../shared/ui/InputGroup';
 import { initialCompanyState } from '../shared/data/initialStates';
 import EncuestasTab from '../modules/companies/components/EncuestasTab';
@@ -930,6 +931,8 @@ export default function CompaniesSection({ ctx }) {
                   const upd = [...companies, finalComp];
                   setCompanies(upd);
                   _syncCompanies(upd);
+                  // Guardar en D1 Worker
+                  d1Set('siso_companies_'+currentUser.user,upd).catch(()=>{});
                   setNewComp(initialCompanyState);
                   setSedeForm({ nombre: "", ciudad: "", direccion: "" });
                   if (finalComp.portalActivo) {
@@ -1827,6 +1830,15 @@ export default function CompaniesSection({ ctx }) {
               </div>
             );
           })()}
+
+      {/* ═══ MODAL PROPUESTA ECÓNOMICA ═══ */}
+      {propuestaEmpresa && (
+        <PropuestaEconomicaModal
+          company={propuestaEmpresa}
+          currentUser={currentUser}
+          onClose={() => setPropuestaEmpresa(null)}
+        />
+      )}
       </div>
     );
 }
