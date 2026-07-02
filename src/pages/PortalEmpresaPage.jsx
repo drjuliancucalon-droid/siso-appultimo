@@ -208,57 +208,59 @@ export default function PortalEmpresaPage() {
     noAptos: resultadosEmpresa.filter(a => (a.conceptoAptitud || '').toLowerCase().includes('no apto')).length,
   };
 
-  // ═══ GENERADOR DE CERTIFICADO HTML ═══
-  const generarCertHTML = (res) => {
-    const sf = (v) => (v || '').replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>').replace(/"/g, '"');
-    const doc = res._doctorData || empresaAtenciones?._doctorData || {};
+  // ═══ GENERADOR DE CERTIFICADO HTML (P2+P3: wrapper de _generarCertificadoHTMLNormalizado + QR) ═══
+  const generarCertHTML = async (res) => {
+    // Mapear portalData como el monolito _generarCertificadoDesdePortal (L13832-13863)
+    const mappedData = {
+      nombres: res.nombres || '',
+      docTipo: res.docTipo || 'CC',
+      docNumero: res.docNumero || '',
+      edad: res.edad || '',
+      cargo: res.cargo || '',
+      empresaNombre: res.empresaNombre || 'PARTICULAR',
+      empresaNit: res.empresaNit || '',
+      tipoExamen: res.tipoExamen || '',
+      enfasisExamen: res.enfasisExamen || 'GENERAL',
+      fechaExamen: res.fechaExamen || '',
+      conceptoAptitud: res.conceptoAptitud || '',
+      restricciones: res.restricciones || res.analisisRestricciones || '',
+      analisisRestricciones: res.analisisRestricciones || res.restricciones || '',
+      recomendaciones: res.recomendaciones || res.recomendacionesMedicas || '',
+      vigencia: res.vigencia || '1 año',
+      codigoVerificacion: res.codigoVerificacion || '',
+      diagnosticoPrincipal: res.diagnosticoPrincipal || '',
+      eps: res.eps || '',
+      arl: res.arl || '',
+      estadoHistoria: 'Cerrada',
+    };
+    const doctorData = res._doctorData || empresaAtenciones?._doctorData || { nombre: 'MÉDICO OCUPACIONAL' };
     const firma = res._firma || empresaAtenciones?._firma || '';
-    return `<div style="page-break-after:always;padding-top:10mm">
-<style>@page{size:letter portrait;margin:1.5cm}*{box-sizing:border-box}body{font-family:Arial,sans-serif;color:#111;font-size:10pt;line-height:1.5}
-.cert-header{display:flex;justify-content:space-between;border-bottom:3px solid #059669;padding-bottom:10px;margin-bottom:15px}
-.ch-l{width:32%}.ch-c{width:34%;text-align:center;border-left:1px solid #ddd;border-right:1px solid #ddd;padding:0 10px}.ch-r{width:32%;text-align:right}
-.hn{font-size:10pt;font-weight:900;color:#059669;text-transform:uppercase;margin:0}.hs{font-size:7.5pt;color:#555;margin:2px 0}
-.hc-h2{font-size:13pt;font-weight:900;color:#059669;margin:2px 0;text-transform:uppercase}
-.rw{display:flex;justify-content:space-between;margin-bottom:6px;padding:6px 10px;background:#f9fafb;border-radius:6px}
-.rwl{font-size:8pt;color:#6b7280;text-transform:uppercase;font-weight:700}.rwv{font-size:9pt;color:#111;font-weight:600}
-.conc{display:inline-block;padding:4px 12px;border-radius:20px;font-size:10pt;font-weight:900;margin:8px 0}
-.apto{background:#d1fae5;color:#065f46}.restric{background:#fef3c7;color:#92400e}.noapto{background:#fee2e2;color:#991b1b}
-.sb{display:flex;justify-content:space-between;margin-top:20mm}.sl{text-align:center;width:42%}.st{border-top:2px solid #222;padding-top:4px;font-size:8pt;font-weight:700}
-.ft{text-align:center;font-size:7pt;color:#9ca3af;margin-top:12px;border-top:1px solid #e5e7eb;padding-top:8px}
-@media print{body{font-size:9pt}}</style>
-<div class="cert-header">
-  <div class="ch-l"><p class="hn">${sf(doc.nombre || 'MÉDICO OCUPACIONAL')}</p><p class="hs">${sf(doc.titulo || 'Especialista SST')}</p><p class="hs">Lic: ${sf(doc.licencia || '—')}</p><p class="hs">${sf(doc.ciudad || '')} · ${sf(doc.email || '')}</p></div>
-  <div class="ch-c"><h2 class="hc-h2">CERTIFICADO DE APTITUD LABORAL</h2><p class="hs">Res. 1843/2025 · Decreto 1072/2015</p><p style="font-weight:700;font-size:8pt">Fecha: ${sf(formatDate(res.fechaExamen))}</p></div>
-  <div class="ch-r"><p class="hn">${sf(res.nombres)}</p><p class="hs">${sf(res.docTipo || 'CC')}: <b>${sf(res.docNumero)}</b></p><p class="hs">Empresa: <b>${sf(res.empresaNombre)}</b></p><p class="hs">Cargo: <b>${sf(res.cargo)}</b></p></div>
-</div>
-<div class="rw"><span class="rwl">Concepto de Aptitud</span><span class="rwv"><span class="conc ${(res.conceptoAptitud||'').toLowerCase().includes('no apto')?'noapto':(res.conceptoAptitud||'').toLowerCase().includes('restricc')?'restric':'apto'}">${sf(res.conceptoAptitud || '—')}</span></span></div>
-<div class="rw"><span class="rwl">Vigencia</span><span class="rwv">${sf(res.vigencia || '1 año')}</span></div>
-<div class="rw"><span class="rwl">Código Verificación</span><span class="rwv" style="font-family:monospace;font-size:10pt">${sf(res.codigoVerificacion)}</span></div>
-<div class="rw"><span class="rwl">Diagnóstico</span><span class="rwv">${sf(res.diagnosticoPrincipal || '—')}</span></div>
-${res.recomendaciones ? `<div class="rw"><span class="rwl">Recomendaciones</span><span class="rwv">${sf(res.recomendaciones)}</span></div>` : ''}
-<div class="sb">
-  <div class="sl"><div class="st">Firma Paciente / Responsable</div><p style="font-size:7.5pt;color:#6b7280">Nombre: ___________________</p></div>
-  <div class="sl">${firma ? `<img src="${firma}" style="max-height:50px;max-width:140px;object-fit:contain;display:block;margin:0 auto 4px"/>` : '<div style="height:50px;border-bottom:2px solid #222"></div>'}<p class="st">${sf(doc.nombre || 'MÉDICO OCUPACIONAL')}</p><p style="font-size:7.5pt;color:#555;margin:1px 0">${sf(doc.titulo || '')}</p><p style="font-size:7.5pt;color:#555;margin:1px 0">Lic: ${sf(doc.licencia || '—')}</p></div>
-</div>
-<div class="ft">SISO OcupaSalud Pro · Código: ${sf(res.codigoVerificacion)} · Ley 527/1999</div>
-</div>`;
+    // P3: QR code
+    const qrDataUrl = res.codigoVerificacion ? await _generarQRDataUrl(res.codigoVerificacion) : '';
+    return _generarCertificadoHTMLNormalizado(mappedData, doctorData, firma, null, qrDataUrl);
   };
 
-  const handlePrintTodos = () => {
+  const handlePrintTodos = async () => {
     const sel = atencionesVisibles.filter((_, i) => certSeleccionados[i]);
     const pacs = sel.length > 0 ? sel : atencionesVisibles;
+    // Generar certificados en paralelo (cada uno genera QR code)
+    const certsHTML = await Promise.all(pacs.map(async (p) => {
+      const certDiv = await generarCertHTML(p);
+      return `<div style="page-break-after:always">${certDiv}</div>`;
+    }));
     const html = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Certificados - ${authenticated?.nombre}</title>
 <style>@page{size:letter portrait;margin:12mm 14mm 14mm 14mm}body{font-family:Arial;color:#111}@media print{body{padding:0!important}}</style></head><body>
 <div style="position:fixed;top:10px;right:10px;z-index:9999"><button onclick="window.print()" style="background:#065f46;color:#fff;border:none;padding:10px 20px;border-radius:10px;font-weight:900;cursor:pointer;font-size:12px;box-shadow:0 4px 12px rgba(0,0,0,.2)">🖨️ Imprimir / Guardar PDF (${pacs.length})</button></div>
-${pacs.map(p => generarCertHTML(p)).join('')}</body></html>`;
+${certsHTML.join('')}</body></html>`;
     const w = window.open('', '_blank', 'width=900,height=700');
     if (w) { w.document.write(html); w.document.close(); }
   };
 
-  const handlePrintSingle = (res) => {
+  const handlePrintSingle = async (res) => {
+    const certHTML = await generarCertHTML(res);
     const html = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Certificado ${res.nombres}</title></head><body>
 <button onclick="window.print()" style="position:fixed;top:10px;right:10px;z-index:9999;background:#059669;color:#fff;border:none;padding:10px 20px;border-radius:8px;font-weight:700;cursor:pointer;font-size:11pt;box-shadow:0 4px 12px rgba(0,0,0,.2)">🖨️ Imprimir / Guardar PDF</button>
-${generarCertHTML(res)}<script>setTimeout(()=>window.print(),300)</script></body></html>`;
+${certHTML}<script>setTimeout(()=>window.print(),300)</script></body></html>`;
     const w = window.open('', '_blank', 'width=900,height=700');
     if (w) { w.document.write(html); w.document.close(); }
   };
