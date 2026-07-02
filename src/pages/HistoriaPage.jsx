@@ -661,7 +661,7 @@ export default function HistoriaPage() {
         </div>
 
         {/* Modern Segmented Tabs */}
-        <div className="p-3 bg-white">
+        <div className="p-3 bg-white sticky top-0 z-20 shadow-sm">
           <div className="flex gap-1 overflow-x-auto p-1.5 bg-gray-100 rounded-xl" style={{ scrollbarWidth: 'none' }}>
             {HC_TABS.map((tab) => (
               <button key={tab.id} onClick={() => setActiveTab(tab.id)}
@@ -715,15 +715,6 @@ export default function HistoriaPage() {
           <button onClick={() => printHC(data, activeDoctorData)} className="flex items-center gap-1.5 px-4 py-2 text-[11px] uppercase tracking-wider font-black text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 rounded-xl transition-colors shadow-sm">
             <Printer className="w-3.5 h-3.5 text-gray-500" /> Imprimir
           </button>
-          
-          <button onClick={handleRIPS} className="hidden lg:flex items-center gap-1.5 px-4 py-2 text-[11px] uppercase tracking-wider font-black text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 rounded-xl transition-colors shadow-sm">
-            <Database className="w-3.5 h-3.5 text-blue-500" /> RIPS
-          </button>
-          
-          <button onClick={handleFHIR} className="hidden lg:flex items-center gap-1.5 px-4 py-2 text-[11px] uppercase tracking-wider font-black text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 rounded-xl transition-colors shadow-sm">
-            <Heart className="w-3.5 h-3.5 text-red-500" /> FHIR
-          </button>
-          
           
           <button onClick={handleRIPS} className="flex items-center gap-1.5 px-3 py-2 text-[11px] font-bold text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 rounded-xl transition-colors">
             <Database className="w-3.5 h-3.5 text-blue-500" /> RIPS
