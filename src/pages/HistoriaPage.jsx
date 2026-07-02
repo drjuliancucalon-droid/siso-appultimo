@@ -690,28 +690,8 @@ export default function HistoriaPage() {
           {isDirty && <span className="text-[10px] uppercase tracking-wider text-amber-600 font-black flex items-center gap-1.5 px-3 py-1 bg-amber-50 rounded-lg animate-pulse"><AlertTriangle className="w-3.5 h-3.5" /> Sin guardar</span>}
         </div>
 
-        {/* Right: Secondary Actions */}
+        {/* Right: Secondary Actions — IA movida al formulario (Cambio 3) */}
         <div className="flex items-center gap-2 flex-wrap justify-end">
-          {/* AI Group */}
-          <div className="flex bg-indigo-50/50 rounded-xl p-1 border border-indigo-100 hidden sm:flex">
-            
-            <button onClick={onGenerateAI} disabled={isGenerating} className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold text-indigo-700 hover:bg-white rounded-lg transition-colors">
-              {isGenerating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />} IA Resumen
-            </button>
-            <button onClick={onGenerateRestrictions} disabled={isGeneratingRestr} className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold text-amber-700 hover:bg-white rounded-lg transition-colors">
-              {isGeneratingRestr ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />} IA Restr
-            </button>
-            <button onClick={onGenerateRecommendations} disabled={isGeneratingReco} className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold text-teal-700 hover:bg-white rounded-lg transition-colors">
-              {isGeneratingReco ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />} IA Reco
-            </button>
-            <button onClick={() => setShowAIConfig(true)} className="flex items-center justify-center w-8 h-8 text-gray-500 hover:bg-white hover:text-gray-800 rounded-lg transition-colors" title="Configuracion IA">
-              <Settings className="w-4 h-4" />
-            </button>
-      
-          </div>
-
-          <div className="h-6 w-px bg-gray-200 mx-1 hidden sm:block"></div>
-
           <button onClick={() => printHC(data, activeDoctorData)} className="flex items-center gap-1.5 px-4 py-2 text-[11px] uppercase tracking-wider font-black text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 rounded-xl transition-colors shadow-sm">
             <Printer className="w-3.5 h-3.5 text-gray-500" /> Imprimir
           </button>

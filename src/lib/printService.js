@@ -109,18 +109,26 @@ export function openPrintWindow(title, htmlContent, options = {}) {
  * diagnoses, concept, restrictions, recommendations
  */
 export function generateHCPrintHTML(data, doctorData, companyData) {
-  // ── Header ──
+  // ── Header Premium 3 columnas (monolito L11612 buildPrintHeader) ──
   const header = `
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;">
-      <div>
-        <h1 style="margin:0;">HISTORIA CLÍNICA OCUPACIONAL</h1>
-        <p style="font-size:8pt;color:#6b7280;margin:2px 0;">${s(data.tipoExamen || 'Examen Ocupacional')} — ${date(data.fechaExamen)}</p>
-        <p style="font-size:7pt;color:#9ca3af;">Folio: ${s(data.folioHC || 'Auto')} · Versión: ${data.versionDocumento || 1}</p>
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #059669;padding-bottom:10px;margin-bottom:16px;">
+      <div style="width:32%;">
+        ${doctorData?.nombre ? `<p style="font-size:9pt;font-weight:900;color:#059669;text-transform:uppercase;margin:0;">${s(doctorData.nombre)}</p>` : ''}
+        ${doctorData?.titulo ? `<p style="font-size:7pt;color:#555;margin:1px 0;">${s(doctorData.titulo)}</p>` : ''}
+        ${doctorData?.licencia ? `<p style="font-size:7pt;color:#555;margin:1px 0;">RM: ${s(doctorData.licencia)}</p>` : ''}
+        ${doctorData?.ciudad ? `<p style="font-size:7pt;color:#555;margin:1px 0;">${s(doctorData.ciudad)} ${doctorData?.email ? '· '+s(doctorData.email) : ''}</p>` : ''}
       </div>
-      <div style="text-align:right;">
-        ${doctorData?.nombre ? `<p style="font-size:9pt;font-weight:900;color:#059669;">${s(doctorData.nombre)}</p>` : ''}
-        ${doctorData?.titulo ? `<p style="font-size:7.5pt;color:#6b7280;">${s(doctorData.titulo)}</p>` : ''}
-        ${doctorData?.licencia ? `<p style="font-size:7.5pt;color:#6b7280;">RM: ${s(doctorData.licencia)}</p>` : ''}
+      <div style="width:34%;text-align:center;border-left:1px solid #a7f3d0;border-right:1px solid #a7f3d0;padding:0 10px;">
+        <h1 style="margin:0;font-size:13pt;font-weight:900;color:#059669;text-transform:uppercase;">HISTORIA CLÍNICA OCUPACIONAL</h1>
+        <p style="font-size:7pt;color:#059669;margin:2px 0;font-weight:700;">${s(data.tipoExamen || 'Examen Ocupacional')} · ${date(data.fechaExamen)}</p>
+        <p style="font-size:6.5pt;color:#9ca3af;">Res. 1843/2025 · Confidencial</p>
+      </div>
+      <div style="width:32%;text-align:right;">
+        <p style="font-size:9pt;font-weight:900;color:#059669;text-transform:uppercase;margin:0;">${s(data.nombres || 'Paciente')}</p>
+        <p style="font-size:7pt;color:#555;margin:1px 0;"><b>${s(data.docTipo)}:</b> ${s(data.docNumero)}</p>
+        <p style="font-size:7pt;color:#555;margin:1px 0;"><b>Empresa:</b> ${s(data.empresaNombre)}</p>
+        <p style="font-size:7pt;color:#555;margin:1px 0;"><b>Cargo:</b> ${s(data.cargo)}</p>
+        <p style="font-size:7pt;color:#6b7280;margin:1px 0;">Edad: ${s(data.edad)}a · ${s(data.genero)}</p>
       </div>
     </div>`;
 
