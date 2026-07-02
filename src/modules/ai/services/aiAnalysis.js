@@ -194,214 +194,214 @@ const _buildContextoTipo = (tipoExamen = '') => {
 // v2: contexto completo + salida estructurada TRABAJADOR/EMPLEADOR/EMPRESA
 // ══════════════════════════════════════════════════════════════════════════════
 export const analyzeHC = async (hcData, aiConfig) => {
-  const ctx = _buildFullContext(hcData);
-  const _contextoTipo = _buildContextoTipo(hcData.tipoExamen);
+  // EXTRACCIÓN COMPLETA DEL CONTEXTO HC (monolito L20987-21080)
+  const hallazgosAnorm =
+    Object.entries(hcData.examenFisicoSistemas || {})
+      .filter(([, v]) => v.estado === 'Anormal')
+      .map(([k, v]) => `${k}: ${v.hallazgo}`)
+      .join('; ') || 'Sin hallazgos patológicos al examen físico';
+  const hallazgosNorm =
+    Object.entries(hcData.examenFisicoSistemas || {})
+      .filter(([, v]) => v.estado === 'Normal')
+      .map(([k]) => k)
+      .join(', ') || '';
+  const osteo = Object.entries(hcData.maniobrasOsteomusculares || {})
+    .filter(([, v]) => v.estado === 'Anormal')
+    .map(([k, v]) => `${k}: ${v.hallazgo}`)
+    .join('; ') || 'Ninguna positiva';
+  const antec = Object.entries(hcData.antecedentesAgrupados || {})
+    .filter(([, v]) => v.val)
+    .map(([k, v]) => `${k}: ${v.det}`)
+    .join(' | ') || 'Niega antecedentes relevantes';
+  const riesgos = Object.entries(hcData.riesgos || {})
+    .filter(([, v]) => v).map(([k]) => k).join(', ') || 'No reportados';
+  const dxActivos = [hcData.diagnosticoPrincipal, hcData.diagnosticoSecundario1, hcData.diagnosticoSecundario2]
+    .filter(Boolean).join(' | ') || 'Pendiente';
+  const motivo = hcData.motivoConsulta || 'Examen médico ocupacional';
 
-  const prompt =
-    `Eres médico especialista en Medicina del Trabajo con más de 15 años de experiencia en Colombia. ` +
-    `Analiza con criterio clínico-ocupacional experto la siguiente historia clínica COMPLETA y genera ` +
-    `el concepto médico ocupacional conforme a Res. 1843/2025. Devuelve ÚNICAMENTE JSON.\n\n` +
-    `═══ DATOS DEL TRABAJADOR ═══\n` +
-    `Nombre: ${hcData.nombres || 'N/E'} | Cargo: ${hcData.cargo || 'N/E'} | Empresa: ${hcData.empresaNombre || 'N/E'} (${hcData.actividadEconomica || 'N/E'})\n` +
-    `Tipo examen: ${hcData.tipoExamen || 'N/E'} | Énfasis: ${hcData.enfasisExamen || 'GENERAL'} | ARL: ${hcData.arl || 'N/R'} | Nivel riesgo ARL: ${hcData.nivelRiesgoARL || 'N/R'}\n` +
-    `Edad: ${hcData.edad || 'N/E'}a | Género: ${hcData.genero || 'N/E'} | Escolaridad: ${hcData.escolaridad || 'N/E'}\n` +
-    `Turno: ${hcData.turnoTrabajo || 'N/R'} | Antigüedad empresa: ${hcData.antiguedadEmpresa || 'N/R'} | Tipo contrato: ${hcData.tipoContrato || 'N/R'}\n` +
-    `Motivo consulta: ${hcData.motivoConsulta || 'N/E'}\n\n` +
-    `═══ PERFIL DEL CARGO (Res. 1843/2025 Art. 29) ═══\n  ${ctx.perfilCargo}\n\n` +
-    `═══ SIGNOS VITALES Y ANTROPOMETRÍA ═══\n` +
-    `TA: ${hcData.ta || 'N/R'} | FC: ${hcData.fc || 'N/R'} | FR: ${hcData.fr || 'N/R'} | Temp: ${hcData.temp || 'N/R'}\n` +
-    `Peso: ${hcData.peso || 'N/R'}kg | Talla: ${hcData.talla || 'N/R'}cm | IMC: ${hcData.imc || 'N/R'}\n\n` +
-    `═══ ANTECEDENTES PERSONALES ═══\n${ctx.antecedentes}\n\n` +
-    `═══ HÁBITOS Y ESTILO DE VIDA ═══\n` +
-    `Tabaquismo: ${hcData.habitos?.fuma || 'No'} | Alcohol: ${hcData.habitos?.alcohol || 'No'} | ` +
-    `Psicoactivas: ${hcData.habitos?.psicoactivas || 'No'} | Actividad física: ${hcData.habitos?.deporte || 'No'}\n` +
-    `${hcData.habitos?.detalle ? `Detalle hábitos: ${hcData.habitos.detalle}` : ''}\n\n` +
-    `═══ RIESGOS OCUPACIONALES IDENTIFICADOS ═══\n${ctx.riesgos}\n\n` +
-    `═══ HALLAZGOS EXAMEN FÍSICO (solo anormales) ═══\n${ctx.hallazgos}\n\n` +
-    `═══ MANIOBRAS OSTEOMUSCULARES POSITIVAS ═══\n${ctx.maniobras}\n\n` +
-    `═══ EXAMEN OSTEOMUSCULAR ═══\n${ctx.osteoRes}\n\n` +
-    `═══ AGUDEZA VISUAL ═══\n${ctx.agudeza}\n\n` +
-    `${ctx.examenEspecial ? `═══ EXAMEN ESPECIAL ═══\n${ctx.examenEspecial}\n\n` : ''}` +
-    `═══ PARACLÍNICOS SOLICITADOS/REALIZADOS ═══\n${ctx.paraclinicosFull}\n\n` +
-    `═══ CONTEXTO TIPO DE EXAMEN ═══\n${_contextoTipo}\n\n` +
-    `═══ CRITERIOS OBLIGATORIOS ═══\n` +
-    `1) Concepto de aptitud debe citar artículo Res. 1843/2025 (norma vigente desde 29 abril 2025).\n` +
-    `2) Si es egreso o post-incapacidad, incluir análisis de reintegro laboral.\n` +
-    `3) Restricciones deben ser operativas, cuantificables y con base normativa (GTC-45, GATISO).\n` +
-    `4) Campo "recomendaciones" DEBE estar estructurado en 3 secciones con mínimo 5 ítems cada una:\n` +
-    `   AL TRABAJADOR:\\n1. ...\\n2. ...\\n\\nAL EMPLEADOR:\\n1. ...\\n\\nA LA EMPRESA / ÁREA SST:\\n1. ...\n` +
-    `5) Campo "analisisClinico" DEBE tener mínimo 300 palabras con 5 sub-secciones:\n` +
-    `   (1) Resumen clínico, (2) Análisis nexo causal cargo-hallazgos, (3) Análisis riesgos laborales,\n` +
-    `   (4) Concepto de aptitud con base en Res. 1843/2025, (5) Plan de seguimiento y vigilancia.\n\n` +
-    `JSON REQUERIDO (sin markdown, sin texto adicional):\n` +
-    `{"diagnosticoPrincipal":"Z10.0 - EXAMEN MÉDICO OCUPACIONAL",` +
-    `"diagnosticoSecundario1":"CIE-10 código y descripción o vacío",` +
-    `"diagnosticoSecundario2":"CIE-10 código y descripción o vacío",` +
-    `"conceptoAptitud":"APTO / APTO CON RESTRICCIONES / NO APTO — justificación clínica y cita Art. Res. 1843/2025",` +
-    `"vigencia":"X meses — justificación según tipo de examen y hallazgos",` +
-    `"recomendaciones":"AL TRABAJADOR:\\n1. [específica para el trabajador]\\n2. ...\\n3. ...\\n4. ...\\n5. ...\\n\\nAL EMPLEADOR:\\n1. [específica para el empleador / área SST]\\n2. ...\\n3. ...\\n4. ...\\n5. ...\\n\\nA LA EMPRESA / ÁREA SST:\\n1. [medida de control / programa / intervención]\\n2. ...\\n3. ...\\n4. ...\\n5. ...",` +
-    `"restriccionesTexto":"1. [TEMPORAL/PERMANENTE/PREVENTIVA - duración] (Segmento) descripción cuantificable — norma\\n2. ...",` +
-    `"derivaciones":[{"especialidad":"","motivo":"","urgencia":"Electiva/Prioritaria/Urgente"}],` +
-    `"examenesSugeridos":["examen con justificación"],` +
-    `"incapacidadSugerida":{"aplica":false,"dias":0,"motivo":"","diagnosticoCIE":""},` +
-    `"analisisClinico":"(1) RESUMEN CLÍNICO: ... (2) NEXO CAUSAL CARGO-HALLAZGOS: ... (3) ANÁLISIS DE RIESGOS LABORALES: ... (4) CONCEPTO DE APTITUD (Res. 1843/2025 Art. 20): ... (5) PLAN DE SEGUIMIENTO Y VIGILANCIA: ...",` +
-    `"sveRecomendado":["SVE Osteomuscular","SVE Psicosocial"]}`;
+  const systemPrompt = 'Eres médico ocupacional con más de 15 años de experiencia en Colombia. Conoces la normatividad colombiana: Res. 1843/2025 (deroga Res. 2346/2007), Dec. 1072/2015, Guías GATISO, GTC-45, Dec. 1477/2014. Evalúas al trabajador como un TODO integral: sus antecedentes, sus riesgos, sus hallazgos físicos anormales y normales, sus signos vitales, sus hábitos, y generas un concepto de aptitud laboral claro, preciso y fundamentado. Respondes SOLO con JSON en español formal y técnico.';
 
-  let text;
-  _setAILoading(true, 'Analizando HC completa con IA...');
-  try {
-    text = await callAIWithFailover(prompt, DEFAULT_SYSTEM_PROMPT, aiConfig);
-  } catch (e1) {
-    try {
-      const retryPrompt =
-        'Analiza esta HC ocupacional y devuelve JSON: ' +
-        JSON.stringify({
-          cargo: hcData.cargo, hallazgos: ctx.hallazgos,
-          antecedentes: ctx.antecedentes, riesgos: ctx.riesgos,
-          maniobras: ctx.maniobras, perfilCargo: ctx.perfilCargo,
-          edad: hcData.edad, tipoExamen: hcData.tipoExamen,
-        });
-      text = await callAIWithFailover(retryPrompt, DEFAULT_SYSTEM_PROMPT, aiConfig);
-    } catch {
-      _setAILoading(false);
-      throw e1;
-    }
-  } finally {
-    _setAILoading(false);
-  }
+  const prompt = `Eres médico especialista en Medicina del Trabajo con más de 15 años de experiencia en Colombia. Evalúa esta Historia Clínica Ocupacional COMPLETA y genera un análisis clínico-ocupacional integral conforme a Res. 1843/2025. Devuelve UNICAMENTE JSON.
 
+════════════ HISTORIA CLINICA COMPLETA ════════════
+DATOS GENERALES:
+Cargo: ${hcData.cargo || 'N/R'} | Empresa: ${hcData.empresaNombre || 'N/R'}
+Tipo examen: ${hcData.tipoExamen || 'N/R'} | Énfasis: ${hcData.enfasisExamen || 'GENERAL'}
+Edad: ${hcData.edad || 'N/R'} años | Género: ${hcData.genero || 'N/R'} | ARL: ${hcData.arl || 'N/R'}
+Escolaridad: ${hcData.escolaridad || 'N/R'} | Estado civil: ${hcData.estadoCivil || 'N/R'}
+
+SIGNOS VITALES:
+TA: ${hcData.ta || 'N/R'} mmHg | FC: ${hcData.fc || 'N/R'} lpm | FR: ${hcData.fr || 'N/R'} rpm
+IMC: ${hcData.imc || 'N/R'} kg/m² | Peso: ${hcData.peso || 'N/R'} kg | Talla: ${hcData.talla || 'N/R'} cm
+
+HÁBITOS:
+Tabaquismo: ${hcData.habitos?.fuma || 'No'} | Alcohol: ${hcData.habitos?.alcohol || 'No'}
+Actividad física: ${hcData.habitos?.deporte || 'No refiere'} | Psicoactivas: ${hcData.habitos?.psicoactivas || 'No'}
+
+ANTECEDENTES RELEVANTES:
+${antec}
+
+RIESGOS OCUPACIONALES IDENTIFICADOS:
+${riesgos}
+
+HALLAZGOS PATOLÓGICOS AL EXAMEN FÍSICO:
+${hallazgosAnorm}
+
+SISTEMAS NORMALES AL EXAMEN FÍSICO:
+${hallazgosNorm || 'No registrados'}
+
+MANIOBRAS OSTEOMUSCULARES POSITIVAS:
+${osteo}
+
+MOTIVO DE CONSULTA / SOLICITUD:
+${motivo}
+
+DIAGNÓSTICOS ACTIVOS (CIE-10):
+${dxActivos}
+
+ANÁLISIS CLÍNICO IA PREVIO:
+${hcData.analisisIA ? hcData.analisisIA.substring(0, 500) + '...' : 'No disponible'}
+═══════════════════════════════════════════════════
+
+INSTRUCCIONES:
+1. Genera un concepto de aptitud laboral claro: APTO / APTO CON RESTRICCIONES / NO APTO / APTO CONDICIONADO. Justifica el concepto.
+2. Diagnóstico principal CIE-10 obligatorio (Z10.0 si es examen ocupacional de rutina sin patología).
+3. Diagnósticos secundarios si hay hallazgos relevantes (CIE-10).
+4. Análisis clínico detallado: interpreta los hallazgos, relación con el cargo, riesgos y pronóstico laboral (mínimo 200 palabras).
+5. Restricciones médico-laborales: SOLO si hay hallazgos que las justifiquen. Cada restricción debe citar el hallazgo que la origina, ser cuantificable (kg, horas, grados) y operativa.
+6. Recomendaciones personalizadas basadas en los hallazgos de ESTA HC.
+7. Vigencia del certificado según tipo de examen y hallazgos (ej: 1 año, 6 meses, 2 años).
+8. Derivaciones a especialistas solo si los hallazgos lo justifican (especialidad + motivo clínico).
+9. Exámenes complementarios sugeridos solo si los hallazgos los justifican (ej: audiometría, espirometría).
+10. Incapacidad sugerida solo si hay hallazgos que la justifiquen (días + diagnóstico CIE + motivo).
+
+⚠️ PROHIBICIÓN LEGAL EXPRESA (Res. 1843/2025 Art. 21): En las restricciones NO incluyas diagnósticos clínicos. Solo describe la limitación funcional en términos operativos.
+
+JSON REQUERIDO (sin markdown):
+{"diagnosticoPrincipal":"Z10.0 EXAMEN MÉDICO OCUPACIONAL","diagnosticoSecundario1":"","diagnosticoSecundario2":"","conceptoAptitud":"APTO / APTO CON RESTRICCIONES / NO APTO","justificacionConcepto":"","vigencia":"1 año","analisisIA":"Análisis detallado mínimo 200 palabras...","recomendaciones":"","analisisRestricciones":"Solo si hay hallazgos","derivaciones":[{"especialidad":"","motivo":""}],"examenesSugeridos":[""],"incapacidadSugerida":{"aplica":false,"dias":0,"motivo":"","diagnosticoCIE":""},"sveRecomendado":[""]}`;
+
+  const text = await callAIWithFailover(prompt, systemPrompt, aiConfig);
   const parsed = parseAIJSON(text);
-
-  const TIPOS_OCUP = ['INGRESO', 'PERIODICO', 'PERIÓDICO', 'EGRESO', 'RETIRO', 'POST-INCAPACIDAD', 'REINTEGRO', 'SEGUIMIENTO'];
-  const isOcupacional =
-    (hcData.enfasisExamen || 'GENERAL').toUpperCase() !== 'GENERAL' ||
-    TIPOS_OCUP.some((t) => (hcData.tipoExamen || '').toUpperCase().includes(t));
-
-  const dxPrincipalFinal = 'Z10.0 - EXAMEN MÉDICO OCUPACIONAL';
-  const aiDxPrincipal = parsed.diagnosticoPrincipal || '';
-  const dxSec1Final = isOcupacional
-    ? (aiDxPrincipal && !aiDxPrincipal.includes('Z10') ? aiDxPrincipal : parsed.diagnosticoSecundario1 || '')
-    : (parsed.diagnosticoSecundario1 || '');
-  const dxSec2Final = isOcupacional
-    ? (aiDxPrincipal && !aiDxPrincipal.includes('Z10') && parsed.diagnosticoSecundario1
-      ? parsed.diagnosticoSecundario1
-      : parsed.diagnosticoSecundario2 || '')
-    : (parsed.diagnosticoSecundario2 || '');
-
-  const sveRecomendadoFinal = (parsed.sveRecomendado || []).filter(
-    (s) => s && !s.toLowerCase().includes('si aplica') && !s.toLowerCase().includes('según hallazgos')
-  );
-
-  return {
-    diagnosticoPrincipal: isOcupacional ? dxPrincipalFinal : (parsed.diagnosticoPrincipal || dxPrincipalFinal),
-    diagnosticoSecundario1: dxSec1Final,
-    diagnosticoSecundario2: dxSec2Final,
-    conceptoAptitud: parsed.conceptoAptitud || '',
-    vigencia: parsed.vigencia || '',
-    recomendaciones: parsed.recomendaciones || '',
-    analisisRestricciones: parsed.restriccionesTexto || '',
-    derivaciones: (parsed.derivaciones || []).map((d, i) => ({
-      id: Date.now() + i,
-      especialidad: d.especialidad || '',
-      motivo: d.motivo || '',
-      urgencia: d.urgencia || 'Electiva',
-      _fromAI: true,
-    })),
-    examenesSugeridos: parsed.examenesSugeridos || [],
-    incapacidadSugerida: parsed.incapacidadSugerida || { aplica: false, dias: 0, motivo: '', diagnosticoCIE: '' },
-    analisisIA: parsed.analisisClinico || '',
-    sveRecomendado: sveRecomendadoFinal,
-  };
+  return parsed;
 };
 
-// ══════════════════════════════════════════════════════════════════════════════
-// generateRestrictions — contexto completo + antecedentes + perfil cargo
-// Ref. monolito: App.jsx líneas 15146-15194
-// ══════════════════════════════════════════════════════════════════════════════
 export const generateRestrictions = async (hcData, aiConfig) => {
-  const ctx = _buildFullContext(hcData);
+  const hallazgosAnorm =
+    Object.entries(hcData.examenFisicoSistemas || {})
+      .filter(([, v]) => v.estado === 'Anormal')
+      .map(([k, v]) => `${k}: ${v.hallazgo}`)
+      .join('; ') || 'Sin hallazgos patológicos al examen físico';
+  const hallazgosNorm =
+    Object.entries(hcData.examenFisicoSistemas || {})
+      .filter(([, v]) => v.estado === 'Normal')
+      .map(([k]) => k)
+      .join(', ') || '';
+  const osteo = Object.entries(hcData.maniobrasOsteomusculares || {})
+    .filter(([, v]) => v.estado === 'Anormal')
+    .map(([k, v]) => `${k}: ${v.hallazgo}`)
+    .join('; ') || 'Ninguna positiva';
+  const antec = Object.entries(hcData.antecedentesAgrupados || {})
+    .filter(([, v]) => v.val)
+    .map(([k, v]) => `${k}: ${v.det}`)
+    .join(' | ') || 'Niega antecedentes relevantes';
+  const riesgos = Object.entries(hcData.riesgos || {})
+    .filter(([, v]) => v).map(([k]) => k).join(', ') || 'No reportados';
+  const dxActivos = [hcData.diagnosticoPrincipal, hcData.diagnosticoSecundario1, hcData.diagnosticoSecundario2]
+    .filter(Boolean).join(' | ') || 'Pendiente';
 
-  const prompt =
-    `Eres médico especialista en Medicina del Trabajo con más de 15 años de experiencia en Colombia, ` +
-    `experto en restricciones médico-laborales (GTC-45, GATISO, Res. 1843/2025). ` +
-    `Con base en la historia clínica COMPLETA, genera restricciones médico-laborales. Devuelve ÚNICAMENTE JSON.\n\n` +
-    `═══ DATOS DEL TRABAJADOR ═══\n` +
-    `Cargo: ${hcData.cargo || 'N/E'} | Empresa: ${hcData.empresaNombre || 'N/E'} | Tipo examen: ${hcData.tipoExamen || 'N/E'}\n` +
-    `Turno: ${hcData.turnoTrabajo || 'N/R'} | Antigüedad: ${hcData.antiguedadEmpresa || 'N/R'} | Nivel riesgo ARL: ${hcData.nivelRiesgoARL || 'N/R'}\n` +
-    `IMC: ${hcData.imc || 'N/R'} | TA: ${hcData.ta || 'N/R'} | Diagnóstico principal: ${hcData.diagnosticoPrincipal || 'N/R'}\n\n` +
-    `═══ PERFIL DEL CARGO ═══\n  ${ctx.perfilCargo}\n\n` +
-    `═══ ANTECEDENTES PERSONALES ═══\n${ctx.antecedentes}\n\n` +
-    `═══ RIESGOS OCUPACIONALES ═══\n${ctx.riesgos}\n\n` +
-    `═══ HALLAZGOS FÍSICOS PATOLÓGICOS ═══\n${ctx.hallazgos}\n\n` +
-    `═══ MANIOBRAS OSTEOMUSCULARES POSITIVAS ═══\n${ctx.maniobras}\n\n` +
-    `═══ EXAMEN OSTEOMUSCULAR ═══\n${ctx.osteoRes}\n\n` +
-    `${ctx.examenEspecial ? `═══ EXAMEN ESPECIAL ═══\n${ctx.examenEspecial}\n\n` : ''}` +
-    `INSTRUCCIÓN: Genera restricciones médico-laborales ESPECÍFICAS basadas en los hallazgos anteriores.\n` +
-    `Cada restricción debe ser operativa y cuantificable (kg, min, grados, frecuencias/hora).\n` +
-    `Incluir: segmento anatómico, tipo (TEMPORAL/PERMANENTE/PREVENTIVA), duración específica, norma exacta.\n` +
-    `Si es post-incapacidad o reintegro, incluir plan de reintegro progresivo (Res. 1843/2025 Art. 13).\n` +
-    `Mínimo 4 restricciones si hay hallazgos relevantes. Si no hay hallazgos, generar restricciones PREVENTIVAS.\n\n` +
-    `JSON REQUERIDO:\n` +
-    `{"restricciones":[` +
-    `{"segmento":"Lumbar/Miembro Superior/Cervical/Postural/General/Visual/Auditivo",` +
-    `"tipo":"TEMPORAL/PERMANENTE/PREVENTIVA",` +
-    `"duracion":"X semanas / X meses / Permanente / N/A",` +
-    `"texto":"Restricción específica cuantificable (ej: No levantamiento >12.5 kg)",` +
-    `"normativa":"GTC-45:2012 / GATISO-DME 2015 / Res. 1843/2025 Art. X / Res. 0312/2019"}` +
-    `]}`;
+  const prompt = `Eres médico especialista en Medicina del Trabajo con más de 15 años de experiencia en Colombia, experto en restricciones médico-laborales, reintegro laboral y vigilancia epidemiológica. Con base en la historia clínica COMPLETA del trabajador que se presenta a continuación, genera las restricciones médico-laborales personalizadas y adaptadas a los hallazgos encontrados. Devuelve UNICAMENTE JSON.
 
-  const text = await callAIWithFailover(prompt, DEFAULT_SYSTEM_PROMPT, aiConfig);
+════════ HISTORIA CLINICA COMPLETA DEL TRABAJADOR ════════
+Cargo: ${hcData.cargo} | Empresa: ${hcData.empresaNombre} | Tipo examen: ${hcData.tipoExamen}
+Edad: ${hcData.edad} años | Género: ${hcData.genero} | ARL: ${hcData.arl || 'N/R'}
+Signos vitales: TA ${hcData.ta || 'N/R'} mmHg | FC ${hcData.fc || 'N/R'} lpm | IMC ${hcData.imc || 'N/R'} kg/m² | Peso ${hcData.peso || 'N/R'} kg | Talla ${hcData.talla || 'N/R'} cm
+Hábitos: Tabaquismo ${hcData.habitos?.fuma || 'No'} | Alcohol ${hcData.habitos?.alcohol || 'No'} | Actividad física ${hcData.habitos?.deporte || 'No refiere'}
+Antecedentes relevantes: ${antec}
+Riesgos ocupacionales identificados: ${riesgos}
+Hallazgos PATOLÓGICOS al examen físico: ${hallazgosAnorm}
+Sistemas NORMALES al examen: ${hallazgosNorm || 'No registrados'}
+Maniobras osteomusculares positivas: ${osteo}
+Diagnósticos activos (CIE-10): ${dxActivos}
+Concepto de aptitud previo: ${hcData.conceptoAptitud || 'Pendiente'}
+Análisis clínico IA: ${hcData.analisisIA ? hcData.analisisIA.substring(0, 400) + '...' : 'No disponible'}
+═══════════════════════════════════════════════════
+
+INSTRUCCIONES OBLIGATORIAS:
+1. PERSONALIZACION: Cada restricción DEBE derivar directamente de un hallazgo clínico específico encontrado en ESTA historia clínica. Cita el hallazgo que justifica cada restricción.
+2. Si no hay hallazgos patológicos relevantes para una restricción, NO la incluyas. No generes restricciones genéricas sin sustento clínico.
+3. CUANTIFICACION: Cada restricción debe ser operativa y cuantificable: en kg, minutos, grados, frecuencias o porcentajes.
+4. SEGMENTO ANATOMICO: Identifica el segmento afectado (Miembro Superior D/I, Columna Lumbar, Columna Cervical, Miembros Inferiores, Cardiovascular, Respiratorio, General).
+5. TIPO: TEMPORAL (con duración específica) / PERMANENTE / PREVENTIVA.
+6. BASE NORMATIVA: Citar GTC-45:2012, GATISO-DME, GATISO-TME, Res. 1843/2025, Res. 2404/2019 según corresponda.
+7. Si el examen es egreso, post-incapacidad o reintegro (Res. 1843/2025 Art. 13): incluir restricciones de reintegro progresivo.
+8. Si NO hay hallazgos patológicos que justifiquen restricciones: devolver array vacío con "sinRestricciones": true y justificación.
+9. ⚠️ PROHIBICION LEGAL EXPRESA (Res. 1843/2025 Art. 21 - confidencialidad del diagnóstico): En el campo "texto" y "hallazgoQueJustifica" NO incluyas nombres de diagnósticos clínicos (enfermedades, síndromes, patologías), NO menciones medicamentos, NO describas tratamientos. Solo describe la LIMITACION FUNCIONAL LABORAL en términos operativos: qué actividad está limitada, en qué medida y por cuánto tiempo. Ejemplo correcto: "Evitar levantamiento de cargas superiores a 10 kg" - NO: "Por lumbalgia crónica L4-L5 no levantar pesos".
+
+JSON REQUERIDO (sin markdown):
+{"sinRestricciones":false,"justificacionSinRestricciones":"","restricciones":[{"numero":1,"segmento":"Segmento anatómico específico","tipo":"TEMPORAL|PERMANENTE|PREVENTIVA","duracion":"X semanas / Permanente / N/A","hallazgoQueJustifica":"Hallazgo funcional observado (NO diagnóstico, NO enfermedad) que sustenta la restricción","texto":"Restricción operativa y cuantificable: describe QUÉ actividad está limitada, EN QUÉ MEDIDA y POR CUÁNTO TIEMPO. Sin diagnósticos, sin medicamentos, sin tratamientos.","normativa":"GTC-45:2012 / GATISO-DME / GATISO-TME / Res. 1843/2025 / Res. 2404/2019"}]}`;
+
+  const systemPrompt = 'Eres médico especialista en Medicina del Trabajo colombiano. Responde SOLO con JSON. Sin markdown.';
+  const text = await callAIWithFailover(prompt, systemPrompt, aiConfig);
   const parsed = parseAIJSON(text);
 
-  if (parsed.restricciones?.length > 0) {
-    return parsed.restricciones
-      .map((r, i) =>
-        `${i + 1}. [${(r.tipo || 'TEMPORAL').toUpperCase()}${r.duracion && r.duracion !== 'N/A' ? ' - ' + r.duracion : ''}] ` +
-        `(${r.segmento || 'General'}) ${r.texto || r.descripcion || ''} — ${r.normativa || 'Res. 1843/2025'}`
-      )
-      .join('\n');
+  // Formatear como texto legible
+  if (parsed.sinRestricciones) {
+    return `Sin restricciones médico-laborales activas.\n${parsed.justificacionSinRestricciones || 'Trabajador apto sin restricciones según hallazgos clínicos evaluados.'}`;
   }
-  return text;
+  return (parsed.restricciones || [])
+    .map(r => `${r.numero || ''}. [${(r.tipo || 'TEMPORAL').toUpperCase()}${r.duracion && r.duracion !== 'N/A' ? ' - ' + r.duracion : ''}] (${r.segmento || 'General'})\n   ${r.texto || r.descripcion}\n   ⚖ Justificación clínica: ${r.hallazgoQueJustifica || 'Ver hallazgos HC'}\n   📋 Normativa: ${r.normativa || 'Res. 1843/2025'}`)
+    .join('\n\n');
 };
 
-// ══════════════════════════════════════════════════════════════════════════════
-// generateRecommendations — contexto completo + 3 secciones monolito
-// Ref. monolito: App.jsx líneas 15196-15225
-// ══════════════════════════════════════════════════════════════════════════════
 export const generateRecommendations = async (hcData, aiConfig) => {
-  const ctx = _buildFullContext(hcData);
+  const hallazgosReco =
+    Object.entries(hcData.examenFisicoSistemas || {})
+      .filter(([, v]) => v.estado === 'Anormal')
+      .map(([k, v]) => `${k}: ${v.hallazgo}`)
+      .join('; ') || 'Sin hallazgos patológicos';
+  const antecReco = Object.entries(hcData.antecedentesAgrupados || {})
+    .filter(([, v]) => v.val)
+    .map(([k, v]) => `${k}: ${v.det}`)
+    .join(' | ') || 'Niega';
+  const riesgosReco = Object.entries(hcData.riesgos || {})
+    .filter(([, v]) => v).map(([k]) => k).join(', ') || 'No reportados';
+  const dxRecoActivos = [hcData.diagnosticoPrincipal, hcData.diagnosticoSecundario1, hcData.diagnosticoSecundario2]
+    .filter(Boolean).join(' | ') || 'Pendiente';
 
-  const prompt =
-    `Eres médico especialista en Medicina del Trabajo con más de 15 años de experiencia en Colombia. ` +
-    `Genera recomendaciones médico-laborales ESPECÍFICAS y personalizadas para este trabajador. ` +
-    `NO uses recomendaciones genéricas. Texto plano numerado, español formal. SIN JSON.\n\n` +
-    `═══ DATOS DEL TRABAJADOR ═══\n` +
-    `Cargo: ${hcData.cargo || 'N/E'} | Empresa: ${hcData.empresaNombre || 'N/E'} | Actividad económica: ${hcData.actividadEconomica || 'N/E'}\n` +
-    `Turno: ${hcData.turnoTrabajo || 'N/R'} | Antigüedad: ${hcData.antiguedadEmpresa || 'N/R'} | Nivel riesgo ARL: ${hcData.nivelRiesgoARL || 'N/R'}\n` +
-    `IMC: ${hcData.imc || 'N/R'} | TA: ${hcData.ta || 'N/R'} | Diagnóstico: ${hcData.diagnosticoPrincipal || 'N/R'}\n` +
-    `Tabaquismo: ${hcData.habitos?.fuma || 'No'} | Alcohol: ${hcData.habitos?.alcohol || 'No'} | Actividad física: ${hcData.habitos?.deporte || 'No'}\n` +
-    `Tipo de examen: ${hcData.tipoExamen || 'N/E'}\n\n` +
-    `═══ ANTECEDENTES PERSONALES ═══\n${ctx.antecedentes}\n\n` +
-    `═══ PERFIL DEL CARGO ═══\n  ${ctx.perfilCargo}\n\n` +
-    `═══ RIESGOS OCUPACIONALES ═══\n${ctx.riesgos}\n\n` +
-    `═══ HALLAZGOS FÍSICOS PATOLÓGICOS ═══\n${ctx.hallazgos}\n\n` +
-    `═══ MANIOBRAS OSTEOMUSCULARES POSITIVAS ═══\n${ctx.maniobras}\n\n` +
-    `INSTRUCCIÓN: Genera mínimo 15 recomendaciones numeradas, organizadas en 3 secciones obligatorias.\n` +
-    `Cada recomendación debe ser ESPECÍFICA para el cargo, empresa y hallazgos clínicos del trabajador.\n` +
-    `Citar normativa colombiana aplicable (Res. 1843/2025, Dec. 1072/2015, GTC-45, etc.).\n\n` +
-    `AL TRABAJADOR:\n` +
-    `(Mínimo 6 recomendaciones — conductas médicas, hábitos, autocuidado, seguimiento personal)\n\n` +
-    `AL EMPLEADOR:\n` +
-    `(Mínimo 5 recomendaciones — adaptaciones del puesto, EPP, pausas activas, programa SST — Res. 1843/2025 Art. 25)\n\n` +
-    `A LA EMPRESA / ÁREA SST:\n` +
-    `(Mínimo 4 recomendaciones — programas de vigilancia, inspecciones, PVE, intervenciones estructurales — Dec. 1072/2015)`;
+  const prompt = `Eres médico especialista en Medicina del Trabajo con más de 15 años de experiencia en Colombia. Genera recomendaciones médico-laborales PERSONALIZADAS Y ESPECIFICAS para el trabajador evaluado, basadas DIRECTAMENTE en los hallazgos clínicos de ESTA historia clínica. Cada recomendación debe derivar de un hallazgo, antecedente, riesgo o característica específica de ESTE paciente. NO generes recomendaciones genéricas desconectadas de la HC. Responde en texto plano numerado, sin JSON, en español formal y directo.
 
-  return callAIWithFailover(prompt, DEFAULT_SYSTEM_PROMPT, aiConfig);
+════════ HISTORIA CLINICA COMPLETA DEL TRABAJADOR ════════
+Cargo: ${hcData.cargo} | Empresa: ${hcData.empresaNombre} | Actividad económica: ${hcData.actividadEconomica || 'N/E'}
+Tipo examen: ${hcData.tipoExamen} | Énfasis: ${hcData.enfasisExamen || 'N/E'}
+Edad: ${hcData.edad} años | Género: ${hcData.genero} | Escolaridad: ${hcData.escolaridad || 'N/R'}
+Signos vitales: TA ${hcData.ta || 'N/R'} mmHg | FC ${hcData.fc || 'N/R'} lpm | IMC ${hcData.imc || 'N/R'} kg/m² | Peso ${hcData.peso || 'N/R'} kg | Talla ${hcData.talla || 'N/R'} cm
+Hábitos: Tabaquismo ${hcData.habitos?.fuma || 'No'} | Alcohol ${hcData.habitos?.alcohol || 'No'} | Actividad física ${hcData.habitos?.deporte || 'No refiere'}
+Antecedentes relevantes: ${antecReco}
+Riesgos ocupacionales identificados: ${riesgosReco}
+Hallazgos patológicos al examen físico: ${hallazgosReco}
+Diagnósticos activos (CIE-10): ${dxRecoActivos}
+Concepto de aptitud: ${hcData.conceptoAptitud || 'Pendiente'}
+Análisis clínico IA previo: ${hcData.analisisIA ? hcData.analisisIA.substring(0, 500) + '...' : 'No disponible'}
+═══════════════════════════════════════════════════
+
+⚠️ PROHIBICION LEGAL EXPRESA (Res. 1843/2025 Art. 21 - confidencialidad diagnóstica): NO incluyas nombres de diagnósticos clínicos, nombres de enfermedades, síndromes ni patologías en las recomendaciones. NO menciones medicamentos específicos, dosis ni tratamientos farmacológicos. Las recomendaciones son de medicina preventiva, ergonomía, vigilancia epidemiológica y conducta laboral - NO de tratamiento médico. Ejemplo correcto: "Realizar pausas activas de 10 minutos cada 2 horas por el cargo de trabajo con exposición biomecánica" - NO: "Por hernia discal L4-L5 no flexionar columna y tomar ibuprofeno".
+
+INSTRUCCION: Genera MINIMO 14 recomendaciones numeradas. Organiza en las siguientes secciones (indica la sección antes del grupo):
+
+(A) RECOMENDACIONES MÉDICAS Y DE ESTILO DE VIDA - Derivadas de los hallazgos clínicos específicos (TA, IMC, diagnósticos, antecedentes). Cada una debe citar el hallazgo que la genera.
+(B) RECOMENDACIONES ERGONOMICAS Y PREVENTIVAS - Específicas para el CARGO y los RIESGOS identificados en ESTA HC. No genéricas.
+(C) EXAMENES COMPLEMENTARIOS SUGERIDOS - Los que se justifican por los hallazgos de ESTA evaluación (laboratorios, imágenes, audiometría, espirometría, etc.).
+(D) DERIVACIONES A ESPECIALISTAS - Solo si los hallazgos de ESTA HC lo justifican. Especificar especialidad + motivo clínico concreto.
+(E) VIGILANCIA EPIDEMIOLOGICA Y SEGUIMIENTO - SVE que corresponden según hallazgos y riesgos (GATISO-DME, SVE Osteomuscular, Psicosocial, Visual, Auditivo, Respiratorio, Cardiovascular, etc.).
+(F) RECOMENDACIONES AL EMPLEADOR - Conforme Res. 1843/2025, Dec. 1072/2015, Res. 0312/2019. Específicas para este cargo y hallazgos.
+
+Lenguaje técnico-médico-ocupacional, formal, directo y puntual. Cada recomendación en máximo 2 líneas.`;
+
+  const systemPrompt = 'Eres médico especialista en Medicina del Trabajo colombiano. Responde en texto plano, sin JSON.';
+  const text = await callAIWithFailover(prompt, systemPrompt, aiConfig);
+  return text.trim();
 };
 
-// ══════════════════════════════════════════════════════════════════════════════
-// optimizeSchedule
-// ══════════════════════════════════════════════════════════════════════════════
 export const optimizeSchedule = async (agendaData, aiConfig) => {
   const prompt = `Eres especialista en Medicina del Trabajo y gestión de consultas médicas ocupacionales en Colombia. Analiza la agenda médica y genera recomendaciones de optimización.\nDATOS DE AGENDA:\n- Total citas del día: ${agendaData.totalCitas}\n- Citas por tipo de examen: ${JSON.stringify(agendaData.porTipo)}\n- Citas por empresa: ${JSON.stringify(agendaData.porEmpresa)}\n- Horario disponible: ${agendaData.horarioInicio} a ${agendaData.horarioFin}\n- Médicos disponibles: ${agendaData.medicos}\nDevuelve ÚNICAMENTE JSON:\n{"distribucionOptima":[{"hora":"08:00","tipo":"INGRESO/PERIODICO/EGRESO","empresa":"","duracionMin":30,"justificacion":""}],"alertas":[""],"recomendaciones":[""],"tiempoEsperaPromedio":"","eficienciaEstimada":""}`;
   const systemPrompt = 'Eres especialista en gestión de consultas médicas ocupacionales colombianas. Responde SOLO con JSON.';
