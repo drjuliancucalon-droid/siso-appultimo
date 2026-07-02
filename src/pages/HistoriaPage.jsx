@@ -732,11 +732,11 @@ export default function HistoriaPage() {
                 <p className="text-xs font-black text-gray-800 mb-3 border-b pb-2">Selecciona documentos:</p>
                 <div className="space-y-2">
                   {[
-                    { key: 'certificado', label: 'Certificado Ocupacional', has: !!data.conceptoAptitud, icon: "??" },
-                    { key: 'historia', label: 'Historia Cl�nica Completa', has: true, icon: "??" },
-                    { key: 'formula', label: 'F�rmula / Prescripci�n', has: !!(data.formulaMedicamentos?.length), icon: "??" },
-                    { key: 'derivacion', label: 'Derivaci\u00f3n / Interconsulta', has: !!(data.derivaciones?.length), icon: "??" },
-                    { key: 'examenes', label: 'Solicitud Ex�menes', has: !!(data.examenesSolicitados?.length), icon: "??" },
+                    { key: 'certificado', label: 'Certificado Ocupacional', has: !!data.conceptoAptitud, icon: "📄" },
+                    { key: 'historia', label: 'Historia Clínica Completa', has: true, icon: "📋" },
+                    { key: 'formula', label: 'Fórmula Médica', has: !!(data.formulaMedicamentos?.length), icon: "💊" },
+                    { key: 'derivacion', label: 'Derivación / Interconsulta', has: !!(data.derivaciones?.length), icon: "🏥" },
+                    { key: 'examenes', label: 'Solicitud de Exámenes', has: !!(data.examenesSolicitados?.length), icon: "🧪" },
                   ].map(({ key, label, has, icon }) => (
                     <label key={key} className={`flex items-center gap-3 text-xs p-2 rounded-lg cursor-pointer transition-colors ${has ? 'hover:bg-gray-50' : 'opacity-50 grayscale'}`}>
                       <input type="checkbox" checked={has ? !!enviarChecklist[key] : false} disabled={!has}
