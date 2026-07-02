@@ -10,9 +10,11 @@ import InputGroup from '../shared/ui/InputGroup';
 import { initialCompanyState } from '../shared/data/initialStates';
 import EncuestasTab from '../modules/companies/components/EncuestasTab';
 import AnalisisDocsTab from '../modules/companies/components/AnalisisDocsTab';
+import PropuestaEconomicaModal from '../modules/companies/components/PropuestaEconomicaModal';
 
 export default function CompaniesSection({ ctx }) {
   const [showAnalisisDocs, setShowAnalisisDocs] = useState(false);
+  const [propuestaEmpresa, setPropuestaEmpresa] = useState(null);
   const {
     ARL_LIST,
     _syncCompanies,
@@ -445,6 +447,12 @@ export default function CompaniesSection({ ctx }) {
                               className="text-[10px] bg-blue-600 border border-blue-600 text-white px-2 py-0.5 rounded-full font-bold hover:bg-blue-700 transition"
                             >
                               🏢 Abrir Portal
+                            </button>
+                            <button
+                              onClick={() => setPropuestaEmpresa(c)}
+                              className="text-[10px] bg-amber-600 border border-amber-600 text-white px-2 py-0.5 rounded-full font-bold hover:bg-amber-700 transition"
+                            >
+                              💰 Propuesta
                             </button>
                           </>
                         ) : (
