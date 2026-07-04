@@ -335,7 +335,7 @@ export default function HistoriaPage() {
       nombres: data.nombres, apellidos: data.apellidos || '',
       docTipo: data.docTipo, docNumero: data.docNumero,
       eps: data.eps || '', edad: data.edad || '',
-      empresaNombre: data.empresaNombre || '', empresaNit: data.empresaNit || '',
+      empresaNombre: data.empresaNombre || company?.nombre || 'PARTICULAR', empresaNit: data.empresaNit || company?.nit || '',
       arl: data.arl || '', cargo: data.cargo || '',
       tipoExamen: data.tipoExamen, enfasisExamen: data.enfasisExamen || 'GENERAL',
       fechaExamen: data.fechaExamen, vigencia: data.vigencia || '1 año',
@@ -364,7 +364,7 @@ export default function HistoriaPage() {
         email: activeDoctorData?.email || '',
         cel: activeDoctorData?.cel || activeDoctorData?.celular || '',
       },
-      _firma: data._firmaDigital || null,
+      _firma: activeSignature || null,
       hashHC: hcHash,
     };
 
@@ -418,12 +418,13 @@ export default function HistoriaPage() {
       console.log(`${logPrefix} ✅ portal_code`);
     } catch (e) { failedKeys.push(`portal_code: ${e.message}`); console.warn(`${logPrefix} ❌ portal_code:`, e.message); }
 
-    // Claves 4-6 solo si hay NIT
-    if (nitClean && nitClean.length >= 3) {
+    // Claves 4-6: PUBLICAR SIEMPRE (usar empresaId como fallback si NIT es corto/inexistente)
+    const portalCompanyKey = nitClean && nitClean.length >= 3 ? nitClean : (company?.id || data.empresaId || 'particular');
+    if (portalCompanyKey) {
       // ═══ CLAVE 4: objeto enriquecido {atenciones, _firma, _doctorData, nombre, nit} (como monolito L16365-16388) ═══
       try {
         // LEER existente primero para hacer merge incremental
-        let grupoExistente = { atenciones: [], _firma: data._firmaDigital || null, _doctorData: portalData._doctorData, nombre: data.empresaNombre, nit: nitClean };
+        let grupoExistente = { atenciones: [], _firma: activeSignature || null, _doctorData: portalData._doctorData, nombre: portalData.empresaNombre, nit: nitClean || portalCompanyKey };
         try {
           const { value: existente } = await d1Get(`siso_portal_empresa_atenciones_${nitClean}`);
           if (existente && typeof existente === 'object') {
