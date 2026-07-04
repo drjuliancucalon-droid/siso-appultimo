@@ -108,7 +108,7 @@ export function openPrintWindow(title, htmlContent, options = {}) {
  * musculoskeletal maneuvers, review by systems, paraclinical, analysis,
  * diagnoses, concept, restrictions, recommendations
  */
-export function generateHCPrintHTML(data, doctorData, companyData) {
+export function generateHCPrintHTML(data, doctorData, companyData, signatureDataUrl) {
   // ── Header Premium 3 columnas (monolito L11612 buildPrintHeader) ──
   const header = `
     <div style="display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #059669;padding-bottom:10px;margin-bottom:16px;">
@@ -236,6 +236,13 @@ export function generateHCPrintHTML(data, doctorData, companyData) {
       </table>
     </div>` : '';
 
+  // ── Motivo de Consulta / Anamnesis ── (P3a)
+  const motivo = data.motivoConsulta ? `
+    <div class="section">
+      <h2>💬 Motivo de Consulta / Anamnesis</h2>
+      <p>${s(data.motivoConsulta)}</p>
+    </div>` : '';
+
   // ── Signos Vitales ──
   const hasVitals = data.tensionArterial || data.frecuenciaCardiaca || data.peso;
   const vitals = hasVitals ? `
@@ -272,6 +279,26 @@ export function generateHCPrintHTML(data, doctorData, companyData) {
               <td class="label">${s(sys)}</td>
               <td class="${val.estado === 'Anormal' ? 'sys-anormal' : 'sys-normal'}">${s(val.estado)}</td>
               <td>${s(val.hallazgo)}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>` : '';
+
+  // ── Examen Físico Segmentario ── (P3a)
+  const segData = data.examenSegmentario || data.examenFisicoSegmentario || {};
+  const segKeys = ['cabeza', 'cuello', 'torax', 'abdomen', 'extremidades', 'neurologico'];
+  const segItems = segKeys.filter(k => segData[k]?.hallazgo);
+  const exSegmentario = segItems.length > 0 ? `
+    <div class="section">
+      <h2>🔍 Examen Físico Segmentario</h2>
+      <table>
+        <thead><tr><th width="25%">Segmento</th><th>Hallazgo</th></tr></thead>
+        <tbody>
+          ${segItems.map(seg => `
+            <tr>
+              <td class="label">${s(seg.charAt(0).toUpperCase()+seg.slice(1))}</td>
+              <td>${s(segData[seg]?.hallazgo)}</td>
             </tr>
           `).join('')}
         </tbody>
@@ -365,22 +392,30 @@ export function generateHCPrintHTML(data, doctorData, companyData) {
       <p>${sve.map((p) => `<span class="badge badge-yellow">${s(p)}</span>`).join(' ')}</p>
     </div>` : '';
 
-  // ── Signature ──
+  // ── Signature Premium con firma gráfica (P2b) ──
   const signature = `
-    <div class="signature-area">
-      <div style="display:flex;justify-content:space-between;">
-        <div style="width:45%;">
-          <div style="border-top:1px solid #333;margin-top:40px;padding-top:4px;">
-            <p style="font-size:8pt;font-weight:700;">${s(doctorData?.nombre)}</p>
-            <p style="font-size:7pt;color:#6b7280;">${s(doctorData?.titulo || 'Médico Especialista en SST')}</p>
-            <p style="font-size:7pt;color:#6b7280;">RM: ${s(doctorData?.licencia)}</p>
+    <div class="signature-area" style="border-top:3px solid #059669;margin-top:50px;padding-top:20px;">
+      <div style="display:flex;justify-content:space-between;gap:40px;">
+        <div style="width:48%;text-align:center;">
+          ${signatureDataUrl ? `
+            <div style="margin-bottom:8px;">
+              <img src="${s(signatureDataUrl)}" alt="Firma del Médico" style="max-height:70px;max-width:200px;object-fit:contain;display:block;margin:0 auto;"/>
+            </div>` : `<div style="height:70px;width:200px;border-bottom:2px solid #059669;margin:0 auto 8px;"></div>`
+          }
+          <div style="border-top:2px solid #333;padding-top:6px;">
+            <p style="font-size:8.5pt;font-weight:900;color:#059669;text-transform:uppercase;margin:0;">${s(doctorData?.nombre)}</p>
+            <p style="font-size:7pt;color:#6b7280;margin:2px 0;">${s(doctorData?.titulo || 'Médico Especialista en SST')}</p>
+            <p style="font-size:7pt;color:#6b7280;margin:2px 0;">RM: ${s(doctorData?.licencia)}</p>
+            <p style="font-size:7pt;color:#9ca3af;margin:2px 0;">${s(doctorData?.ciudad || '')} | ${s(doctorData?.cel || doctorData?.celular || '')}</p>
           </div>
         </div>
-        <div style="width:45%;">
-          <div style="border-top:1px solid #333;margin-top:40px;padding-top:4px;">
-            <p style="font-size:8pt;font-weight:700;">${s(data.nombres)}</p>
-            <p style="font-size:7pt;color:#6b7280;">${s(data.docTipo)} ${s(data.docNumero)}</p>
-            <p style="font-size:7pt;color:#6b7280;">Paciente</p>
+        <div style="width:48%;text-align:center;">
+          <div style="height:70px;margin-bottom:8px;"></div>
+          <div style="border-top:2px solid #333;padding-top:6px;">
+            <p style="font-size:8.5pt;font-weight:700;margin:0;">Firma del Paciente</p>
+            <p style="font-size:7pt;color:#6b7280;margin:4px 0;">${s(data.nombres)}</p>
+            <p style="font-size:7pt;color:#6b7280;margin:2px 0;">${s(data.docTipo)} ${s(data.docNumero)}</p>
+            <p style="font-size:7pt;color:#9ca3af;margin:2px 0;">Historia cerrada: ${date(data.fechaExamen)}</p>
           </div>
         </div>
       </div>
@@ -388,8 +423,9 @@ export function generateHCPrintHTML(data, doctorData, companyData) {
 
   return [
     header, identification, labor, cargoProfile, riskFactors,
-    occupationalHistory, antPersonales, estilos, vitals,
-    physicalExam, musculoskeletal, reviewSystems, paraclinical,
+    occupationalHistory, antPersonales, estilos, motivo,
+    vitals, physicalExam, exSegmentario,
+    musculoskeletal, reviewSystems, paraclinical,
     analysis, diagnoses, concept, restrictions, recommendations,
     sveSection, signature,
   ].join('\n');

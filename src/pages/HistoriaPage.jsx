@@ -693,7 +693,7 @@ export default function HistoriaPage() {
 
         {/* Right: Secondary Actions — IA movida al formulario (Cambio 3) */}
         <div className="flex items-center gap-2 flex-wrap justify-end">
-          <button onClick={() => printHC(data, activeDoctorData)} className="flex items-center gap-1.5 px-4 py-2 text-[11px] uppercase tracking-wider font-black text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 rounded-xl transition-colors shadow-sm">
+          <button onClick={() => printHC(data, activeDoctorData, null, activeSignature)} className="flex items-center gap-1.5 px-4 py-2 text-[11px] uppercase tracking-wider font-black text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 rounded-xl transition-colors shadow-sm">
             <Printer className="w-3.5 h-3.5 text-gray-500" /> Imprimir
           </button>
           
