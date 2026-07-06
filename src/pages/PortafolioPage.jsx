@@ -1,24 +1,53 @@
 // src/pages/PortafolioPage.jsx — Service portfolio
+// GAP-PF02: Migrado localStorage → D1 (2026-07-06)
 import React, { useState, useEffect } from 'react';
 import { Briefcase, Plus, Edit2, Trash2, DollarSign, Save } from 'lucide-react';
+import { d1Get, d1WriteArrayMerge } from '../lib/d1Client';
 
 const STORAGE_KEY = 'siso_portafolio';
-const load = () => { try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); } catch { return []; } };
-const persist = (d) => { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(d)); } catch {} };
+const loadLocal = () => { try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); } catch { return []; } };
+const saveLocal = (d) => { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(d)); } catch {} };
+const saveD1 = async (data) => { try { await d1WriteArrayMerge(STORAGE_KEY, data, 'id'); } catch (e) { console.warn('D1 save portafolio error:', e.message); } };
 
 export default function PortafolioPage() {
-  const [items, setItems] = useState(load);
+  const [items, setItems] = useState(loadLocal);
+  const [loading, setLoading] = useState(true);
   const [form, setForm] = useState({ nombre: '', descripcion: '', precio: '', categoria: 'Exámenes ocupacionales' });
   const [showForm, setShowForm] = useState(false);
+
+  // Cargar desde D1 al montar
+  useEffect(() => {
+    let mounted = true;
+    const load = async () => {
+      try {
+        const { value } = await d1Get(STORAGE_KEY);
+        if (Array.isArray(value) && value.length > 0 && mounted) {
+          setItems(value);
+          saveLocal(value);
+        }
+      } catch (e) {
+        console.warn('Error cargando portafolio desde D1:', e.message);
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    };
+    load();
+    return () => { mounted = false; };
+  }, []);
+
+  // Persistir a D1 cuando cambian items
+  useEffect(() => {
+    if (items.length > 0) { saveLocal(items); saveD1(items); }
+  }, [items]);
   const CATS = ['Exámenes ocupacionales', 'Exámenes periódicos', 'SG-SST', 'Capacitaciones', 'Telemedicina', 'Otros'];
 
   const handleSave = () => {
     if (!form.nombre) { alert('Nombre requerido'); return; }
     const item = { ...form, id: `svc_${Date.now()}` };
-    const u = [...items, item]; setItems(u); persist(u);
+    const u = [...items, item]; setItems(u);
     setForm({ nombre: '', descripcion: '', precio: '', categoria: 'Exámenes ocupacionales' }); setShowForm(false);
   };
-  const handleDelete = (id) => { if (confirm('¿Eliminar?')) { const u = items.filter((i) => i.id !== id); setItems(u); persist(u); } };
+  const handleDelete = (id) => { if (confirm('¿Eliminar?')) { const u = items.filter((i) => i.id !== id); setItems(u); } };
 
   const grouped = CATS.map((cat) => ({ cat, items: items.filter((i) => i.categoria === cat) })).filter((g) => g.items.length > 0);
 

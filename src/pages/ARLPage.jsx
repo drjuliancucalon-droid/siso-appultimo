@@ -1,14 +1,17 @@
 // src/pages/ARLPage.jsx — ARL Module (AT + EL)
 // Modo ARL: Accidentes de Trabajo + Enfermedades Laborales
 // Plan GATE: Requiere plan PRO o superior
-import React, { useState, useMemo } from 'react';
+// GAP-ARL02: Migrado localStorage → D1 (2026-07-06)
+import React, { useState, useMemo, useEffect } from 'react';
 import { Shield, AlertTriangle, TrendingUp, TrendingDown, FileText, Plus, Activity, Users, Calendar, Download } from 'lucide-react';
 import { useAuthStore } from '../stores/authStore';
 import { useBackendData } from '../hooks/useBackendData';
+import { d1Get, d1WriteArrayMerge } from '../lib/d1Client';
 
 const STORAGE_KEY = 'siso_atl_cases';
-const loadATL = () => { try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); } catch { return []; } };
-const saveATL = (d) => { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(d)); } catch {} };
+const loadLocal = () => { try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); } catch { return []; } };
+const saveLocal = (d) => { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(d)); } catch {} };
+const saveD1 = async (data) => { try { await d1WriteArrayMerge(STORAGE_KEY, data, 'id'); } catch (e) { console.warn('D1 save ARL error:', e.message); } };
 
 export default function ARLPage() {
   const { currentUser } = useAuthStore();
@@ -18,8 +21,29 @@ export default function ARLPage() {
   // Plan GATE: ARL requiere PRO
   const canAccessARL = currentUser?.license === 'pro' || currentUser?.license === 'clinica' || currentUser?.role === 'super_admin' || currentUser?.role === 'administrador';
   
-  const [atlCases, setAtlCases] = useState(loadATL);
+  const [atlCases, setAtlCases] = useState(loadLocal);
+  const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('at'); // 'at' = Accidentes, 'el' = Enfermedades
+
+  // Cargar desde D1 al montar (con fallback a localStorage)
+  useEffect(() => {
+    let mounted = true;
+    const load = async () => {
+      try {
+        const { value } = await d1Get(STORAGE_KEY);
+        if (Array.isArray(value) && value.length > 0 && mounted) {
+          setAtlCases(value);
+          saveLocal(value);
+        }
+      } catch (e) {
+        console.warn('Error cargando casos ARL desde D1:', e.message);
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    };
+    load();
+    return () => { mounted = false; };
+  }, []);
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({
     tipo: 'AT', // AT o EL
@@ -37,7 +61,7 @@ export default function ARLPage() {
   const handleSave = () => {
     if (!form.trabajador || !form.empresa) { alert('Empresa y trabajador son requeridos'); return; }
     const newCase = { ...form, id: `atl_${Date.now()}`, createdAt: new Date().toISOString() };
-    const updated = [newCase, ...atlCases]; setAtlCases(updated); saveATL(updated);
+    const updated = [newCase, ...atlCases]; setAtlCases(updated); saveLocal(updated); saveD1(updated);
     setForm({ tipo: 'AT', fecha: new Date().toISOString().split('T')[0], empresa: '', trabajador: '', docNumero: '', descripcion: '', estado: 'en_tramite', clasificacion: '', diasIncapacidad: '', consecuencia: '' });
     setShowForm(false);
   };
