@@ -525,3 +525,85 @@ export const analyzeEpidemiologicalData = async (patients, aiConfig, programa = 
 
   return callAIWithFailover(prompt, DEFAULT_SYSTEM_PROMPT, aiConfig);
 };
+
+// ══════════════════════════════════════════════════════════════════════════════
+// evaluateGTC45 — Análisis IA de matriz de riesgos GTC-45
+// Usado por RiskMatrix.jsx (SG-SST)
+// ══════════════════════════════════════════════════════════════════════════════
+export const evaluateGTC45 = async (gtcData, aiConfig) => {
+  const prompt = `Eres especialista en Seguridad y Salud en el Trabajo colombiano con experiencia en metodología GTC-45 (2012). 
+Evalúa la siguiente matriz de riesgos laborales y genera recomendaciones de control según la jerarquía (eliminación, sustitución, controles de ingeniería, controles administrativos, EPP).
+
+DATOS DE EMPRESA:
+- Empresa: ${gtcData.company || 'N/E'}
+- Área/Proceso: ${gtcData.area || 'N/E'}
+
+RIESGOS IDENTIFICADOS:
+${gtcData.risks || 'No especificados'}
+
+Devuelve ÚNICAMENTE JSON:
+{
+  "analisisGeneral": "Análisis general de 3-4 líneas del perfil de riesgos",
+  "hallazgosCriticos": ["hallazgo1", "hallazgo2"],
+  "recomendaciones": [
+    {"peligro": "", "controlActual": "", "controlPropuesto": "", "jerarquia": "Eliminación/Sustitución/Ingeniería/Administrativo/EPP", "plazo": "Inmediato/Corto/Mediano/Largo"},
+    ...
+  ],
+  "cumplimientoLegal": "Evaluación de cumplimiento normativo (Decreto 1072, Res. 0312)",
+  "prioridades": ["prioridad1", "prioridad2", "prioridad3"]
+}`;
+  const systemPrompt = 'Eres especialista en SST colombiano experto en GTC-45. Responde SOLO JSON válido.';
+  const raw = await callAIWithFailover(prompt, systemPrompt, aiConfig);
+  return parseAIJSON(raw);
+};
+
+// ══════════════════════════════════════════════════════════════════════════════
+// generateAnnualPlan — IA para plan anual de trabajo SG-SST
+// Usado por AnnualPlan.jsx (SG-SST)
+// ══════════════════════════════════════════════════════════════════════════════
+export const generateAnnualPlan = async (planData, aiConfig) => {
+  const prompt = `Eres especialista en Seguridad y Salud en el Trabajo colombiano. Genera un plan anual de trabajo conforme al Decreto 1072/2015 y Resolución 0312/2019.
+
+DATOS DE LA EMPRESA:
+- Empresa: ${planData.company || 'N/E'}
+- Tipo de empresa: ${planData.tipoEmpresa || 'N/E'}
+- Número de trabajadores: ${planData.numTrabajadores || 'N/E'}
+- Actividades planificadas: ${planData.activities || 'No especificadas'}
+
+Devuelve ÚNICAMENTE JSON:
+{
+  "planAnual": [
+    {"mes": "Enero", "actividades": [{"actividad": "", "responsable": "", "fecha": "", "estado": "Planificado"}]}
+  ],
+  "recomendaciones": ["recomendación1", "recomendación2"],
+  "cumplimientoEstandares": "Porcentaje estimado de cumplimiento de estándares mínimos"
+}`;
+  const systemPrompt = 'Eres especialista en SST colombiano. Responde SOLO JSON válido.';
+  const raw = await callAIWithFailover(prompt, systemPrompt, aiConfig);
+  return parseAIJSON(raw);
+};
+
+// ══════════════════════════════════════════════════════════════════════════════
+// generatePolicy — IA para generación de políticas SG-SST
+// Usado por PolicyGenerator.jsx (SG-SST)
+// ══════════════════════════════════════════════════════════════════════════════
+export const generatePolicy = async (policyData, aiConfig) => {
+  const prompt = `Eres especialista en Seguridad y Salud en el Trabajo colombiano. Genera una política de SST conforme al Decreto 1072/2015.
+
+DATOS DE LA EMPRESA:
+- Empresa: ${policyData.company || 'N/E'}
+- Alcance: ${policyData.scope || 'General'}
+- Objetivos: ${policyData.objectives || 'No especificados'}
+
+Devuelve ÚNICAMENTE JSON:
+{
+  "titulo": "Política de Seguridad y Salud en el Trabajo",
+  "contenido": "Texto completo de la política...",
+  "objetivos": ["objetivo1", "objetivo2"],
+  "compromisos": ["compromiso1", "compromiso2"],
+  "fechaVigencia": "YYYY-MM-DD"
+}`;
+  const systemPrompt = 'Eres especialista en SST colombiano. Responde SOLO JSON válido.';
+  const raw = await callAIWithFailover(prompt, systemPrompt, aiConfig);
+  return parseAIJSON(raw);
+};
