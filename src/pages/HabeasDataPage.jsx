@@ -1,11 +1,13 @@
 // src/pages/HabeasDataPage.jsx
 // Sprint 3.5: Habeas Data — Solicitudes ARCO (Ley 1581/2012)
 // Consulta, Rectificación, Supresión, Revocatoria
+// GAP-HD02: Migrado localStorage → D1 (2026-07-06)
 import React, { useState, useCallback, useEffect } from 'react';
 import { Shield, Plus, Clock, CheckCircle, AlertCircle, FileText, Search, Trash2 } from 'lucide-react';
 import { InputGroup } from '../shared/components/ui/InputGroup';
 import { SelectGroup } from '../shared/components/ui/SelectGroup';
 import { TextAreaGroup } from '../shared/components/ui/TextAreaGroup';
+import { d1Get, d1WriteArrayMerge } from '../lib/d1Client';
 
 const SOLICITUD_TYPES = ['Consulta', 'Rectificación', 'Supresión', 'Revocatoria'];
 const STATUS_MAP = {
@@ -17,14 +19,22 @@ const STATUS_MAP = {
 
 const STORAGE_KEY = 'siso_habeas_data_requests';
 
-const loadRequests = () => {
+const loadLocal = () => {
   try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); } catch { return []; }
 };
 
-const saveRequests = (reqs) => localStorage.setItem(STORAGE_KEY, JSON.stringify(reqs));
+const saveLocal = (reqs) => {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(reqs)); } catch {}
+};
+
+// Guarda en D1
+const saveD1 = async (data) => {
+  try { await d1WriteArrayMerge(STORAGE_KEY, data, 'id'); } catch (e) { console.warn('D1 save habeas data error:', e.message); }
+};
 
 export default function HabeasDataPage() {
-  const [requests, setRequests] = useState(loadRequests);
+  const [requests, setRequests] = useState(loadLocal);
+  const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [filter, setFilter] = useState('');
   const [form, setForm] = useState({
@@ -37,7 +47,31 @@ export default function HabeasDataPage() {
     descripcion: '',
   });
 
-  useEffect(() => { saveRequests(requests); }, [requests]);
+  // Cargar desde D1 al montar (con fallback a localStorage)
+  useEffect(() => {
+    let mounted = true;
+    const load = async () => {
+      try {
+        const { value } = await d1Get(STORAGE_KEY);
+        if (Array.isArray(value) && value.length > 0 && mounted) {
+          setRequests(value);
+          saveLocal(value);
+        }
+      } catch (e) {
+        console.warn('Error cargando habeas data desde D1:', e.message);
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    };
+    load();
+    return () => { mounted = false; };
+  }, []);
+
+  // Persistir cambios: localStorage (inmediato) + D1 (async)
+  useEffect(() => {
+    saveLocal(requests);
+    saveD1(requests);
+  }, [requests]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
