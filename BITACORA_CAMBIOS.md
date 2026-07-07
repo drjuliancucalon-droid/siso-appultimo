@@ -1,20 +1,15 @@
 # 📋 BITÁCORA DE CAMBIOS — SISO OcupaSalud Pro
 
-**Inicio:** 2026-07-06 | **Último:** 2026-07-07 09:41  
+**Inicio:** 2026-07-06 | **Último:** 2026-07-07 10:07  
 **Repositorio:** `drjuliancucalon-droid/siso-appultimo`  
-**Protocolo base:** `PROTOCOLO_MAESTRO_DEFINITIVO.md` (v4.0)  
 
 ---
 
-## 📊 RESUMEN: 36/56 GAPS (64%)
-
-| Total GAPS | Completados | Pendientes | % Avance |
-|------------|-------------|------------|----------|
-| 56 | 36 | 20 | 64% |
+## 📊 RESUMEN: 38/56 GAPS (68%)
 
 ---
 
-## 🟢 CAMBIOS REALIZADOS (31 commits)
+## 🟢 CAMBIOS REALIZADOS (34 commits)
 
 | # | Commit | GAP(s) | Archivo | Descripción |
 |---|--------|--------|---------|-------------|
@@ -45,27 +40,23 @@
 | 25 | `4376f66` | F02 | DashboardPage | Pagadas+monto |
 | 26 | `ad68d9e` | D05 | DashboardPage | Turno visible |
 | 27 | `9f5ec64` | A06 | DashboardPage | D1 badge |
-| 28 | `6b1a91d` | P3-01 | Layout | Exámenes+DOCS |
+| 28 | `6b1a91d` | P3-01/DOCS | Layout | Exámenes+DOCS |
 | 29 | `07ecea8` | P01+P07 | PatientList | Cards↔Tabla |
 | 30 | `b80bb7a` | E05 | CompaniesSection | Tab Portafolio |
+| 31 | `16f0964` | D03/F03 | DashboardPage | Alertas completas+RIPS |
+| 32 | `5691da1` | E02+E03 | CompaniesSection | Facturación+Documentos |
 
----
+### ✅ Verificados ya resueltos:
+- GAP-CO01, GAP-U01, GAP-L01, GAP-F03, P3-04, P2-06, P2-07
 
-### ✅ Verificados como ya resueltos:
-- ✅ GAP-CO01, GAP-U01, GAP-L01 (sesiones previas)
-- ✅ GAP-F03: RIPS en header (commit `b223132`, Layout.jsx línea ~225)
-
-## 🔴 PENDIENTES (20 GAPS)
+## 🔴 PENDIENTES (18 GAPS)
 
 | Prioridad | GAP | Horas |
 |-----------|-----|-------|
 | 🔴 Alta | D01+G01 Importar CSV | 3h |
-| 🔴 Alta | P3-04 HC exámenes esp. | 3h |
-| 🔴 Alta | P2-06+P2-07 Empresas tabs | 4h |
-| 🟡 Media | D03 Alertas completas | 2h |
-| 🟡 Media | E01..E04 Empresas tabs | 4h |
-| 🟢 Baja | P3-06 ampliación + 10 sprints | 8h |
+| � Media | P3-06 ampliación Portafolio | 2h |
+| � Baja | 12 sprints originales restantes | 10h |
 
 ---
 
-*Actualizado: 2026-07-07 09:41 — 31 commits, 35 GAPS (63%)*
+*Actualizado: 2026-07-07 10:07 — 34 commits, 38 GAPS (68%)*
