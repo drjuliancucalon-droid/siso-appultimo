@@ -161,6 +161,31 @@ export const QueueManager = () => {
           <p>No hay pacientes en sala de espera hoy</p>
         </div>
       )}
+
+      {/* GAP-A05: Resumen de Agenda HOY/SEMANA */}
+      <div className="border-t border-gray-200 pt-4 mt-2">
+        <h3 className="text-xs font-black text-gray-700 uppercase mb-2">📊 Resumen de Agenda</h3>
+        <div className="grid grid-cols-2 gap-2">
+          <div className="bg-gray-50 border border-gray-200 rounded-xl p-3 text-center">
+            <p className="text-[10px] font-bold text-gray-500">HOY</p>
+            <p className="text-lg font-black text-gray-800">{todasCitas.filter(c => c.fecha === hoy).length}</p>
+            <p className="text-[9px] text-gray-400">citas totales</p>
+          </div>
+          <div className="bg-gray-50 border border-gray-200 rounded-xl p-3 text-center">
+            <p className="text-[10px] font-bold text-gray-500">SEMANA</p>
+            <p className="text-lg font-black text-gray-800">{(() => {
+              const inicioSemana = new Date(hoy);
+              inicioSemana.setDate(inicioSemana.getDate() - inicioSemana.getDay());
+              const finSemana = new Date(inicioSemana);
+              finSemana.setDate(finSemana.getDate() + 6);
+              const ini = inicioSemana.toISOString().slice(0, 10);
+              const fin = finSemana.toISOString().slice(0, 10);
+              return todasCitas.filter(c => c.fecha >= ini && c.fecha <= fin).length;
+            })()}</p>
+            <p className="text-[9px] text-gray-400">citas esta semana</p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
