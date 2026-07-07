@@ -258,6 +258,8 @@ export default function DashboardPage() {
   // GAP-D02: Cuentas pendientes con monto $
   const cuentasPendientes = bills.filter(b => b.estado === 'pendiente' || b.estado === 'Pendiente' || !b.estado);
   const montoPendiente = cuentasPendientes.reduce((sum, b) => sum + (parseInt(b.total) || parseInt(b.valor) || 0), 0);
+  const cuentasPagadas = bills.filter(b => b.estado === 'pagada' || b.estado === 'Pagada' || b.estado === 'Pagado');
+  const montoPagado = cuentasPagadas.reduce((sum, b) => sum + (parseInt(b.total) || parseInt(b.valor) || 0), 0);
 
   const displayName = doctor?.nombre || currentUser?.nombre || currentUser?.user || 'Doctor';
 
@@ -748,7 +750,7 @@ export default function DashboardPage() {
             { icon: FileCheck, label: 'HC Cerradas', value: hcCerradas, sub: 'Completadas', color: 'text-green-600', bg: 'bg-green-50', border: 'border-green-100' },
             { icon: FileText, label: 'HC Abiertas', value: hcAbiertas, sub: 'Pendientes', color: 'text-amber-600', bg: 'bg-amber-50', border: 'border-amber-100' },
             { icon: Stethoscope, label: 'Médicos activos', value: medicosActivos, sub: 'En sistema', color: 'text-blue-600', bg: 'bg-blue-50', border: 'border-blue-100' },
-            { icon: Receipt, label: 'Cuentas pendientes', value: montoPendiente > 0 ? `$${montoPendiente.toLocaleString('es-CO')}` : 0, sub: `${cuentasPendientes.length} facturas`, color: montoPendiente > 0 ? 'text-red-600' : 'text-gray-600', bg: montoPendiente > 0 ? 'bg-red-50' : 'bg-gray-50', border: montoPendiente > 0 ? 'border-red-100' : 'border-gray-100' },
+            { icon: Receipt, label: 'Cuentas pendientes', value: montoPendiente > 0 ? `$${montoPendiente.toLocaleString('es-CO')}` : 0, sub: montoPagado > 0 ? `${cuentasPendientes.length} pend. · ${cuentasPagadas.length} pagadas por $${montoPagado.toLocaleString('es-CO')}` : `${cuentasPendientes.length} facturas`, color: montoPendiente > 0 ? 'text-red-600' : 'text-gray-600', bg: montoPendiente > 0 ? 'bg-red-50' : 'bg-gray-50', border: montoPendiente > 0 ? 'border-red-100' : 'border-gray-100' },
             // GAP-E06: Convenios tracker detallado
             ...(conveniosPorVencer.length > 0 ? [
               { icon: Shield, label: 'Convenios por vencer', value: conveniosPorVencer.length, sub: conveniosPorVencer.map(c => `${c.nombre} (${c.convenioVencimiento})`).join(' · '), color: 'text-red-600', bg: 'bg-red-50', border: 'border-red-100' },
