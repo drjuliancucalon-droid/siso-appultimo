@@ -16,6 +16,8 @@ import PropuestaEconomicaModal from '../modules/companies/components/PropuestaEc
 export default function CompaniesSection({ ctx }) {
   const [showAnalisisDocs, setShowAnalisisDocs] = useState(false);
   const [propuestaEmpresa, setPropuestaEmpresa] = useState(null);
+  const [expandedCompanyId, setExpandedCompanyId] = useState(null);
+  const [expandedTab, setExpandedTab] = useState('pacientes');
   const {
     ARL_LIST,
     _syncCompanies,
@@ -339,6 +341,90 @@ export default function CompaniesSection({ ctx }) {
                         </button>
                       </div>
                     </div>
+                    {/* GAP-EM05: Botón expandir/colapsar tabs */}
+                    <button
+                      onClick={() => {
+                        setExpandedCompanyId(expandedCompanyId === c.id ? null : c.id);
+                        setExpandedTab('pacientes');
+                      }}
+                      className="mt-2 flex items-center gap-1 text-[10px] font-bold text-purple-600 hover:text-purple-800"
+                    >
+                      {expandedCompanyId === c.id ? '▲ Ocultar detalles' : '▼ Ver historial, pacientes y facturación'}
+                    </button>
+
+                    {/* GAP-EM05: Tabs expandibles */}
+                    {expandedCompanyId === c.id && (
+                      <div className="mt-3 border-t border-purple-200 pt-3">
+                        <div className="flex gap-1 mb-3">
+                          {[
+                            { k: 'pacientes', l: '👥 Pacientes' },
+                            { k: 'historial', l: '📋 Historial HCs' },
+                          ].map(t => (
+                            <button key={t.k}
+                              onClick={() => setExpandedTab(t.k)}
+                              className={`px-3 py-1 rounded-lg text-[10px] font-bold ${expandedTab === t.k ? 'bg-purple-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+                            >
+                              {t.l}
+                            </button>
+                          ))}
+                        </div>
+                        {/* Tab Pacientes */}
+                        {expandedTab === 'pacientes' && (
+                          <div className="space-y-2 max-h-64 overflow-y-auto">
+                            {(() => {
+                              const pacs = patientsList.filter(p =>
+                                p.empresaId === c.id ||
+                                (c.nit && p.empresaNit === c.nit) ||
+                                p.empresa?.toLowerCase() === c.nombre?.toLowerCase() ||
+                                p.empresaNombre?.toLowerCase() === c.nombre?.toLowerCase()
+                              );
+                              if (pacs.length === 0) return <p className="text-xs text-gray-400 py-4 text-center">Sin pacientes registrados</p>;
+                              return pacs.map(p => (
+                                <div key={p.id || p.docNumero} className="bg-white border border-gray-100 rounded-lg p-2 flex items-center justify-between">
+                                  <div>
+                                    <p className="text-xs font-bold text-gray-800">{p.nombres || p.nombreCompleto || 'Sin nombre'}</p>
+                                    <p className="text-[10px] text-gray-500">{p.docTipo || 'CC'} {p.docNumero} · {p.cargo || 'Sin cargo'}</p>
+                                  </div>
+                                  <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold ${(p.conceptoAptitud || '').toUpperCase().includes('APTO') ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>
+                                    {p.conceptoAptitud || 'Pendiente'}
+                                  </span>
+                                </div>
+                              ));
+                            })()}
+                          </div>
+                        )}
+                        {/* Tab Historial */}
+                        {expandedTab === 'historial' && (
+                          <div className="space-y-2 max-h-64 overflow-y-auto">
+                            {(() => {
+                              const hcs = patientsList.filter(p =>
+                                p.empresaId === c.id ||
+                                (c.nit && p.empresaNit === c.nit) ||
+                                p.empresa?.toLowerCase() === c.nombre?.toLowerCase() ||
+                                p.empresaNombre?.toLowerCase() === c.nombre?.toLowerCase()
+                              ).sort((a, b) => (b.fechaExamen || '').localeCompare(a.fechaExamen || ''));
+                              if (hcs.length === 0) return <p className="text-xs text-gray-400 py-4 text-center">Sin historial de HCs</p>;
+                              return hcs.map(hc => (
+                                <div key={hc.id || hc.docNumero} className="bg-white border border-gray-100 rounded-lg p-2">
+                                  <div className="flex items-center justify-between">
+                                    <div>
+                                      <p className="text-xs font-bold text-gray-800">{hc.nombres || hc.nombreCompleto}</p>
+                                      <p className="text-[10px] text-gray-500">
+                                        {hc.fechaExamen ? new Date(hc.fechaExamen).toLocaleDateString('es-CO') : 'Sin fecha'} · {hc.tipoExamen || 'PERIODICO'} · {hc.conceptoAptitud || 'Pendiente'}
+                                      </p>
+                                    </div>
+                                    <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold ${hc.estadoHistoria === 'Cerrada' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
+                                      {hc.estadoHistoria === 'Cerrada' ? '✅ Cerrada' : '📝 Abierta'}
+                                    </span>
+                                  </div>
+                                </div>
+                              ));
+                            })()}
+                          </div>
+                        )}
+                      </div>
+                    )}
+
                     {/* Tarifas rápidas */}
                     {(c.tarifaIngreso ||
                       c.tarifaPeriodico ||
