@@ -1,154 +1,97 @@
-# SESION_ESTADO.md — Documento maestro persistente SISO OcupaSalud
-# ⚠️ LEER ESTE ARCHIVO AL INICIO DE CADA SESIÓN NUEVA
-# Actualizado automáticamente cada sesión
+# 📊 SESION_ESTADO.md — Tracking de Sesiones SISO
+
+**Última actualización:** 2026-07-07 09:25  
+**Último commit:** `c5d8072` — "DOCS: Bitácora actualizada con 27 commits y 32 GAPS completados"  
+**Rama:** `main`  
+**Build:** ✅ 1824 módulos, 0 errores
 
 ---
 
-## PLATAFORMA
-- **Repo local**: `C:\Users\JQK3\Desktop\Refactorizacion 30 de junio`
-- **URL producción**: `https://0e14e2ed.siso-appultimo-arp.pages.dev`
-- **Monolito referencia**: `https://ocupasaludparadesplegar-f4q.pages.dev`
-- **Worker D1**: `https://siso-api.dr-juliancucalon.workers.dev` (header `X-Siso-Token`)
-- **Cloudflare Pages**: construye con `npm run build` — NO sirve dist comprometido
+## 📈 AVANCE GLOBAL: 32/56 GAPS (57%)
 
-## SEGURIDAD (PERMANENTE — NO CAMBIAR NUNCA)
-- ❌ No exponer VITE_WORKER_TOKEN en ningún log
-- ❌ No cambiar CF_API_TOKEN ni secrets salvo necesidad crítica
-- ❌ No cambiar claves D1 ni nombres de rutas
-- ❌ No mezclar cambios dominio/infra con sprints funcionales
-- ✅ Si VITE_WORKER_TOKEN no existe → detener y pedir al usuario
+### ✅ COMPLETADOS (32)
 
-## CLAVES D1
-- `siso_companies_${userId}`
-- `siso_patients_${userId}`
-- `siso_users`
-- `siso_encuestas`
-- `siso_encuesta_resps_${encId}`
-- `siso_portal_empresa_atenciones_${nit}`
+| ID | Módulo | Descripción | Commit |
+|----|--------|-------------|--------|
+| GAP-SG01 | SG-SST | SGSSTPage onNavigate + 3 funciones IA | `387430d` |
+| GAP-HD02 | Habeas Data | Migrado a D1 | `8a1523e` |
+| GAP-ARL02 | ARL | Migrado a D1 | `4c8d6b9` |
+| GAP-PF02 | Portafolio | Migrado a D1 | `4c8d6b9` |
+| GAP-D02 | Dashboard | KPI cuentas pendientes con monto $ | `301dc76` |
+| GAP-ENC01 | Encuestas | Vista respuestas | `b80e553` |
+| P2-02 | Pacientes | Email + WhatsApp | `5da5372` |
+| P2-01 | Pacientes | Badge contador HCs | `fe44449` |
+| P3-01+P1-02 | Header | Botones Importar, RIPS, Nube | `b223132` |
+| P3-05 | Dashboard | Modal turno médico | `0378d6a` |
+| P2-04 | Agenda | 4 contadores | `205eb1b` |
+| P2-05 | Agenda | Reporte asistencia CSV | `990e7f7` |
+| GAP-CJ02 | Caja | CSV + categorías egreso | `3c536b2` |
+| P3-03 | HC | Sección Vacunas CRUD | `39e4cf8` |
+| GAP-EM05 | Empresas | Tabs expandibles | `e535b11` |
+| P3-02 | Pacientes | Filtro rango fechas | `6640627` |
+| P2-03 | Agenda | Vistas Semanal/Mensual | `1e75a0c` |
+| P2-08 | Dashboard | Alertas inteligentes (firma) | `e9ac310` |
+| P3-06 | Portafolio | Tabla + resumen | `dd541f3` |
+| GAP-D04 | Dashboard | CTAs Nueva HC | `ccd5673` |
+| GAP-A05 | Agenda | Resumen HOY/SEMANA | `072fd7d` |
+| GAP-E06 | Dashboard | Tracker convenios | `f026a10` |
+| GAP-D06 | Dashboard | Médicos activos real | `f026a10` |
+| GAP-HC08 | HC | Contador ediciones | `fed73c5` |
+| GAP-P06 | Pacientes | Botón ⊕ Nueva HC | `6d27a1c` |
+| GAP-D07 | Dashboard | ContabilidadV2 | `eeb9c70` |
+| GAP-D09 | Dashboard | Portafolio módulos | `eeb9c70` |
+| GAP-F02 | Dashboard | Cuentas pagadas + monto | `4376f66` |
+| GAP-D05 | Dashboard | Turno médico visible | `ad68d9e` |
+| GAP-A06 | Dashboard | Badge Supabase→D1 | `9f5ec64` |
 
----
+### 🔴 PENDIENTES (24)
 
-## ESTADO ACTUAL (sesión 2026-06-30)
+**ALTA PRIORIDAD:**
+- GAP-D01 / GAP-G01 — Importar pacientes CSV funcional (3h)
+- P3-04 — HC exámenes especiales UI (Alturas, Confinados, Alimentos) (3h)
+- P2-06/P2-07 — Empresas tabs Facturación/Documentos (4h)
 
-### ✅ CAMBIOS IMPLEMENTADOS Y BUILD EXITOSO (Sesión #2 — 2026-06-30)
+**MEDIA PRIORIDAD:**
+- GAP-D03 — Alertas inteligentes completas (2h)
+- GAP-E01..E06 — Empresas tabs adicionales (6h)
+- GAP-P01 — Pacientes layout tabla (1h)
+- GAP-P05 — Pacientes date range filtro (1h)
 
-#### Sprint A3: PhysicalExam.jsx — Expandido a 29 sistemas ✅
-- `src/modules/clinical/components/PhysicalExam.jsx`
-- ✅ Comentario actualizado: 15 → 29 sistemas
-- ✅ Catálogo NORMAL_DESCRIPTIONS_SYSTEMS ya contiene los 29 sistemas
-- ✅ Build verificado: 1817 módulos compilados sin errores
-
-#### Sprint A4: RecommendationsPanel + RestrictionsPanel — Verificados ✅
-- `src/modules/clinical/components/RecommendationsPanel.jsx` (110 líneas) — Completo
-- `src/modules/clinical/components/RestrictionsPanel.jsx` (124 líneas) — Completo
-- ✅ Ambos con checklist por categoría, IA, GTC-45/GATISO
-
-#### Sprint C4: CartaCustodiaPage — Migración Supabase→D1 ✅
-- `src/pages/CartaCustodiaPage.jsx` (506 líneas) — Ya migrado en sesión anterior
-- ✅ Guarda en D1 vía `d1WriteArrayMerge`, historial funcional
-
-#### Documentación ✅
-- ✅ `PROMPT-SESION.md` copiado al directorio de trabajo
-- ✅ `PROTOCOLO-MIGRACION-FINAL.md` creado como tracking oficial
-- ✅ BrowserTools MCP server corriendo para screenshots
-
-### ✅ CAMBIOS IMPLEMENTADOS (Sesión #1 — 2026-06-22)
-
-#### EpidemiologicalReport.jsx — REESCRITO COMPLETO (703 líneas)
-- `src/modules/reports/components/EpidemiologicalReport.jsx`
-- ✅ R1: Siempre carga desde D1 (eliminado early-return bug)
-- ✅ R2: filterEmpresa ahora es `<select>` con empresas de D1/monolito
-- ✅ R3: Stats expandidas: conHallazgos, conRiesgos, edadPromedio, tasaNoAptos
-- ✅ R4: Perfil Sociodemográfico con 11 variables + PctBar
-- ✅ R5: Perfil Clínico (IMC, aptitud, CIE-10, hallazgos, riesgos)
-- ✅ R6: Módulo precios (único / individual / por fecha)
-- ✅ R7: handleExportCSV + botón imprimir
-- ✅ Tendencia mensual bar chart
-- ✅ TOP 5 CIE-10 summary
-- ✅ filterMedico desde usersList
-- ✅ Tab "📊 Diagnóstico" nuevo
-- ✅ "🏢 Abrir Portal" directo desde empresa (tab empresas)
-
-#### AnalisisDocsTab.jsx — CREADO NUEVO (268 líneas)
-- `src/modules/companies/components/AnalisisDocsTab.jsx`
-- ✅ Detecta bloques periódicos (≥3 PERIODICO mismo mes/empresa)
-- ✅ Stats: BLOQUES DETECTADOS / COMPLETOS / INCOMPLETOS / INDIVIDUALES
-- ✅ Por bloque: expandir lista trabajadores, Generar con IA, Generar carta custodia
-- ✅ Carta de custodia descarga como .txt
-- ✅ Estado INF (informe) + CUS (carta) por bloque
-
-#### CompaniesSection.jsx — ACTUALIZADO (1794 líneas)
-- `src/sections/CompaniesSection.jsx`
-- ✅ E1: Import AnalisisDocsTab + estado showAnalisisDocs
-- ✅ E2: Botón "📊 Análisis Docs" en header
-- ✅ E3: Vista separada AnalisisDocsTab con botón Volver
-- ✅ E4: Alerta "🔑 Activar todas" para empresas sin código de portal
-- ✅ E5: Botón "🏢 Abrir Portal" por empresa en modal instrucciones
+**BAJA PRIORIDAD:**
+- P3-01 — Botón Exámenes en header (1h)
+- P3-06 ampliación — Portafolio completo (2h)
+- GAP-P07 — Vista tabla vs cards (1h)
+- 11 sprints originales restantes
 
 ---
 
-## SPRINTS PENDIENTES (próximas sesiones)
+## 📁 ARCHIVOS MODIFICADOS (15)
 
-### ✅ COMPLETADOS ESTA SESIÓN (2026-06-30)
-- Sprint A3: Expandir PhysicalExam.jsx a 29 sistemas ✅
-- Sprint A4: Completar RecommendationsPanel y RestrictionsPanel ✅
-- Sprint C4: CartaCustodiaPage — migrar Supabase → D1 ✅
-
-### PRIORIDAD ALTA
-
-### PRIORIDAD MEDIA
-- Sprint D1: Agregar link WhatsApp (wa.me) al certificado
-- Sprint D2: Auto-registro en caja al cerrar HC
-- Sprint B: Encuestas — ver respuestas individuales + importar pacientes desde encuesta
-
-### PRIORIDAD BAJA
-- Reportes: Exportar PDF Tabla, Matriz Legal, Marco Normativo SST
-- AnalisisDocsTab: Integrar con generación PDF real (no solo txt)
-
----
-
-## ARCHIVOS CRÍTICOS A CONOCER
-
-| Archivo | Líneas | Estado |
-|---------|--------|--------|
-| src/modules/reports/components/EpidemiologicalReport.jsx | 703 | ✅ Reescrito |
-| src/sections/CompaniesSection.jsx | 1794 | ✅ Actualizado |
-| src/modules/companies/components/AnalisisDocsTab.jsx | 268 | ✅ Nuevo |
-| src/modules/companies/components/EncuestasTab.jsx | 638 | ✅ OK |
-| src/pages/CompaniesPage.jsx | 128 | ✅ OK (sin cambios) |
-| src/pages/HistoriaPage.jsx | 865 | ✅ Fix duplicado previo |
-| src/modules/clinical/components/PhysicalExam.jsx | 149 | ✅ 29 sistemas |
-| src/modules/clinical/components/RecommendationsPanel.jsx | 110 | ✅ Completo |
-| src/modules/clinical/components/RestrictionsPanel.jsx | 124 | ✅ Completo |
-| src/pages/CartaCustodiaPage.jsx | 506 | ✅ D1 migrado |
-| PROTOCOLO_MIGRACION_FINAL.md | — | ✅ Tracking |
+| Archivo | GAPS |
+|---------|------|
+| `src/pages/SGSSTPage.jsx` | GAP-SG01 |
+| `src/modules/ai/services/aiAnalysis.js` | GAP-SG01 (3 funciones IA) |
+| `src/pages/DashboardPage.jsx` | 11 GAPS (KPIs, CTAs, alertas, turno, badge) |
+| `src/app/Layout.jsx` | P3-01, P1-02 |
+| `src/pages/HabeasDataPage.jsx` | GAP-HD02 |
+| `src/pages/ARLPage.jsx` | GAP-ARL02 |
+| `src/pages/PortafolioPage.jsx` | GAP-PF02, P3-06 |
+| `src/pages/EncuestasPage.jsx` | GAP-ENC01 |
+| `src/modules/patients/components/PatientList.jsx` | P2-01, P2-02, P3-02, GAP-P06 |
+| `src/modules/agenda/components/QueueManager.jsx` | P2-04, GAP-A05 |
+| `src/modules/agenda/components/AgendaView.jsx` | P2-05, P2-03 |
+| `src/modules/billing/components/CashBox.jsx` | GAP-CJ02 |
+| `src/sections/HistoriaOcupacional.jsx` | P3-03, GAP-HC08 |
+| `src/sections/CompaniesSection.jsx` | GAP-EM05 |
 
 ---
 
-## PATRÓN DE DATOS (para nuevas sesiones)
-- **ctx**: CompaniesSection espera objeto ctx con TODO el estado/helpers desde CompaniesPage.jsx
-- **Patient-company match**: empresaId, empresaNit, empresa (string), empresaNombre
-- **D1 siempre primero**: cargar desde D1, localStorage solo como caché/fallback
-- **TDZ**: declarar const ANTES de usarlos (no después de funciones que los referencian)
-- **Bloque periódico**: ≥3 PERIODICO mismo empresa/mes → requiere INF + CUS
+## 🗂️ DOCUMENTOS CLAVE
+
+- `PROTOCOLO_MAESTRO_DEFINITIVO.md` — Protocolo forense v4.0 (base de referencia)
+- `BITACORA_CAMBIOS.md` — Lista completa de 27 commits con detalle
+- `SESION_ESTADO.md` — Este archivo (tracking de sesión)
 
 ---
 
-## COMMITS REALIZADOS
-
-### Sesión #2 — 2026-06-30
-```powershell
-cd C:\Users\JQK3\Desktop\Refactorizacion 30 de junio
-git add src/modules/clinical/components/PhysicalExam.jsx
-git add PROTOCOLO-MIGRACION-FINAL.md
-git add PROMPT-SESION.md
-git add SESION_ESTADO.md
-git commit -m "feat(sprint-A3): PhysicalExam 29 sistemas + docs tracking sesion #2"
-git push
-```
-
-### Sesión #1 — 2026-06-22
-- `feat: Reportes completo + AnalisisDocs + Empresas portales mejorados`
-  - `src/modules/reports/components/EpidemiologicalReport.jsx`
-  - `src/modules/companies/components/AnalisisDocsTab.jsx`
-  - `src/sections/CompaniesSection.jsx`
+*Al reiniciar sesión, leer SESION_ESTADO.md → BITACORA_CAMBIOS.md → ejecutar `npx vite build` → continuar con GAPS pendientes*

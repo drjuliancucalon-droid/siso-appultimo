@@ -218,6 +218,15 @@ export default function Layout() {
             </button>
 
             <button
+              onClick={() => navigate('/reports')}
+              className="hidden sm:flex items-center gap-1 px-2 py-1 bg-purple-50 hover:bg-purple-100 text-purple-700 rounded-lg text-[10px] font-bold transition-colors border border-purple-200"
+              title="Exámenes y laboratorios"
+            >
+              <Stethoscope className="w-3 h-3" />
+              <span>Exámenes</span>
+            </button>
+
+            <button
               onClick={handleManualSync}
               disabled={isSyncing}
               className="hidden sm:flex items-center gap-1 px-2 py-1 bg-gray-50 hover:bg-gray-100 text-gray-700 rounded-lg text-[10px] font-bold transition-colors border border-gray-200 disabled:opacity-50"
