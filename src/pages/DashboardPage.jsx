@@ -770,10 +770,12 @@ export default function DashboardPage() {
         })()}
       </div>
 
-      {/* ── ALERTAS (como monolito) ── */}
+      {/* ── ALERTAS INTELIGENTES (GAP-D03: completo como monolito) ── */}
       {(() => {
         const hcAbiertas = patients.filter(p => p.estadoHistoria === 'Abierta' || p.estado === 'abierta' || !p.estadoHistoria).length;
         const tieneFirma = !!(doctor?.firma || doctor?.firmaDigital);
+        const bovedaDocs = patients.filter(p => p.estadoHistoria === 'Cerrada' || p.estado === 'cerrada').length;
+        const promedioDiario = patientsThisMonth > 0 ? Math.round(patientsThisMonth / Math.max(1, new Date().getDate())) : 0;
         const hasAlerts = hcAbiertas > 0 || cuentasPendientes.length > 0 || !tieneFirma;
         if (!hasAlerts) return null;
         return (
@@ -790,6 +792,12 @@ export default function DashboardPage() {
               )}
               {!tieneFirma && (
                 <p className="text-sm text-amber-700">🖊️ No tiene firma digital cargada — <button onClick={() => navigate('/perfil')} className="underline font-bold hover:text-amber-900">Cargar →</button></p>
+              )}
+              {bovedaDocs > 0 && (
+                <p className="text-sm text-amber-700">📂 {bovedaDocs} HC cerradas en bóveda documental</p>
+              )}
+              {promedioDiario > 0 && (
+                <p className="text-sm text-amber-700">📊 Promedio: ~{promedioDiario} pacientes/día este mes · {patientsThisMonth} en {new Date().toLocaleDateString('es-CO', {month:'long'})}</p>
               )}
             </div>
           </div>

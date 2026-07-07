@@ -6,11 +6,11 @@
 
 ---
 
-## 📊 RESUMEN: 35/56 GAPS (63%)
+## 📊 RESUMEN: 36/56 GAPS (64%)
 
 | Total GAPS | Completados | Pendientes | % Avance |
 |------------|-------------|------------|----------|
-| 56 | 35 | 21 | 63% |
+| 56 | 36 | 20 | 64% |
 
 ---
 
@@ -51,7 +51,11 @@
 
 ---
 
-## 🔴 PENDIENTES (21 GAPS)
+### ✅ Verificados como ya resueltos:
+- ✅ GAP-CO01, GAP-U01, GAP-L01 (sesiones previas)
+- ✅ GAP-F03: RIPS en header (commit `b223132`, Layout.jsx línea ~225)
+
+## 🔴 PENDIENTES (20 GAPS)
 
 | Prioridad | GAP | Horas |
 |-----------|-----|-------|
