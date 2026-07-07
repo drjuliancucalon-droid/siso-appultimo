@@ -235,6 +235,7 @@ export default function DashboardPage() {
   const { data: patients, source: patSource } = useBackendData('/data/patients', 'siso_db_patients', 'patients');
   const { data: companies } = useBackendData('/data/companies', 'siso_companies', 'companies');
   const { data: agenda } = useBackendData('/data/agenda', 'siso_agendados', 'appointments');
+  const { data: bills } = useBackendData('/data/billing', 'siso_saved_bills', 'bills');
   const { data: doctor } = useBackendObject('/data/doctor', 'siso_doctor_data', 'doctor');
 
   const [aiLoading, setAiLoading] = React.useState(false);
@@ -249,6 +250,10 @@ export default function DashboardPage() {
   const todayAppointments = agenda.filter(a => (a.fecha || '').startsWith(today)).length;
   const hcCount = patients.filter(p => p.fechaExamen).length;
   const hcAbiertas = patients.filter(p => p.estadoHistoria === 'Abierta' || p.estado === 'abierta' || !p.estadoHistoria).length;
+
+  // GAP-D02: Cuentas pendientes con monto $
+  const cuentasPendientes = bills.filter(b => b.estado === 'pendiente' || b.estado === 'Pendiente' || !b.estado);
+  const montoPendiente = cuentasPendientes.reduce((sum, b) => sum + (parseInt(b.total) || parseInt(b.valor) || 0), 0);
 
   const displayName = doctor?.nombre || currentUser?.nombre || currentUser?.user || 'Doctor';
 
@@ -625,7 +630,7 @@ export default function DashboardPage() {
             { icon: FileCheck, label: 'HC Cerradas', value: hcCerradas, sub: 'Completadas', color: 'text-green-600', bg: 'bg-green-50', border: 'border-green-100' },
             { icon: FileText, label: 'HC Abiertas', value: hcAbiertas, sub: 'Pendientes', color: 'text-amber-600', bg: 'bg-amber-50', border: 'border-amber-100' },
             { icon: Stethoscope, label: 'Médicos activos', value: medicosActivos, sub: 'En sistema', color: 'text-blue-600', bg: 'bg-blue-50', border: 'border-blue-100' },
-            { icon: Shield, label: 'Convenios por vencer', value: conveniosPorVencer, sub: 'Próximos 30 días', color: conveniosPorVencer > 0 ? 'text-red-600' : 'text-gray-600', bg: conveniosPorVencer > 0 ? 'bg-red-50' : 'bg-gray-50', border: conveniosPorVencer > 0 ? 'border-red-100' : 'border-gray-100' },
+            { icon: Receipt, label: 'Cuentas pendientes', value: montoPendiente > 0 ? `$${montoPendiente.toLocaleString('es-CO')}` : 0, sub: `${cuentasPendientes.length} facturas`, color: montoPendiente > 0 ? 'text-red-600' : 'text-gray-600', bg: montoPendiente > 0 ? 'bg-red-50' : 'bg-gray-50', border: montoPendiente > 0 ? 'border-red-100' : 'border-gray-100' },
           ].map((stat, i) => (
             <div key={`kpi-${i}`} className={`bg-white rounded-xl p-5 shadow-sm border ${stat.border}`}>
               <div className="flex items-center justify-between mb-3">
@@ -654,6 +659,9 @@ export default function DashboardPage() {
             <div className="space-y-1">
               {hcAbiertas > 0 && (
                 <p className="text-sm text-amber-700">📋 {hcAbiertas} historia(s) clínica(s) sin cerrar</p>
+              )}
+              {cuentasPendientes.length > 0 && (
+                <p className="text-sm text-amber-700">💰 {cuentasPendientes.length} cuenta(s) de cobro pendiente(s) por ${montoPendiente.toLocaleString('es-CO')} — <button onClick={() => navigate('/billing')} className="underline font-bold hover:text-amber-900">Ver →</button></p>
               )}
             </div>
           </div>
