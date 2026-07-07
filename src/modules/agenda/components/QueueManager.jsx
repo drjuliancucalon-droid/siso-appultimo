@@ -60,8 +60,11 @@ export const QueueManager = () => {
     return `${Math.floor(mins / 60)}h ${mins % 60}min`;
   };
 
+  const todasCitas = sp(STORAGE_KEY, []);
   const enEspera = cola.filter((c) => c.estado === 'espera');
   const atendiendo = cola.filter((c) => c.estado === 'atendiendo');
+  const atendidos = todasCitas.filter((c) => c.fecha === hoy && c.estado === 'atendido');
+  const programadas = todasCitas.filter((c) => c.fecha !== hoy && (c.estado === 'programada' || c.estado === 'espera'));
 
   return (
     <div className="space-y-4">
@@ -77,15 +80,23 @@ export const QueueManager = () => {
         </button>
       </div>
 
-      {/* Resumen */}
-      <div className="grid grid-cols-2 gap-3">
+      {/* P2-04: 4 contadores (como monolito) */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 text-center">
           <div className="text-2xl font-bold text-yellow-700">{enEspera.length}</div>
-          <div className="text-xs text-yellow-600">En espera</div>
+          <div className="text-xs text-yellow-600 font-bold">En espera</div>
         </div>
         <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-center">
           <div className="text-2xl font-bold text-blue-700">{atendiendo.length}</div>
-          <div className="text-xs text-blue-600">Atendiendo</div>
+          <div className="text-xs text-blue-600 font-bold">Atendiendo</div>
+        </div>
+        <div className="bg-green-50 border border-green-200 rounded-xl p-4 text-center">
+          <div className="text-2xl font-bold text-green-700">{atendidos.length}</div>
+          <div className="text-xs text-green-600 font-bold">Atendidos</div>
+        </div>
+        <div className="bg-purple-50 border border-purple-200 rounded-xl p-4 text-center">
+          <div className="text-2xl font-bold text-purple-700">{programadas.length}</div>
+          <div className="text-xs text-purple-600 font-bold">Programadas</div>
         </div>
       </div>
 
