@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Wallet, Plus, Trash2, CheckCircle2, Calendar, Download, DollarSign } from 'lucide-react';
+import { Wallet, Plus, Trash2, CheckCircle2, Calendar, Download, DollarSign, FileText } from 'lucide-react';
 import { InputGroup } from '../../../shared/components/ui/InputGroup';
 import { SelectGroup } from '../../../shared/components/ui/SelectGroup';
 
@@ -10,7 +10,7 @@ import { SelectGroup } from '../../../shared/components/ui/SelectGroup';
 export const CashBox = ({ movements = [], onAddMovement, onDeleteMovement, onMarkPaid, savedBills = [] }) => {
   const [showAdd, setShowAdd] = useState(false);
   const [newMov, setNewMov] = useState({
-    tipo: 'ingreso', descripcion: '', monto: '', formaPago: 'Efectivo', fecha: new Date().toISOString().split('T')[0],
+    tipo: 'ingreso', descripcion: '', monto: '', formaPago: 'Efectivo', categoria: '', fecha: new Date().toISOString().split('T')[0],
   });
   const [periodoFilter, setPeriodoFilter] = useState('mes');
 
@@ -32,7 +32,7 @@ export const CashBox = ({ movements = [], onAddMovement, onDeleteMovement, onMar
   const handleAdd = () => {
     if (!newMov.monto || !newMov.descripcion) return;
     onAddMovement?.({ ...newMov, id: Date.now(), monto: parseFloat(newMov.monto), createdAt: new Date().toISOString() });
-    setNewMov({ tipo: 'ingreso', descripcion: '', monto: '', formaPago: 'Efectivo', fecha: new Date().toISOString().split('T')[0] });
+    setNewMov({ tipo: 'ingreso', descripcion: '', monto: '', formaPago: 'Efectivo', categoria: '', fecha: new Date().toISOString().split('T')[0] });
     setShowAdd(false);
   };
 
@@ -50,6 +50,19 @@ export const CashBox = ({ movements = [], onAddMovement, onDeleteMovement, onMar
             <option value="mes">Este mes</option>
             <option value="todo">Todo</option>
           </select>
+          {/* GAP-CJ02: Export CSV */}
+          <button onClick={() => {
+            const csv = 'Tipo,Fecha,Descripción,Monto,Forma Pago,Categoría\n' +
+              filteredMovs.map(m => {
+                return [m.tipo, m.fecha||'', `"${m.descripcion||''}"`, m.monto||0, m.formaPago||'', `"${m.categoria||''}"`].join(',');
+              }).join('\n');
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href = url; a.download = `caja_${new Date().toISOString().split('T')[0]}.csv`; a.click();
+          }}
+            className="px-2 py-1 bg-gray-600 text-white rounded-lg text-[10px] font-bold hover:bg-gray-700 flex items-center gap-1">
+            <Download className="w-3 h-3" /> CSV
+          </button>
           <button onClick={() => setShowAdd(true)}
             className="px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-black hover:bg-emerald-700 flex items-center gap-1">
             <Plus className="w-3 h-3" /> Nuevo movimiento
@@ -92,6 +105,11 @@ export const CashBox = ({ movements = [], onAddMovement, onDeleteMovement, onMar
               options={['Efectivo', 'Transferencia', 'Tarjeta', 'Cheque']} width="w-1/4" />
             <InputGroup label="Fecha" type="date" value={newMov.fecha}
               onChange={(e) => setNewMov((p) => ({ ...p, fecha: e.target.value }))} width="w-1/4" />
+            {newMov.tipo === 'egreso' && (
+              <SelectGroup label="Categoría" value={newMov.categoria}
+                onChange={(e) => setNewMov((p) => ({ ...p, categoria: e.target.value }))}
+                options={['Arriendo', 'Insumos médicos', 'Laboratorio', 'Papelería', 'Servicios públicos', 'Transporte', 'Nómina', 'Otros']} width="w-1/4" />
+            )}
           </div>
           <div className="flex gap-2">
             <button onClick={handleAdd} className="px-4 py-2 bg-emerald-600 text-white rounded-lg text-xs font-black hover:bg-emerald-700">
@@ -119,7 +137,7 @@ export const CashBox = ({ movements = [], onAddMovement, onDeleteMovement, onMar
               <span className="text-lg">{mov.tipo === 'ingreso' ? '📈' : '📉'}</span>
               <div className="flex-1 min-w-0">
                 <p className="text-xs font-bold text-gray-800 truncate">{mov.descripcion}</p>
-                <p className="text-[10px] text-gray-500">{mov.fecha} · {mov.formaPago}</p>
+                <p className="text-[10px] text-gray-500">{mov.fecha} · {mov.formaPago}{mov.categoria ? ` · ${mov.categoria}` : ''}</p>
               </div>
               <span className={`text-sm font-black ${mov.tipo === 'ingreso' ? 'text-emerald-700' : 'text-red-700'}`}>
                 {mov.tipo === 'ingreso' ? '+' : '-'}${(parseFloat(mov.monto) || 0).toLocaleString('es-CO')}
