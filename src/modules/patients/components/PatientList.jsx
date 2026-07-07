@@ -12,6 +12,7 @@ export const PatientList = ({ onSelect, pacientes: pacientesExternos }) => {
   const [ordenDir, setOrdenDir] = useState('desc');
   const [fechaDesde, setFechaDesde] = useState('');
   const [fechaHasta, setFechaHasta] = useState('');
+  const [vistaModo, setVistaModo] = useState('cards'); // 'cards' | 'tabla'
 
   useEffect(() => {
     if (pacientesExternos) {
@@ -89,7 +90,11 @@ export const PatientList = ({ onSelect, pacientes: pacientesExternos }) => {
         <h2 className="text-lg font-black text-gray-800 flex items-center gap-2">
           <Users className="w-5 h-5 text-teal-600" /> Listado de Pacientes
         </h2>
-        <span className="text-sm text-gray-500">{filtrados.length} de {pacientes.length}</span>
+        <div className="flex items-center gap-2">
+          <button onClick={() => setVistaModo('cards')} className={`px-2 py-1 rounded text-[10px] font-bold ${vistaModo === 'cards' ? 'bg-teal-600 text-white' : 'bg-gray-100 text-gray-600'}`}>📱 Cards</button>
+          <button onClick={() => setVistaModo('tabla')} className={`px-2 py-1 rounded text-[10px] font-bold ${vistaModo === 'tabla' ? 'bg-teal-600 text-white' : 'bg-gray-100 text-gray-600'}`}>📋 Tabla</button>
+          <span className="text-sm text-gray-500 ml-2">{filtrados.length} de {pacientes.length}</span>
+        </div>
       </div>
 
       {/* Filtros */}
@@ -152,11 +157,42 @@ export const PatientList = ({ onSelect, pacientes: pacientesExternos }) => {
         </div>
       </div>
 
-      {/* Lista */}
+      {/* Lista — GAP-P01: Toggle cards/tabla */}
       {filtrados.length === 0 ? (
         <div className="text-center py-12 text-gray-400">
           <Users className="w-12 h-12 mx-auto mb-2 opacity-40" />
           <p>No se encontraron pacientes</p>
+        </div>
+      ) : vistaModo === 'tabla' ? (
+        <div className="bg-white border rounded-xl overflow-hidden shadow-sm">
+          <table className="w-full text-[11px]">
+            <thead className="bg-gray-50 text-gray-500 border-b">
+              <tr>
+                <th className="text-left py-2 px-3 font-bold">Nombre</th>
+                <th className="text-left py-2 px-3 font-bold">Documento</th>
+                <th className="text-left py-2 px-3 font-bold hidden md:table-cell">Empresa</th>
+                <th className="text-left py-2 px-3 font-bold hidden md:table-cell">Tipo</th>
+                <th className="text-left py-2 px-3 font-bold hidden md:table-cell">Concepto</th>
+                <th className="text-left py-2 px-3 font-bold">Fecha</th>
+                <th className="text-center py-2 px-3 font-bold">HC</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtrados.map((p) => (
+                <tr key={p.id || p.docNumero || Math.random()} 
+                    onClick={() => onSelect && onSelect(p)}
+                    className={`border-b border-gray-50 hover:bg-gray-50 ${onSelect ? 'cursor-pointer' : ''}`}>
+                  <td className="py-2 px-3 font-bold text-gray-800">{p.nombres || p.nombre || '—'}</td>
+                  <td className="py-2 px-3 text-gray-500">{p.docTipo||'CC'} {p.docNumero||p.documento||'—'}</td>
+                  <td className="py-2 px-3 text-gray-500 hidden md:table-cell">{p.empresa||p.empresaNombre||'—'}</td>
+                  <td className="py-2 px-3 hidden md:table-cell">{p.tipoExamen||p.tipo||'—'}</td>
+                  <td className="py-2 px-3 hidden md:table-cell"><span className={`px-1.5 py-0.5 rounded-full text-[9px] font-bold ${conceptoBadge(p.concepto||p.conceptoAptitud)}`}>{p.concepto||p.conceptoAptitud||'—'}</span></td>
+                  <td className="py-2 px-3 text-gray-400 text-[10px]">{(p.fechaExamen||p.fecha||'').substring(0,10)}</td>
+                  <td className="py-2 px-3 text-center">{(()=>{const doc=p.docNumero||p.documento||'';const c=hcCounts[doc]||0;return c>0?<span className="text-[10px] font-bold bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded-full">{c}</span>:null;})()}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
