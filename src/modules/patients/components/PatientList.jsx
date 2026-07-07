@@ -37,6 +37,16 @@ export const PatientList = ({ onSelect, pacientes: pacientesExternos }) => {
     return Array.from(set).sort();
   }, [pacientes]);
 
+  // P2-01: Contador de HCs por paciente
+  const hcCounts = useMemo(() => {
+    const counts = {};
+    pacientes.forEach((p) => {
+      const doc = p.docNumero || p.documento || '';
+      if (doc) counts[doc] = (counts[doc] || 0) + 1;
+    });
+    return counts;
+  }, [pacientes]);
+
   const filtrados = useMemo(() => {
     let lista = pacientes.filter((p) => {
       const q = busqueda.toLowerCase();
@@ -150,6 +160,16 @@ export const PatientList = ({ onSelect, pacientes: pacientesExternos }) => {
                     <p className="text-xs text-gray-500">{p.docTipo || 'CC'} {p.docNumero || p.documento || 'N/A'}</p>
                   </div>
                 </div>
+                {/* P2-01: Badge contador de HCs */}
+                {(() => {
+                  const doc = p.docNumero || p.documento || '';
+                  const count = hcCounts[doc] || 0;
+                  return count > 0 ? (
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-700 whitespace-nowrap">
+                      {count} HC
+                    </span>
+                  ) : null;
+                })()}
                 {(p.concepto || p.conceptoAptitud) && (
                   <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${conceptoBadge(p.concepto || p.conceptoAptitud)}`}>
                     {p.concepto || p.conceptoAptitud}
