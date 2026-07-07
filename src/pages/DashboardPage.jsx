@@ -242,6 +242,10 @@ export default function DashboardPage() {
   const [aiResult, setAiResult] = React.useState(null);
   const [aiError, setAiError] = React.useState(null);
   const [showAIConfig, setShowAIConfig] = React.useState(false);
+  const [showTurnoModal, setShowTurnoModal] = React.useState(false);
+  const [storedTurno, setStoredTurno] = React.useState(() => {
+    try { return JSON.parse(localStorage.getItem('siso_medico_turno') || 'null'); } catch { return null; }
+  });
 
   // Calculate stats
   const today = new Date().toISOString().split('T')[0];
@@ -390,14 +394,12 @@ export default function DashboardPage() {
       {currentUser?.role && ['super_admin', 'administrador'].includes(currentUser.role) && (
         <div className="flex items-center justify-end gap-2 mt-2">
           {(() => {
-            // Obtener médico de turno desde localStorage
-            const storedTurno = (() => { try { return JSON.parse(localStorage.getItem('siso_medico_turno') || 'null'); } catch { return null; } })();
             const usersFromStorage = (() => { try { return JSON.parse(localStorage.getItem('siso_users') || '[]'); } catch { return []; } })();
             const turnoMedicoNombre = storedTurno
               ? (usersFromStorage.find(u => u.user === storedTurno.user)?.nombre || storedTurno.user)
               : null;
             return storedTurno ? (
-              <div onClick={() => navigate('/users')}
+              <div onClick={() => setShowTurnoModal(true)}
                 className="flex items-center gap-2 bg-green-50 border border-green-200 rounded-xl px-3 py-1.5 cursor-pointer hover:bg-green-100 transition"
                 title="Click para cambiar médico de turno">
                 <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
@@ -406,13 +408,64 @@ export default function DashboardPage() {
                 </span>
               </div>
             ) : (
-              <div onClick={() => navigate('/users')}
+              <div onClick={() => setShowTurnoModal(true)}
                 className="flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-xl px-3 py-1.5 cursor-pointer hover:bg-amber-100 transition"
                 title="Click para asignar médico de turno">
                 <span className="text-xs text-amber-600 font-bold">⚠ Sin médico de turno</span>
               </div>
             );
           })()}
+        </div>
+      )}
+
+      {/* P3-05: Modal asignar médico de turno */}
+      {showTurnoModal && (
+        <div className="fixed inset-0 bg-black/60 z-[300] flex items-center justify-center p-4" onClick={() => setShowTurnoModal(false)}>
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md" onClick={e => e.stopPropagation()}>
+            <div className="bg-gradient-to-r from-emerald-700 to-teal-500 rounded-t-2xl p-4">
+              <p className="text-white font-black text-lg">🩺 Asignar Médico de Turno</p>
+              <p className="text-emerald-100 text-xs mt-1">Selecciona el médico que estará de turno hoy</p>
+            </div>
+            <div className="p-4 space-y-2 max-h-[50vh] overflow-y-auto">
+              {(() => {
+                const usersFromStorage = (() => { try { return JSON.parse(localStorage.getItem('siso_users') || '[]'); } catch { return []; } })();
+                const medicos = usersFromStorage.filter(u => u.role === 'medico' || u.role === 'administrador');
+                if (medicos.length === 0) return <p className="text-gray-400 text-sm text-center py-4">No hay médicos registrados</p>;
+                return medicos.map(m => {
+                  const isActive = storedTurno?.user === m.user;
+                  return (
+                    <button key={m.user}
+                      onClick={() => {
+                        const turno = { user: m.user, nombre: m.nombre, asignadoEn: new Date().toISOString() };
+                        localStorage.setItem('siso_medico_turno', JSON.stringify(turno));
+                        setStoredTurno(turno);
+                        setShowTurnoModal(false);
+                      }}
+                      className={`w-full text-left flex items-center justify-between p-3 rounded-xl transition ${isActive ? 'bg-green-50 border-2 border-green-300' : 'bg-gray-50 border border-gray-200 hover:bg-gray-100'}`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-white font-black text-xs ${isActive ? 'bg-green-500' : 'bg-gray-400'}`}>
+                          {m.nombre ? m.nombre.substring(0, 2).toUpperCase() : m.user.substring(0, 2).toUpperCase()}
+                        </div>
+                        <div>
+                          <p className="text-sm font-bold text-gray-800">{m.nombre || m.user}</p>
+                          <p className="text-xs text-gray-500">@{m.user} · {m.role}</p>
+                        </div>
+                      </div>
+                      {isActive && <CheckCircle className="w-5 h-5 text-green-500" />}
+                    </button>
+                  );
+                });
+              })()}
+            </div>
+            <div className="p-3 border-t border-gray-100 flex justify-between">
+              {storedTurno && (
+                <button onClick={() => { localStorage.removeItem('siso_medico_turno'); setStoredTurno(null); setShowTurnoModal(false); }}
+                  className="text-xs text-red-600 font-bold hover:text-red-800">Quitar turno</button>
+              )}
+              <button onClick={() => setShowTurnoModal(false)} className="ml-auto px-4 py-2 bg-gray-200 text-gray-700 rounded-lg text-sm font-bold">Cerrar</button>
+            </div>
+          </div>
         </div>
       )}
 
