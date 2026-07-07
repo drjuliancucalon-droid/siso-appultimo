@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Users, Search, Filter, Calendar, Building2, SortAsc, SortDesc, User } from 'lucide-react';
+import { Users, Search, Filter, Calendar, Building2, SortAsc, SortDesc, User, Mail, MessageCircle } from 'lucide-react';
 import { sp } from '../../../shared/lib/storage';
 
 const PACIENTES_KEY = 'siso_pacientes';
@@ -171,6 +171,43 @@ export const PatientList = ({ onSelect, pacientes: pacientesExternos }) => {
                   <span className="flex items-center gap-1">
                     <Calendar className="w-3 h-3" /> {p.fechaExamen || p.fecha}
                   </span>
+                )}
+              </div>
+              {/* P2-02: Email + WhatsApp buttons */}
+              <div className="mt-2 flex items-center gap-2 pt-2 border-t border-gray-50">
+                {p.email && (
+                  <a
+                    href={`mailto:${p.email}`}
+                    onClick={(e) => e.stopPropagation()}
+                    className="flex items-center gap-1 text-[10px] font-bold text-blue-600 hover:text-blue-800 bg-blue-50 px-2 py-1 rounded-lg"
+                    title={`Enviar email a ${p.email}`}
+                  >
+                    <Mail className="w-3 h-3" /> Email
+                  </a>
+                )}
+                {p.celular && (
+                  <a
+                    href={`https://wa.me/57${p.celular.replace(/\D/g, '')}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                    className="flex items-center gap-1 text-[10px] font-bold text-green-600 hover:text-green-800 bg-green-50 px-2 py-1 rounded-lg"
+                    title={`Enviar WhatsApp al ${p.celular}`}
+                  >
+                    <MessageCircle className="w-3 h-3" /> WhatsApp
+                  </a>
+                )}
+                {p.telefono && !p.celular && (
+                  <a
+                    href={`https://wa.me/57${p.telefono.replace(/\D/g, '')}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                    className="flex items-center gap-1 text-[10px] font-bold text-green-600 hover:text-green-800 bg-green-50 px-2 py-1 rounded-lg"
+                    title={`Enviar WhatsApp al ${p.telefono}`}
+                  >
+                    <MessageCircle className="w-3 h-3" /> WhatsApp
+                  </a>
                 )}
               </div>
             </div>
