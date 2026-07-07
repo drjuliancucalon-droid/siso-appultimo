@@ -702,7 +702,8 @@ export default function DashboardPage() {
       {/* ── ALERTAS (como monolito) ── */}
       {(() => {
         const hcAbiertas = patients.filter(p => p.estadoHistoria === 'Abierta' || p.estado === 'abierta' || !p.estadoHistoria).length;
-        const hasAlerts = hcAbiertas > 0;
+        const tieneFirma = !!(doctor?.firma || doctor?.firmaDigital);
+        const hasAlerts = hcAbiertas > 0 || cuentasPendientes.length > 0 || !tieneFirma;
         if (!hasAlerts) return null;
         return (
           <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
@@ -711,10 +712,13 @@ export default function DashboardPage() {
             </h3>
             <div className="space-y-1">
               {hcAbiertas > 0 && (
-                <p className="text-sm text-amber-700">📋 {hcAbiertas} historia(s) clínica(s) sin cerrar</p>
+                <p className="text-sm text-amber-700">📋 {hcAbiertas} historia(s) clínica(s) sin cerrar — <button onClick={() => navigate('/patients')} className="underline font-bold hover:text-amber-900">Cerrar →</button></p>
               )}
               {cuentasPendientes.length > 0 && (
                 <p className="text-sm text-amber-700">💰 {cuentasPendientes.length} cuenta(s) de cobro pendiente(s) por ${montoPendiente.toLocaleString('es-CO')} — <button onClick={() => navigate('/billing')} className="underline font-bold hover:text-amber-900">Ver →</button></p>
+              )}
+              {!tieneFirma && (
+                <p className="text-sm text-amber-700">🖊️ No tiene firma digital cargada — <button onClick={() => navigate('/perfil')} className="underline font-bold hover:text-amber-900">Cargar →</button></p>
               )}
             </div>
           </div>
