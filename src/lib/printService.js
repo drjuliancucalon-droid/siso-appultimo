@@ -5,6 +5,44 @@
 import { _sanitize } from '../shared/lib/security';
 
 // ═══ Helpers ═══════════════════════════════════════════════════════════════
+// ── PrintStyles — CSS global para impresión de documentos médicos
+export const PrintStyles = `
+  <style>
+    @media print {
+      @page { size: A4; margin: 15mm; }
+      body { font-family: Arial, sans-serif; font-size: 11px; color: #111; }
+      .no-print { display: none !important; }
+      .page-break { page-break-before: always; }
+      .header { text-align: center; border-bottom: 3px solid #059669; padding-bottom: 15px; margin-bottom: 20px; }
+      .header h1 { color: #059669; margin: 0; font-size: 24px; }
+      .header p { color: #666; margin: 3px 0; font-size: 11px; }
+      .section-title { font-size: 13px; font-weight: bold; color: #059669; border-bottom: 1px solid #059669; margin: 15px 0 8px 0; padding-bottom: 3px; text-transform: uppercase; }
+      .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 15px; }
+      .info-item { border: 1px solid #e5e7eb; padding: 8px; border-radius: 6px; }
+      .info-item label { display: block; color: #666; font-size: 9px; font-weight: bold; text-transform: uppercase; }
+      .info-item span { display: block; color: #111; font-size: 11px; margin-top: 2px; }
+      .firma { margin-top: 40px; text-align: center; border-top: 1px solid #ccc; padding-top: 15px; }
+      .firma img { max-width: 180px; max-height: 70px; }
+      .badge-green { background: #d1fae5; color: #065f46; padding: 4px 10px; border-radius: 12px; font-weight: bold; font-size: 10px; display: inline-block; }
+      .badge-yellow { background: #fef3c7; color: #92400e; padding: 4px 10px; border-radius: 12px; font-weight: bold; font-size: 10px; display: inline-block; }
+      .badge-red { background: #fee2e2; color: #991b1b; padding: 4px 10px; border-radius: 12px; font-weight: bold; font-size: 10px; display: inline-block; }
+      table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+      table th { background: #f9fafb; text-align: left; padding: 6px; border: 1px solid #e5e7eb; font-size: 9px; text-transform: uppercase; color: #666; }
+      table td { padding: 5px 6px; border: 1px solid #e5e7eb; font-size: 10px; }
+    }
+  </style>
+`;
+
+// ── printSection — Envuelve contenido en HTML imprimible
+export const printSection = (content, title = '') => {
+  return `
+    <div class="print-section">
+      ${title ? `<h2 class="section-title">${title}</h2>` : ''}
+      ${content}
+    </div>
+  `;
+};
+
 const s = (v) => _sanitize(v || '—');
 const date = (v) => v ? new Date(v).toLocaleDateString('es-CO') : '—';
 const yn = (v) => v ? 'Sí' : 'No';
@@ -650,36 +688,11 @@ export function _printHCClean(data, doctorData, silentMode = false) {
   openPrintWindow(`HC Ocupacional — ${data.nombres || 'Paciente'}`, html);
 }
 
-// ═══ PrintStyles — @media print CSS rules (from ocupasalud L7803) ════════════
-export const PrintStyles = `
-  @media print {
-    *, *::before, *::after { overflow: visible !important; }
-    body { margin: 0; padding: 0; font-size: 10pt; }
-    .no-print, .no-print * { display: none !important; }
-    .ai-label-print-hide { display: none !important; }
-    .print\\:block { display: block !important; }
-    .print\\:flex { display: flex !important; }
-    .print\\:hidden { display: none !important; }
-    .print\\:shadow-none { box-shadow: none !important; }
-    .print\\:border-black { border-color: #000 !important; }
-    .print\\:border-gray-300 { border-color: #d1d5db !important; }
-    .print\\:bg-transparent { background: transparent !important; }
-    .print\\:border-none { border: none !important; }
-    .print\\:mb-1 { margin-bottom: 0.25rem !important; }
-    table { page-break-inside: auto; }
-    thead { display: table-header-group; }
-    tr { page-break-inside: avoid; }
-    .carta-visual { width: 100% !important; padding: 0.5cm !important; box-shadow: none !important; }
-    .print-section-break { page-break-before: always; }
-    .signature-block { page-break-inside: avoid; }
-    [data-report-content] { display: grid !important; }
-    @page { size: letter; margin: 1cm; }
-  }
-`;
+// ═══ PrintStyles — Export único consolidado arriba (línea 12) ════════════════
 
-// ═══ printSection — HC General modular print (from ocupasalud L47460) ════════
-// Generates professional HTML for individual sections of HC General
-export function printSection(sectionType, data, doctorData) {
+// ═══ printSection (HC General) — usa el const printSection de línea 40 ════════
+// La función original fue consolidada arriba. Este bloque queda como referencia.
+export function _printSectionGNCustom(sectionType, data, doctorData) {
   const header = `
     <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #3b82f6;padding-bottom:8px;margin-bottom:12px;">
       <div>
