@@ -211,8 +211,20 @@ export const PatientList = ({ onSelect, pacientes: pacientesExternos }) => {
                   </span>
                 )}
               </div>
-              {/* P2-02: Email + WhatsApp buttons */}
+              {/* GAP-P06: Botón ⊕ Nueva HC por fila */}
               <div className="mt-2 flex items-center gap-2 pt-2 border-t border-gray-50">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (p.docNumero) {
+                      window.location.href = `/hc/new?paciente=${p.docNumero || p.documento || ''}`;
+                    }
+                  }}
+                  className="flex items-center gap-1 text-[10px] font-bold text-emerald-600 hover:text-emerald-800 bg-emerald-50 px-2 py-1 rounded-lg"
+                  title="Nueva HC para este paciente"
+                >
+                  ⊕ Nueva HC
+                </button>
                 {p.email && (
                   <a
                     href={`mailto:${p.email}`}
