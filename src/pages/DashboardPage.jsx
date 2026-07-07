@@ -296,7 +296,7 @@ export default function DashboardPage() {
             <span className="text-emerald-200 text-xs font-bold uppercase tracking-wide">OcupaSalud Pro</span>
             {patSource === 'backend' && (
               <span className="flex items-center gap-1 text-emerald-300 text-[10px] ml-2">
-                <Cloud className="w-3 h-3" /> Conectado a Supabase
+                <Cloud className="w-3 h-3" /> Conectado a D1
               </span>
             )}
           </div>
