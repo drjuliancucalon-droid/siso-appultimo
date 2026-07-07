@@ -360,6 +360,8 @@ export default function CompaniesSection({ ctx }) {
                             { k: 'pacientes', l: '👥 Pacientes' },
                             { k: 'historial', l: '📋 Historial HCs' },
                             { k: 'portafolio', l: '💼 Portafolio' },
+                            { k: 'facturacion', l: '💰 Facturación' },
+                            { k: 'documentos', l: '📄 Documentos' },
                           ].map(t => (
                             <button key={t.k}
                               onClick={() => setExpandedTab(t.k)}
@@ -438,6 +440,64 @@ export default function CompaniesSection({ ctx }) {
                                   <span className="text-xs font-bold text-emerald-600">{s.precio ? `$${parseInt(s.precio).toLocaleString('es-CO')}` : 'Consultar'}</span>
                                 </div>
                               ));
+                            })()}
+                          </div>
+                        )}
+                        {/* Tab Facturación */}
+                        {expandedTab === 'facturacion' && (
+                          <div className="space-y-2 max-h-64 overflow-y-auto">
+                            {(() => {
+                              try {
+                                const bills = JSON.parse(localStorage.getItem('siso_saved_bills') || '[]');
+                                const filtradas = bills.filter(b => 
+                                  b.empresa?.toLowerCase() === c.nombre?.toLowerCase() ||
+                                  b.empresaNit === c.nit ||
+                                  b.empresaId === c.id
+                                );
+                                if (filtradas.length === 0) return <p className="text-xs text-gray-400 py-4 text-center">Sin facturas para esta empresa</p>;
+                                return filtradas.map(b => {
+                                  const total = parseInt(b.total || b.valor || 0);
+                                  return (
+                                    <div key={b.id} className="bg-white border border-gray-100 rounded-lg p-2 flex items-center justify-between">
+                                      <div>
+                                        <p className="text-xs font-bold text-gray-800">{b.numero || b.id || 'Factura'}</p>
+                                        <p className="text-[10px] text-gray-500">
+                                          {b.fecha || ''} · {b.tipo || 'Ingreso'} · <span className={`font-bold ${(b.estado||'').toLowerCase().includes('pend') ? 'text-amber-600' : 'text-green-600'}`}>{b.estado || 'Pendiente'}</span>
+                                        </p>
+                                      </div>
+                                      <span className="text-xs font-bold text-emerald-600">${total.toLocaleString('es-CO')}</span>
+                                    </div>
+                                  );
+                                });
+                              } catch { return <p className="text-xs text-gray-400 py-4">Error cargando facturas</p>; }
+                            })()}
+                          </div>
+                        )}
+                        {/* Tab Documentos */}
+                        {expandedTab === 'documentos' && (
+                          <div className="space-y-2 max-h-64 overflow-y-auto">
+                            {(() => {
+                              const nitClean = (c.nit || '').replace(/[^0-9]/g, '');
+                              const docsKey = `siso_portal_empresa_docs_${nitClean}`;
+                              try {
+                                const docs = JSON.parse(localStorage.getItem(docsKey) || 'null');
+                                if (!docs) return <p className="text-xs text-gray-400 py-4 text-center">Sin documentos corporativos</p>;
+                                const periodos = docs.periodos || [];
+                                const items = [];
+                                if (docs.custodia) items.push({ tipo: '📁 Custodia', fecha: docs.custodia?.fecha || '', nombre: 'Carta Custodia' });
+                                if (docs.informe) items.push({ tipo: '📊 Sociodem', fecha: docs.informe?.fecha || '', nombre: 'Informe Sociodemográfico' });
+                                if (docs.cuenta) items.push({ tipo: '🧾 Cuenta', fecha: docs.cuenta?.fecha || '', nombre: 'Cuenta de Cobro' });
+                                if (items.length === 0 && periodos.length === 0) return <p className="text-xs text-gray-400 py-4 text-center">Sin documentos corporativos</p>;
+                                return [...items, ...periodos.map(p => ({ tipo: '📅 Período', fecha: p.fecha || '', nombre: p.nombre || 'Documentos período' }))].map((d,i) => (
+                                  <div key={i} className="bg-white border border-gray-100 rounded-lg p-2 flex items-center justify-between">
+                                    <div>
+                                      <p className="text-xs font-bold text-gray-800">{d.tipo}</p>
+                                      <p className="text-[10px] text-gray-500">{d.nombre}{d.fecha ? ` · ${d.fecha}` : ''}</p>
+                                    </div>
+                                    <span className="text-[10px] font-bold text-indigo-600">📎</span>
+                                  </div>
+                                ));
+                              } catch { return <p className="text-xs text-gray-400 py-4">Error cargando documentos</p>; }
                             })()}
                           </div>
                         )}
