@@ -952,6 +952,74 @@ export default function HistoriaOcupacional({ ctx }) {
             </div>
           ))}
         </div>
+        {/* P3-03: Sección Vacunas */}
+        <SectionTitle title="Vacunación" icon={ShieldAlert} color="emerald" />
+        <div className="bg-emerald-50 p-3 rounded-lg border border-emerald-100 mb-2 print:bg-transparent">
+          <div className="space-y-2">
+            {(data.vacunas || []).map((v, idx) => (
+              <div key={idx} className="flex items-center gap-2 bg-white p-2 rounded border border-emerald-200">
+                <input
+                  className="flex-1 p-1 border rounded text-[10px]"
+                  placeholder="Nombre de la vacuna"
+                  value={v.nombre || ''}
+                  onChange={(e) => {
+                    const updated = [...(data.vacunas || [])];
+                    updated[idx] = { ...updated[idx], nombre: e.target.value };
+                    setData(p => ({ ...p, vacunas: updated }));
+                  }}
+                />
+                <input
+                  className="w-20 p-1 border rounded text-[10px]"
+                  placeholder="Fecha"
+                  value={v.fecha || ''}
+                  onChange={(e) => {
+                    const updated = [...(data.vacunas || [])];
+                    updated[idx] = { ...updated[idx], fecha: e.target.value };
+                    setData(p => ({ ...p, vacunas: updated }));
+                  }}
+                />
+                <input
+                  className="w-16 p-1 border rounded text-[10px]"
+                  placeholder="Dosis"
+                  value={v.dosis || ''}
+                  onChange={(e) => {
+                    const updated = [...(data.vacunas || [])];
+                    updated[idx] = { ...updated[idx], dosis: e.target.value };
+                    setData(p => ({ ...p, vacunas: updated }));
+                  }}
+                />
+                <input
+                  className="w-20 p-1 border rounded text-[10px]"
+                  placeholder="Lote"
+                  value={v.lote || ''}
+                  onChange={(e) => {
+                    const updated = [...(data.vacunas || [])];
+                    updated[idx] = { ...updated[idx], lote: e.target.value };
+                    setData(p => ({ ...p, vacunas: updated }));
+                  }}
+                />
+                <button
+                  onClick={() => {
+                    const updated = (data.vacunas || []).filter((_, i) => i !== idx);
+                    setData(p => ({ ...p, vacunas: updated }));
+                  }}
+                  className="text-red-400 hover:text-red-600 text-[10px] font-bold px-1"
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
+            <button
+              onClick={() => {
+                const updated = [...(data.vacunas || []), { nombre: '', fecha: '', dosis: '', lote: '' }];
+                setData(p => ({ ...p, vacunas: updated }));
+              }}
+              className="text-[10px] font-bold text-emerald-600 hover:text-emerald-800"
+            >
+              + Agregar vacuna
+            </button>
+          </div>
+        </div>
         <div className="print-section-break" />
         <SectionTitle
           title="Signos Vitales y Antropometría"
