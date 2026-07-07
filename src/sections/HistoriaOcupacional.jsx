@@ -77,6 +77,13 @@ export default function HistoriaOcupacional({ ctx }) {
           <p className="text-[8px] text-gray-500">
             Folio: {data.folioHC || "Auto"} · v{data.versionDocumento || 1}
           </p>
+          {/* GAP-HC08: Contador de ediciones visible */}
+          {data.conteoEdiciones > 0 && (
+            <p className="text-[8px] text-amber-600 font-bold mt-0.5">
+              📝 {data.conteoEdiciones} edición(es)
+              {data.motivoEdicion && <span className="text-gray-400"> · {data.motivoEdicion.substring(0, 30)}</span>}
+            </p>
+          )}
         </div>
       </div>
       {historyNotification && (
