@@ -198,6 +198,35 @@ export default function Layout() {
               </div>
             )}
 
+            {/* P3-01: Botones globales header (como monolito) */}
+            <button
+              onClick={() => navigate('/settings?tab=import')}
+              className="hidden sm:flex items-center gap-1 px-2 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg text-[10px] font-bold transition-colors border border-blue-200"
+              title="Importar pacientes desde CSV"
+            >
+              <RefreshCw className="w-3 h-3" />
+              <span>Importar</span>
+            </button>
+
+            <button
+              onClick={() => navigate('/billing?tab=dian')}
+              className="hidden sm:flex items-center gap-1 px-2 py-1 bg-orange-50 hover:bg-orange-100 text-orange-700 rounded-lg text-[10px] font-bold transition-colors border border-orange-200"
+              title="Generar RIPS"
+            >
+              <FileText className="w-3 h-3" />
+              <span>RIPS</span>
+            </button>
+
+            <button
+              onClick={handleManualSync}
+              disabled={isSyncing}
+              className="hidden sm:flex items-center gap-1 px-2 py-1 bg-gray-50 hover:bg-gray-100 text-gray-700 rounded-lg text-[10px] font-bold transition-colors border border-gray-200 disabled:opacity-50"
+              title="Sincronizar datos con la nube"
+            >
+              {isSyncing ? <Loader2 className="w-3 h-3 animate-spin" /> : <Cloud className="w-3 h-3" />}
+              <span>{isSyncing ? 'Sync...' : 'Guardar en Nube'}</span>
+            </button>
+
             {/* Config IA global */}
             <button
               onClick={() => setShowAIConfig(true)}
