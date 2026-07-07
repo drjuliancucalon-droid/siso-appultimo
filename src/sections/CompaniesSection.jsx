@@ -359,6 +359,7 @@ export default function CompaniesSection({ ctx }) {
                           {[
                             { k: 'pacientes', l: '👥 Pacientes' },
                             { k: 'historial', l: '📋 Historial HCs' },
+                            { k: 'portafolio', l: '💼 Portafolio' },
                           ].map(t => (
                             <button key={t.k}
                               onClick={() => setExpandedTab(t.k)}
@@ -417,6 +418,24 @@ export default function CompaniesSection({ ctx }) {
                                       {hc.estadoHistoria === 'Cerrada' ? '✅ Cerrada' : '📝 Abierta'}
                                     </span>
                                   </div>
+                                </div>
+                              ));
+                            })()}
+                          </div>
+                        )}
+                        {/* Tab Portafolio */}
+                        {expandedTab === 'portafolio' && (
+                          <div className="space-y-2 max-h-64 overflow-y-auto">
+                            {(() => {
+                              const servicios = (() => { try { return JSON.parse(localStorage.getItem('siso_portafolio') || '[]'); } catch { return []; } })();
+                              if (servicios.length === 0) return <p className="text-xs text-gray-400 py-4 text-center">Sin servicios registrados en el portafolio</p>;
+                              return servicios.map(s => (
+                                <div key={s.id} className="bg-white border border-gray-100 rounded-lg p-2 flex items-center justify-between">
+                                  <div>
+                                    <p className="text-xs font-bold text-gray-800">{s.nombre}</p>
+                                    <p className="text-[10px] text-gray-500">{s.categoria || 'General'}{s.descripcion ? ` · ${s.descripcion.substring(0,40)}` : ''}</p>
+                                  </div>
+                                  <span className="text-xs font-bold text-emerald-600">{s.precio ? `$${parseInt(s.precio).toLocaleString('es-CO')}` : 'Consultar'}</span>
                                 </div>
                               ));
                             })()}
