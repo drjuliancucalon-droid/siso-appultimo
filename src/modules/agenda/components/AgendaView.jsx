@@ -18,6 +18,7 @@ export const AgendaView = ({ currentUser, appointments = [], onAppointmentsChang
   const [aiLoading, setAiLoading] = useState(false);
   const [aiResult, setAiResult] = useState(null);
   const [aiError, setAiError] = useState(null);
+  const [vistaAgenda, setVistaAgenda] = useState('dia');
 
   const handleOptimizarIA = async () => {
     const aiConfig = useAIStore.getState().getConfig();
@@ -99,6 +100,23 @@ export const AgendaView = ({ currentUser, appointments = [], onAppointmentsChang
           <p className="text-gray-500 text-xs mt-2">Eficiencia estimada: {aiResult.eficienciaEstimada}</p>
         </div>
       )}
+
+      {/* P2-03: Vistas Semanal / Mensual / Día */}
+      <div className="flex gap-2 mb-2">
+        {[
+          { k: 'dia', l: '📋 Hoy' },
+          { k: 'semana', l: '📅 Semanal' },
+          { k: 'mes', l: '📊 Mensual' },
+        ].map(v => (
+          <button key={v.k}
+            onClick={() => setVistaAgenda(v.k)}
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold ${vistaAgenda === v.k ? 'bg-teal-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+          >
+            {v.l}
+          </button>
+        ))}
+        <button onClick={() => navigate('/agenda')} className="px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-bold">➕ Nueva Cita</button>
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
         <div>
