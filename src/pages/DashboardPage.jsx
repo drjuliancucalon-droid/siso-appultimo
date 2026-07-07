@@ -703,19 +703,30 @@ export default function DashboardPage() {
         {(() => {
           const hcCerradas = patients.filter(p => p.estadoHistoria === 'Cerrada' || p.estado === 'cerrada').length;
           const hcAbiertas = patients.filter(p => p.estadoHistoria === 'Abierta' || p.estado === 'abierta' || !p.estadoHistoria).length;
-          const medicosActivos = 1; // Por ahora fijo
+          const medicosActivos = (() => {
+            try {
+              const users = JSON.parse(localStorage.getItem('siso_users') || '[]');
+              return users.filter(u => u.activo !== false && (u.role === 'medico' || u.role === 'administrador')).length;
+            } catch { return 1; }
+          })();
           const conveniosPorVencer = companies.filter(c => {
             if (!c.convenioVencimiento) return false;
             const vence = new Date(c.convenioVencimiento);
             const thirtyDays = new Date();
             thirtyDays.setDate(thirtyDays.getDate() + 30);
             return vence <= thirtyDays && vence >= new Date();
-          }).length;
+          });
           return [
             { icon: FileCheck, label: 'HC Cerradas', value: hcCerradas, sub: 'Completadas', color: 'text-green-600', bg: 'bg-green-50', border: 'border-green-100' },
             { icon: FileText, label: 'HC Abiertas', value: hcAbiertas, sub: 'Pendientes', color: 'text-amber-600', bg: 'bg-amber-50', border: 'border-amber-100' },
             { icon: Stethoscope, label: 'Médicos activos', value: medicosActivos, sub: 'En sistema', color: 'text-blue-600', bg: 'bg-blue-50', border: 'border-blue-100' },
             { icon: Receipt, label: 'Cuentas pendientes', value: montoPendiente > 0 ? `$${montoPendiente.toLocaleString('es-CO')}` : 0, sub: `${cuentasPendientes.length} facturas`, color: montoPendiente > 0 ? 'text-red-600' : 'text-gray-600', bg: montoPendiente > 0 ? 'bg-red-50' : 'bg-gray-50', border: montoPendiente > 0 ? 'border-red-100' : 'border-gray-100' },
+            // GAP-E06: Convenios tracker detallado
+            ...(conveniosPorVencer.length > 0 ? [
+              { icon: Shield, label: 'Convenios por vencer', value: conveniosPorVencer.length, sub: conveniosPorVencer.map(c => `${c.nombre} (${c.convenioVencimiento})`).join(' · '), color: 'text-red-600', bg: 'bg-red-50', border: 'border-red-100' },
+            ] : [
+              { icon: Shield, label: 'Convenios por vencer', value: 0, sub: 'Próximos 30 días', color: 'text-gray-600', bg: 'bg-gray-50', border: 'border-gray-100' },
+            ]),
           ].map((stat, i) => (
             <div key={`kpi-${i}`} className={`bg-white rounded-xl p-5 shadow-sm border ${stat.border}`}>
               <div className="flex items-center justify-between mb-3">
