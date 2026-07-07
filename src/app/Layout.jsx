@@ -13,7 +13,7 @@ import {
   LayoutDashboard, Users, Building2, Calendar, FileText,
   Receipt, DollarSign, BarChart3, Shield, Video,
   CreditCard, LogOut, Menu, X, Stethoscope, Activity,
-  Cloud, CloudOff, Settings, ChevronLeft, ChevronRight,
+  Cloud, CloudOff, Settings, ChevronLeft, ChevronRight, FileSignature,
   Bell, RefreshCw, ShieldCheck, Briefcase, Calculator,
   MessageCircle, Crown, BrainCircuit, Loader2
 } from 'lucide-react';
@@ -224,6 +224,15 @@ export default function Layout() {
             >
               <Stethoscope className="w-3 h-3" />
               <span>Exámenes</span>
+            </button>
+
+            <button
+              onClick={() => navigate('/perfil')}
+              className="hidden sm:flex items-center gap-1 px-2 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-lg text-[10px] font-bold transition-colors border border-rose-200"
+              title="Cargar firma digital"
+            >
+              <FileSignature className="w-3 h-3" />
+              <span>Firma</span>
             </button>
 
             <button
