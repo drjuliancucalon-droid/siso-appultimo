@@ -1,0 +1,879 @@
+﻿  const renderNavbar = () => {
+    const _aiBg =
+      aiStatus === "ok"
+        ? "bg-green-50 text-green-700 border-green-200"
+        : aiStatus === "error"
+        ? "bg-red-50 text-red-700 border-red-200"
+        : "bg-gray-50 text-gray-600 border-gray-200";
+    const _syncBg =
+      syncStatus === "ok"
+        ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+        : syncStatus === "syncing" || syncStatus === "loading"
+        ? "bg-blue-50 text-blue-700 border-blue-200"
+        : syncStatus === "error"
+        ? "bg-red-50 text-red-500 border-red-200"
+        : "bg-gray-50 text-gray-400 border-gray-200"; // idle — gris neutro, no alarma
+    const _syncTxt =
+      syncStatus === "ok"
+        ? "Nube ✓"
+        : syncStatus === "syncing"
+        ? "Sync..."
+        : syncStatus === "loading"
+        ? "Cargando..."
+        : syncStatus === "error"
+        ? "Sin nube"   // rojo solo en error real
+        : "Sin sync";  // idle: gris, no es un error
+    const _syncTitle =
+      syncStatus === "ok"
+        ? "Sincronizado"
+        : syncStatus === "syncing"
+        ? "Sincronizando..."
+        : syncStatus === "loading"
+        ? "Cargando datos..."
+        : syncStatus === "error"
+        ? "Error de sincronización"
+        : "Listo";
+    const _agCls =
+      view === "agenda"
+        ? "flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-blue-600 text-white"
+        : "flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-blue-50 text-blue-700 hover:bg-blue-100";
+    const _agN = [
+      "administrador",
+      "secretaria",
+      "medico",
+      "admin_empresa",
+    ].includes(currentUser?.role)
+      ? agendados.filter(
+          (a) =>
+            a.fecha === new Date().toISOString().split("T")[0] &&
+            a.estado === "espera" &&
+            (currentUser?.role !== "medico" || a.medicoId === currentUser?.user)
+        ).length
+      : 0;
+    const _noLeidos = mensajes.filter(
+      (m) => m.destinatarios?.includes(currentUser?.user) && !m.leido
+    ).length;
+    const _tabCls = (k) =>
+      activeTab === k
+        ? "px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-600 text-white"
+        : "px-3 py-1.5 rounded-lg text-xs font-bold text-gray-600 hover:bg-gray-100";
+    const _tabBlue = (k) =>
+      activeTab === k
+        ? "px-3 py-1.5 rounded-lg text-xs font-bold bg-blue-600 text-white"
+        : "px-3 py-1.5 rounded-lg text-xs font-bold text-gray-600 hover:bg-gray-100";
+    return (
+      <nav className="bg-white border-b border-gray-100 px-4 py-2.5 shadow-sm no-print sticky top-0 z-50 flex justify-between items-center">
+        <div
+          className="flex items-center gap-3 cursor-pointer"
+          onClick={() => goTo("dashboard")}
+        >
+          <BrandLogo data={activeDoctorData} />
+          {/* ── IPS: nombre de empresa en navbar ── */}
+          {currentUser?.empresaId &&
+            (() => {
+              const _navEmp = companies.find(
+                (c) => c.id === currentUser.empresaId
+              );
+              return _navEmp ? (
+                <span className="text-[10px] font-black text-teal-700 bg-teal-50 border border-teal-200 px-2 py-0.5 rounded-lg ml-1 hidden sm:inline-block">
+                  🏥{" "}
+                  {_navEmp.nombre?.length > 25
+                    ? _navEmp.nombre.substring(0, 25) + "…"
+                    : _navEmp.nombre}
+                </span>
+              ) : null;
+            })()}
+        </div>
+        {/* ── Bloque 1: Datos médico activo en header ── */}
+        {currentUser && activeDoctorData?.nombre && (
+          <div className="hidden md:flex items-center gap-2 flex-shrink-0 ml-2">
+            {activeSignature ? (
+              <img
+                src={activeSignature}
+                alt="Firma"
+                className="h-7 w-auto max-w-[60px] object-contain opacity-80"
+              />
+            ) : (
+              <div className="w-7 h-7 rounded-full bg-teal-100 flex items-center justify-center text-teal-700 text-xs font-black">
+                {(activeDoctorData.nombre || "?")[0]}
+              </div>
+            )}
+            <div className="leading-tight">
+              <p className="text-[10px] font-black text-gray-800 truncate max-w-[140px]">{activeDoctorData.nombre}</p>
+              {activeDoctorData.titulo && (
+                <p className="text-[9px] text-teal-600 truncate max-w-[140px]">{activeDoctorData.titulo}</p>
+              )}
+            </div>
+          </div>
+        )}
+        <div className="flex items-center gap-2 flex-wrap justify-end">
+          <button
+            onClick={() => setShowAIConfig(true)}
+            className={
+              "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold border transition " +
+              _aiBg
+            }
+          >
+            {aiStatus === "ok" ? (
+              <Wifi className="w-3 h-3" />
+            ) : aiStatus === "error" ? (
+              <WifiOff className="w-3 h-3" />
+            ) : (
+              <BrainCircuit className="w-3 h-3" />
+            )}
+            {" ⚙️ IA"}
+          </button>
+          {view === "historia" && (
+            <>
+              <button
+                onClick={() => data.estadoHistoria === "Cerrada" ? goTo("dashboard") : goBack()}
+                className="bg-gray-100 text-gray-700 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-gray-200 flex items-center gap-1 border border-gray-200 no-print"
+              >
+                ← Volver
+              </button>
+              <div className="w-px h-6 bg-gray-200 no-print" />
+              {data.estadoHistoria === "Cerrada" && (
+                <div className="hidden no-print bg-red-50 border border-red-300 rounded-lg px-3 py-1 flex items-center gap-1.5 text-[10px] font-bold text-red-700">
+                  <Lock className="w-3 h-3" /> Historia Cerrada ·{" "}
+                  {data.firmaDigital?.codigoQR || data.codigoVerificacion || ""}
+                </div>
+              )}
+              {data.estadoHistoria === "Cerrada" ? (
+                <div className="flex items-center gap-1">
+                  {/* Botón único: Evolución (incluye nota clínica, fórmula, exámenes, incapacidad, nuevo certificado) */}
+                  <button
+                    onClick={() => {
+                      setEvolucionForm({
+                        texto: "",
+                        nuevoConcept: "",
+                        fecha: new Date().toISOString().split("T")[0],
+                        codigoEvolucion:
+                          "EV-" +
+                          Date.now().toString(36).toUpperCase().slice(-6),
+                        activeEvTab: "nota",
+                        motivoConsulta: "",
+                        diagnosticos: [
+                          { cie10: "", descripcion: "", tipo: "Principal" },
+                        ],
+                        planConducta: "",
+                        recomendaciones: "",
+                        formulaMedicamentos: [],
+                        examenesSolicitados: [],
+                        derivaciones: [],
+                        incapacidad: {
+                          aplica: false,
+                          dias: 0,
+                          origen: "Común",
+                          diagnostico: "",
+                          desde: "",
+                          hasta: "",
+                        },
+                        _examSearch: "",
+                      });
+                      setShowEvolucionModal(true);
+                    }}
+                    className="bg-purple-600 text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-purple-700 flex items-center gap-1.5 shadow"
+                  >
+                    <ClipboardList className="w-3.5 h-3.5" /> Evolución / Nuevo Certificado
+                  </button>
+                  {/* Mini-botón admin: Nota Aclaratoria / Reapertura / Editar */}
+                  {(_isAdmin(currentUser?.role) ||
+                    currentUser?.role === "admin_empresa") && (
+                    <button
+                      onClick={handleEditHistory}
+                      className="bg-yellow-500 text-white px-2 py-2 rounded-lg text-xs font-bold hover:bg-yellow-600 flex items-center gap-1"
+                      title="Admin: Nota Aclaratoria / Reapertura / Editar"
+                    >
+                      <Unlock className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
+              ) : (
+                <button
+                  onClick={handleCloseHistory}
+                  className="bg-red-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-red-700 flex items-center gap-1"
+                >
+                  <Lock className="w-3 h-3" /> Firma y Cerrar
+                </button>
+              )}
+              <div className="w-px h-6 bg-gray-200" />
+              {dataType === "ocupacional" && (
+                <>
+                  <button
+                    onClick={() => setActiveTab("form")}
+                    className={_tabCls("form")}
+                  >
+                    HC Ocup.
+                  </button>
+                  <button
+                    onClick={() => setActiveTab("certificado")}
+                    className={_tabCls("certificado")}
+                  >
+                    Certificado
+                  </button>
+                  <button
+                    onClick={() => setActiveTab("incapacidad")}
+                    className={_tabCls("incapacidad")}
+                  >
+                    Incapacidad
+                  </button>
+                  <button
+                    onClick={() => setActiveTab("formulaTab")}
+                    className={_tabBlue("formulaTab")}
+                  >
+                    Formula/Deriv.
+                  </button>
+                  <button
+                    onClick={() => setActiveTab("solicitudExamenes")}
+                    className={_tabBlue("solicitudExamenes")}
+                  >
+                    🔬 Exámenes
+                  </button>
+                  <button
+                    onClick={() => setActiveTab("adjuntos")}
+                    className={_tabBlue("adjuntos")}
+                  >
+                    📎 Adjuntos
+                  </button>
+                  {data.enfasisExamen === "ALIMENTOS" && (
+                    <button
+                      onClick={() => setActiveTab("carnetAlimentos")}
+                      className={_tabBlue("carnetAlimentos")}
+                    >
+                      🍽️ Carné
+                    </button>
+                  )}
+                </>
+              )}
+              {dataType === "general" && (
+                <>
+                  <button
+                    onClick={() => setActiveTab("formGeneral")}
+                    className={_tabBlue("formGeneral")}
+                  >
+                    HC General
+                  </button>
+                  <button
+                    onClick={() => setActiveTab("ordenMedica")}
+                    className={_tabBlue("ordenMedica")}
+                  >
+                    Orden/Formula
+                  </button>
+                  <button
+                    onClick={() => setActiveTab("solicitudExamenes")}
+                    className={_tabBlue("solicitudExamenes")}
+                  >
+                    🔬 Exámenes
+                  </button>
+                  <button
+                    onClick={() => setActiveTab("incapacidadGeneral")}
+                    className={_tabBlue("incapacidadGeneral")}
+                  >
+                    Incapacidad
+                  </button>
+                </>
+              )}
+              <div className="w-px h-6 bg-gray-200" />
+              <button
+                onClick={() => (view === "historia" && (dataType === "ocupacional" || dataType === "general")) ? _printHCClean() : handlePrint(data.nombres)}
+                className="bg-slate-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1"
+              >
+                <Printer className="w-3 h-3" /> PDF
+              </button>
+              {/* Botón Descargar/Enviar — visible siempre en HC general */}
+              {dataType === "general" && (
+                <div className="relative">
+                  <button
+                    onClick={() => setShowEnviarPanel(!showEnviarPanel)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1 transition ${showEnviarPanel ? "bg-red-500 hover:bg-red-600 text-white" : "bg-blue-600 hover:bg-blue-700 text-white"}`}
+                  >
+                    {showEnviarPanel ? "✕ Cerrar" : "📤 Enviar"}
+                  </button>
+                  {showEnviarPanel && (() => {
+                    const hasMedsGN = (data.formulaMedicamentos || []).length > 0;
+                    const hasDerivGN = (data.derivaciones || []).length > 0;
+                    const hasPlanGN = !!(data.plan?.paraclinicosSolicitados || data.plan?.recomendaciones || data.plan?.conducta);
+                    return (
+                      <div className="absolute right-0 top-10 z-50 bg-white border border-gray-200 rounded-xl p-3 shadow-2xl w-72">
+                        <p className="text-[10px] font-black text-gray-700 uppercase mb-2">📤 Seleccione documentos:</p>
+                        <div className="space-y-1 mb-2">
+                          {[
+                            { k: "historia", l: "📄 Historia Clínica", av: true },
+                            { k: "prescripcion", l: "💊 Prescripción", av: hasMedsGN },
+                            { k: "examenes", l: "🔬 Exámenes/Recom.", av: hasPlanGN },
+                            { k: "derivaciones", l: "🔀 Derivaciones", av: hasDerivGN },
+                            { k: "incapacidad", l: "🏥 Incapacidad", av: !!data.incapacidad?.aplica },
+                          ].map(item => (
+                            <label key={item.k} className={`flex items-center gap-2 rounded px-1.5 py-1 ${item.av ? "cursor-pointer hover:bg-gray-50" : "opacity-40 cursor-not-allowed"}`}>
+                              <input type="checkbox" checked={item.av ? !!enviarChecklist[item.k] : false} disabled={!item.av} onChange={() => { if (item.av) setEnviarChecklist(p => ({...p, [item.k]: !p[item.k]})); }} className="w-3.5 h-3.5 accent-blue-600" />
+                              <span className="text-[10px] text-gray-700 flex-1">{item.l}</span>
+                              <span className={`text-[8px] font-bold ${item.av ? "text-emerald-600" : "text-gray-400"}`}>{item.av ? "✅" : "—"}</span>
+                            </label>
+                          ))}
+                        </div>
+                        <div className="flex gap-1.5 border-t border-gray-100 pt-2">
+                          <button onClick={() => {
+                            const sel = Object.entries(enviarChecklist).filter(([,v]) => v).map(([k]) => k);
+                            if (sel.length === 0) { showAlert("Seleccione al menos un documento."); return; }
+                            // ── Historia sola → usar _printHCClean (máxima calidad) ──
+                            if (sel.length === 1 && sel[0] === "historia") { _printHCClean(); setShowEnviarPanel(false); return; }
+                            // ── Premium HTML builder para HC General ──
+                            const _miIPSGn = currentUser?.empresaId ? companies.find(c => c.id === currentUser.empresaId) : null;
+                            const _doc = activeDoctorData || {};
+                            const _sig = activeSignature || null;
+                            const _acGn = (col) => /^#[0-9a-fA-F]{3,6}$/.test(col) ? col : "#059669";
+                            const _hdrGn = (title, col) => {
+                              const ac = _acGn(col);
+                              const left = _ipsDocLeftHtml(_miIPSGn, _doc, ac);
+                              const fd = data.fechaConsulta || new Date().toLocaleDateString("es-CO");
+                              return `<div style="display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid ${ac};padding-bottom:10px;margin-bottom:14px;">${left}<div style="width:34%;text-align:center;border-left:1px solid #ddd;border-right:1px solid #ddd;padding:0 10px;"><p style="font-size:13pt;font-weight:900;color:${ac};text-transform:uppercase;margin:2px 0;">${_sanitize(title)}</p><p style="font-size:7pt;color:#888;margin:2px 0;">Res. 1995/1999 · Cons. General</p><p style="font-size:8pt;font-weight:700;color:#333;margin:5px 0 2px 0;">Fecha: ${_sanitize(fd)}</p></div><div style="width:32%;text-align:right;padding-left:8px;"><p style="font-size:10.5pt;font-weight:900;color:${ac};text-transform:uppercase;margin:0 0 3px 0;">${_sanitize(data.nombres||"---")}</p><p style="font-size:7.5pt;color:#444;margin:1px 0;">${_sanitize(data.docTipo||"CC")}: <b>${_sanitize(data.docNumero||"---")}</b> · Edad: <b>${_sanitize(String(data.edad||"--"))} años</b></p><p style="font-size:7.5pt;color:#444;margin:1px 0;">Sexo: ${_sanitize(data.genero||"---")} · EPS: <b>${_sanitize(data.eps||"---")}</b></p></div></div>`;
+                            };
+                            const _sigGn = `<div style="display:flex;justify-content:space-between;align-items:flex-end;margin-top:18mm;"><div style="text-align:center;width:42%;"><div style="border-top:2px solid #222;padding-top:4px;font-size:7.5pt;font-weight:700;">Firma Paciente / Responsable</div><p style="font-size:7.5pt;color:#6b7280;margin:2px 0;">Nombre: ___________________</p></div><div style="text-align:center;width:42%;">${_sig ? `<img src="${_sig}" style="max-height:55px;max-width:150px;display:block;margin:0 auto 4px;"/>` : '<div style="height:55px;border-bottom:2px solid #222;"></div>'}<p style="font-size:8.5pt;font-weight:900;margin:3px 0;">${_sanitize(_doc.nombre||"")}</p><p style="font-size:7.5pt;color:#555;margin:1px 0;">${_sanitize(_doc.titulo||"")}</p></div></div>`;
+                            const _baseGn = `@page{size:letter portrait;margin:1.1cm 1.3cm 1.3cm 1.3cm;}*{box-sizing:border-box;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}body{font-family:Arial,Helvetica,sans-serif;font-size:9.5pt;color:#111;margin:0;padding:14mm 16mm;line-height:1.45;}.sec{font-size:8.5pt;font-weight:900;text-transform:uppercase;border-bottom:1.5px solid currentColor;padding-bottom:3px;margin:12px 0 6px 0;}.mc{border:1px solid #d1fae5;border-left:4px solid #059669;border-radius:4px;padding:6px 10px;margin-bottom:7px;page-break-inside:avoid;background:#f0fdf4;}.dc{border:1px solid #bfdbfe;border-left:4px solid #2563eb;border-radius:4px;padding:8px 10px;margin-bottom:7px;page-break-inside:avoid;background:#eff6ff;}.pb{page-break-before:always;padding-top:14mm;}.ba{page-break-inside:avoid;}@media print{body{padding:0;}}`;
+                            const pages = [];
+                            if (sel.includes("prescripcion")) {
+                              const meds = data.formulaMedicamentos || [];
+                              const medsH = meds.length > 0 ? meds.map((m,i) => `<div class="mc" style="display:flex;gap:8px;align-items:flex-start;"><span style="background:#059669;color:white;border-radius:50%;width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;font-size:8pt;font-weight:900;flex-shrink:0;">${i+1}</span><div style="flex:1;"><p style="font-size:10pt;font-weight:900;color:#065f46;margin:0 0 2px 0;">${_sanitize(m.nombre||"")} <span style="font-size:8pt;font-weight:400;color:#6b7280;">${_sanitize(m.presentacion||"")}</span></p><p style="font-size:8.5pt;color:#374151;margin:1px 0;"><b>Dosis:</b> ${_sanitize(m.dosis||"--")} · <b>Frec:</b> ${_sanitize(m.frecuencia||"--")} · <b>Dur:</b> ${_sanitize(m.duracion||"--")}</p>${m.indicaciones?`<p style="font-size:8pt;color:#92400e;font-style:italic;margin:2px 0;">⚠ ${_sanitize(m.indicaciones)}</p>`:""}</div></div>`).join("") : '<p style="color:#9ca3af;font-style:italic;text-align:center;padding:12px;">Sin medicamentos prescritos.</p>';
+                              const dx = _sanitize(data.diagnosticoPrincipal||(data.diagnosticos||[])[0]?.descripcion||"--");
+                              pages.push(`${pages.length>0?'<div class="pb">':''}<div>${_hdrGn("Prescripción Médica","#059669")}<div style="background:#ecfdf5;border:1px solid #a7f3d0;border-radius:4px;padding:10px 12px;margin-bottom:12px;"><p class="sec" style="color:#065f46;">💊 Prescripción Médica</p>${medsH}<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;border-top:1px solid #a7f3d0;padding-top:8px;"><p style="font-size:8.5pt;"><b>Diagnóstico:</b> ${dx}</p><p style="font-size:8.5pt;"><b>Control en:</b> ${_sanitize(data.plan?.controlEn||data.frecuenciaSeguimiento||"--")}</p></div></div>${_sigGn}</div>${pages.length>0?'</div>':''}`);
+                            }
+                            if (sel.includes("examenes")) {
+                              const dxs = (data.diagnosticos||[]).map(d => `<p class="ba" style="font-size:8.5pt;margin:2px 0;"><b>${d.cie10||""}</b>${d.cie10?" - ":""} ${d.descripcion||""}</p>`).join("");
+                              const cond = data.plan?.conducta ? `<div class="ba" style="margin-top:10px;"><p class="sec" style="color:#0d9488;">📋 Conducta Médica</p><p style="font-size:8.5pt;white-space:pre-wrap;">${_sanitize(data.plan.conducta)}</p></div>` : "";
+                              const paracl = data.plan?.paraclinicosSolicitados ? `<div class="ba" style="margin-top:10px;"><p class="sec" style="color:#0d9488;">🔬 Paraclínicos / Exámenes Solicitados</p><p style="font-size:8.5pt;white-space:pre-wrap;line-height:1.5;">${_sanitize(data.plan.paraclinicosSolicitados)}</p></div>` : "";
+                              const recos = data.plan?.recomendaciones ? `<div class="ba" style="margin-top:10px;"><p class="sec" style="color:#0d9488;">✅ Recomendaciones</p><p style="font-size:8.5pt;white-space:pre-wrap;line-height:1.6;">${_sanitize(data.plan.recomendaciones)}</p></div>` : "";
+                              pages.push(`<div class="${pages.length>0?"pb":""}">${_hdrGn("Exámenes y Recomendaciones","#0d9488")}<div style="background:#f0fdfa;border:1px solid #99f6e4;border-radius:4px;padding:10px 12px;margin-bottom:12px;">${dxs?`<div style="margin-bottom:8px;"><p class="sec" style="color:#0d9488;">📋 Diagnósticos</p>${dxs}</div>`:""}${cond}${paracl}${recos}</div>${_sigGn}</div>`);
+                            }
+                            if (sel.includes("derivaciones")) {
+                              const derivs = data.derivaciones || [];
+                              const derivH = derivs.length > 0 ? derivs.map((d,i) => `<div class="dc"><p style="font-weight:900;font-size:9.5pt;margin:0 0 2px;">${_sanitize(d.especialidad||"--")} <span style="font-size:8pt;color:#888;font-weight:400;">(${_sanitize(d.urgencia||"Electiva")})</span></p><p style="font-size:8pt;color:#444;margin:1px 0;"><b>Motivo:</b> ${_sanitize(d.motivo||"--")}</p>${d.observaciones?`<p style="font-size:7.5pt;color:#666;font-style:italic;">${_sanitize(d.observaciones)}</p>`:""}</div>`).join("") : '<p style="color:#888;font-style:italic;font-size:8.5pt;">Sin derivaciones.</p>';
+                              pages.push(`<div class="${pages.length>0?"pb":""}">${_hdrGn("Derivaciones / Interconsultas","#7c3aed")}<div style="background:#faf5ff;border:1px solid #ddd6fe;border-radius:4px;padding:10px 12px;margin-bottom:12px;">${derivH}</div>${_sigGn}</div>`);
+                            }
+                            if (sel.includes("incapacidad") && data.incapacidad?.aplica) {
+                              const _inc = data.incapacidad || {};
+                              const _nAL = (n) => { try { return numeroALetras(Number(n)); } catch { return String(n); } };
+                              const incH = `<div style="background:#fef2f2;border:1px solid #fecaca;border-radius:4px;padding:12px;margin-bottom:12px;"><div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;"><div style="font-size:8.5pt;"><p style="margin:2px 0;"><b>Paciente:</b> ${_sanitize(data.nombres||"--")}</p><p style="margin:2px 0;"><b>CC:</b> ${_sanitize(data.docNumero||"--")}</p><p style="margin:2px 0;"><b>Edad:</b> ${_sanitize(String(data.edad||"--"))} años</p><p style="margin:2px 0;"><b>EPS:</b> ${_sanitize(data.eps||"--")}</p></div><div style="text-align:center;background:#fee2e2;border-radius:4px;padding:8px;"><p style="font-size:8pt;font-weight:900;color:#dc2626;text-transform:uppercase;margin:0 0 4px 0;">Días de Incapacidad</p><p style="font-size:28pt;font-weight:900;color:#dc2626;line-height:1;margin:0;">${_inc.dias||0}</p><p style="font-size:8pt;color:#dc2626;font-weight:700;">${_nAL(_inc.dias||0)} DÍAS</p></div></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:8.5pt;"><p style="margin:2px 0;"><b>Origen:</b> ${_sanitize(_inc.origen||"--")}</p><p style="margin:2px 0;"><b>Fecha inicio:</b> ${_sanitize(_inc.desde||"--")}</p><p style="margin:2px 0;"><b>Fecha fin:</b> ${_sanitize(_inc.hasta||"--")}</p><p style="margin:2px 0;"><b>Diagnóstico:</b> ${_sanitize(_inc.diagnostico||"--")}</p></div></div>`;
+                              pages.push(`<div class="${pages.length>0?"pb":""}">${_hdrGn("Incapacidad Médica","#dc2626")}${incH}${_sigGn}</div>`);
+                            }
+                            if (pages.length === 0) { showAlert("No hay contenido para imprimir."); return; }
+                            const _combHtml = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"/><title>Documentos - ${_sanitize(data.nombres||"")}</title><style>${_baseGn}.np-bar{position:fixed;bottom:20px;right:20px;z-index:9999;}.np-bar button{background:#065f46;color:#fff;border:none;padding:10px 20px;border-radius:10px;font-weight:900;font-size:11pt;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.2);}@media print{.np-bar{display:none!important;}}</style></head><body>${pages.join("")}<div class="np-bar"><button onclick="window.print()">📥 Imprimir / Guardar PDF</button></div></body></html>`;
+                            const _b = new Blob([_combHtml], {type:"text/html;charset=utf-8"});
+                            const _u = URL.createObjectURL(_b);
+                            const _w = window.open(_u, "_blank", "width=920,height=1200");
+                            if (!_w) { URL.revokeObjectURL(_u); showAlert("Permita ventanas emergentes."); return; }
+                            setTimeout(() => URL.revokeObjectURL(_u), 60000);
+                            setShowEnviarPanel(false);
+                          }} className="flex-1 px-2 py-1.5 bg-emerald-600 text-white text-[9px] font-black rounded-lg hover:bg-emerald-700">🖨️ PDF</button>
+                          <button onClick={() => {
+                            const nombre = data.nombres || "";
+                            const portalLink = _sisoStableOrigin() + window.location.pathname + "#portaltrabajador";
+                            const docD = activeDoctorData || {};
+                            const subject = `Documentos Médicos — ${nombre}`;
+                            const body = `Estimado/a ${nombre},\n\nSus documentos médicos están listos.\n\nPortal:\n${portalLink}\n→ Cédula: ${data.docNumero || ""}\n\nCordialmente,\n${docD.nombre || ""}\n${docD.titulo || ""}\n${docD.licencia ? "Lic: " + docD.licencia : ""}\n${docD.email || emailConfig?.email || ""}`;
+                            const htmlBody = _generarEmailHTML(nombre, data.docNumero, portalLink, null, false);
+                            const destino = data.email || "";
+                            if (destino && destino.includes("@")) { _enviarEmail(destino, subject, body, htmlBody); }
+                            else { showPrompt("Email:", (em) => { if (em) _enviarEmail(em, subject, body, htmlBody); }); }
+                            setShowEnviarPanel(false);
+                          }} className="flex-1 px-2 py-1.5 bg-amber-500 text-white text-[9px] font-black rounded-lg hover:bg-amber-600">📧</button>
+                          <button onClick={() => {
+                            const nombre = data.nombres || "";
+                            const tel = (data.celular || data.telefono || "").replace(/\D/g, "");
+                            const portalLink = _sisoStableOrigin() + window.location.pathname + "#portaltrabajador";
+                            const msg = encodeURIComponent(`${nombre}, sus documentos médicos están listos.\n📥 ${portalLink}\n→ Cédula: ${data.docNumero || ""}\n${activeDoctorData?.nombre || ""}`);
+                            if (tel.length >= 10) { window.open(`https://wa.me/${tel.startsWith("57") ? tel : "57" + tel}?text=${msg}`, "_blank"); }
+                            else { showPrompt("Celular:", (n) => { if (n) window.open(`https://wa.me/57${n.replace(/\D/g,"")}?text=${msg}`, "_blank"); }); }
+                            setShowEnviarPanel(false);
+                          }} className="flex-1 px-2 py-1.5 bg-green-500 text-white text-[9px] font-black rounded-lg hover:bg-green-600">📱</button>
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </div>
+              )}
+
+              {/* Botón Descargar/Enviar con checklist */}
+              {dataType === "ocupacional" && (
+                <button
+                  onClick={() => setShowEnviarPanel(!showEnviarPanel)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1 no-print transition ${showEnviarPanel ? "bg-red-500 hover:bg-red-600 text-white" : "bg-blue-600 hover:bg-blue-700 text-white"}`}
+                >
+                  {showEnviarPanel ? "✕ Cerrar" : "📤 Descargar / Enviar"}
+                </button>
+              )}
+              {/* Panel checklist de Descargar/Enviar — HC Ocupacional */}
+              {showEnviarPanel && dataType === "ocupacional" && (() => {
+                const hasMeds = (data.formulaMedicamentos || []).length > 0;
+                const hasDeriv = (data.derivaciones || []).length > 0;
+                // FIX 2026-06-22: los exámenes se guardan en data.solicitudExamenes
+                // (no en examenesSolicitados). Antes este check usaba el campo equivocado
+                // y siempre mostraba "Sin datos" pese a tener exámenes solicitados.
+                const hasExams = (data.solicitudExamenes || []).length > 0;
+                return (
+                <div className="absolute right-0 top-12 z-50 bg-white border border-gray-200 rounded-xl p-3 shadow-2xl w-80">
+                  <p className="text-[10px] font-black text-gray-700 uppercase mb-2">📤 Seleccione documentos y presione "Descargar / Enviar":</p>
+                  <div className="space-y-1 mb-2">
+                    {[
+                      { k: "certificado", l: "📋 Certificado de Aptitud", available: true },
+                      { k: "historia", l: "📄 Historia Clínica Completa", available: true },
+                      { k: "formula", l: "💊 Fórmula / Prescripción", available: hasMeds },
+                      { k: "derivacion", l: "🔀 Derivación / Interconsulta", available: hasDeriv },
+                      { k: "examenes", l: "🔬 Solicitud de Exámenes", available: hasExams },
+                      { k: "incapacidad", l: "🏥 Incapacidad Médica", available: !!data.incapacidad?.aplica },
+                    ].map(item => (
+                      <label key={item.k} className={`flex items-center gap-2 rounded px-1.5 py-1 ${item.available ? "cursor-pointer hover:bg-gray-50" : "opacity-40 cursor-not-allowed"}`}>
+                        <input type="checkbox" checked={item.available ? !!enviarChecklist[item.k] : false} disabled={!item.available} onChange={() => { if (item.available) setEnviarChecklist(p => ({...p, [item.k]: !p[item.k]})); }} className="w-3.5 h-3.5 accent-blue-600" />
+                        <span className="text-[10px] text-gray-700 flex-1">{item.l}</span>
+                        <span className={`text-[8px] font-bold ${item.available ? "text-emerald-600" : "text-gray-400"}`}>{item.available ? "✅" : "Sin datos"}</span>
+                      </label>
+                    ))}
+                  </div>
+                  <div className="flex gap-1.5 border-t border-gray-100 pt-2">
+                    <button onClick={() => {
+                      const selected = Object.entries(enviarChecklist).filter(([,v]) => v).map(([k]) => k);
+                      if (selected.length === 0) { showAlert("Seleccione al menos un documento."); return; }
+
+                      // Solo 1 doc → usar función original dedicada (máxima calidad)
+                      if (selected.length === 1) {
+                        if (selected[0] === "certificado") {
+                          const html = _generarCertificadoHTMLNormalizado(data, activeDoctorData, activeSignature, null);
+                          const w = window.open("", "_blank", "width=920,height=1150");
+                          if (w) { w.document.write(html.replace("</body>", '<div class="np-dl"><button onclick="window.print()">📥 Guardar PDF</button></div></body>')); w.document.close(); }
+                        } else if (selected[0] === "historia") { _printHCClean(); }
+                        else if (selected[0] === "formula") { const _ips = currentUser?.empresaId ? companies.find(c => c.id === currentUser.empresaId) : null; _openPrintRecetaDeriv("formula", "Fórmula Médica", data, activeDoctorData, activeSignature, _ips); }
+                        else if (selected[0] === "derivacion") { const _ips = currentUser?.empresaId ? companies.find(c => c.id === currentUser.empresaId) : null; _openPrintRecetaDeriv("derivacion", "Derivación / Interconsulta", data, activeDoctorData, activeSignature, _ips); }
+                        else if (selected[0] === "examenes") { const _ips = currentUser?.empresaId ? companies.find(c => c.id === currentUser.empresaId) : null; _openPrintRecetaDeriv("examenes", "Solicitud de Exámenes", data, activeDoctorData, activeSignature, _ips); }
+                        else if (selected[0] === "incapacidad") {
+                          // Incapacidad premium via Blob URL
+                          const _inc = data.incapacidad || {};
+                          const _miIPS = currentUser?.empresaId ? companies.find(c => c.id === currentUser.empresaId) : null;
+                          const _docI = activeDoctorData || {};
+                          const _sigI = activeSignature || null;
+                          const _acI = "#dc2626";
+                          const _fdI = data.fechaExamen || data.fechaConsulta || new Date().toLocaleDateString("es-CO");
+                          const _nALI = (n) => { try { return numeroALetras(Number(n)); } catch { return String(n); } };
+                          const _iBody = `<div style="background:#fef2f2;border:1px solid #fecaca;border-radius:6px;padding:14px;margin-bottom:14px;"><div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;"><div style="font-size:8.5pt;"><p style="margin:3px 0;"><b>Paciente:</b> ${_sanitize(data.nombres||"--")}</p><p style="margin:3px 0;"><b>Doc:</b> ${_sanitize(data.docTipo||"CC")} ${_sanitize(data.docNumero||"--")}</p><p style="margin:3px 0;"><b>Edad:</b> ${_sanitize(String(data.edad||"--"))} años</p><p style="margin:3px 0;"><b>EPS:</b> ${_sanitize(data.eps||"--")}</p><p style="margin:3px 0;"><b>Cargo:</b> ${_sanitize(data.cargo||"--")}</p></div><div style="text-align:center;background:#fee2e2;border-radius:6px;padding:10px;"><p style="font-size:8pt;font-weight:900;color:${_acI};text-transform:uppercase;margin:0 0 4px 0;">Días de Incapacidad</p><p style="font-size:32pt;font-weight:900;color:${_acI};line-height:1;margin:0;">${_inc.dias||0}</p><p style="font-size:8pt;color:${_acI};font-weight:700;">${_nALI(_inc.dias||0)} DÍAS</p></div></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:8.5pt;border-top:1px solid #fecaca;padding-top:10px;"><p style="margin:3px 0;"><b>Origen:</b> ${_sanitize(_inc.origen||"--")}</p><p style="margin:3px 0;"><b>Inicio:</b> ${_sanitize(_inc.desde||"--")}</p><p style="margin:3px 0;"><b>Fin:</b> ${_sanitize(_inc.hasta||"--")}</p><p style="margin:3px 0;"><b>Diagnóstico:</b> ${_sanitize(_inc.diagnostico||"--")}</p></div></div><div style="display:flex;justify-content:space-between;align-items:flex-end;margin-top:18mm;"><div style="text-align:center;width:42%;"><div style="border-top:2px solid #222;padding-top:4px;font-size:7.5pt;font-weight:700;">Firma Paciente / Responsable</div><p style="font-size:7.5pt;color:#6b7280;margin:2px 0;">Nombre: ___________________</p></div><div style="text-align:center;width:42%;">${_sigI?`<img src="${_sigI}" style="max-height:55px;max-width:150px;display:block;margin:0 auto 4px;"/>`:'<div style="height:55px;border-bottom:2px solid #222;"></div>'}<p style="font-size:8.5pt;font-weight:900;margin:3px 0;">${_sanitize(_docI.nombre||"")}</p><p style="font-size:7.5pt;color:#555;margin:1px 0;">${_sanitize(_docI.titulo||"")}</p><p style="font-size:7.5pt;color:#555;margin:1px 0;">Lic: ${_sanitize(_docI.licencia||"")}</p></div></div>`;
+                          const _iHtml = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"/><title>Incapacidad - ${_sanitize(data.nombres||"")}</title><style>@page{size:letter portrait;margin:1.1cm 1.3cm 1.3cm 1.3cm;}*{box-sizing:border-box;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}body{font-family:Arial,Helvetica,sans-serif;font-size:9.5pt;color:#111;margin:0;padding:1.1cm 1.3cm 1.1cm 1.3cm;padding-top:60px;}.itb{position:fixed;top:0;left:0;right:0;background:#7f1d1d;color:white;padding:8px 14px;display:flex;align-items:center;gap:10px;z-index:9999;}.itb .iptitle{flex:1;font-size:9.5pt;font-weight:700;}.itb button{border:none;padding:6px 14px;border-radius:6px;font-weight:900;cursor:pointer;font-size:9pt;}.ibp{background:#10b981;color:white;}.ibc{background:#ef4444;color:white;}@media print{.itb{display:none!important;}body{padding-top:1.1cm!important;}}</style></head><body><div class="itb"><span class="iptitle">🏥 Incapacidad Médica — ${_sanitize(data.nombres||"")}</span><button class="ibp" onclick="window.print()">🖨️ Imprimir</button><button class="ibc" onclick="window.close()">✕ Cerrar</button></div><div style="display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid ${_acI};padding-bottom:10px;margin-bottom:14px;">${_ipsDocLeftHtml(_miIPS,_docI,_acI)}<div style="width:34%;text-align:center;border-left:1px solid #ddd;border-right:1px solid #ddd;padding:0 10px;"><p style="font-size:13pt;font-weight:900;color:${_acI};text-transform:uppercase;margin:2px 0;">INCAPACIDAD MÉDICA</p><p style="font-size:7pt;color:#888;margin:2px 0;">Res. 1995/1999</p><p style="font-size:8pt;font-weight:700;color:#333;margin:5px 0 2px 0;">Fecha: ${_sanitize(_fdI)}</p></div><div style="width:32%;text-align:right;padding-left:8px;"><p style="font-size:10.5pt;font-weight:900;color:${_acI};text-transform:uppercase;margin:0 0 3px 0;">${_sanitize(data.nombres||"---")}</p><p style="font-size:7.5pt;color:#444;margin:1px 0;">${_sanitize(data.docTipo||"CC")}: <b>${_sanitize(data.docNumero||"---")}</b></p><p style="font-size:7.5pt;color:#444;margin:1px 0;">Empresa: <b>${_sanitize(data.empresa||"---")}</b></p></div></div>${_iBody}</body></html>`;
+                          const _ib = new Blob([_iHtml], {type:"text/html;charset=utf-8"});
+                          const _iu = URL.createObjectURL(_ib);
+                          const _iw = window.open(_iu, "_blank", "width=870,height=1100");
+                          if (!_iw) { URL.revokeObjectURL(_iu); showAlert("Permita ventanas emergentes."); return; }
+                          setTimeout(() => URL.revokeObjectURL(_iu), 60000);
+                        }
+                        setShowEnviarPanel(false);
+                        return;
+                      }
+
+                      // Múltiples docs → 1 SOLA ventana combinando HTMLs
+                      const pages = [];
+                      const allStyles = [];
+
+                      // Certificado: extraer styles y body del HTML completo
+                      if (selected.includes("certificado")) {
+                        const certHtml = _generarCertificadoHTMLNormalizado(data, activeDoctorData, activeSignature, null);
+                        const styleMatch = certHtml.match(/<style>([\s\S]*?)<\/style>/);
+                        const bodyMatch = certHtml.match(/<body[^>]*>([\s\S]*)<\/body>/);
+                        if (styleMatch) allStyles.push(styleMatch[1]);
+                        if (bodyMatch) pages.push(bodyMatch[1]);
+                      }
+
+                      // HC: generar en modo silencioso (sin abrir ventana)
+                      if (selected.includes("historia")) {
+                        _printHCClean(true); // silentMode = true → no abre ventana, solo guarda HTML
+                        if (window._lastHCCleanBody) {
+                          if (window._lastHCCleanStyles) allStyles.push(window._lastHCCleanStyles);
+                          pages.push('<div style="page-break-before:always;padding:14mm 16mm;">' + window._lastHCCleanBody + '</div>');
+                        }
+                      }
+
+                      // Incapacidad médica en multi-doc
+                      if (selected.includes("incapacidad") && data.incapacidad?.aplica) {
+                        const _incM = data.incapacidad || {};
+                        const _nALM = (n) => { try { return numeroALetras(Number(n)); } catch { return String(n); } };
+                        const _acM = "#dc2626";
+                        pages.push(`<div style="page-break-before:always;padding:14mm 16mm;font-family:Arial,sans-serif;font-size:9.5pt;color:#111;"><h2 style="font-size:13pt;font-weight:900;color:${_acM};text-align:center;text-transform:uppercase;border-bottom:3px solid ${_acM};padding-bottom:8px;margin-bottom:14px;">INCAPACIDAD MÉDICA</h2><div style="background:#fef2f2;border:1px solid #fecaca;border-radius:6px;padding:14px;margin-bottom:14px;"><div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;"><div><p style="margin:3px 0;"><b>Paciente:</b> ${_sanitize(data.nombres||"--")}</p><p style="margin:3px 0;"><b>Doc:</b> ${_sanitize(data.docNumero||"--")}</p><p style="margin:3px 0;"><b>EPS:</b> ${_sanitize(data.eps||"--")}</p><p style="margin:3px 0;"><b>Cargo:</b> ${_sanitize(data.cargo||"--")}</p></div><div style="text-align:center;background:#fee2e2;border-radius:6px;padding:10px;"><p style="font-size:8pt;font-weight:900;color:${_acM};text-transform:uppercase;margin:0 0 4px 0;">Días</p><p style="font-size:32pt;font-weight:900;color:${_acM};line-height:1;margin:0;">${_incM.dias||0}</p><p style="font-size:8pt;color:${_acM};font-weight:700;">${_nALM(_incM.dias||0)} DÍAS</p></div></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;border-top:1px solid #fecaca;padding-top:10px;"><p style="margin:3px 0;"><b>Origen:</b> ${_sanitize(_incM.origen||"--")}</p><p style="margin:3px 0;"><b>Inicio:</b> ${_sanitize(_incM.desde||"--")}</p><p style="margin:3px 0;"><b>Fin:</b> ${_sanitize(_incM.hasta||"--")}</p><p style="margin:3px 0;"><b>Diagnóstico:</b> ${_sanitize(_incM.diagnostico||"--")}</p></div></div></div>`);
+                      }
+
+                      // Fórmula / Derivación / Exámenes en multi-doc (modo solo HTML)
+                      {
+                        const _ipsRD = currentUser?.empresaId ? companies.find(c => c.id === currentUser.empresaId) : null;
+                        const _rdMap = [
+                          { key: "formula", section: "formula", title: "Fórmula Médica" },
+                          { key: "derivacion", section: "derivacion", title: "Derivación / Interconsulta" },
+                          { key: "examenes", section: "examenes", title: "Solicitud de Exámenes" },
+                        ];
+                        for (const _rd of _rdMap) {
+                          if (!selected.includes(_rd.key)) continue;
+                          const _r = _openPrintRecetaDeriv(_rd.section, _rd.title, data, activeDoctorData, activeSignature, _ipsRD, { returnBody: true });
+                          if (_r && _r.body) {
+                            if (_r.styles) allStyles.push(_r.styles);
+                            pages.push('<div style="page-break-before:always;padding:14mm 16mm;">' + _r.body + '</div>');
+                          }
+                        }
+                      }
+
+                      if (pages.length === 0) { showAlert("No se pudo generar los documentos."); return; }
+                      const w = window.open("", "_blank", "width=920,height=1200");
+                      if (!w) { showAlert("Permita ventanas emergentes."); return; }
+                      const _esc2 = (v) => String(v||"").replace(/&/g,"&amp;").replace(/</g,"&lt;");
+                      w.document.write('<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"/><title>Documentos - ' + _esc2(data.nombres) + '</title><style>' + allStyles.join("\n") + ' .np-dl{position:fixed;bottom:20px;right:20px;z-index:9999;} .np-dl button{background:#065f46;color:#fff;border:none;padding:10px 20px;border-radius:10px;font-weight:900;font-size:11pt;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.2);} @media print{.np-dl{display:none!important;}}</style></head><body>' + pages.join("") + '<div class="np-dl"><button onclick="window.print()">📥 Guardar / Imprimir PDF (' + pages.length + ' docs)</button></div></body></html>');
+                      w.document.close();
+                      w.focus();
+                      setShowEnviarPanel(false);
+                    }} className="flex-1 px-2 py-1.5 bg-emerald-600 text-white text-[9px] font-black rounded-lg hover:bg-emerald-700">🖨️ PDF</button>
+                    <button onClick={() => {
+                      const nombre = data.nombres || "";
+                      const portalLink = _sisoStableOrigin() + window.location.pathname + "#portaltrabajador";
+                      const selDocs = Object.entries(enviarChecklist).filter(([,v]) => v).map(([k]) => ({certificado:"Certificado",historia:"Historia Clínica",formula:"Fórmula Médica",derivacion:"Derivación",examenes:"Exámenes"}[k])).join(", ");
+                      const docD = activeDoctorData || {};
+                      const subject = `Documentos Médicos — ${nombre}`;
+                      const body = `Estimado/a ${nombre},\n\nDocumentos emitidos: ${selDocs}\n\nPortal de Certificados:\n${portalLink}\n→ Cédula: ${data.docNumero || ""}\n\nCordialmente,\n${docD.nombre || ""}\n${docD.titulo || ""}\n${docD.licencia ? "Lic: " + docD.licencia : ""}\n${docD.email || emailConfig?.email || ""}`;
+                      const htmlBody = _generarEmailHTML(nombre, data.docNumero, portalLink, null, false);
+                      const destino = data.email || "";
+                      if (destino && destino.includes("@")) { _enviarEmail(destino, subject, body, htmlBody); }
+                      else { showPrompt("Email del paciente:", (em) => { if (em) _enviarEmail(em, subject, body, htmlBody); }); }
+                      setShowEnviarPanel(false);
+                    }} className="flex-1 px-2 py-1.5 bg-amber-500 text-white text-[9px] font-black rounded-lg hover:bg-amber-600">📧 Email</button>
+                    <button onClick={() => {
+                      const nombre = data.nombres || "";
+                      const tel = (data.celular || data.telefono || "").replace(/\D/g, "");
+                      const portalLink = _sisoStableOrigin() + window.location.pathname + "#portaltrabajador";
+                      const msg = encodeURIComponent(`${nombre}, sus documentos médicos están listos.\n📥 ${portalLink}\n→ Cédula: ${data.docNumero || ""}\n${activeDoctorData?.nombre || ""}`);
+                      if (tel.length >= 10) { window.open(`https://wa.me/${tel.startsWith("57") ? tel : "57" + tel}?text=${msg}`, "_blank"); }
+                      else { showPrompt("Celular:", (n) => { if (n) window.open(`https://wa.me/57${n.replace(/\D/g,"")}?text=${msg}`, "_blank"); }); }
+                      setShowEnviarPanel(false);
+                    }} className="flex-1 px-2 py-1.5 bg-green-500 text-white text-[9px] font-black rounded-lg hover:bg-green-600">📱 WA</button>
+                  </div>
+                </div>
+                );
+              })()}
+
+              {dataType === "ocupacional" &&
+                data.estadoHistoria === "Cerrada" && (
+                  <button
+                    onClick={async () => {
+                      try {
+                        showAlert("⏳ Generando paquete SHA-256...");
+                        const pkg = await _generarPaqueteRetencion(
+                          data,
+                          activeDoctorData
+                        );
+                        const blob = new Blob([JSON.stringify(pkg, null, 2)], {
+                          type: "application/json",
+                        });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement("a");
+                        a.href = url;
+                        a.download =
+                          "HC_SHA256_" +
+                          (data.docNumero || "").replace(/\s+/g, "_") +
+                          "_" +
+                          (data.fechaExamen || "sin-fecha") +
+                          ".json";
+                        a.click();
+                        URL.revokeObjectURL(url);
+                        const entrada = {
+                          id: Date.now(),
+                          fecha: new Date().toISOString(),
+                          usuario: currentUser?.user,
+                          accion: "PRESERVACION_CERTIFICADA",
+                          paciente: data.nombres,
+                          hash: pkg.hashSHA256.substring(0, 16),
+                        };
+                        setAuditLog((prev) => {
+                          const n = [entrada, ...prev].slice(0, 500);
+                          _sync("siso_audit_log", JSON.stringify(n));
+                          return n;
+                        });
+                        showAlert(
+                          "✅ HC preservada.\nHash SHA-256: " +
+                            pkg.hashSHA256.substring(0, 16) +
+                            "...\nVigente hasta: " +
+                            pkg.metadata.anioVencimientoLegal
+                        );
+                      } catch (e) {
+                        showAlert("Error: " + e.message);
+                      }
+                    }}
+                    className="bg-purple-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1 no-print hover:bg-purple-800"
+                    title="Preservar HC (Res.1995/1999 - 20 años)"
+                  >
+                    <HardDrive className="w-3 h-3" /> 20 años
+                  </button>
+                )}
+              <button
+                onClick={() => {
+                  setNotifData(data);
+                  setShowNotifModal(true);
+                }}
+                className="bg-green-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1 no-print hover:bg-green-700"
+                title="Notificar resultado al paciente (Res. 1552/2013)"
+              >
+                📲 Notificar
+              </button>
+              {/* FASE 2: Indicador HC de otro médico (modo lectura) */}
+              {currentUser?.role === "medico" &&
+                data._medicoId &&
+                data._medicoId !== currentUser?.user && (
+                  <span className="bg-amber-100 text-amber-700 border border-amber-200 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1">
+                    👁 Lectura — HC del Dr.{" "}
+                    {usersList.find((u) => u.user === data._medicoId)?.name ||
+                      data._medicoId}
+                  </span>
+                )}
+              {isHcOwner(data) && (
+                <button
+                  onClick={handleSavePatient}
+                  className="bg-emerald-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1"
+                >
+                  <Save className="w-3 h-3" /> Guardar
+                </button>
+              )}
+            </>
+          )}
+          {view === "dashboard" && (
+            <>
+              <input
+                type="file"
+                ref={fileInputRef}
+                style={{ display: "none" }}
+                accept=".json"
+                onChange={handleImportData}
+              />
+              <button
+                onClick={() => fileInputRef.current.click()}
+                className="text-xs flex items-center bg-blue-50 text-blue-700 px-3 py-1.5 rounded-lg border border-blue-200 font-bold hover:bg-blue-100"
+              >
+                <UploadCloud className="w-3 h-3 mr-1" /> Importar
+              </button>
+              <button
+                onClick={handleExportData}
+                className="text-xs flex items-center bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-lg border border-emerald-200 font-bold hover:bg-emerald-100"
+              >
+                <HardDrive className="w-3 h-3 mr-1" /> Backup
+              </button>
+              {/* NORMATIVO: Res. 2275/2023 - Exportación RIPS JSON */}
+              <button
+                onClick={() => {
+                  try {
+                    const pats = patientsList.filter(
+                      (p) => p.fechaExamen && !p._archivado
+                    );
+                    if (!pats.length) {
+                      showAlert(
+                        "Sin pacientes con fecha de examen registrada."
+                      );
+                      return;
+                    }
+                    // B-25: Validar antes de generar
+                    const ripsErrs = validarRIPSLote(pats);
+                    if (ripsErrs.length > 0) {
+                      const msg = `⚠️ ${
+                        ripsErrs.length
+                      } paciente(s) con datos incompletos para RIPS:\n\n${ripsErrs
+                        .slice(0, 5)
+                        .join("\n")}${
+                        ripsErrs.length > 5 ? "\n...y más" : ""
+                      }\n\n¿Generar RIPS de todas formas?`;
+                      if (!window.confirm(msg)) return;
+                    }
+                    const rips = _generarRIPSJson(
+                      pats,
+                      activeDoctorData,
+                      new Date().toISOString().substring(0, 7)
+                    );
+                    const jsonStr = JSON.stringify(rips, null, 2);
+                    const filename = `RIPS_SISO_${new Date()
+                      .toISOString()
+                      .substring(0, 7)}.json`;
+                    setRipsModalData({ json: jsonStr, filename });
+                  } catch (e) {
+                    showAlert("Error al generar RIPS: " + e.message);
+                  }
+                }}
+                className="text-xs flex items-center bg-orange-50 text-orange-700 px-3 py-1.5 rounded-lg border border-orange-200 font-bold hover:bg-orange-100"
+              >
+                <FileCheck className="w-3 h-3 mr-1" /> RIPS
+              </button>
+              <button
+                onClick={handleManualCloudSave}
+                disabled={syncStatus === "syncing"}
+                className="text-xs flex items-center bg-violet-600 text-white px-3 py-1.5 rounded-lg font-bold hover:bg-violet-700 disabled:opacity-60 gap-1 shadow-sm"
+              >
+                {syncStatus === "syncing" ? (
+                  <Loader2 className="w-3 h-3 animate-spin" />
+                ) : (
+                  <Cloud className="w-3 h-3" />
+                )}
+                {" Guardar en Nube"}
+              </button>
+              <button
+                onClick={handleDiagnosticoNube}
+                disabled={diagnosticoCargando}
+                title="Diagnóstico y recuperación de datos desde Supabase"
+                className="text-xs flex items-center bg-amber-50 text-amber-700 px-3 py-1.5 rounded-lg border border-amber-200 font-bold hover:bg-amber-100 gap-1"
+              >
+                {diagnosticoCargando ? <Loader2 className="w-3 h-3 animate-spin" /> : "🔍"} Nube
+              </button>
+              <button
+                onClick={() => setShowCargaMasiva(true)}
+                title="Carga masiva de exámenes PDF"
+                className="text-xs flex items-center bg-blue-50 text-blue-700 px-3 py-1.5 rounded-lg border border-blue-200 font-bold hover:bg-blue-100 gap-1"
+              >
+                📁 Exámenes
+              </button>
+              <input
+                type="file"
+                ref={fileInputSigRef}
+                style={{ display: "none" }}
+                accept="image/*"
+                onChange={handleSignatureUpload}
+              />
+              <button
+                onClick={() => fileInputSigRef.current.click()}
+                className="text-xs flex items-center bg-teal-50 text-teal-700 px-3 py-1.5 rounded-lg border border-teal-200 font-bold hover:bg-teal-100"
+              >
+                <FileSignature className="w-3 h-3 mr-1" /> Firma
+              </button>
+            </>
+          )}
+          {/* Badge Offline / Sync — muestra estado de conexión y pendientes */}
+          {isOffline ? (
+            <span
+              title={offlinePending > 0
+                ? `Sin conexión — ${offlinePending} cambio${offlinePending !== 1 ? 's' : ''} pendiente${offlinePending !== 1 ? 's' : ''} de sincronizar al volver online`
+                : "Sin conexión — trabajando en modo offline. Los cambios se sincronizarán automáticamente."}
+              className="flex items-center gap-1 text-[10px] font-bold px-2 py-1 rounded-lg border no-print bg-red-50 text-red-600 border-red-200 cursor-default"
+            >
+              <WifiOff className="w-3 h-3" />
+              {offlinePending > 0 ? `Offline (${offlinePending})` : "Offline"}
+            </span>
+          ) : (
+            <button
+              title={syncStatus === "error" ? "Error de sync — clic para diagnóstico y restauración" : _syncTitle}
+              onClick={() => { if (syncStatus === "error" || syncStatus === "idle") handleDiagnosticoNube(); }}
+              className={
+                "flex items-center gap-1 text-[10px] font-bold px-2 py-1 rounded-lg border no-print transition " +
+                _syncBg +
+                (syncStatus === "error" ? " cursor-pointer hover:opacity-80" : " cursor-default")
+              }
+            >
+              {syncStatus === "syncing" || syncStatus === "loading" ? (
+                <Loader2 className="w-3 h-3 animate-spin" />
+              ) : syncStatus === "ok" ? (
+                <Cloud className="w-3 h-3" />
+              ) : syncStatus === "error" ? (
+                <WifiOff className="w-3 h-3" />
+              ) : (
+                <Cloud className="w-3 h-3 opacity-40" />
+              )}{" "}
+              {_syncTxt}
+            </button>
+          )}
+          {pendingD1Count > 0 && (
+            <span
+              title={`${pendingD1Count} operación(es) D1 en cola — reintentando automáticamente cada 30s`}
+              className="flex items-center gap-1 text-[10px] font-bold px-2 py-1 rounded-lg border no-print bg-amber-50 text-amber-700 border-amber-300 cursor-default animate-pulse"
+            >
+              ⏳ {pendingD1Count} pendiente{pendingD1Count > 1 ? "s" : ""}
+            </span>
+          )}
+          {["administrador", "medico", "super_admin"].includes(
+            currentUser?.role
+          ) && (
+            <button
+              onClick={() => goTo("habeasdata")}
+              className={
+                view === "habeasdata"
+                  ? "flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-indigo-600 text-white"
+                  : "flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200"
+              }
+              title="Habeas Data - Ley 1581/2012"
+            >
+              🔐 Privacidad
+            </button>
+          )}
+          {["administrador", "medico", "super_admin"].includes(
+            currentUser?.role
+          ) && (
+            <button
+              onClick={() => goTo("custodia")}
+              className={
+                view === "custodia"
+                  ? "flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-purple-600 text-white"
+                  : "flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-purple-700 bg-purple-50 hover:bg-purple-100 border border-purple-200"
+              }
+              title="Carta de Custodia - Res. 1918/2009"
+            >
+              📁 Custodia
+            </button>
+          )}
+          {(_isAdmin(currentUser?.role) ||
+            currentUser?.role === "medico" ||
+            (currentUser?.role === "secretaria" &&
+              _secretariaPuede("telemedicina", currentUser, usersList))) && (
+            <button
+              onClick={() => goTo("telemedicina")}
+              className={
+                view === "telemedicina"
+                  ? "flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-blue-600 text-white"
+                  : "flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 border border-blue-200"
+              }
+              title="Telemedicina - Res. 2654/2019"
+            >
+              🩺 Tele
+            </button>
+          )}
+          {["administrador", "secretaria", "medico", "super_admin"].includes(
+            currentUser?.role
+          ) && (
+            <button onClick={() => goTo("agenda")} className={_agCls}>
+              {"🗓️ Agenda"}
+              {_agN > 0 && (
+                <span className="ml-1 bg-red-500 text-white text-[8px] font-black px-1 rounded-full">
+                  {_agN}
+                </span>
+              )}
+            </button>
+          )}
+          <button
+            onClick={() => setShowMensajePanel((v) => !v)}
+            className="relative p-2 rounded-xl hover:bg-indigo-50 transition"
+            title="Mensajes internos"
+          >
+            <MessageSquare className="w-5 h-5 text-indigo-500" />
+            {_noLeidos > 0 && (
+              <span className="absolute -top-0.5 -right-0.5 bg-red-500 text-white text-[8px] font-black w-4 h-4 rounded-full flex items-center justify-center">
+                {_noLeidos}
+              </span>
+            )}
+          </button>
+          {/* ── VER PLANES ── */}
+          <button
+            onClick={() => goTo("planes")}
+            className={
+              view === "planes"
+                ? "flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-blue-600 text-white"
+                : "flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 border border-blue-200"
+            }
+            title="Ver planes y precios"
+          >
+            ⭐ Planes
+          </button>
+          <button
+            onClick={() => {
+              _sbAuthSignOut(); // Cerrar sesión en Supabase Auth (invalida JWT)
+              setCurrentUser(null);
+              setView("login");
+              _ls.removeItem("siso_session");
+              _ls.removeItem("siso_active_form");
+            }}
+            className="text-xs text-red-500 hover:text-red-700 font-bold flex items-center gap-1 ml-1"
+          >
+            <LogOut className="w-3 h-3" /> Salir
+          </button>
+        </div>
+      </nav>
+    );
+  };
+  const renderLogin = () => (
