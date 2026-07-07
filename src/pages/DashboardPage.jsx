@@ -469,6 +469,38 @@ export default function DashboardPage() {
         </div>
       )}
 
+      {/* GAP-D04: CTAs principales Nueva HC Ocupacional/General (como monolito) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-2">
+        <button
+          onClick={() => navigate('/hc/new')}
+          className="bg-gradient-to-r from-emerald-600 to-teal-500 rounded-2xl p-6 text-white shadow-lg hover:shadow-xl transition-all text-left group"
+        >
+          <div className="flex items-center gap-3">
+            <div className="bg-white/20 p-3 rounded-xl group-hover:scale-110 transition-transform">
+              <Stethoscope className="w-8 h-8 text-white" />
+            </div>
+            <div>
+              <p className="font-black text-lg">Nueva HC Ocupacional</p>
+              <p className="text-emerald-100 text-xs mt-1">FOR-SST-001 v4.0 · Res. 1843/2025</p>
+            </div>
+          </div>
+        </button>
+        <button
+          onClick={() => navigate('/hc/general')}
+          className="bg-gradient-to-r from-blue-600 to-indigo-500 rounded-2xl p-6 text-white shadow-lg hover:shadow-xl transition-all text-left group"
+        >
+          <div className="flex items-center gap-3">
+            <div className="bg-white/20 p-3 rounded-xl group-hover:scale-110 transition-transform">
+              <FileText className="w-8 h-8 text-white" />
+            </div>
+            <div>
+              <p className="font-black text-lg">Nueva HC General</p>
+              <p className="text-blue-100 text-xs mt-1">Consulta médica general</p>
+            </div>
+          </div>
+        </button>
+      </div>
+
       {/* Quick Actions */}
       <div>
         {/* ═══ CONFIG IA — Panel de estado y configuración (como en el monolito) ═══ */}
