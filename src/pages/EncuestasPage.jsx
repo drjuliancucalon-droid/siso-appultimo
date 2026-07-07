@@ -16,6 +16,9 @@ export default function EncuestasPage() {
   const [showForm, setShowForm] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [selectedSurvey, setSelectedSurvey] = useState(null);
+  const [responses, setResponses] = useState([]);
+  const [loadingResponses, setLoadingResponses] = useState(false);
 
   // Nueva encuesta
   const [nombre, setNombre] = useState('');
@@ -120,6 +123,34 @@ export default function EncuestasPage() {
       setSaving(false);
     }
   }, [nombre, descripcion, preguntas, userId]);
+
+  // GAP-ENC01: Cargar respuestas de una encuesta
+  const handleViewResponses = useCallback(async (encuesta) => {
+    if (selectedSurvey?.id === encuesta.id) {
+      setSelectedSurvey(null);
+      setResponses([]);
+      return;
+    }
+    setSelectedSurvey(encuesta);
+    setLoadingResponses(true);
+    try {
+      const respKey = `siso_survey_responses_${encuesta.id}`;
+      const { value } = await d1Get(respKey);
+      if (Array.isArray(value)) {
+        setResponses(value);
+      } else {
+        // Fallback a localStorage
+        const local = localStorage.getItem(respKey);
+        setResponses(local ? JSON.parse(local) : []);
+      }
+    } catch {
+      const respKey = `siso_survey_responses_${encuesta.id}`;
+      const local = localStorage.getItem(respKey);
+      setResponses(local ? JSON.parse(local) : []);
+    } finally {
+      setLoadingResponses(false);
+    }
+  }, [selectedSurvey]);
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
@@ -257,14 +288,81 @@ export default function EncuestasPage() {
                   <span>{e.preguntas?.length || 0} preguntas</span>
                   <span>Creada: {new Date(e.creadoEn).toLocaleDateString('es-CO')}</span>
                 </div>
-                <div className="mt-2 flex items-center gap-2">
+                <div className="mt-2 flex items-center gap-2 flex-wrap">
                   <a href={`/encuesta/${e.id}`} target="_blank" rel="noopener noreferrer"
                     className="text-[10px] font-bold text-indigo-600 hover:text-indigo-800 underline">
                     🔗 Link público
                   </a>
+                  <button onClick={(ev) => { ev.preventDefault(); handleViewResponses(e); }}
+                    className="text-[10px] font-bold text-emerald-600 hover:text-emerald-800 underline">
+                    📊 Ver respuestas
+                  </button>
                 </div>
               </div>
             ))
+          )}
+        </div>
+      )}
+
+      {/* GAP-ENC01: Panel de respuestas */}
+      {selectedSurvey && (
+        <div className="mt-6 bg-white border border-emerald-200 rounded-xl p-6 shadow-sm">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h3 className="font-black text-gray-800">
+                📊 Respuestas: {selectedSurvey.nombre}
+              </h3>
+              <p className="text-xs text-gray-500 mt-1">
+                {selectedSurvey.descripcion || 'Sin descripción'} · {responses.length} respuesta(s)
+              </p>
+            </div>
+            <button onClick={() => { setSelectedSurvey(null); setResponses([]); }}
+              className="text-xs text-gray-400 hover:text-gray-600 font-bold">
+              ✕ Cerrar
+            </button>
+          </div>
+
+          {loadingResponses ? (
+            <div className="flex items-center justify-center py-10">
+              <Loader2 className="w-6 h-6 text-emerald-500 animate-spin" />
+            </div>
+          ) : responses.length === 0 ? (
+            <div className="text-center py-8 text-gray-400">
+              <ClipboardList className="w-10 h-10 mx-auto mb-2 opacity-30" />
+              <p className="text-sm">No hay respuestas recibidas aún</p>
+              <p className="text-xs mt-1">Comparte el link público para recibir respuestas</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {responses.map((resp, rIdx) => (
+                <div key={resp.id || rIdx} className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-[10px] font-bold text-gray-500">
+                      Respuesta #{rIdx + 1}
+                    </span>
+                    <span className="text-[10px] text-gray-400">
+                      {resp.fecha ? new Date(resp.fecha).toLocaleString('es-CO') : 'Sin fecha'}
+                    </span>
+                  </div>
+                  <div className="space-y-2">
+                    {selectedSurvey.preguntas?.map((preg, pIdx) => {
+                      const respuesta = resp.respuestas?.[preg.id] || resp[preg.id] || resp[pIdx] || '—';
+                      const respuestaStr = typeof respuesta === 'string' ? respuesta : Array.isArray(respuesta) ? respuesta.join(', ') : String(respuesta);
+                      return (
+                        <div key={pIdx} className="bg-white rounded-lg p-2.5 border border-gray-100">
+                          <p className="text-[10px] font-bold text-gray-600 mb-0.5">
+                            {pIdx + 1}. {preg.texto}
+                          </p>
+                          <p className="text-xs text-gray-800">
+                            {respuestaStr || 'Sin respuesta'}
+                          </p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
           )}
         </div>
       )}
