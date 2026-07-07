@@ -10,6 +10,8 @@ export const PatientList = ({ onSelect, pacientes: pacientesExternos }) => {
   const [filtroEmpresa, setFiltroEmpresa] = useState('');
   const [filtroTipo, setFiltroTipo] = useState('');
   const [ordenDir, setOrdenDir] = useState('desc');
+  const [fechaDesde, setFechaDesde] = useState('');
+  const [fechaHasta, setFechaHasta] = useState('');
 
   useEffect(() => {
     if (pacientesExternos) {
@@ -58,7 +60,10 @@ export const PatientList = ({ onSelect, pacientes: pacientesExternos }) => {
         !filtroEmpresa || (p.empresa || p.empresaNombre || '') === filtroEmpresa;
       const coincideTipo =
         !filtroTipo || (p.tipoExamen || p.tipo || '') === filtroTipo;
-      return coincideBusqueda && coincideEmpresa && coincideTipo;
+      const fecha = p.fechaExamen || p.fecha || '';
+      const coincideFechaDesde = !fechaDesde || fecha >= fechaDesde;
+      const coincideFechaHasta = !fechaHasta || fecha <= fechaHasta;
+      return coincideBusqueda && coincideEmpresa && coincideTipo && coincideFechaDesde && coincideFechaHasta;
     });
 
     lista.sort((a, b) => {
@@ -132,6 +137,19 @@ export const PatientList = ({ onSelect, pacientes: pacientesExternos }) => {
           {ordenDir === 'desc' ? <SortDesc className="w-4 h-4" /> : <SortAsc className="w-4 h-4" />}
           Fecha {ordenDir === 'desc' ? '↓' : '↑'}
         </button>
+        {/* P3-02: Filtro rango de fechas */}
+        <div className="flex items-center gap-1">
+          <Calendar className="w-3.5 h-3.5 text-gray-400" />
+          <input type="date" value={fechaDesde} onChange={e => setFechaDesde(e.target.value)}
+            className="border rounded-lg px-2 py-1.5 text-[11px] w-32" title="Desde" />
+          <span className="text-gray-400 text-xs">a</span>
+          <input type="date" value={fechaHasta} onChange={e => setFechaHasta(e.target.value)}
+            className="border rounded-lg px-2 py-1.5 text-[11px] w-32" title="Hasta" />
+          {(fechaDesde || fechaHasta) && (
+            <button onClick={() => { setFechaDesde(''); setFechaHasta(''); }}
+              className="text-[10px] text-red-500 hover:text-red-700 font-bold">✕</button>
+          )}
+        </div>
       </div>
 
       {/* Lista */}
