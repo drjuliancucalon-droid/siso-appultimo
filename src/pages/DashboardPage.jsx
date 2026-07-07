@@ -9,7 +9,7 @@ import {
   Users, Building2, Calendar, FileText, FileCheck, BarChart3,
   Shield, Stethoscope, Activity, AlertTriangle, TrendingUp,
   Cloud, HardDrive, Video, Sparkles, Loader2, Search, ExternalLink, Lock, CheckCircle, XCircle, Clock,
-  FileSearch, UserCheck, Heart, Receipt, Unlock
+  FileSearch, UserCheck, Heart, Receipt, Unlock, Calculator, Briefcase
 } from 'lucide-react';
 import { useAIStore } from '../stores/aiStore';
 import { dailySummary } from '../modules/ai/services/aiAnalysis';
@@ -648,6 +648,34 @@ export default function DashboardPage() {
             <div className="min-w-0">
               <p className="font-black text-gray-800 text-xs leading-tight">Portal Empresa</p>
               <p className="text-[10px] text-gray-400 truncate">Acceso por NIT</p>
+            </div>
+          </button>
+
+          {/* GAP-D07: Contabilidad V2 */}
+          <button
+            onClick={() => navigate('/contabilidad')}
+            className="bg-white border border-gray-100 rounded-xl p-3 flex items-center gap-2.5 hover:border-emerald-200 hover:bg-emerald-50/40 transition group shadow-sm text-left"
+          >
+            <div className="bg-blue-50 p-2 rounded-lg flex-shrink-0">
+              <Calculator className="w-4 h-4 text-blue-600" />
+            </div>
+            <div className="min-w-0">
+              <p className="font-black text-gray-800 text-xs leading-tight">Contabilidad V2</p>
+              <p className="text-[10px] text-gray-400 truncate">P&L · Pagos · KPIs</p>
+            </div>
+          </button>
+
+          {/* GAP-D09: Portafolio */}
+          <button
+            onClick={() => navigate('/portafolio')}
+            className="bg-white border border-gray-100 rounded-xl p-3 flex items-center gap-2.5 hover:border-emerald-200 hover:bg-emerald-50/40 transition group shadow-sm text-left"
+          >
+            <div className="bg-amber-50 p-2 rounded-lg flex-shrink-0">
+              <Briefcase className="w-4 h-4 text-amber-600" />
+            </div>
+            <div className="min-w-0">
+              <p className="font-black text-gray-800 text-xs leading-tight">Portafolio</p>
+              <p className="text-[10px] text-gray-400 truncate">Precios · Servicios</p>
             </div>
           </button>
         </div>
