@@ -5,6 +5,7 @@ import { Building2, Loader2, Download, Search, FileText, BarChart3, Users, Activ
 import { useSearchParams } from 'react-router-dom';
 import { d1Get } from '../lib/d1Client';
 import { _generarCertificadoHTMLNormalizado, _generarQRDataUrl } from '../shared/lib/printUtils';
+import { _openPrintRecetaDeriv, _mkPrintHeaderMod } from '../lib/printService';
 
 // ── Helpers ──────────────────────────────────────────────────────────────
 const colorAptitud = (c = '') => {
@@ -314,6 +315,35 @@ ${certHTML}<script>setTimeout(()=>window.print(),300)</script></body></html>`;
             {r.vigencia && <p><b>Vigencia:</b> {r.vigencia}</p>}
           </div>
           <button onClick={() => handlePrintSingle(r)} className="mt-4 w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-600 text-white rounded-xl font-black text-sm hover:bg-emerald-700"><Printer className="w-4 h-4"/> Imprimir Certificado</button>
+
+          {/* ── Documentos Emitidos (medicamentos, derivaciones, exámenes, incapacidad) ── */}
+          {(() => {
+            const meds = r.formulaMedicamentos || [];
+            const derivs = r.derivaciones || [];
+            const exams = r.solicitudExamenes || [];
+            const incap = r.incapacidad?.aplica ? r.incapacidad : null;
+            const docBtns = [
+              meds.length > 0 && { section: "formula", label: "📋 Receta Médica", sub: `${meds.length} medicamento${meds.length !== 1 ? "s" : ""}`, color: "bg-emerald-600 hover:bg-emerald-700" },
+              derivs.length > 0 && { section: "derivacion", label: "🔬 Derivaciones", sub: `${derivs.length} especialidad${derivs.length !== 1 ? "es" : ""}`, color: "bg-violet-600 hover:bg-violet-700" },
+              exams.length > 0 && { section: "examenes", label: "🧪 Exámenes", sub: `${exams.length} examen${exams.length !== 1 ? "es" : ""}`, color: "bg-teal-600 hover:bg-teal-700" },
+              incap && { section: "incapacidad", label: "🩺 Incapacidad", sub: `${incap.dias || 0} día${(incap.dias || 0) !== 1 ? "s" : ""}`, color: "bg-red-600 hover:bg-red-700" },
+            ].filter(Boolean);
+            if (docBtns.length === 0) return null;
+            return (
+              <div className="mt-4 border border-indigo-100 bg-indigo-50 rounded-xl p-3">
+                <p className="text-[10px] font-black text-indigo-700 uppercase tracking-wider mb-2">📄 Documentos Emitidos en tu Consulta</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {docBtns.map(btn => (
+                    <button key={btn.section} onClick={() => _openPrintRecetaDeriv(btn.section, btn.label.replace(/^[^\s]+\s/, ''), r, null, null, null, _safeLogoUrl)} className={`flex flex-col items-center gap-1 py-3 px-2 rounded-xl text-white font-black text-[11px] shadow-sm transition ${btn.color}`}>
+                      <span className="text-sm">{btn.label}</span>
+                      <span className="text-[9px] font-normal opacity-90">{btn.sub}</span>
+                      <span className="text-[9px] opacity-75 mt-0.5">📥 Descargar PDF</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
         </div>
       </div>
     );
