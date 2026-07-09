@@ -2,7 +2,10 @@
 // MÓDULO 0: STORAGE PERSISTENTE
 // FIX C-02: localStorage para datos clínicos (persiste entre sesiones)
 // FIX C-03: sessionStorage para credenciales de IA (se limpia al cerrar)
+// FIX 2026-07-09: Fallback a IndexedDB cuando localStorage está lleno (cuota GBs)
 // ==========================================
+
+import { idbSet } from "./offlineDB";
 
 export const _memStore = {}; // fallback si localStorage no está disponible
 
@@ -18,7 +21,11 @@ export const _ls = {
     try {
       localStorage.setItem(k, String(v));
     } catch {
+      // localStorage lleno → no perder el dato. Antes iba solo a RAM volátil
+      // (se perdía al recargar). Ahora también se persiste en IndexedDB (GBs).
       _memStore[k] = String(v);
+      try { idbSet(k, JSON.parse(String(v))).catch(() => {}); }
+      catch { idbSet(k, String(v)).catch(() => {}); }
     }
   },
   removeItem: (k) => {

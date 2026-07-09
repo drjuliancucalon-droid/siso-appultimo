@@ -21,6 +21,20 @@ function _authHeaders() {
   };
 }
 
+/**
+ * _hash64 - Hash simple de 64 bits para verificación de integridad de chunks.
+ * Usado para verificar que los datos no se corrompieron en tránsito.
+ */
+export function _hash64(s) {
+  let h1 = 0, h2 = 0;
+  for (let i = 0; i < s.length; i++) {
+    const c = s.charCodeAt(i);
+    h1 = ((h1 << 5) - h1 + c) | 0;
+    h2 = ((h2 << 7) - h2 + c) | 0;
+  }
+  return (h1 >>> 0).toString(16).padStart(8, '0') + (h2 >>> 0).toString(16).padStart(8, '0');
+}
+
 async function _sleep(ms) {
   return new Promise((r) => setTimeout(r, ms));
 }
@@ -356,6 +370,76 @@ export async function d1GetMany(keys) {
  * Ejemplo:
  *   await d1WriteArrayMerge('siso_atenciones_cerradas', nuevasAtenciones, 'id');
  */
+// ── SMART READ — D1 + Supabase fallback ─────────────────────────────────
+
+/**
+ * _tsOf - Extrae timestamp de un valor. Asume timestamp ISO en _updatedAt o ts.
+ */
+export function _tsOf(v) {
+  if (!v) return 0;
+  if (v._updatedAt) return new Date(v._updatedAt).getTime();
+  if (v.ts) return new Date(v.ts).getTime();
+  return 0;
+}
+
+/**
+ * _readSmart(key) — Lee desde D1 y Supabase en paralelo, usa el más reciente.
+ * Lee D1 en paralelo con Supabase, compara timestamps y retorna el más actual.
+ * Si D1 falla, usa Supabase como fallback.
+ * Si D1 tiene valor pero Supabase también tiene una versión más reciente, usa la más reciente.
+ */
+export async function _readSmart(key, supabaseQuery) {
+  const d1Promise = d1Get(key).catch(() => null);
+  const sbPromise = supabaseQuery ? Promise.race([
+    supabaseQuery,
+    new Promise((_, reject) => setTimeout(() => reject(new Error('Supabase timeout')), 5000))
+  ]).catch(() => null) : Promise.resolve(null);
+
+  const [d1Result, sbResult] = await Promise.all([d1Promise, sbPromise]);
+  const d1Val = d1Result?.value;
+  const sbVal = sbResult;
+  const d1Has = d1Val !== null && d1Val !== undefined;
+  const sbHas = sbVal !== null && sbVal !== undefined;
+
+  if (d1Has && sbHas) {
+    const tD1 = _tsOf(d1Val);
+    const tSB = _tsOf(sbVal);
+    return tD1 >= tSB ? d1Val : sbVal;
+  }
+  if (d1Has) return d1Val;
+  if (sbHas) return sbVal;
+  return null;
+}
+
+// ── PENDING D1 WRITES — cola de escritura offline ───────────────────────
+
+const _PENDING_D1_KEY = 'siso_pending_d1_writes';
+const _PENDING_D1_MAX_RETRIES = 20;
+
+export function _getPendingD1() {
+  try {
+    return JSON.parse(localStorage.getItem(_PENDING_D1_KEY) || '{}');
+  } catch {
+    return {};
+  }
+}
+
+export function _clearPendingD1(key) {
+  const p = _getPendingD1();
+  delete p[key];
+  localStorage.setItem(_PENDING_D1_KEY, JSON.stringify(p));
+}
+
+export function _enqueuePendingD1(key, value) {
+  try {
+    const p = _getPendingD1();
+    p[key] = { value, attempts: 0, queuedAt: Date.now() };
+    localStorage.setItem(_PENDING_D1_KEY, JSON.stringify(p));
+  } catch (e) {
+    console.warn('[d1Client] No se pudo encolar escritura pendiente:', key, e);
+  }
+}
+
 export async function d1WriteArrayMerge(key, list, idField = 'id') {
   let attempts = 0;
   const maxAttempts = 3;

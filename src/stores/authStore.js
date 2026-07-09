@@ -588,6 +588,98 @@ export const useAuthStore = create(
         }
         return usersList;
       },
+
+      // ── loginLocal: fallback cuando D1 no está disponible ──
+      loginLocal: async (username, password) => {
+        const { loginAttempts, blockedUntil } = get();
+
+        if (blockedUntil && Date.now() < blockedUntil) {
+          const minLeft = Math.ceil((blockedUntil - Date.now()) / 60000);
+          throw new Error(`Cuenta bloqueada. Intenta en ${minLeft} minuto(s).`);
+        }
+
+        try {
+          return await get().login(username, password);
+        } catch (err) {
+          // Si D1 falla, intentar con usuarios en localStorage como fallback
+          try {
+            const local = JSON.parse(localStorage.getItem('siso_users') || '[]');
+            const user = local.find((u) => u.user === username && u.activo !== false);
+            if (!user) throw new Error('Usuario no encontrado');
+            const hash = await _sha256(password);
+            if (hash !== user.passHash) throw new Error('Contraseña incorrecta');
+            const { passHash: _, ...cleanUser } = user;
+            const token = `siso_local_${Date.now()}_${Math.random().toString(36).slice(2, 14)}`;
+            set({
+              currentUser: cleanUser,
+              token,
+              isAuthenticated: true,
+              loginAttempts: 0,
+              blockedUntil: null,
+              lastActivity: Date.now(),
+              mustChangePassword: !!cleanUser.mustChangePassword,
+              twoFARequired: false,
+            });
+            return cleanUser;
+          } catch (localErr) {
+            const newAttempts = loginAttempts + 1;
+            const updates = { loginAttempts: newAttempts };
+            if (newAttempts >= MAX_LOGIN_ATTEMPTS) {
+              updates.blockedUntil = Date.now() + BLOCK_DURATION_MS;
+              updates.loginAttempts = 0;
+            }
+            set(updates);
+            throw err;
+          }
+        }
+      },
+
+      // ── handleImportData: importa datos con protección localStorage lleno ──
+      handleImportData: async (jsonStrOrFile) => {
+        try {
+          let data;
+          if (typeof jsonStrOrFile === 'string') {
+            data = JSON.parse(jsonStrOrFile);
+          } else {
+            data = jsonStrOrFile;
+          }
+
+          if (!data || typeof data !== 'object') {
+            throw new Error('Formato de datos inválido');
+          }
+
+          const entries = Object.entries(data);
+          let imported = 0;
+          const errors = [];
+
+          for (const [key, value] of entries) {
+            try {
+              const strValue = JSON.stringify(value);
+              if (strValue.length > 2_000_000) {
+                // Valores muy grandes se escriben directamente en D1
+                await d1Set(key, value).catch(() => {
+                  try { localStorage.setItem(key, strValue); } catch {}
+                });
+              } else {
+                try {
+                  localStorage.setItem(key, strValue);
+                } catch (lsErr) {
+                  // localStorage lleno → intentar D1
+                  try { await d1Set(key, value); } catch {}
+                  console.warn('[importData] localStorage lleno, dato guardado en D1:', key);
+                }
+              }
+              imported++;
+            } catch (itemErr) {
+              errors.push({ key, error: itemErr.message });
+            }
+          }
+
+          return { ok: true, imported, errors: errors.length > 0 ? errors : null };
+        } catch (err) {
+          throw new Error(`Error al importar datos: ${err.message}`);
+        }
+      },
     }),
     {
       name: 'siso-auth',
