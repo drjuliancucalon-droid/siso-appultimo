@@ -886,9 +886,31 @@ export const _openPrintRecetaDeriv = (section, titleDoc, data, doctor, signature
   const header = _mkPrintHeaderMod(titleDoc, accent, data, doctor, miIPS, safeLogoUrl);
   let body = '';
 
+  const pNombre = _sanitize(data?.nombres || data?.nombres || '---');
+  const pDocTipo = _sanitize(data?.docTipo || 'CC');
+  const pDocNum = _sanitize(data?.docNumero || '---');
+  const pEmpresa = _sanitize(data?.empresaNombre || '---');
+  const pEps = _sanitize(data?.eps || '---');
+  const pDiag = _sanitize(data?.diagnosticoPrincipal || data?.diagnostico1 || '');
+
+  // ── Datos del paciente (se muestran al inicio de cada sección) ──
+  const patientBox = (withFullData = false) => {
+    if (withFullData) {
+      return `<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:8.5pt;margin-bottom:10px;padding:8px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:6px;">
+        <p style="margin:0;"><b>Paciente:</b> ${pNombre}</p>
+        <p style="margin:0;"><b>Empresa:</b> ${pEmpresa}</p>
+        <p style="margin:0;"><b>${pDocTipo}:</b> ${pDocNum}</p>
+        <p style="margin:0;"><b>EPS:</b> ${pEps}</p>
+      </div>`;
+    }
+    return `<div style="font-size:8pt;color:#555;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #e5e7eb;">
+      <p style="margin:1px 0;"><b>Paciente:</b> ${pNombre} &nbsp;|&nbsp; <b>${pDocTipo}:</b> ${pDocNum} &nbsp;|&nbsp; <b>Empresa:</b> ${pEmpresa} ${pEps ? '&nbsp;|&nbsp; <b>EPS:</b> ' + pEps : ''}</p>
+    </div>`;
+  };
+
   if (section === "formula") {
     const meds = data.formula || data.medicamentos || [];
-    body = `<h2 class="section-title" style="color:#059669;">Prescripción Médica</h2>
+    body = `${patientBox()}<h2 class="section-title" style="color:#059669;">Prescripción Médica</h2>
     ${meds.length === 0 ? '<p style="font-style:italic;color:#888;">Sin medicamentos prescritos.</p>' : ''}
     ${meds.map((m, i) => `<div class="med-card">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
@@ -902,32 +924,58 @@ export const _openPrintRecetaDeriv = (section, titleDoc, data, doctor, signature
         Duración: <strong>${_sanitize(m.duracion || '')}</strong>
       </p>
       ${m.indicaciones ? `<p style="font-size:8pt;color:#666;margin:2px 0;">💡 ${_sanitize(m.indicaciones)}</p>` : ''}
-    </div>`).join('')}`;
+    </div>`).join('')}
+    ${pDiag ? `<div style="margin-top:10px;border-top:1px solid #d1fae5;padding-top:8px;font-size:8.5pt;"><p style="margin:0;"><b>Diagnóstico:</b> ${pDiag}</p></div>` : ''}`;
   } else if (section === "derivacion") {
     const derivs = data.derivaciones || [];
-    body = `<h2 class="section-title" style="color:#2563eb;">Derivaciones / Interconsultas</h2>
+    body = `${patientBox()}<h2 class="section-title" style="color:#2563eb;">Derivaciones / Interconsultas</h2>
     ${derivs.length === 0 ? '<p style="font-style:italic;color:#888;">Sin derivaciones registradas.</p>' : ''}
     ${derivs.map(d => `<div class="deriv-card">
-      <p style="font-size:9pt;font-weight:700;margin:0 0 4px 0;">${_sanitize(d.especialidad || '')} <span class="${(d.prioridad || '').toLowerCase()}">${_sanitize(d.prioridad || 'Normal')}</span></p>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap;">
+        <span style="background:#2563eb;color:white;border-radius:50%;width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;font-size:8pt;font-weight:900;">${derivs.indexOf(d) + 1}</span>
+        <span style="font-size:10pt;font-weight:700;">${_sanitize(d.especialidad || '')}</span>
+        <span class="badge ${(d.urgencia || d.prioridad || 'electiva').toLowerCase()}">${_sanitize(d.urgencia || d.prioridad || 'Electiva')}</span>
+      </div>
       <p style="font-size:8pt;color:#555;margin:2px 0;">Motivo: ${_sanitize(d.motivo || '')}</p>
+      ${d.observaciones ? `<p style="font-size:8pt;color:#666;margin:2px 0;font-style:italic;">${_sanitize(d.observaciones)}</p>` : ''}
       ${d.notas ? `<p style="font-size:8pt;color:#666;margin:2px 0;">${_sanitize(d.notas)}</p>` : ''}
-    </div>`).join('')}`;
+    </div>`).join('')}
+    ${pDiag ? `<div style="margin-top:8px;font-size:8.5pt;"><b>Diagnóstico:</b> ${pDiag}</div>` : ''}`;
   } else if (section === "examenes") {
-    const exams = data.examenes || data.examList || [];
-    body = `<h2 class="section-title" style="color:#0d9488;">Exámenes Solicitados</h2>
+    const exams = data.examenes || data.examList || data.solicitudExamenes || [];
+    const justTxt = data.solicitudExamenesJust || '';
+    body = `${patientBox()}<h2 class="section-title" style="color:#0d9488;">Exámenes Solicitados</h2>
     ${exams.length === 0 ? '<p style="font-style:italic;color:#888;">Sin exámenes solicitados.</p>' : ''}
-    <table style="width:100%;border-collapse:collapse;font-size:9pt;">
-      <thead><tr style="background:#ccfbf1;"><th style="border:1px solid #99f6e4;padding:4px;text-align:left;">Examen</th><th style="border:1px solid #99f6e4;padding:4px;">Tipo</th></tr></thead>
-      <tbody>${exams.map(e => `<tr><td style="border:1px solid #e5e7eb;padding:4px;">${_sanitize(e.nombre || e.examen || '')}</td><td style="border:1px solid #e5e7eb;padding:4px;text-align:center;">${_sanitize(e.tipo || e.categoria || 'General')}</td></tr>`).join('')}</tbody>
-    </table>`;
+    ${exams.length > 0 ? `<table style="width:100%;border-collapse:collapse;font-size:9pt;">
+      <thead><tr style="background:#ccfbf1;"><th style="border:1px solid #99f6e4;padding:4px;text-align:left;">Examen</th><th style="border:1px solid #99f6e4;padding:4px;text-align:center;width:80px;">Prioridad</th></tr></thead>
+      <tbody>${exams.map(e => `<tr><td style="border:1px solid #e5e7eb;padding:4px;">${_sanitize(e.nombre || e.examen || '')}</td><td style="border:1px solid #e5e7eb;padding:4px;text-align:center;">${e.urgente ? '<span style="background:#fef3c7;color:#92400e;padding:1px 7px;border-radius:50px;font-weight:700;font-size:7.5pt;">Urgente</span>' : '<span style="background:#dcfce7;color:#166534;padding:1px 7px;border-radius:50px;font-weight:700;font-size:7.5pt;">Rutina</span>'}</td></tr>`).join('')}</tbody>
+    </table>` : ''}
+    ${pDiag ? `<div style="margin-top:8px;border-top:1px solid #99f6e4;padding-top:6px;font-size:8.5pt;"><p style="margin:0;"><b>Diagnóstico:</b> ${pDiag}</p></div>` : ''}
+    ${justTxt ? `<p style="font-size:8.5pt;margin-top:4px;"><b>Justificación:</b> ${_sanitize(justTxt)}</p>` : ''}`;
   } else if (section === "incapacidad") {
     const incap = data.incapacidad || {};
     body = `<h2 class="section-title" style="color:#dc2626;">Certificado de Incapacidad Médica</h2>
     <div style="border:2px solid #dc2626;border-radius:8px;padding:12px;background:#fef2f2;">
-      ${incap.aplica ? `<p style="font-size:10pt;font-weight:700;color:#dc2626;">Incapacidad por <strong>${_sanitize(String(incap.dias || 0))}</strong> día(s)</p>
-        <p style="font-size:8pt;">Desde: <strong>${date(incap.fechaInicio)}</strong> · Hasta: <strong>${date(incap.fechaFin)}</strong></p>
-        <p style="font-size:9pt;margin-top:6px;"><strong>Diagnóstico:</strong> ${_sanitize(incap.diagnostico || 'No especificado')}</p>
-        ${incap.observaciones ? `<p style="font-size:8pt;color:#666;margin-top:4px;">${_sanitize(incap.observaciones)}</p>` : ''}`
+      ${incap.aplica || incap.dias ? `<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+        <div style="font-size:8.5pt;">
+          <p style="margin:1px 0;"><b>Paciente:</b> ${pNombre}</p>
+          <p style="margin:1px 0;"><b>${pDocTipo}:</b> ${pDocNum}</p>
+          <p style="margin:1px 0;"><b>Empresa:</b> ${pEmpresa}</p>
+          <p style="margin:1px 0;"><b>EPS:</b> ${pEps}</p>
+        </div>
+        <div style="text-align:center;background:#fee2e2;border-radius:4px;padding:8px;">
+          <p style="font-size:8pt;font-weight:900;color:#dc2626;text-transform:uppercase;margin:0 0 4px 0;">Días de Incapacidad</p>
+          <p style="font-size:28pt;font-weight:900;color:#dc2626;line-height:1;margin:0;">${incap.dias || 0}</p>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:8.5pt;">
+        <p style="margin:1px 0;"><b>Origen:</b> ${_sanitize(incap.origen || '—')}</p>
+        <p style="margin:1px 0;"><b>Fecha inicio:</b> ${_sanitize(incap.desde || incap.fechaInicio || '—')}</p>
+        <p style="margin:1px 0;"><b>Fecha fin:</b> ${_sanitize(incap.hasta || incap.fechaFin || '—')}</p>
+        <p style="margin:1px 0;"><b>Diagnóstico:</b> ${_sanitize(incap.diagnostico || pDiag || '—')}</p>
+      </div>
+      ${incap.justificacion ? `<p style="font-size:8pt;margin-top:8px;border-top:1px solid #fecaca;padding-top:6px;font-style:italic;color:#991b1b;">${_sanitize(incap.justificacion)}</p>` : ''}
+      ${incap.observaciones ? `<p style="font-size:8pt;color:#666;margin-top:4px;">${_sanitize(incap.observaciones)}</p>` : ''}`
         : '<p style="font-style:italic;color:#888;">No se emitió incapacidad en esta consulta.</p>'}
     </div>`;
   }
