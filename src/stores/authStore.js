@@ -589,8 +589,8 @@ export const useAuthStore = create(
         return usersList;
       },
 
-      // ── loginLocal: fallback cuando D1 no está disponible ──
-      loginLocal: async (username, password) => {
+      // ── loginOffline: fallback cuando D1 y Supabase no están disponibles ──
+      loginOffline: async (username, password) => {
         const { loginAttempts, blockedUntil } = get();
 
         if (blockedUntil && Date.now() < blockedUntil) {
