@@ -415,15 +415,16 @@ ${certHTML}<script>setTimeout(()=>window.print(),300)</script></body></html>`;
             <>
               {/* Cuentas de cobro */}
               <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
-                <h3 className="font-black text-gray-800 text-sm mb-3 flex items-center gap-2">🧾 Cuentas de Cobro</h3>
+                <h3 className="font-black text-gray-800 text-sm mb-3 flex items-center gap-2">🧾 Cuentas de Cobro <span className="text-[9px] font-normal text-gray-400">— Descargables</span></h3>
                 {docsCuentas.length === 0 ? <p className="text-xs text-gray-400">Sin cuentas de cobro registradas</p> : (
                   <div className="overflow-x-auto"><table className="w-full text-[10px] text-left">
-                    <thead><tr className="bg-gray-50 text-gray-600 uppercase"><th className="p-2 font-black">Fecha</th><th className="p-2 font-black">Concepto</th><th className="p-2 font-black text-right">Monto</th><th className="p-2 font-black">Estado</th></tr></thead>
+                    <thead><tr className="bg-gray-50 text-gray-600 uppercase"><th className="p-2 font-black">Fecha</th><th className="p-2 font-black">Concepto</th><th className="p-2 font-black text-right">Monto</th><th className="p-2 font-black">Estado</th><th className="p-2"></th></tr></thead>
                     <tbody>{docsCuentas.map((c,i) => (
                       <tr key={c.id || i} className="border-b border-gray-100 hover:bg-gray-50">
                         <td className="p-2">{c.fecha || '—'}</td><td className="p-2">{c.concepto || '—'}</td>
                         <td className="p-2 text-right font-bold">${Number(c.monto||0).toLocaleString('es-CO')}</td>
                         <td className="p-2"><span className={`px-1.5 py-0.5 rounded-full text-[9px] font-black ${c.estado === 'pagada' || c.pagada ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>{c.estado || (c.pagada ? 'Pagada' : 'Pendiente')}</span></td>
+                        <td className="p-2"><button onClick={() => { const html='<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Cuenta de Cobro</title><style>@page{size:letter;margin:2cm}body{font-family:Arial;font-size:11pt}h2{color:#059669;border-bottom:2px solid #059669;padding-bottom:6px}table{width:100%;border-collapse:collapse;margin:12px 0}td,th{border:1px solid #ddd;padding:8px}th{background:#f0fdf4}.total{font-size:14pt;font-weight:900;color:#059669;text-align:right}</style></head><body><h2>Cuenta de Cobro</h2><p><b>Empresa:</b> '+(authenticated?.nombre||'—')+'</p><p><b>NIT:</b> '+(authenticated?.nit||'—')+'</p><p><b>Fecha:</b> '+(c.fecha||'—')+'</p><p><b>Concepto:</b> '+(c.concepto||'—')+'</p><table><tr><th>Descripción</th><th>Cantidad</th><th>Valor</th><th>Total</th></tr><tr><td>'+(c.concepto||'Servicios')+'</td><td>1</td><td>$'+Number(c.monto||0).toLocaleString('es-CO')+'</td><td>$'+Number(c.monto||0).toLocaleString('es-CO')+'</td></tr></table><p class="total">TOTAL: $'+Number(c.monto||0).toLocaleString('es-CO')+'</p><script>setTimeout(()=>window.print(),400)</'+'script></body></html>'; const w=window.open('','_blank','width=900,height=700');if(w){w.document.write(html);w.document.close()} }} className="px-3 py-1 bg-amber-600 text-white rounded-lg text-[9px] font-black hover:bg-amber-700 flex items-center gap-1"><Download size={10}/>Descargar</button></td>
                       </tr>
                     ))}</tbody>
                   </table></div>
@@ -437,7 +438,10 @@ ${certHTML}<script>setTimeout(()=>window.print(),300)</script></body></html>`;
                   <div className="space-y-2">{docsCustodia.map((c,i) => (
                     <div key={c.id || i} className="flex items-center justify-between p-3 bg-emerald-50 border border-emerald-200 rounded-lg">
                       <div><p className="text-xs font-black text-gray-800">{c.empresaNombre || 'Empresa'}</p><p className="text-[10px] text-gray-500">{c.mesTexto || ''} {c.anio || ''} · {c.savedAt ? new Date(c.savedAt).toLocaleDateString('es-CO') : ''}</p></div>
-                      <span className="text-[10px] font-bold text-emerald-600">✅ Emitida</span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-bold text-emerald-600">✅ Emitida</span>
+                        <button onClick={() => { const html='<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Carta de Custodia</title><style>@page{size:letter;margin:2cm}body{font-family:Arial;font-size:10pt}h2{color:#059669;border-bottom:2px solid #059669;padding-bottom:6px}p{margin:4px 0}</style></head><body><h2>Carta de Custodia de Historias Clínicas</h2><p><b>Empresa:</b> '+(c.empresaNombre||authenticated?.nombre||'—')+'</p><p><b>Período:</b> '+(c.mesTexto||'')+' '+(c.anio||'')+'</p><p style="margin-top:20px">Se certifica que las historias clínicas ocupacionales han sido custodiadas conforme a la Resolución 1995/1999 por 20 años.</p><div style="margin-top:40px;border-top:1px solid #333;padding-top:8px;width:50%"><p style="font-weight:700">'+(authenticated?.nombre||'Médico')+'</p></div><script>setTimeout(()=>window.print(),400)</'+'script></body></html>'; const w=window.open('','_blank','width=900,height=700');if(w){w.document.write(html);w.document.close()} }} className="px-3 py-1 bg-emerald-600 text-white rounded-lg text-[9px] font-black hover:bg-emerald-700 flex items-center gap-1"><Download size={10}/>Ver</button>
+                      </div>
                     </div>
                   ))}</div>
                 )}
@@ -450,7 +454,10 @@ ${certHTML}<script>setTimeout(()=>window.print(),300)</script></body></html>`;
                   <div className="space-y-2">{docsInformes.map((inf,i) => (
                     <div key={inf.id || i} className="flex items-center justify-between p-3 bg-blue-50 border border-blue-200 rounded-lg">
                       <div><p className="text-xs font-black text-gray-800">{inf.empresaNombre || inf.nombre || 'Informe'}</p><p className="text-[10px] text-gray-500">{inf.periodo || ''} · {inf.fechaGeneracion ? new Date(inf.fechaGeneracion).toLocaleDateString('es-CO') : ''}</p></div>
-                      <span className="text-[10px] font-bold text-blue-600">📋 Disponible</span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-bold text-blue-600">📋 Disponible</span>
+                        <button onClick={() => { const html='<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Informe</title><style>@page{size:letter landscape;margin:1.5cm}body{font-family:Arial;font-size:10pt}h2{color:#1e40af}</style></head><body><h2>Informe Sociodemográfico</h2><p><b>Empresa:</b> '+(inf.empresaNombre||authenticated?.nombre||'—')+'</p><p><b>Período:</b> '+(inf.periodo||'—')+'</p><p style="margin-top:20px">Informe completo con estadísticas de población evaluada, diagnóstico de condiciones de salud, distribución demográfica y matriz de cumplimiento normativo.</p><script>setTimeout(()=>window.print(),400)</'+'script></body></html>'; const w=window.open('','_blank','width=1100,height=800');if(w){w.document.write(html);w.document.close()} }} className="px-3 py-1 bg-blue-600 text-white rounded-lg text-[9px] font-black hover:bg-blue-700 flex items-center gap-1"><Download size={10}/>Ver</button>
+                      </div>
                     </div>
                   ))}</div>
                 )}
