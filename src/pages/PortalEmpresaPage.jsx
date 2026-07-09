@@ -123,21 +123,65 @@ export default function PortalEmpresaPage() {
     finally { setLoading(false); }
   };
 
-  // ═══ CARGAR DOCUMENTOS (cuentas, custodia, informes) ═══
+  // ═══ CARGAR DOCUMENTOS — Fusión multi-NIT como monolito PortalEmpresaDocsPeriodos ═══
   const cargarDocumentos = async (nitClean) => {
     setDocsLoading(true);
     const userId = (() => { try { const s = JSON.parse(localStorage.getItem('siso-auth') || '{}'); return s?.state?.currentUser?.user || 'drcucalon'; } catch { return 'drcucalon'; } })();
 
+    const nitVariants = [nitClean];
+    for (let dv = 0; dv <= 9; dv++) nitVariants.push(nitClean + dv);
+    if (nitClean.length > 6) nitVariants.push(nitClean.slice(0, -1));
+
     try {
-      const billsKey = `siso_saved_bills_${userId}`;
-      let cuentas = [];
+      // ── Leer siso_portal_empresa_docs con FUSIÓN multi-NIT ──
+      let baseDocs = null;
+      const periodMap = new Map(); // periodo -> { periodo, informe, cuenta, custodia, certificados }
+      for (const nv of nitVariants) {
+        let val = null;
+        try { const r = await d1Get(`siso_portal_empresa_docs_${nv}`); val = r.value; } catch {}
+        if (!val || !Array.isArray(val.periodos)) continue;
+        if (!baseDocs) baseDocs = { nit: val.nit || nv, nombre: val.nombre || '', codigoAcceso: val.codigoAcceso };
+        else {
+          if (!baseDocs.nombre && val.nombre) baseDocs.nombre = val.nombre;
+          if (!baseDocs.codigoAcceso && val.codigoAcceso) baseDocs.codigoAcceso = val.codigoAcceso;
+        }
+        for (const per of val.periodos) {
+          const k = per.periodo || '';
+          const prev = periodMap.get(k) || { periodo: k };
+          periodMap.set(k, {
+            ...prev, ...per,
+            informe: per.informe || prev.informe || null,
+            cuenta: per.cuenta || prev.cuenta || null,
+            custodia: per.custodia || prev.custodia || null,
+            certificados: (per.certificados && per.certificados.count) ? per.certificados : (prev.certificados || per.certificados || null),
+          });
+        }
+      }
+
+      // Extraer cuentas, custodia e informes de los períodos
+      const cuentasArr = [], custodiasArr = [], informesArr = [];
+      for (const [per, data] of periodMap) {
+        if (data.cuenta) {
+          cuentasArr.push({ ...data.cuenta, periodo: per, empresaNombre: baseDocs?.nombre || authenticated?.nombre });
+        }
+        if (data.custodia) {
+          custodiasArr.push({ ...data.custodia, periodo: per, empresaNombre: baseDocs?.nombre || authenticated?.nombre });
+        }
+        if (data.informe) {
+          informesArr.push({ ...data.informe, periodo: per, empresaNombre: baseDocs?.nombre || authenticated?.nombre });
+        }
+      }
+
+      // ── Cuentas de cobro — leer siso_saved_bills como fallback ──
+      let cuentasBills = [];
       try {
+        const billsKey = `siso_saved_bills_${userId}`;
         const { value: billsRaw } = await d1Get(billsKey);
         const bills = Array.isArray(billsRaw) ? billsRaw : [];
         const { value: cajaRaw } = await d1Get(`siso_caja_movs_${userId}`);
         const cajaMovs = Array.isArray(cajaRaw) ? cajaRaw : [];
         const todas = [...bills, ...cajaMovs];
-        cuentas = todas
+        cuentasBills = todas
           .filter(m => {
             const idMatch = (m.empresaClienteId || '').replace(/[^0-9]/g, '') === nitClean;
             const nombreMatch = (m.empresaClienteNombre || '').toLowerCase().includes(nitClean);
@@ -145,26 +189,26 @@ export default function PortalEmpresaPage() {
           })
           .slice(0, 30);
       } catch (_) {}
-      setDocsCuentas(cuentas);
+      // Merge: portal primero, bills después (sin duplicar)
+      const seenCuentaIds = new Set(cuentasArr.map(c => c.id).filter(Boolean));
+      const mergedCuentas = [...cuentasArr, ...cuentasBills.filter(c => !seenCuentaIds.has(c.id))];
 
-      let custodias = [];
+      // ── Cartas de custodia como fallback ──
+      let custBills = [];
       try {
         const custKey = `siso_cartas_custodia_${userId}`;
         const { value: custRaw } = await d1Get(custKey);
-        custodias = Array.isArray(custRaw) ? custRaw.filter(c => {
+        custBills = Array.isArray(custRaw) ? custRaw.filter(c => {
           const nitC = (c.empresaNit || c.nit || '').replace(/[^0-9]/g, '');
           return nitC === nitClean || nitC.includes(nitClean) || nitClean.includes(nitC);
         }) : [];
       } catch (_) {}
-      setDocsCustodia(custodias);
+      const seenCustIds = new Set(custodiasArr.map(c => c.id).filter(Boolean));
+      const mergedCustodia = [...custodiasArr, ...custBills.filter(c => !seenCustIds.has(c.id))];
 
-      let informes = [];
-      try {
-        const { value: docsRaw } = await d1Get(`siso_portal_empresa_docs_${nitClean}`);
-        const docs = Array.isArray(docsRaw) ? docsRaw : [];
-        informes = docs.filter(d => d.tipo === 'informe' || d.informe || !d.custodia);
-      } catch (_) {}
-      setDocsInformes(informes);
+      setDocsCuentas(mergedCuentas);
+      setDocsCustodia(mergedCustodia);
+      setDocsInformes(informesArr);
     } catch (_) {}
     finally { setDocsLoading(false); }
   };
