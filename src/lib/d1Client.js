@@ -436,6 +436,19 @@ export async function _readSmart(key, supabaseQuery) {
 
 // ── PENDING D1 WRITES — cola de escritura offline ───────────────────────
 
+const _UNSYNCED_HC_KEY = 'siso_hc_sin_respaldo';
+
+export function _markUnsyncedHC(failed) {
+  try {
+    if (failed) localStorage.setItem(_UNSYNCED_HC_KEY, JSON.stringify({ ts: Date.now() }));
+    else localStorage.removeItem(_UNSYNCED_HC_KEY);
+  } catch {}
+}
+
+export function _hasUnsyncedHC() {
+  try { return !!localStorage.getItem(_UNSYNCED_HC_KEY); } catch { return false; }
+}
+
 const _PENDING_D1_KEY = 'siso_pending_d1_writes';
 const _PENDING_D1_MAX_RETRIES = 20;
 

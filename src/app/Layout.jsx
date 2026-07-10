@@ -9,13 +9,14 @@ import { AIConfigPanel } from '../modules/ai/components/AIConfigPanel';
 import { useAuthStore } from '../stores/authStore';
 import { useUIStore } from '../stores/uiStore';
 import { ConnectionBadge } from '../shared/lib/connectionStatus';
+import { _hasUnsyncedHC, _markUnsyncedHC } from '../lib/d1Client';
 import {
   LayoutDashboard, Users, Building2, Calendar, FileText,
   Receipt, DollarSign, BarChart3, Shield, Video,
   CreditCard, LogOut, Menu, X, Stethoscope, Activity,
   Cloud, CloudOff, Settings, ChevronLeft, ChevronRight, FileSignature,
   Bell, RefreshCw, ShieldCheck, Briefcase, Calculator,
-  MessageCircle, Crown, BrainCircuit, Loader2
+  MessageCircle, Crown, BrainCircuit, Loader2, AlertTriangle
 } from 'lucide-react';
 import { useBackendObject } from '../hooks/useBackendData';
 import { MensajesDrawer } from '../shared/components/MensajesDrawer';
@@ -52,6 +53,7 @@ export default function Layout() {
   const [isSyncing, setIsSyncing] = useState(false);
   const [showMensajesDrawer, setShowMensajesDrawer] = useState(false);
   const [showAIConfig, setShowAIConfig] = useState(false);
+  const [hcSinRespaldo, setHcSinRespaldo] = useState(() => _hasUnsyncedHC());
   const { activeProvider, keys: aiKeys } = useAIStore();
   const aiConfig = { activeProvider, keys: aiKeys };
   const { data: doctor } = useBackendObject('/data/doctor', 'siso_doctor_data', 'doctor');
@@ -184,6 +186,33 @@ export default function Layout() {
             <div className="hidden sm:block">
               <ConnectionBadge />
             </div>
+
+            {/* Badge HCs sin respaldo (alerta pulsante) */}
+            {hcSinRespaldo && (
+              <button
+                onClick={async () => {
+                  // Reintentar sincronización de pacientes
+                  try {
+                    const uid = currentUser?.user || 'drcucalon';
+                    const localPats = JSON.parse(localStorage.getItem(`siso_db_patients_${uid}`) || '[]');
+                    if (localPats.length > 0) {
+                      const { d1WriteArrayMerge } = await import('../lib/d1Client');
+                      await d1WriteArrayMerge(`siso_db_patients_${uid}`, localPats, 'id');
+                      await d1WriteArrayMerge(`siso_patients_${uid}`, localPats, 'id');
+                    }
+                    _markUnsyncedHC(false);
+                    setHcSinRespaldo(false);
+                  } catch {
+                    alert('⚠️ No se pudo sincronizar. Verifique su conexión. NO borre los datos del navegador.');
+                  }
+                }}
+                className="hidden sm:flex items-center gap-1 px-2.5 py-1 bg-red-50 text-red-700 rounded-lg text-[10px] font-black border border-red-200 animate-pulse hover:bg-red-100 cursor-pointer"
+                title="Sus historias clínicas no tienen respaldo en la nube. Haga clic para reintentar. NO borre los datos del navegador."
+              >
+                <AlertTriangle className="w-3 h-3" />
+                HCs sin respaldo
+              </button>
+            )}
 
             {/* Sync indicator */}
             <div className={`hidden sm:flex items-center gap-1 text-xs ${syncColor}`}>
