@@ -1,0 +1,359 @@
+  const renderPatients = () => {
+    const unique = new Map();
+    patientsList.forEach((p) => {
+      if (!p.docNumero) return;
+      const ex = unique.get(p.docNumero);
+      const hc = !!p.fechaExamen;
+      if (!ex) unique.set(p.docNumero, { data: p, historyCount: hc ? 1 : 0 });
+      else {
+        if (hc) ex.historyCount++;
+        if (
+          p.fechaExamen &&
+          (!ex.data.fechaExamen || p.fechaExamen > ex.data.fechaExamen)
+        )
+          ex.data = p;
+      }
+    });
+    const allUnique = Array.from(unique.values()).map((x) => ({
+      ...x.data,
+      historyCount: x.historyCount,
+    }));
+    // ── IPS: usuarios con empresaId ven todos los pacientes de su empresa ──
+    const _miEmpresaP = currentUser?.empresaId
+      ? companies.find((c) => c.id === currentUser.empresaId)
+      : null;
+    const listFiltered = currentUser?.empresaId
+      ? allUnique.filter(
+          (p) =>
+            p.empresaId === currentUser.empresaId ||
+            (_miEmpresaP && p.empresaNit === _miEmpresaP.nit)
+        )
+      : _isAdmin(currentUser?.role)
+      ? allUnique
+      : allUnique.filter((p) => p._medicoId === currentUser?.user);
+    const list = listFiltered.filter((p) => {
+      const matchSearch = !patientSearchTerm || p.nombres?.toLowerCase().includes(patientSearchTerm.toLowerCase()) || (p.docNumero || "").includes(patientSearchTerm);
+      // EMPRESA-FIX: también coincidir por NIT si empresaId está vacío (datos importados/migrados)
+      const _filtroEmp = companies.find((c) => c.id === patFiltroEmpresa);
+      const _nitFiltro = _filtroEmp?.nit || "";
+      const matchEmpresa = !patFiltroEmpresa
+        || p.empresaId === patFiltroEmpresa
+        || (_nitFiltro && (p.empresaNit || "").replace(/[-\s]/g, "").startsWith(_nitFiltro.replace(/[-\s]/g, "")))
+        || (patFiltroEmpresa === "particular" && (!p.empresaId || p.empresaId === "particular"));
+      const fechaP = (p.fechaExamen || p.fechaRegistro || "").split("T")[0];
+      const matchDesde = !patFiltroDesde || fechaP >= patFiltroDesde;
+      const matchHasta = !patFiltroHasta || fechaP <= patFiltroHasta;
+      return matchSearch && matchEmpresa && matchDesde && matchHasta;
+    });
+    // Helper para envío de certificado
+    const _enviarCertEmail = (pac) => {
+      const nombre = pac.nombres || "";
+      const portalLink = _sisoStableOrigin() + window.location.pathname + "#portaltrabajador";
+      const subject = encodeURIComponent(`Certificado Médico Ocupacional - ${nombre}`);
+      const body = encodeURIComponent(`Estimado/a ${nombre},\n\nSu certificado de aptitud médica ocupacional ha sido emitido.\n\n━━━ DESCARGUE SU CERTIFICADO ━━━\n\n📥 Ingrese al Portal de Certificados:\n${portalLink}\n\n→ Seleccione "🪪 Cédula"\n→ Ingrese su número de documento: ${pac.docNumero || ""}\n→ Podrá ver y descargar su certificado en PDF\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nCordialmente,\n${emailConfig?.nombre || activeDoctorData?.nombre || "OcupaSalud"}\nMédico Ocupacional\n${emailConfig?.email || ""}`);
+      if (pac.email) {
+        window.open(`mailto:${pac.email}?subject=${subject}&body=${body}`, "_blank");
+      } else {
+        showPrompt("Este paciente no tiene email registrado.\nIngrese el email:", (em) => {
+          if (em) window.open(`mailto:${em}?subject=${subject}&body=${body}`, "_blank");
+        });
+      }
+    };
+    const _enviarCertWhatsApp = (pac) => {
+      const nombre = pac.nombres || "";
+      const tel = (pac.celular || pac.telefono || "").replace(/\D/g, "");
+      const portalLink = _sisoStableOrigin() + window.location.pathname + "#portaltrabajador";
+      const msg = encodeURIComponent(`Estimado/a ${nombre}, su certificado de aptitud médica ocupacional está listo.\n\n📥 Descárguelo aquí:\n${portalLink}\n→ Seleccione "Cédula" e ingrese: ${pac.docNumero || ""}\n\n${emailConfig?.nombre || activeDoctorData?.nombre || "OcupaSalud"} - Médico Ocupacional`);
+      if (tel.length >= 10) {
+        const telFull = tel.startsWith("57") ? tel : "57" + tel;
+        window.open(`https://wa.me/${telFull}?text=${msg}`, "_blank");
+      } else {
+        showPrompt("Este paciente no tiene celular registrado.\nIngrese el número (ej: 3001234567):", (num) => {
+          if (num) { const n = num.replace(/\D/g, ""); window.open(`https://wa.me/57${n}?text=${msg}`, "_blank"); }
+        });
+      }
+    };
+    return (
+      <div className="min-h-screen bg-gray-50 font-sans p-8">
+        <div className="max-w-6xl mx-auto bg-white shadow-lg rounded-2xl p-6">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-black text-teal-900 flex items-center gap-2">
+              <Users className="w-5 h-5" /> Gestión de Pacientes ({list.length})
+            </h2>
+            <button
+              onClick={() => goBack()}
+              className="text-gray-500 font-bold flex items-center gap-1 text-sm hover:text-gray-700"
+            >
+              <LogOut className="rotate-180 w-4 h-4" /> Volver
+            </button>
+          </div>
+          {/* FILTROS */}
+          <div className="bg-gray-50 rounded-xl p-3 mb-3 flex flex-wrap gap-2 items-end">
+            <div className="flex-1 min-w-[200px]">
+              <label className="text-[10px] font-black text-gray-600 uppercase block mb-0.5">Buscar</label>
+              <div className="relative">
+                <Search className="absolute left-2.5 top-2 w-3.5 h-3.5 text-gray-400" />
+                <input className="pl-8 w-full p-1.5 border border-gray-200 rounded-lg text-xs focus:ring-2 focus:ring-teal-400 outline-none" placeholder="Nombre o documento..." value={patientSearchTerm} onChange={(e) => setPatientSearchTerm(e.target.value)} />
+              </div>
+            </div>
+            <div className="min-w-[180px]">
+              <label className="text-[10px] font-black text-gray-600 uppercase block mb-0.5">Empresa</label>
+              <select value={patFiltroEmpresa} onChange={(e) => setPatFiltroEmpresa(e.target.value)} className="w-full p-1.5 border border-gray-200 rounded-lg text-xs">
+                <option value="">Todas las empresas</option>
+                <option value="particular">Particular / Independiente</option>
+                {companies.filter(c => c.nombre && !c.nombre.toUpperCase().includes("PARTICULAR")).map(c => <option key={c.id} value={c.id}>{c.nombre}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="text-[10px] font-black text-gray-600 uppercase block mb-0.5">Desde</label>
+              <input type="date" value={patFiltroDesde} onChange={(e) => setPatFiltroDesde(e.target.value)} className="p-1.5 border border-gray-200 rounded-lg text-xs" />
+            </div>
+            <div>
+              <label className="text-[10px] font-black text-gray-600 uppercase block mb-0.5">Hasta</label>
+              <input type="date" value={patFiltroHasta} onChange={(e) => setPatFiltroHasta(e.target.value)} className="p-1.5 border border-gray-200 rounded-lg text-xs" />
+            </div>
+            {(patFiltroEmpresa || patFiltroDesde || patFiltroHasta || patientSearchTerm) && (
+              <button onClick={() => { setPatFiltroEmpresa(""); setPatFiltroDesde(""); setPatFiltroHasta(""); setPatientSearchTerm(""); }} className="px-3 py-1.5 bg-gray-200 text-gray-600 rounded-lg text-[10px] font-black hover:bg-gray-300">✕ Limpiar</button>
+            )}
+          </div>
+          <div className="overflow-x-auto max-h-[600px] border border-gray-100 rounded-xl">
+            <table className="w-full text-xs">
+              <thead className="bg-gray-50 font-bold text-gray-500 uppercase sticky top-0 shadow-sm">
+                <tr>
+                  <th className="p-3 text-left">Nombre</th>
+                  <th className="p-3">Documento</th>
+                  <th className="p-3">Empresa / Cargo</th>
+                  <th className="p-3 text-center">Historial</th>
+                  <th className="p-3 text-center">Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {list.map((p, i) => (
+                  <tr
+                    key={`${p.id}-${i}`}
+                    className="border-b border-gray-50 hover:bg-gray-50"
+                  >
+                    <td className="p-3 font-bold text-teal-900">
+                      {p.nombres}
+                      {/* ══ B-12: Badge periodicidad - Res. 1843/2025 Art. 4 ══ */}
+                      {(() => {
+                        const ps = _getPeriodicidadStatus(p);
+                        if (ps.nivel === "vigente") return null;
+                        const cls =
+                          ps.color === "red"
+                            ? "block mt-0.5 text-[9px] font-black bg-red-100 text-red-700 border border-red-300 px-1.5 py-0.5 rounded-full w-fit"
+                            : "block mt-0.5 text-[9px] font-black bg-yellow-100 text-yellow-700 border border-yellow-300 px-1.5 py-0.5 rounded-full w-fit";
+                        return (
+                          <span className={cls}>
+                            {ps.label} - Res.1843 Art.4
+                          </span>
+                        );
+                      })()}
+                    </td>
+                    <td className="p-3 text-center">{p.docNumero}</td>
+                    <td className="p-3 text-gray-500">
+                      {p.empresaNombre}
+                      <br />
+                      <span className="text-[10px]">{p.cargo}</span>
+                    </td>
+                    <td className="p-3 text-center">
+                      <div className="flex flex-col gap-1 items-center">
+                        <button
+                          onClick={() => handleOpenHistoryModal(p.docNumero)}
+                          disabled={p.historyCount === 0}
+                          className={`px-3 py-1 rounded-full text-[10px] font-bold ${
+                            p.historyCount > 0
+                              ? "bg-blue-100 text-blue-800 hover:bg-blue-200 cursor-pointer"
+                              : "bg-gray-100 text-gray-400 cursor-default"
+                          }`}
+                        >
+                          {p.historyCount} HC Propias
+                        </button>
+                        <button
+                          onClick={() =>
+                            handleOpenHistoryModal(p.docNumero, true)
+                          }
+                          className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-violet-50 text-violet-600 hover:bg-violet-100 border border-violet-200"
+                          title="Consultar certificados de todos los médicos"
+                        >
+                          🔍 Todos médicos
+                        </button>
+                      </div>
+                    </td>
+                    <td className="p-3">
+                      <div className="flex justify-center gap-1">
+                        <button
+                          onClick={() => {
+                            // FIX URGENTE: spread completo del paciente para cargar
+                            // TODOS los campos sociodemográficos (incluidos los importados de encuesta)
+                            const newHC = {
+                              ...initialOccupPatientState,
+                              ...p,
+                              // Sobreescribir control de HC
+                              id: Date.now().toString(),
+                              type: "ocupacional",
+                              estadoHistoria: "Abierta",
+                              fechaRegistro: new Date().toISOString(),
+                              fechaExamen: new Date().toISOString().split("T")[0],
+                              codigoVerificacion: "",
+                              conteoEdiciones: 0,
+                              motivoEdicion: "",
+                              folioHC: "",
+                              versionDocumento: 1,
+                              empresaId: p.empresaId || "particular",
+                              empresaNombre: p.empresaNombre || "PARTICULAR / INDEPENDIENTE",
+                              empresaNit: p.empresaNit || "",
+                              actividadEconomica: p.actividadEconomica || "",
+                              riesgos: p.riesgos
+                                ? { ...p.riesgos }
+                                : { ...initialOccupPatientState.riesgos },
+                              antecedentesAgrupados: p.antecedentesAgrupados
+                                ? JSON.parse(
+                                    JSON.stringify(p.antecedentesAgrupados)
+                                  )
+                                : initialOccupPatientState.antecedentesAgrupados,
+                            };
+                            setData(newHC);
+                            setDataType("ocupacional");
+                            setActiveTab("form");
+                            goTo("historia");
+                          }}
+                          className="text-xs bg-blue-50 text-blue-600 px-2 py-1 rounded-lg border border-blue-200 font-bold flex items-center gap-1 hover:bg-blue-100"
+                        >
+                          <PlusCircle className="w-3 h-3" /> HC Ocup.
+                        </button>
+                        {p.estadoHistoria === "Cerrada" && (
+                          <>
+                            <button onClick={() => _enviarCertEmail(p)} className="text-[9px] bg-amber-50 text-amber-700 px-1.5 py-1 rounded-lg border border-amber-200 font-bold hover:bg-amber-100" title="Enviar certificado por email">📧</button>
+                            <button onClick={() => _enviarCertWhatsApp(p)} className="text-[9px] bg-green-50 text-green-700 px-1.5 py-1 rounded-lg border border-green-200 font-bold hover:bg-green-100" title="Enviar certificado por WhatsApp">📱</button>
+                          </>
+                        )}
+                        <button
+                          onClick={() => handleDeletePatient(p.id)}
+                          className="p-1.5 text-red-400 hover:text-red-600"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+                {list.length === 0 && (
+                  <tr>
+                    <td colSpan="5" className="p-8 text-center text-gray-400">
+                      No se encontraron pacientes.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+        {showHistoryModal && (
+          <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-3xl max-h-[80vh] overflow-y-auto animate-fade-in">
+              <div className="flex justify-between items-center mb-4 border-b pb-2">
+                <h3 className="text-lg font-black text-gray-800 flex items-center gap-2">
+                  <History className="w-5 h-5 text-blue-600" /> Historial
+                  Clínico
+                </h3>
+                <button onClick={() => setShowHistoryModal(false)}>
+                  <X className="w-5 h-5 text-gray-400 hover:text-red-500" />
+                </button>
+              </div>
+              {historyRecords.length > 0 && (
+                <div className="mb-4 p-3 bg-blue-50 rounded-lg">
+                  <p className="font-bold text-blue-900">
+                    {historyRecords[0].nombres}
+                  </p>
+                  <p className="text-xs text-blue-600">
+                    CC: {historyRecords[0].docNumero}
+                  </p>
+                </div>
+              )}
+              <div className="overflow-x-auto border rounded-xl">
+                <table className="w-full text-xs">
+                  <thead className="bg-gray-100 font-bold text-gray-600">
+                    <tr>
+                      <th className="p-3">Fecha</th>
+                      <th className="p-3">Tipo</th>
+                      <th className="p-3">Empresa</th>
+                      <th className="p-3">Concepto</th>
+                      <th className="p-3 text-center">Estado</th>
+                      <th className="p-3 text-center">Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {historyRecords.map((rec, i) => (
+                      <tr key={i} className="border-b hover:bg-gray-50">
+                        <td className="p-2">{rec.fechaExamen}</td>
+                        <td className="p-2">{rec.tipoExamen || rec.type}</td>
+                        <td className="p-2 max-w-[120px] truncate">
+                          {rec.empresaNombre}
+                        </td>
+                        <td className="p-2 max-w-[150px] truncate text-[10px]">
+                          {rec.conceptoAptitud || "--"}
+                        </td>
+                        <td className="p-2 text-center">
+                          <span
+                            className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
+                              rec.estadoHistoria === "Cerrada"
+                                ? "bg-red-100 text-red-700"
+                                : "bg-green-100 text-green-700"
+                            }`}
+                          >
+                            {rec.estadoHistoria || "Abierta"}
+                          </span>
+                        </td>
+                        <td className="p-2 flex justify-center gap-1">
+                          <button
+                            onClick={() => {
+                              setData(rec);
+                              setDataType(rec.type || "ocupacional");
+                              setActiveTab(
+                                rec.type === "general" ? "formGeneral" : "form"
+                              );
+                              goTo("historia");
+                              setShowHistoryModal(false);
+                            }}
+                            className="p-1 bg-blue-50 text-blue-600 rounded border border-blue-200 hover:bg-blue-100"
+                          >
+                            <Eye className="w-3 h-3" />
+                          </button>
+                          <button
+                            onClick={() => {
+                              setData(rec);
+                              setDataType(rec.type || "ocupacional");
+                              setActiveTab(
+                                rec.type === "general"
+                                  ? "formGeneral"
+                                  : "certificado"
+                              );
+                              goTo("historia");
+                              setShowHistoryModal(false);
+                            }}
+                            className="p-1 bg-emerald-50 text-emerald-600 rounded border border-emerald-200 hover:bg-emerald-100"
+                          >
+                            <FileCheck className="w-3 h-3" />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div className="mt-4 flex justify-end">
+                <button
+                  onClick={() => setShowHistoryModal(false)}
+                  className="bg-gray-200 text-gray-700 px-4 py-2 rounded-xl font-bold text-xs hover:bg-gray-300"
+                >
+                  Cerrar
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+  // ─── RENDER: EMPRESAS ─────────────────────────────────────────────────────

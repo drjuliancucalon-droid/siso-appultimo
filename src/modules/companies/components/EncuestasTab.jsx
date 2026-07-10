@@ -6,7 +6,7 @@ import { d1Get, d1WriteArrayMerge, d1Set } from '../../../lib/d1Client';
 import {
   ClipboardList, Plus, Loader2, Trash2, CheckCircle, X,
   Eye, Users, FileText, Calendar, Upload, Copy, RefreshCw,
-  Cloud, Download
+  Cloud, Download, UserPlus
 } from 'lucide-react';
 
 const SURVEYS_KEY = 'siso_encuestas';
@@ -237,15 +237,186 @@ export default function EncuestasTab({ companies = [], currentUser }) {
     }
   }, [importados, userId]);
 
-  // ── Agendar todos (marca importados como "Agendado") ─────────────
+  // ── Importar pacientes desde respuestas del perfil sociodemográfico ──
+  const importarDesdeRespuestas = useCallback(async (encId) => {
+    const resps = respuestas[encId] || [];
+    if (resps.length === 0) { alert('No hay respuestas para importar. Comparta el link público primero.'); return; }
+
+    // Filtrar las que ya tienen campos del perfil sociodemográfico (no encuestas genéricas viejas)
+    const conPerfil = resps.filter(r => r.nombres && r.docNumero);
+    if (conPerfil.length === 0) {
+      alert('No se encontraron respuestas con perfil sociodemográfico completo. Asegúrese de que los trabajadores hayan llenado el formulario completo con nombre y documento.');
+      return;
+    }
+
+    // ═══ ANTI-DUPLICADOS: validar contra pacientes existentes en D1 ═══
+    let pacientesExistentesDocs = new Set();
+    try {
+      const { value: existingPatients } = await d1Get(`siso_db_patients_${userId}`);
+      if (Array.isArray(existingPatients)) {
+        existingPatients.forEach(p => {
+          if (p.docNumero) pacientesExistentesDocs.add(String(p.docNumero).trim());
+        });
+      }
+    } catch (_) {}
+    if (pacientesExistentesDocs.size === 0) {
+      try {
+        const local = JSON.parse(localStorage.getItem(`siso_db_patients_${userId}`) || '[]');
+        local.forEach(p => { if (p.docNumero) pacientesExistentesDocs.add(String(p.docNumero).trim()); });
+      } catch (_) {}
+    }
+
+    const existentes = importados[encId] || [];
+    const docsExistentes = new Set(existentes.map(w => w.documento).filter(Boolean));
+
+    const duplicados = [];
+    const nuevosImportados = [];
+    const nuevosPacientes = [];
+
+    conPerfil.forEach(r => {
+      const doc = String(r.docNumero || '').trim();
+      if (doc && (pacientesExistentesDocs.has(doc) || docsExistentes.has(doc))) {
+        duplicados.push(r.nombres || doc);
+      } else {
+        if (doc) docsExistentes.add(doc);
+        // Formato paciente HC Ocupacional
+        const paciente = {
+          id: `pac_enc_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+          nombres: (r.nombres || '').toUpperCase().trim(),
+          docTipo: r.docTipo || 'CC',
+          docNumero: doc,
+          fechaNacimiento: r.fechaNacimiento || '',
+          edad: r.edad || '',
+          genero: r.genero || '',
+          estadoCivil: r.estadoCivil || '',
+          escolaridad: r.escolaridad || '',
+          grupoEtnico: r.grupoEtnico || '',
+          lateralidad: r.lateralidad || 'Diestro',
+          celular: r.celular || '',
+          email: r.email || '',
+          direccion: r.direccion || '',
+          ciudad: r.ciudad || 'Popayán',
+          zonaResidencia: r.zonaResidencia || 'Urbana',
+          eps: r.eps || '',
+          arl: r.arl || '',
+          afp: r.afp || '',
+          estrato: r.estrato || '',
+          cargo: r.cargo || '',
+          area: r.area || '',
+          antiguedadEmpresa: r.antiguedad || '',
+          tipoContrato: r.tipoContrato || '',
+          turnoTrabajo: r.turnoTrabajo || 'Diurno',
+          contactoEmergencia: r.contactoEmergencia || '',
+          telEmergencia: r.telEmergencia || '',
+          empresaId: r.empresaId || '',
+          empresaNombre: r.empresaNombre || '',
+          empresaNit: '',
+          tipoExamen: r.tipoExamen || 'PERIODICO',
+          fechaRegistro: new Date().toISOString(),
+          estadoHistoria: 'Pre-registrado',
+          _medicoId: userId,
+          _fromEncuesta: encId,
+        };
+        nuevosPacientes.push(paciente);
+        // Formato importado (para tabla visual)
+        nuevosImportados.push({
+          id: `imp_${encId}_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+          nombre: paciente.nombres,
+          documento: paciente.docNumero,
+          genero: paciente.genero,
+          cargo: paciente.cargo,
+          eps: paciente.eps,
+          celular: paciente.celular,
+          estado: 'Importado',
+        });
+        if (doc) pacientesExistentesDocs.add(doc);
+      }
+    });
+
+    if (nuevosPacientes.length === 0) {
+      alert(`⚠️ Todos los trabajadores ya existen en el sistema (${duplicados.length} duplicados detectados). No se importó ninguno.`);
+      return;
+    }
+
+    // 1. Guardar pacientes en D1 (clave principal)
+    try {
+      await d1WriteArrayMerge(`siso_db_patients_${userId}`, nuevosPacientes, 'id');
+    } catch (e) {
+      console.warn('[importar] D1 patients:', e?.message);
+      alert('⚠️ Error al guardar pacientes en la nube. Se guardarán localmente.');
+    }
+
+    // 2. Guardar en localStorage como backup
+    try {
+      const localPats = JSON.parse(localStorage.getItem(`siso_db_patients_${userId}`) || '[]');
+      const mergedPats = [...localPats, ...nuevosPacientes];
+      localStorage.setItem(`siso_db_patients_${userId}`, JSON.stringify(mergedPats));
+    } catch (_) {}
+
+    // 3. Guardar en tabla de importados de la encuesta
+    const merged = [...existentes, ...nuevosImportados];
+    try {
+      await d1WriteArrayMerge(`siso_encuesta_importados_${encId}`, nuevosImportados, 'id');
+    } catch (_) {}
+    setImportados(prev => ({ ...prev, [encId]: merged }));
+
+    // 4. Recargar respuestas para reflejar el cambio
+    setRespuestas(prev => ({ ...prev, [encId]: conPerfil }));
+
+    let msg = `✅ ${nuevosPacientes.length} trabajadores importados como pacientes del sistema.`;
+    if (duplicados.length > 0) msg += `\n⚠️ ${duplicados.length} omitidos por duplicado.`;
+    alert(msg);
+  }, [respuestas, importados, userId]);
+
+  // ── Agendar todos (crea citas reales en el módulo Agenda) ────────────
   const agendarTodos = useCallback(async (encId) => {
     const list = importados[encId] || [];
-    if (list.length === 0) { alert('Primero importe trabajadores.'); return; }
+    if (list.length === 0) { alert('Primero importe trabajadores (desde Excel o desde respuestas).'); return; }
+
+    const hoy = new Date().toISOString().slice(0, 10);
+    const nuevasCitas = list
+      .filter(w => w.estado !== 'Agendado')
+      .map((w, i) => ({
+        id: `cit_enc_${Date.now()}_${i}_${Math.random().toString(36).slice(2, 5)}`,
+        pacienteNombre: w.nombre || '',
+        pacienteDoc: w.documento || '',
+        tipo: 'PERIODICO',
+        medicoId: userId,
+        fecha: hoy,
+        horaCita: '08:00',
+        estado: 'espera',
+        empresa: w.empresa || '',
+        _fromEncuesta: encId,
+      }));
+
+    if (nuevasCitas.length === 0) {
+      alert('Todos los trabajadores ya están agendados.');
+      return;
+    }
+
+    // 1. Guardar citas en D1 (clave de agenda)
+    try {
+      await d1WriteArrayMerge(`siso_agendados_${userId}`, nuevasCitas, 'id');
+    } catch (e) {
+      console.warn('[agendar] D1 agenda:', e?.message);
+    }
+
+    // 2. Guardar en localStorage como backup
+    try {
+      const localAgenda = JSON.parse(localStorage.getItem(`siso_agendados_${userId}`) || '[]');
+      const mergedAgenda = [...localAgenda, ...nuevasCitas];
+      localStorage.setItem(`siso_agendados_${userId}`, JSON.stringify(mergedAgenda));
+    } catch (_) {}
+
+    // 3. Marcar importados como "Agendado"
     const upd = list.map(w => ({ ...w, estado: 'Agendado' }));
-    await d1WriteArrayMerge(`siso_encuesta_importados_${encId}`, upd, 'id');
+    try {
+      await d1WriteArrayMerge(`siso_encuesta_importados_${encId}`, upd, 'id');
+    } catch (_) {}
     setImportados(prev => ({ ...prev, [encId]: upd }));
-    alert(`✅ ${upd.length} trabajadores agendados.`);
-  }, [importados]);
+
+    alert(`✅ ${nuevasCitas.length} citas creadas en Agenda para hoy (${hoy}).\n\nTipo: PERIODICO · Médico: ${userId}\nPuede verlas en el módulo de Agenda.`);
+  }, [importados, userId]);
 
   // ── Descargar PDF respuestas (HTML imprimible premium) ────────────
   const descargarPDF = useCallback((enc) => {
@@ -588,14 +759,22 @@ export default function EncuestasTab({ companies = [], currentUser }) {
                     </button>
                     <button
                       onClick={() => {
-                        if (!expanded) verRespuestas(enc.id);
-                        excelRef.current?.click();
-                        // bind to this enc
-                        excelRef.current?.setAttribute('data-enc-id', enc.id);
+                        if (!expanded) verRespuestas(enc.id).then(() => importarDesdeRespuestas(enc.id));
+                        else importarDesdeRespuestas(enc.id);
                       }}
                       className="flex items-center gap-1 px-2.5 py-1.5 bg-purple-50 border border-purple-200 text-purple-700 rounded-lg text-[10px] font-bold hover:bg-purple-100"
                     >
-                      <Upload className="w-3 h-3" /> Importar Pacientes
+                      <UserPlus className="w-3 h-3" /> Importar desde Respuestas
+                    </button>
+                    <button
+                      onClick={() => {
+                        if (!expanded) verRespuestas(enc.id);
+                        excelRef.current?.click();
+                        excelRef.current?.setAttribute('data-enc-id', enc.id);
+                      }}
+                      className="flex items-center gap-1 px-2.5 py-1.5 bg-violet-50 border border-violet-200 text-violet-700 rounded-lg text-[10px] font-bold hover:bg-violet-100"
+                    >
+                      <Upload className="w-3 h-3" /> Importar Excel
                     </button>
                     <button
                       onClick={() => descargarPDF(enc)}
