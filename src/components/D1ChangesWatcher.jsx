@@ -7,7 +7,10 @@
 // ═══════════════════════════════════════════════════════════════
 import { useEffect, useRef, useState } from "react";
 
-const POLL_INTERVAL_MS = 30 * 1000;
+// AUDITORÍA 2026-07-10: 30s → 120s. A 30s este watcher hacía ~600-1200
+// peticiones/hora al worker (5 claves × 1-2 GETs por tick) — el mayor
+// consumidor de peticiones del plan gratis entre las dos apps.
+const POLL_INTERVAL_MS = 120 * 1000;
 
 const KEYS_TO_WATCH = [
   // Crítico — arrays compartidos entre dispositivos

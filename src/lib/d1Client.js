@@ -78,14 +78,21 @@ async function _retry(fn, label) {
 
 /**
  * Chunkea una string JSON si excede el umbral.
- * Cada chunk va como { key, value, _chunk: N }.
- * Luego D1WriteArrayMerge los reensambla.
+ *
+ * AUDITORÍA 2026-07-10: escribe en el formato CANÓNICO del monolito
+ * (piezas string en `${key}__cN` + manifiesto en `${key}__meta`, y la clave
+ * base se BORRA). El formato propio anterior (manifiesto {_chunked:true} en
+ * la clave base + `${key}_chunk_i_of_N`) era ilegible para el monolito: al
+ * leer la clave base tomaba el manifiesto como si fuera el dato y al
+ * guardar la pisaba. Ambas apps comparten D1, así que solo puede existir UN
+ * formato de escritura. _chunkGet conserva la lectura de ambos formatos
+ * para poder leer residuos legacy durante la transición.
  */
 async function _chunkSet(key, value) {
   const payload = JSON.stringify(value);
   if (payload.length <= CHUNK_THRESHOLD) {
     // Small payload → direct POST
-    return _retry(
+    const resp = await _retry(
       () =>
         fetch(`${WORKER_URL}/store`, {
           method: 'POST',
@@ -94,57 +101,86 @@ async function _chunkSet(key, value) {
         }).then(_checkResponse),
       `d1Set(${key})`
     );
+    // Igual que el monolito: si quedó un __meta chunked de una versión
+    // grande anterior, limpiarlo en background para que ningún lector
+    // reconstruya datos viejos.
+    (async () => {
+      try {
+        const r = await fetch(`${WORKER_URL}/store/${encodeURIComponent(key + '__meta')}`, { headers: _authHeaders() });
+        if (!r.ok) return;
+        const rows = await r.json();
+        const meta = rows?.[0]?.value;
+        if (meta && meta.chunked && Number.isFinite(meta.count)) {
+          for (let i = 0; i < meta.count; i++) {
+            await fetch(`${WORKER_URL}/store/${encodeURIComponent(key + '__c' + i)}`, { method: 'DELETE', headers: _authHeaders() }).catch(() => {});
+          }
+          await fetch(`${WORKER_URL}/store/${encodeURIComponent(key + '__meta')}`, { method: 'DELETE', headers: _authHeaders() }).catch(() => {});
+        }
+      } catch {}
+    })();
+    return resp;
   }
 
-  // Chunk the payload
-  const chunks = [];
-  let offset = 0;
-  let chunkIndex = 0;
-  while (offset < payload.length) {
-    const chunk = payload.substring(offset, offset + CHUNK_THRESHOLD);
-    chunks.push({ _chunk: chunkIndex, _total: 0, _key: key, data: chunk });
-    offset += CHUNK_THRESHOLD;
-    chunkIndex++;
-  }
-  chunks.forEach((c, i) => {
-    c._total = chunks.length;
-    // Sólo el último chunk lleva el data real; los anteriores llevan prefijo
-  });
+  // ── Detectar manifiesto legacy propio para limpiar sus piezas al final ──
+  let legacyChunks = 0;
+  try {
+    const r0 = await fetch(`${WORKER_URL}/store/${encodeURIComponent(key)}`, { headers: _authHeaders() });
+    if (r0.ok) {
+      const rows0 = await r0.json();
+      const v0 = rows0?.[0]?.value;
+      if (v0 && typeof v0 === 'object' && v0._chunked && Number.isFinite(v0._chunks)) legacyChunks = v0._chunks;
+    }
+  } catch {}
 
-  // Write chunks
-  for (let i = 0; i < chunks.length; i++) {
-    const chunk = chunks[i];
+  // ── Piezas string crudas en `${key}__cN` (formato monolito) ──
+  const pieces = [];
+  for (let offset = 0; offset < payload.length; offset += CHUNK_THRESHOLD) {
+    pieces.push(payload.substring(offset, offset + CHUNK_THRESHOLD));
+  }
+  for (let i = 0; i < pieces.length; i++) {
     await _retry(
       () =>
         fetch(`${WORKER_URL}/store`, {
           method: 'POST',
           headers: _authHeaders(),
-          body: JSON.stringify({
-            key: `${key}_chunk_${i}_of_${chunks.length}`,
-            value: i === chunks.length - 1
-              ? { data: payload.substring(i * CHUNK_THRESHOLD), _isLastChunk: true, _totalChunks: chunks.length }
-              : { data: payload.substring(i * CHUNK_THRESHOLD, (i + 1) * CHUNK_THRESHOLD), _chunkIndex: i, _totalChunks: chunks.length },
-          }),
+          body: JSON.stringify({ key: `${key}__c${i}`, value: pieces[i] }),
         }).then(_checkResponse),
-      `d1Set chunk ${i + 1}/${chunks.length} (${key})`
+      `d1Set chunk ${i + 1}/${pieces.length} (${key})`
     );
   }
 
-  // Write manifest
+  // ── Manifiesto `${key}__meta` (punto de commit para los lectores) ──
   await _retry(
     () =>
       fetch(`${WORKER_URL}/store`, {
         method: 'POST',
         headers: _authHeaders(),
         body: JSON.stringify({
-          key,
-          value: { _chunked: true, _chunks: chunks.length, _size: payload.length },
+          key: `${key}__meta`,
+          value: { chunked: true, count: pieces.length, totalBytes: payload.length, ts: Date.now() },
         }),
       }).then(_checkResponse),
-    `d1Set manifest (${key})`
+    `d1Set meta (${key})`
   );
 
-  return { ok: true, chunked: true, chunks: chunks.length };
+  // ── Borrar la clave base (los lectores caen al __meta) y limpiar legacy ──
+  await _retry(
+    () =>
+      fetch(`${WORKER_URL}/store/${encodeURIComponent(key)}`, {
+        method: 'DELETE',
+        headers: _authHeaders(),
+      }).then(_checkResponse),
+    `d1Set delete-base (${key})`
+  );
+  if (legacyChunks > 0) {
+    (async () => {
+      for (let i = 0; i < legacyChunks; i++) {
+        await fetch(`${WORKER_URL}/store/${encodeURIComponent(`${key}_chunk_${i}_of_${legacyChunks}`)}`, { method: 'DELETE', headers: _authHeaders() }).catch(() => {});
+      }
+    })();
+  }
+
+  return { ok: true, chunked: true, chunks: pieces.length };
 }
 
 async function _chunkGet(key, ts) {

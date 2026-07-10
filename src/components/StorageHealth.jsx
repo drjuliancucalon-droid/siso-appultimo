@@ -9,7 +9,7 @@ import { useEffect, useState, useRef } from "react";
 
 const LS_QUOTA_CHECK_INTERVAL = 5 * 60 * 1000;  // 5 min
 const LS_QUOTA_THRESHOLD = 0.80; // 80% lleno → limpiar
-const HEALTH_CHECK_INTERVAL = 2 * 60 * 1000;   // 2 min
+const HEALTH_CHECK_INTERVAL = 5 * 60 * 1000;   // 5 min (AUDITORÍA 2026-07-10: era 2 min; ver /health barato del worker)
 
 // Calcula cuánto ocupa cada clave en LS (en bytes aprox)
 function _lsAudit() {
