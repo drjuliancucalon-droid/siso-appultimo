@@ -93,19 +93,28 @@ export default function EncuestasTab({ companies = [], currentUser }) {
   const [importados, setImportados] = useState({});   // { encId: [...] }
   const [loadingResps, setLoadingResps] = useState({});
 
-  // ── Cargar encuestas desde D1 ────────────────────────────────────
+  // ── Cargar encuestas desde D1 con merge local (no reemplaza) ─────
   const cargarEncuestas = useCallback(async (silente = false) => {
     if (!silente) setLoading(true);
     else setSyncing(true);
     try {
-      const { value: v } = await d1Get(SURVEYS_KEY);
-      if (Array.isArray(v)) setEncuestas(v);
-      else {
-        try {
-          const raw = localStorage.getItem(SURVEYS_KEY);
-          if (raw) { const p = JSON.parse(raw); if (Array.isArray(p)) setEncuestas(p); }
-        } catch {}
-      }
+      // Obtener de D1 (fuente autoritativa)
+      let cloudList = [];
+      try {
+        const { value: v } = await d1Get(SURVEYS_KEY);
+        if (Array.isArray(v)) cloudList = v;
+      } catch { /* D1 no disponible */ }
+      // Leer localStorage
+      let localList = [];
+      try {
+        const raw = localStorage.getItem(SURVEYS_KEY);
+        if (raw) { const p = JSON.parse(raw); if (Array.isArray(p)) localList = p; }
+      } catch { /* ignorar */ }
+      // MERGE: nube gana en ids repetidos, local aporta las que falten
+      const merged = [...cloudList];
+      const cloudIds = new Set(cloudList.map(e => e.id));
+      localList.forEach(e => { if (!cloudIds.has(e.id)) merged.push(e); });
+      setEncuestas(merged);
     } catch {
       try {
         const raw = localStorage.getItem(SURVEYS_KEY);
@@ -162,7 +171,10 @@ export default function EncuestasTab({ companies = [], currentUser }) {
       };
 
       const nuevas = [enc, ...encuestas];
+      // Guardar en el array de encuestas (merge)
       await d1WriteArrayMerge(SURVEYS_KEY, [enc], 'id');
+      // Guardar metadata individual en D1 para acceso rápido desde link público
+      try { await d1Set(`siso_encuesta_${enc.id}`, enc); } catch { /* no bloqueante */ }
       localStorage.setItem(SURVEYS_KEY, JSON.stringify(nuevas));
       setEncuestas(nuevas);
 

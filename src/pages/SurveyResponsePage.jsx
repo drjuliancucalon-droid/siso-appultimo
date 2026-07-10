@@ -3,7 +3,7 @@
 // Paridad completa: 25+ campos, listas EPS/ARL, validaciones, anti-duplicados, write-back verify
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { d1Get, d1WriteArrayMerge } from '../lib/d1Client';
+import { d1Get, d1WriteArrayMerge, d1Append } from '../lib/d1Client';
 import { ClipboardList, Loader2, CheckCircle, AlertCircle, Send, Shield, User, Phone, Mail, MapPin, Briefcase, Heart, GraduationCap, Calendar, Hash } from 'lucide-react';
 
 // ─── CONSTANTES ────────────────────────────────────────────────────────────
@@ -69,21 +69,26 @@ export default function SurveyResponsePage() {
   const [sent, setSent] = useState(false);
   const [confirmId, setConfirmId] = useState('');
 
-  // Cargar metadata de la encuesta desde D1
+  // Cargar metadata de la encuesta desde D1 (clave individual primero, fallback array)
   useEffect(() => {
     let cancelled = false;
     (async () => {
       setLoading(true);
       try {
-        // Intentar D1
         let found = null;
+        // 1. Intentar clave individual siso_encuesta_{token} en D1 (metadata dedicada)
         try {
-          const { value: encuestas } = await d1Get(SURVEYS_KEY);
-          if (Array.isArray(encuestas)) found = encuestas.find(e => e.id === token);
-        } catch {
-          // D1 no disponible → intentar localStorage
+          const { value } = await d1Get(`siso_encuesta_${token}`);
+          if (value && typeof value === 'object' && value.id) found = value;
+        } catch { /* D1 no disponible */ }
+        // 2. Fallback: buscar en el array siso_encuestas
+        if (!found) {
+          try {
+            const { value: encuestas } = await d1Get(SURVEYS_KEY);
+            if (Array.isArray(encuestas)) found = encuestas.find(e => e.id === token);
+          } catch { /* D1 no disponible */ }
         }
-        // Fallback: localStorage
+        // 3. Fallback: localStorage
         if (!found) {
           try {
             const raw = localStorage.getItem(SURVEYS_KEY);
@@ -223,15 +228,25 @@ export default function SurveyResponsePage() {
 
       respuestas.push(nuevaRespuesta);
 
-      // 5. Intentar guardar en D1 (primario) con write-back verify
+      // 5. Guardar en D1 usando APPEND (vía primaria, anti-carreras)
       let guardado = false;
       try {
-        await d1WriteArrayMerge(respKey, [nuevaRespuesta], 'id');
-        // Verificar persistencia
-        await new Promise(r => setTimeout(r, 800));
-        guardado = await verificarEscritura(respId);
-      } catch (errD1) {
-        console.warn('[Encuesta] D1 falló, usando localStorage:', errD1.message);
+        // VÍA PRIMARIA: append server-side — evita que escrituras concurrentes se pisen
+        const appendResult = await d1Append(respKey, nuevaRespuesta, 'id');
+        guardado = appendResult?.ok === true;
+        if (guardado) {
+          console.log('[Encuesta] ✅ Append server-side exitoso. Total items:', appendResult.count);
+        }
+      } catch (errAppend) {
+        console.warn('[Encuesta] Append falló, intentando fallback read-modify-write:', errAppend.message);
+        // FALLBACK: read-modify-write tradicional
+        try {
+          await d1WriteArrayMerge(respKey, [nuevaRespuesta], 'id');
+          await new Promise(r => setTimeout(r, 800));
+          guardado = await verificarEscritura(respId);
+        } catch (errD1) {
+          console.warn('[Encuesta] D1 fallback también falló, usando localStorage:', errD1.message);
+        }
       }
 
       // 6. Siempre guardar en localStorage como backup y para verificación

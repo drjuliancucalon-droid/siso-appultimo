@@ -15,6 +15,24 @@ const ALLOWED_ORIGINS = [
 // dirigido al alias original).
 const DEFAULT_ORIGIN = ALLOWED_ORIGINS[0];
 
+async function compressValue(text) {
+  return text; // no-op: guardar siempre JSON plano
+}
+async function decompressValue(stored) {
+  if (typeof stored !== "string" || !stored.startsWith("gz:")) return stored;
+  try {
+    const binary = atob(stored.slice(3));
+    const bytes = Uint8Array.from(binary, c => c.charCodeAt(0));
+    const stream = new DecompressionStream("gzip");
+    const writer = stream.writable.getWriter();
+    writer.write(bytes);
+    writer.close();
+    return await new Response(stream.readable).text();
+  } catch (e) {
+    return stored;
+  }
+}
+
 function isAllowedOrigin(origin) {
   if (!origin) return false;
   if (ALLOWED_ORIGINS.includes(origin)) return true;
@@ -134,6 +152,35 @@ export default {
           await env.DB.batch(batch);
         }
         return new Response(JSON.stringify({ ok: true, count: rows.length }), { headers });
+      }
+
+      // ── POST /store/append — agrega/actualiza UN item dentro de un array
+      // almacenado, con la fusión hecha EN EL SERVIDOR (2026-07-09).
+      // Evita la carrera read-modify-write de clientes concurrentes: varios
+      // trabajadores enviando la encuesta a la vez se pisaban la respuesta.
+      if (request.method === "POST" && path === "/store/append") {
+        const body = await request.json();
+        const { key, item, idField = "id" } = body;
+        if (!key || !item) {
+          return new Response(JSON.stringify({ error: "key e item requeridos" }), { status: 400, headers });
+        }
+        // Leer array actual
+        let arr = [];
+        try {
+          const row = await env.DB.prepare("SELECT value FROM siso_store WHERE key = ?").bind(key).first();
+          if (row?.value) {
+            const parsed = JSON.parse(await decompressValue(row.value));
+            if (Array.isArray(parsed)) arr = parsed;
+          }
+        } catch {}
+        const idVal = item[idField];
+        const idx = idVal != null ? arr.findIndex(x => x && String(x[idField]) === String(idVal)) : -1;
+        if (idx >= 0) arr[idx] = item; else arr.push(item);
+        const cv = await compressValue(JSON.stringify(arr));
+        await env.DB.prepare(
+          "INSERT INTO siso_store(key, value, updated_at) VALUES(?, ?, datetime('now')) ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at"
+        ).bind(key, cv).run();
+        return new Response(JSON.stringify({ ok: true, count: arr.length }), { headers });
       }
 
       // ── GET /health — endpoint de healthcheck para FASE 4 monitoring ──

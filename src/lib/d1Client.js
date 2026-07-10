@@ -323,6 +323,29 @@ export async function d1Delete(key) {
 }
 
 /**
+ * d1Append(key, item, idField = 'id')
+ * POST /store/append — agrega o actualiza UN item dentro de un array en D1
+ * con fusión server-side. Evita carreras de escritura concurrentes.
+ * Usado como vía primaria para respuestas de encuestas.
+ *
+ * @param {string} key - Clave D1
+ * @param {object} item - Item a agregar/actualizar
+ * @param {string} idField - Campo único para identificar (default: 'id')
+ * @returns {Promise<{ok: boolean, count: number}>}
+ */
+export async function d1Append(key, item, idField = 'id') {
+  return _retry(
+    () =>
+      fetch(`${WORKER_URL}/store/append`, {
+        method: 'POST',
+        headers: _authHeaders(),
+        body: JSON.stringify({ key, item, idField }),
+      }).then(_checkResponse),
+    `d1Append(${key})`
+  );
+}
+
+/**
  * d1GetMany(keys)
  * Batch GET de múltiples keys. Usa Promise.all con concurrencia
  * controlada (máximo 10 en paralelo).
