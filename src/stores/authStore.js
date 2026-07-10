@@ -3,7 +3,7 @@
 //       Monolito _isAdminEmpresa, _canUse, _secretariaPuede
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { d1Get, d1Set, d1WriteArrayMerge } from '../lib/d1Client';
+import { d1Get, d1Set, d1WriteArrayMerge, _markUnsyncedHC } from '../lib/d1Client';
 import { migrateLocalStorageToCloud } from '../lib/migrateStorage';
 import { _sha256 } from '../shared/lib/crypto';
 import { _canUse, _secretariaPuede, PLAN_CONFIG, SECRETARIA_PERMISOS_DEFAULT } from '../shared/data/planConfig.js';
@@ -120,6 +120,82 @@ async function _authenticateUser(username, password) {
   // Limpiar campos sensibles
   const { passHash: _, ...cleanUser } = user;
   return cleanUser;
+}
+
+/**
+ * _restoreFromCloud(userId)
+ * Restaura datos operacionales desde D1 al localStorage al hacer login.
+ * MERGEA por ID: si el navegador ya tiene datos locales, la nube gana en ids repetidos
+ * pero lo local aporta las claves que falten (una nube desactualizada no pisa lo creado offline).
+ * 
+ * Claves restauradas: pacientes, companies, bills, reports, agenda, encuestas, informes, etc.
+ */
+async function _restoreFromCloud(userId) {
+  try {
+    const keysToRestore = [
+      `siso_db_patients_${userId}`,
+      `siso_patients_${userId}`,
+      `siso_companies_${userId}`,
+      `siso_saved_bills_${userId}`,
+      `siso_saved_reports_${userId}`,
+      `siso_agendados_${userId}`,
+      `siso_encuestas`,
+      `siso_informes_${userId}`,
+      `siso_doctor_data_${userId}`,
+    ];
+    
+    let restored = 0;
+    for (const key of keysToRestore) {
+      try {
+        const { value } = await d1Get(key);
+        if (!value || (Array.isArray(value) && value.length === 0)) continue;
+        
+        // Leer localStorage actual
+        let localValue = null;
+        try {
+          const raw = localStorage.getItem(key);
+          if (raw) localValue = JSON.parse(raw);
+        } catch {}
+        
+        // MERGE por ID (nube gana en repetidos, local aporta faltantes)
+        let merged;
+        if (Array.isArray(value) && Array.isArray(localValue)) {
+          // Ambos son arrays → merge por id
+          const cloudIds = new Set(value.map(item => item?.id).filter(Boolean));
+          merged = [...value];
+          localValue.forEach(item => {
+            if (item?.id && !cloudIds.has(item.id)) merged.push(item);
+          });
+        } else if (Array.isArray(value)) {
+          merged = value;
+        } else if (typeof value === 'object' && typeof localValue === 'object') {
+          // Ambos objetos → merge shallow (nube gana)
+          merged = { ...localValue, ...value };
+        } else {
+          merged = value;
+        }
+        
+        localStorage.setItem(key, JSON.stringify(merged));
+        restored++;
+      } catch (keyErr) {
+        // Clave individual falló, continuar con las demás
+      }
+    }
+    
+    if (restored > 0) {
+      console.log(`[authStore] _restoreFromCloud: ${restored} claves restauradas de D1`);
+    }
+    
+    // Verificar estado de respaldo y limpiar marcador si exitoso
+    try {
+      const { value: patsCheck } = await d1Get(`siso_db_patients_${userId}`);
+      if (Array.isArray(patsCheck) && patsCheck.length > 0) {
+        _markUnsyncedHC(false);
+      }
+    } catch {}
+  } catch (err) {
+    console.warn('[authStore] _restoreFromCloud falló:', err.message);
+  }
 }
 
 // ── Store ───────────────────────────────────────────────────────────
@@ -241,6 +317,9 @@ export const useAuthStore = create(
         migrateLocalStorageToCloud(cleanUser.user).catch((e) => {
           console.warn('[R-1] Migración falló en background:', e.message);
         });
+
+        // Restaurar datos operacionales desde D1 (merge, no replace)
+        _restoreFromCloud(cleanUser.user);
 
         // Sincronizar AI keys desde D1 en background
         try { useAIStore.getState().loadFromD1(cleanUser.user); } catch (_) {}
