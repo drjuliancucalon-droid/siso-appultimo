@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../../stores/authStore';
-import { d1Get } from '../../../lib/d1Client';
+import { d1Get, d1Set } from '../../../lib/d1Client';
 import { Download, FileText, BarChart3, Users, Activity, Briefcase, Calendar, Sparkles, Loader2, AlertCircle, Send, Archive, CheckCircle2, TrendingUp, Scale } from 'lucide-react';
 import { useAIStore } from '../../../stores/aiStore';
 import { analyzeEpidemiologicalData } from '../../ai/services/aiAnalysis';
@@ -495,6 +495,47 @@ ${filteredData.map((p,i)=>{const riesgos=getRiesgosActivos(p);const {norma}=getN
     XLSX.writeFile(wb, `Reporte_SISO_${new Date().toISOString().split('T')[0]}.xlsx`);
   };
 
+  const handlePublicarPortal = useCallback(async () => {
+    if (!filterEmpresa || filteredData.length === 0) return;
+    try {
+      const p0 = filteredData[0];
+      const nitClean = (p0.empresaNit || p0.nit || '').replace(/[^0-9]/g, '') || filterEmpresa.replace(/[^0-9]/g, '');
+      const empresa = p0.empresaNombre || filterEmpresa;
+      const periodo = new Date().toISOString().slice(0, 7);
+      const existingKey = `siso_portal_empresa_docs_${nitClean}`;
+      const { value: existingDoc } = await d1Get(existingKey).catch(() => ({ value: null }));
+      const periodos = Array.isArray(existingDoc?.periodos) ? [...existingDoc.periodos] : [];
+      const existingPeriodIdx = periodos.findIndex(p => p.periodo === periodo);
+      const periodoData = {
+        periodo,
+        informe: {
+          fecha: new Date().toISOString().slice(0, 10),
+          totalPacientes: filteredData.length,
+          resumen: `Informe sociodemográfico de ${empresa}. ${filteredData.length} trabajadores evaluados.`,
+          tipo: 'informe',
+        },
+        certificados: { count: filteredData.length },
+        cuenta: existingPeriodIdx >= 0 ? (periodos[existingPeriodIdx].cuenta || null) : null,
+        custodia: existingPeriodIdx >= 0 ? (periodos[existingPeriodIdx].custodia || null) : null,
+      };
+      if (existingPeriodIdx >= 0) {
+        periodos[existingPeriodIdx] = { ...periodos[existingPeriodIdx], ...periodoData };
+      } else {
+        periodos.push(periodoData);
+      }
+      const portalData = {
+        nit: nitClean,
+        nombre: empresa,
+        codigoAcceso: existingDoc?.codigoAcceso || `EMP-${nitClean.slice(-4)}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`,
+        periodos: periodos.sort((a, b) => b.periodo.localeCompare(a.periodo)),
+      };
+      await d1Set(existingKey, portalData);
+      alert(`✅ Informe publicado en el portal de ${empresa}.\nPeríodo: ${periodo}\nCódigo de acceso: ${portalData.codigoAcceso}`);
+    } catch (err) {
+      alert('Error al publicar: ' + (err.message || 'desconocido'));
+    }
+  }, [filterEmpresa, filteredData]);
+
   const handleExportCSV = () => {
     const headers = ['Fecha', 'Paciente', 'Documento', 'Empresa', 'Cargo', 'Tipo Examen', 'Concepto Aptitud', 'Diagnóstico Principal'];
     const rows = filteredData.map(p => [
@@ -552,6 +593,11 @@ ${filteredData.map((p,i)=>{const riesgos=getRiesgosActivos(p);const {norma}=getN
           <button onClick={handleDescargarZip} className="flex items-center gap-1.5 px-3 py-1.5 bg-red-600 text-white rounded-lg hover:bg-red-700 text-xs font-bold">
             <Archive size={14} /> ZIP
           </button>
+          {filterEmpresa && total > 0 && (
+            <button onClick={handlePublicarPortal} className="flex items-center gap-1.5 px-3 py-1.5 bg-purple-600 text-white rounded-lg hover:bg-purple-700 text-xs font-bold">
+              <Send size={14} /> Publicar en Portal
+            </button>
+          )}
         </div>
       </div>
 
