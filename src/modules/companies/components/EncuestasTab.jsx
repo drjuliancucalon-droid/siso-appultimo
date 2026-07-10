@@ -32,10 +32,60 @@ export default function EncuestasTab({ companies = [], currentUser }) {
   const [formFecha, setFormFecha] = useState('');
   const [formNombre, setFormNombre] = useState('');
   const [formDesc, setFormDesc] = useState('');
+  const [formSociodemografico, setFormSociodemografico] = useState(true); // Por defecto: perfil sociodemográfico precargado
   const [formPreguntas, setFormPreguntas] = useState([
     { id: 'p1', texto: '', tipo: 'texto', opciones: [] },
   ]);
   const [formError, setFormError] = useState('');
+
+  // ── Preguntas predefinidas del perfil sociodemográfico ───────────
+  const SOCIODEMOGRAFICAS = [
+    // Sección 1: Datos Personales
+    { id: 'soc_nombres', texto: 'Nombres completos', tipo: 'texto', opciones: [] },
+    { id: 'soc_docTipo', texto: 'Tipo de documento', tipo: 'opcion_multiple', opciones: ['CC', 'CE', 'PA', 'TI', 'RC'] },
+    { id: 'soc_docNumero', texto: 'Número de documento', tipo: 'texto', opciones: [] },
+    { id: 'soc_fechaNacimiento', texto: 'Fecha de nacimiento', tipo: 'texto', opciones: [] },
+    { id: 'soc_edad', texto: 'Edad', tipo: 'texto', opciones: [] },
+    { id: 'soc_genero', texto: 'Género', tipo: 'opcion_multiple', opciones: ['Masculino', 'Femenino', 'Otro'] },
+    { id: 'soc_estadoCivil', texto: 'Estado civil', tipo: 'opcion_multiple', opciones: ['Soltero(a)', 'Casado(a)', 'Unión libre', 'Separado(a)', 'Divorciado(a)', 'Viudo(a)'] },
+    { id: 'soc_escolaridad', texto: 'Nivel de escolaridad', tipo: 'opcion_multiple', opciones: ['Primaria', 'Secundaria', 'Técnico', 'Tecnólogo', 'Universitario', 'Especialización', 'Maestría', 'Doctorado', 'Ninguno'] },
+    { id: 'soc_grupoEtnico', texto: 'Grupo étnico', tipo: 'opcion_multiple', opciones: ['Ninguno', 'Indígena', 'Afrocolombiano', 'Raizal', 'Palenquero', 'Rom/Gitano'] },
+    { id: 'soc_lateralidad', texto: 'Lateralidad', tipo: 'opcion_multiple', opciones: ['Diestro', 'Zurdo', 'Ambidiestro'] },
+    // Sección 2: Contacto
+    { id: 'soc_celular', texto: 'Celular', tipo: 'texto', opciones: [] },
+    { id: 'soc_email', texto: 'Correo electrónico', tipo: 'texto', opciones: [] },
+    { id: 'soc_direccion', texto: 'Dirección de residencia', tipo: 'texto', opciones: [] },
+    { id: 'soc_ciudad', texto: 'Ciudad', tipo: 'texto', opciones: [] },
+    { id: 'soc_zonaResidencia', texto: 'Zona de residencia', tipo: 'opcion_multiple', opciones: ['Urbana', 'Rural'] },
+    { id: 'soc_estrato', texto: 'Estrato socioeconómico', tipo: 'opcion_multiple', opciones: ['1', '2', '3', '4', '5', '6'] },
+    // Sección 3: Seguridad Social
+    { id: 'soc_eps', texto: 'EPS', tipo: 'opcion_multiple', opciones: ['NUEVA EPS', 'SANITAS', 'SALUD TOTAL', 'MEDIMÁS', 'COMPENSAR', 'SURA', 'COOMEVA', 'FAMISANAR', 'COOSALUD', 'MUTUAL SER', 'COMFENALCO', 'CAJACOPI', 'ASMET SALUD', 'EMSSANAR', 'MALLAMAS', 'AIC', 'PIJAOS SALUD', 'CAPITAL SALUD', 'ALIANSALUD', 'OTRA'] },
+    { id: 'soc_arl', texto: 'ARL', tipo: 'opcion_multiple', opciones: ['ARL SURA', 'POSITIVA', 'AXA COLPATRIA', 'SEGUROS BOLÍVAR', 'COLMENA', 'LA EQUIDAD', 'MAPFRE', 'LIBERTY', 'ALFA'] },
+    { id: 'soc_afp', texto: 'AFP / Fondo de pensiones', tipo: 'texto', opciones: [] },
+    // Sección 4: Ocupacional
+    { id: 'soc_cargo', texto: 'Cargo actual', tipo: 'texto', opciones: [] },
+    { id: 'soc_area', texto: 'Área / Departamento', tipo: 'texto', opciones: [] },
+    { id: 'soc_antiguedad', texto: 'Antigüedad en el cargo', tipo: 'texto', opciones: [] },
+    { id: 'soc_tipoContrato', texto: 'Tipo de contrato', tipo: 'opcion_multiple', opciones: ['Término fijo', 'Término indefinido', 'Prestación de servicios', 'Obra/Labor', 'Temporal', 'Aprendizaje'] },
+    { id: 'soc_turnoTrabajo', texto: 'Turno de trabajo', tipo: 'opcion_multiple', opciones: ['Diurno', 'Nocturno', 'Mixto', 'Rotativo'] },
+    // Sección 5: Emergencia
+    { id: 'soc_contactoEmergencia', texto: 'Contacto de emergencia', tipo: 'texto', opciones: [] },
+    { id: 'soc_telEmergencia', texto: 'Teléfono de emergencia', tipo: 'texto', opciones: [] },
+  ];
+
+  // Activar/desactivar perfil sociodemográfico precargado
+  const toggleSociodemografico = (activar) => {
+    setFormSociodemografico(activar);
+    if (activar) {
+      setFormPreguntas([...SOCIODEMOGRAFICAS]);
+      if (!formNombre) setFormNombre('Perfil Sociodemográfico Ocupacional');
+      if (!formDesc) setFormDesc('Formulario de captura de datos sociodemográficos para exámenes médicos ocupacionales - Res. 1843/2025');
+    } else {
+      setFormPreguntas([{ id: 'p1', texto: '', tipo: 'texto', opciones: [] }]);
+      if (formNombre === 'Perfil Sociodemográfico Ocupacional') setFormNombre('');
+      if (formDesc === 'Formulario de captura de datos sociodemográficos para exámenes médicos ocupacionales - Res. 1843/2025') setFormDesc('');
+    }
+  };
 
   // ── Respuestas / importados (expandido por encuesta) ──────────────
   const [expandedId, setExpandedId] = useState(null);
@@ -614,60 +664,102 @@ export default function EncuestasTab({ companies = [], currentUser }) {
               </div>
             </div>
 
+            {/* Toggle Perfil Sociodemográfico */}
+            <div className="flex items-center gap-4 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl p-3 border border-indigo-200">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={formSociodemografico}
+                  onChange={e => toggleSociodemografico(e.target.checked)}
+                  className="w-4 h-4 accent-indigo-600 rounded"
+                />
+                <span className="text-[11px] font-black text-indigo-800">
+                  📋 Perfil Sociodemográfico
+                </span>
+              </label>
+              <span className="text-[10px] text-gray-500">
+                {formSociodemografico
+                  ? '26 preguntas precargadas del perfil ocupacional (Res. 1843/2025)'
+                  : 'Modo libre — agregue sus propias preguntas'}
+              </span>
+            </div>
+
             {/* Preguntas */}
             <div className="bg-gray-50 rounded-xl p-3 border border-gray-200">
               <div className="flex items-center justify-between mb-2">
-                <h5 className="text-[10px] font-black text-gray-700 uppercase">Preguntas</h5>
-                <button type="button" onClick={addPregunta}
-                  className="flex items-center gap-1 text-[10px] font-bold text-indigo-600">
-                  <Plus className="w-3 h-3" /> Agregar pregunta
-                </button>
+                <h5 className="text-[10px] font-black text-gray-700 uppercase">
+                  Preguntas ({formPreguntas.length})
+                </h5>
+                {!formSociodemografico && (
+                  <button type="button" onClick={addPregunta}
+                    className="flex items-center gap-1 text-[10px] font-bold text-indigo-600">
+                    <Plus className="w-3 h-3" /> Agregar pregunta
+                  </button>
+                )}
               </div>
-              <div className="space-y-2">
-                {formPreguntas.map((p, idx) => (
-                  <div key={p.id} className="bg-white border rounded-lg p-2.5">
-                    <div className="flex items-center gap-2 mb-1.5">
-                      <span className="text-[10px] font-black text-gray-400 w-5">{idx + 1}.</span>
-                      <input
-                        value={p.texto}
-                        onChange={e => updPregunta(idx, 'texto', e.target.value)}
-                        className="flex-1 p-1.5 border rounded text-[11px]"
-                        placeholder="Texto de la pregunta"
-                      />
-                      <select
-                        value={p.tipo}
-                        onChange={e => setTipo(idx, e.target.value)}
-                        className="p-1.5 border rounded text-[10px]"
-                      >
-                        <option value="texto">Texto libre</option>
-                        <option value="opcion_multiple">Opción múltiple</option>
-                      </select>
-                      {formPreguntas.length > 1 && (
-                        <button type="button"
-                          onClick={() => setFormPreguntas(prev => prev.filter((_, i) => i !== idx))}
-                          className="text-red-400 hover:text-red-600">
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
+              <div className="space-y-1.5 max-h-[500px] overflow-y-auto">
+                {formSociodemografico ? (
+                  /* Vista compacta del perfil precargado — solo lectura */
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-1">
+                    {formPreguntas.map((p, idx) => (
+                      <div key={p.id} className="flex items-center gap-1.5 text-[10px] py-1 px-2 bg-white rounded border border-gray-100">
+                        <span className="font-bold text-gray-500 w-5 text-right">{idx + 1}.</span>
+                        <span className="text-gray-700 truncate">{p.texto}</span>
+                        {p.tipo === 'opcion_multiple' && (
+                          <span className="text-[9px] text-purple-500 bg-purple-50 px-1 rounded ml-auto flex-shrink-0">
+                            {p.opciones.length} opciones
+                          </span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  /* Vista editable normal */
+                  formPreguntas.map((p, idx) => (
+                    <div key={p.id} className="bg-white border rounded-lg p-2.5">
+                      <div className="flex items-center gap-2 mb-1.5">
+                        <span className="text-[10px] font-black text-gray-400 w-5">{idx + 1}.</span>
+                        <input
+                          value={p.texto}
+                          onChange={e => updPregunta(idx, 'texto', e.target.value)}
+                          className="flex-1 p-1.5 border rounded text-[11px]"
+                          placeholder="Texto de la pregunta"
+                        />
+                        <select
+                          value={p.tipo}
+                          onChange={e => setTipo(idx, e.target.value)}
+                          className="p-1.5 border rounded text-[10px]"
+                        >
+                          <option value="texto">Texto libre</option>
+                          <option value="opcion_multiple">Opción múltiple</option>
+                        </select>
+                        {formPreguntas.length > 1 && (
+                          <button type="button"
+                            onClick={() => setFormPreguntas(prev => prev.filter((_, i) => i !== idx))}
+                            className="text-red-400 hover:text-red-600">
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                      </div>
+                      {p.tipo === 'opcion_multiple' && (
+                        <div className="ml-7 space-y-1">
+                          {p.opciones.map((op, oi) => (
+                            <div key={oi} className="flex items-center gap-1">
+                              <span className="text-[9px] text-gray-400 w-4">{String.fromCharCode(65 + oi)}.</span>
+                              <input
+                                value={op}
+                                onChange={e => updOpcion(idx, oi, e.target.value)}
+                                className="flex-1 p-1 border rounded text-[10px]"
+                              />
+                            </div>
+                          ))}
+                          <button type="button" onClick={() => addOpcion(idx)}
+                            className="text-[9px] text-indigo-500 font-bold mt-0.5">+ Agregar opción</button>
+                        </div>
                       )}
                     </div>
-                    {p.tipo === 'opcion_multiple' && (
-                      <div className="ml-7 space-y-1">
-                        {p.opciones.map((op, oi) => (
-                          <div key={oi} className="flex items-center gap-1">
-                            <span className="text-[9px] text-gray-400 w-4">{String.fromCharCode(65 + oi)}.</span>
-                            <input
-                              value={op}
-                              onChange={e => updOpcion(idx, oi, e.target.value)}
-                              className="flex-1 p-1 border rounded text-[10px]"
-                            />
-                          </div>
-                        ))}
-                        <button type="button" onClick={() => addOpcion(idx)}
-                          className="text-[9px] text-indigo-500 font-bold mt-0.5">+ Agregar opción</button>
-                      </div>
-                    )}
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
             </div>
 
