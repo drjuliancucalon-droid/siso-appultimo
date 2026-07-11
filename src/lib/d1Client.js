@@ -121,6 +121,25 @@ async function _chunkSet(key, value) {
     return resp;
   }
 
+  // ── Intento PRIMARIO 2026-07-11: troceo ATÓMICO server-side ──
+  // /store/chunked escribe piezas+__meta+borrado de base en UNA transacción
+  // D1 (formato canónico, con hash) — inmune a escrituras simultáneas de
+  // otras pestañas o del monolito. Fallback: troceo cliente (abajo).
+  try {
+    const r = await fetch(`${WORKER_URL}/store/chunked`, {
+      method: 'POST',
+      headers: _authHeaders(),
+      body: JSON.stringify({ key, value }),
+    });
+    if (r.ok) {
+      const d = await r.json().catch(() => null);
+      if (d && d.ok) return { ok: true, chunked: true, chunks: d.chunks };
+    }
+    console.warn(`[d1Client] /store/chunked no disponible (${r.status}) — fallback a troceo cliente para ${key}`);
+  } catch (e) {
+    console.warn(`[d1Client] /store/chunked falló (${e?.message}) — fallback a troceo cliente para ${key}`);
+  }
+
   // ── Detectar manifiesto legacy propio para limpiar sus piezas al final ──
   let legacyChunks = 0;
   try {
