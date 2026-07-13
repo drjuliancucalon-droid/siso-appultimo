@@ -87,12 +87,23 @@ export default {
       }
 
       // ── GET /store/prefix/:prefix — buscar por prefijo ───────────────
+      // COMMIT 4f8b81f — modo ?raw=1 salta JSON.parse por fila (reduce
+      // latencia y CPU cuando el cliente solo necesita las claves).
       if (request.method === "GET" && path.startsWith("/store/prefix/")) {
         const prefix = decodeURIComponent(path.slice(14));
+        const raw = url.searchParams.get("raw") === "1";
         const rows = await env.DB.prepare(
           "SELECT key, value FROM siso_store WHERE key LIKE ? LIMIT 2000"
         ).bind(prefix + "%").all();
-        const result = (rows.results || []).map(r => ({ key: r.key, value: JSON.parse(r.value) }));
+        const result = raw
+          ? (rows.results || []).map(r => ({ key: r.key, value: r.value }))
+          : (rows.results || []).map(r => {
+              try {
+                return { key: r.key, value: JSON.parse(r.value) };
+              } catch {
+                return { key: r.key, value: r.value };
+              }
+            });
         return new Response(JSON.stringify(result), { headers });
       }
 
@@ -121,10 +132,26 @@ export default {
       // Soporta header If-Match: <ts> para escritura optimista (FASE 3):
       //   • Si el ts del row actual != If-Match → 409 con el nuevo ts
       //   • Si coincide o no envió header → ejecuta normal
+      // COMMIT a98eff1 — CANDADO 2: rechaza escrituras a HC cerradas
       if (request.method === "POST" && path === "/store") {
         const body = await request.json();
         const rows = Array.isArray(body) ? body : [body];
         const ifMatch = (request.headers.get("If-Match") || request.headers.get("X-Siso-If-Match") || "").replace(/"/g, "").trim();
+
+        // CANDADO 2: Rechazar escrituras a claves de HC cerradas (inmutables)
+        for (const row of rows) {
+          if (row?.key && (
+            row.key.startsWith("siso_hc_cerrada_") ||
+            /siso_hc_.*_cerrada$/.test(row.key)
+          )) {
+            return new Response(JSON.stringify({
+              ok: false,
+              error: "hc_frozen",
+              message: "CANDADO 2: esta HC está cerrada y no puede modificarse",
+              key: row.key,
+            }), { status: 423, headers });
+          }
+        }
 
         // Validación If-Match: solo aplica a escrituras de UNA clave
         if (ifMatch && rows.length === 1 && rows[0]?.key) {
@@ -181,6 +208,85 @@ export default {
           "INSERT INTO siso_store(key, value, updated_at) VALUES(?, ?, datetime('now')) ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at"
         ).bind(key, cv).run();
         return new Response(JSON.stringify({ ok: true, count: arr.length }), { headers });
+      }
+
+      // ── POST /store/chunked — escritura atómica multi-chunk ────────────
+      // COMMIT e7ed13a — candado anti-encogimiento server-side.
+      // Body: { baseKey: string, pieces: string[], meta: object }
+      // El worker:
+      //   1. Borra todos los chunks viejos (baseKey__c0..cN, baseKey__meta)
+      //   2. Inserta chunks nuevos + meta en UNA transacción D1
+      //   3. Verifica que el valor reconstruido NO sea menor que el anterior
+      //      (anti-encogimiento). Si hay encogimiento → rechaza.
+      // Propósito: eliminar condiciones de carrera entre pestañas/monolito
+      // al escribir datos grandes (>500KB) que requieren chunking.
+      if (request.method === "POST" && path === "/store/chunked") {
+        const body = await request.json();
+        const { baseKey, pieces = [], meta = {} } = body;
+        if (!baseKey || !Array.isArray(pieces) || pieces.length === 0) {
+          return new Response(JSON.stringify({ error: "baseKey y pieces[] requeridos" }), { status: 400, headers });
+        }
+
+        // CANDADO anti-encogimiento: leer tamaño anterior para comparar
+        let previousSize = 0;
+        try {
+          const prevMetaRow = await env.DB.prepare(
+            "SELECT value FROM siso_store WHERE key = ?"
+          ).bind(baseKey + "__meta").first();
+          if (prevMetaRow?.value) {
+            const prevMeta = JSON.parse(prevMetaRow.value);
+            previousSize = prevMeta?.totalBytes ?? prevMeta?.size ?? 0;
+          }
+        } catch {}
+
+        // Calcular tamaño total de los nuevos chunks
+        const totalBytes = pieces.reduce((sum, p) => sum + (typeof p === "string" ? p.length : JSON.stringify(p).length), 0);
+
+        // Validación anti-encogimiento: si hay tamaño anterior y el nuevo es menor → rechazar
+        if (previousSize > 0 && totalBytes < previousSize) {
+          return new Response(JSON.stringify({
+            ok: false,
+            error: "shrink_detected",
+            message: "CANDADO anti-encogimiento: valor nuevo menor que el anterior",
+            previousBytes: previousSize,
+            newBytes: totalBytes,
+          }), { status: 409, headers });
+        }
+
+        // Borrar chunks viejos de esta baseKey
+        await env.DB.prepare(
+          "DELETE FROM siso_store WHERE key LIKE ?"
+        ).bind(baseKey + "__c%").run();
+        await env.DB.prepare(
+          "DELETE FROM siso_store WHERE key = ?"
+        ).bind(baseKey + "__meta").run();
+
+        // Insertar chunks nuevos + meta en batch atómico
+        const insertStmt = env.DB.prepare(
+          "INSERT INTO siso_store(key, value, updated_at) VALUES(?, ?, datetime('now'))"
+        );
+        const batch = pieces.map((piece, i) =>
+          insertStmt.bind(`${baseKey}__c${i}`, JSON.stringify(typeof piece === "string" ? piece : JSON.stringify(piece)))
+        );
+        batch.push(insertStmt.bind(`${baseKey}__meta`, JSON.stringify({
+          ...meta,
+          chunked: true,
+          count: pieces.length,
+          totalBytes,
+          ts: Date.now(),
+        })));
+
+        // Ejecutar en batches de 50 (límite D1)
+        for (let i = 0; i < batch.length; i += 50) {
+          await env.DB.batch(batch.slice(i, i + 50));
+        }
+
+        return new Response(JSON.stringify({
+          ok: true,
+          count: pieces.length,
+          totalBytes,
+          previousBytes: previousSize,
+        }), { headers });
       }
 
       // ── GET /health — endpoint de healthcheck para FASE 4 monitoring ──

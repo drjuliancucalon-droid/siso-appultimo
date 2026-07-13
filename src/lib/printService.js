@@ -73,6 +73,26 @@ export function openPrintWindow(title, htmlContent, options = {}) {
   const printStyles = `
     @page {
       size: ${landscape ? 'landscape' : 'portrait'};
+      margin: 1.5cm;
+    }
+    /* COMMIT 868d235: unifica bordes de certificados + evita corte de texto */
+    * {
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+    }
+    .certificado-box {
+      border: 2px solid #059669;
+      border-radius: 6px;
+      padding: 12px;
+    }
+    .certificado-box p, .certificado-box span {
+      word-break: break-word;
+      overflow-wrap: break-word;
+    }
+  }
+  @media screen {
       margin: 15mm 12mm;
     }
     body {

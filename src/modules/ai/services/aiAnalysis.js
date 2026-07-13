@@ -193,6 +193,14 @@ const _buildContextoTipo = (tipoExamen = '') => {
 // Ref. monolito: App.jsx líneas 14911-15144
 // v2: contexto completo + salida estructurada TRABAJADOR/EMPLEADOR/EMPRESA
 // ══════════════════════════════════════════════════════════════════════════════
+// COMMIT 7cd3434: escalado de profundidad al re-presionar análisis
+const _buildDepthInstructions = (depth = 0) => {
+  if (depth <= 0) return '';
+  if (depth === 1) return '\n⚠️ RE-ANÁLISIS SOLICITADO — Sé más exhaustivo que en el análisis anterior. Incluye más detalles clínicos, correlaciona hallazgos con riesgos ocupacionales y fundamenta cada conclusión con evidencia de la HC.';
+  if (depth === 2) return '\n⚠️ ANÁLISIS PROFUNDO (3er intento) — Realiza un análisis ultra-detallado. Desglosa cada sistema por separado, correlaciona con antecedentes y perfil del cargo, y genera un concepto de aptitud con fundamentación extensa.';
+  return '\n⚠️ ANÁLISIS MÁXIMO — Nivel exhaustivo. Revisa cada hallazgo, antecedente, riesgo y signo vital. Genera un análisis de la más alta calidad posible con todas las correlaciones clínicas y ocupacionales pertinentes.';
+};
+
 export const analyzeHC = async (hcData, aiConfig) => {
   // EXTRACCIÓN COMPLETA DEL CONTEXTO HC (monolito L20987-21080)
   const hallazgosAnorm =
@@ -205,10 +213,14 @@ export const analyzeHC = async (hcData, aiConfig) => {
       .filter(([, v]) => v.estado === 'Normal')
       .map(([k]) => k)
       .join(', ') || '';
-  const osteo = Object.entries(hcData.maniobrasOsteomusculares || {})
+  // COMMIT cd2c963: campos osteomusculares que se perdían (muscular, articular)
+  const osteoBase = Object.entries(hcData.maniobrasOsteomusculares || {})
     .filter(([, v]) => v.estado === 'Anormal')
     .map(([k, v]) => `${k}: ${v.hallazgo}`)
     .join('; ') || 'Ninguna positiva';
+  const osteoM = hcData.osteo?.muscular || hcData.maniobrasOsteomusculares?.muscular?.hallazgo || '';
+  const osteoA = hcData.osteo?.articular || hcData.maniobrasOsteomusculares?.articular?.hallazgo || '';
+  const osteo = [osteoBase, osteoM, osteoA].filter(Boolean).join(' | ') || 'Ninguna positiva';
   const antec = Object.entries(hcData.antecedentesAgrupados || {})
     .filter(([, v]) => v.val)
     .map(([k, v]) => `${k}: ${v.det}`)
@@ -218,6 +230,26 @@ export const analyzeHC = async (hcData, aiConfig) => {
   const dxActivos = [hcData.diagnosticoPrincipal, hcData.diagnosticoSecundario1, hcData.diagnosticoSecundario2]
     .filter(Boolean).join(' | ') || 'Pendiente';
   const motivo = hcData.motivoConsulta || 'Examen médico ocupacional';
+
+  // COMMIT 687f256: detectar énfasis para enriquecer el prompt
+  const enfasis = hcData.enfasisExamen || '';
+  let enfasisBlock = '';
+  let cardioBlock = '';
+  if (/CORAZON|CARDIO/i.test(enfasis)) {
+    enfasisBlock = '\n⚠️ ÉNFASIS CARDIOVASCULAR — Presta especial atención a FC, TA, ritmo, pulsos, edemas y perfusión.';
+    cardioBlock = `\nBATERÍA CARDIOVASCULAR:\nFC: ${hcData.fc || 'N/R'} lpm | TA: ${hcData.ta || 'N/R'} mmHg | Ritmo/Tonos: ${hcData.ritmoTonos || 'N/R'} | Pulsos: ${hcData.pulsos || 'N/R'} | Edemas: ${hcData.edemas || 'Ausentes'} | Perfusión: ${hcData.perfusion || 'Normal'} | RiesgoCV: ${hcData.riesgoCV || 'N/R'}`;
+  }
+  if (/OSTEO/i.test(enfasis)) {
+    enfasisBlock += '\n⚠️ ÉNFASIS OSTEOMUSCULAR — Usa las secciones "Examen osteomuscular" y "Maniobras" como foco principal del análisis.';
+  }
+  // COMMIT 687f256: incluir exámenes subidos en el contexto
+  let examenesBlock = '';
+  try {
+    const examenesSubidos = hcData.examenesSubidos || hcData.examenes || [];
+    if (Array.isArray(examenesSubidos) && examenesSubidos.length > 0) {
+      examenesBlock = '\nEXÁMENES DE APOYO SUBIDOS:\n' + examenesSubidos.map((e, i) => `${i + 1}. ${e.nombre || e.tipo || 'Examen'} — ${e.resultado || e.hallazgo || e.descripcion || 'Sin descripción'} ${e.fecha ? '(' + e.fecha + ')' : ''}`).join('\n');
+    }
+  } catch {}
 
   const systemPrompt = 'Eres médico ocupacional con más de 15 años de experiencia en Colombia. Conoces la normatividad colombiana: Res. 1843/2025 (deroga Res. 2346/2007), Dec. 1072/2015, Guías GATISO, GTC-45, Dec. 1477/2014. Evalúas al trabajador como un TODO integral: sus antecedentes, sus riesgos, sus hallazgos físicos anormales y normales, sus signos vitales, sus hábitos, y generas un concepto de aptitud laboral claro, preciso y fundamentado. Respondes SOLO con JSON en español formal y técnico.';
 
@@ -252,6 +284,7 @@ ${hallazgosNorm || 'No registrados'}
 
 MANIOBRAS OSTEOMUSCULARES POSITIVAS:
 ${osteo}
+${cardioBlock}
 
 MOTIVO DE CONSULTA / SOLICITUD:
 ${motivo}
@@ -261,6 +294,9 @@ ${dxActivos}
 
 ANÁLISIS CLÍNICO IA PREVIO:
 ${hcData.analisisIA ? hcData.analisisIA.substring(0, 500) + '...' : 'No disponible'}
+${examenesBlock}
+${enfasisBlock}
+${_buildDepthInstructions(hcData._analysisDepth || 0)}
 ═══════════════════════════════════════════════════
 
 INSTRUCCIONES:

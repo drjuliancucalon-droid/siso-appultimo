@@ -6,6 +6,8 @@
 const WORKER_URL = import.meta.env.VITE_WORKER_URL || 'https://siso-api.dr-juliancucalon.workers.dev';
 const WORKER_TOKEN = import.meta.env.VITE_WORKER_TOKEN || '';
 const CHUNK_THRESHOLD = 500_000; // 500KB
+// COMMIT 6d4a2fc: aumentado de 60KB a 5MB para permitir objetos grandes
+const PENDING_D1_MAX_VALUE = 5_000_000; // 5MB (antes 60KB)
 const MAX_RETRIES = 3;
 const BASE_DELAY = 1000; // 1s base para backoff exponencial
 
@@ -125,12 +127,17 @@ async function _chunkSet(key, value) {
   // /store/chunked escribe piezas+__meta+borrado de base en UNA transacción
   // D1 (formato canónico, con hash) — inmune a escrituras simultáneas de
   // otras pestañas o del monolito. Fallback: troceo cliente (abajo).
+  // COMMIT e219b26: timeout 45s → 180s para conexiones lentas (consultorio).
   try {
+    const ctrl = new AbortController();
+    const tid = setTimeout(() => ctrl.abort(), 180000);
     const r = await fetch(`${WORKER_URL}/store/chunked`, {
       method: 'POST',
       headers: _authHeaders(),
       body: JSON.stringify({ key, value }),
+      signal: ctrl.signal,
     });
+    clearTimeout(tid);
     if (r.ok) {
       const d = await r.json().catch(() => null);
       if (d && d.ok) return { ok: true, chunked: true, chunks: d.chunks };
@@ -138,6 +145,14 @@ async function _chunkSet(key, value) {
     console.warn(`[d1Client] /store/chunked no disponible (${r.status}) — fallback a troceo cliente para ${key}`);
   } catch (e) {
     console.warn(`[d1Client] /store/chunked falló (${e?.message}) — fallback a troceo cliente para ${key}`);
+  }
+
+  // COMMIT e4f53e9: claves protegidas ABORTAN si /store/chunked falla.
+  // El troceo cliente sin candado PUEDE causar pérdida de datos.
+  const PROTECTED_PREFIXES = ['siso_patients_', 'siso_db_patients_', 'siso_atenciones', 'siso_hc_'];
+  if (PROTECTED_PREFIXES.some(p => key.startsWith(p))) {
+    console.error(`[d1Client] ABORTANDO escritura de clave protegida ${key}: /store/chunked no disponible`);
+    return { ok: false, error: 'chunked_unavailable_for_protected_key' };
   }
 
   // ── Detectar manifiesto legacy propio para limpiar sus piezas al final ──
@@ -411,9 +426,9 @@ export async function d1Append(key, item, idField = 'id') {
  */
 export async function d1GetMany(keys) {
   const result = {};
-  // Procesar en batches de 10 para no saturar el Worker
-  for (let i = 0; i < keys.length; i += 10) {
-    const batch = keys.slice(i, i + 10);
+  // COMMIT e4f53e9: pool reducido 10→2 para no saturar QUIC/UDP
+  for (let i = 0; i < keys.length; i += 2) {
+    const batch = keys.slice(i, i + 2);
     const promises = batch.map(async (k) => {
       const { value } = await d1Get(k);
       return { key: k, value };
