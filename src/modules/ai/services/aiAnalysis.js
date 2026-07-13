@@ -33,8 +33,13 @@ export const parseAIJSON = (text) => {
 };
 
 // ── callAIWithFailover ────────────────────────────────────────────────────────
+// COMMIT 16ca375: contador de uso por proveedor/key
+const usageCounts = {};
+export const getUsageCounts = () => ({ ...usageCounts });
+export const resetUsageCounts = () => { Object.keys(usageCounts).forEach(k => delete usageCounts[k]); };
+
 export const callAIWithFailover = async (prompt, systemPrompt, aiConfig) => {
-  const providers = ['gemini', 'groq', 'together', 'openrouter'];
+  const providers = ['gemini', 'groq', 'cerebras', 'openrouter'];
   const ordered = [
     aiConfig?.activeProvider,
     ...providers.filter((p) => p !== aiConfig?.activeProvider),
@@ -47,11 +52,31 @@ export const callAIWithFailover = async (prompt, systemPrompt, aiConfig) => {
     const provider = AI_PROVIDERS[providerKey];
     if (!provider) continue;
     try {
-      const result = await provider.call(prompt, systemPrompt || DEFAULT_SYSTEM_PROMPT, key.trim());
-      if (result && result.length > 0) return result;
+      // COMMIT ffc12e6: rotación multi-key Gemini — probar cada key separada por coma
+      const keysToTry = providerKey === 'gemini'
+        ? key.split(',').map(k => k.trim()).filter(Boolean)
+        : [key.trim()];
+      for (const singleKey of keysToTry) {
+        try {
+          const result = await provider.call(prompt, systemPrompt || DEFAULT_SYSTEM_PROMPT, singleKey);
+          if (result && result.length > 0) {
+            // COMMIT 16ca375: incrementar contador de uso
+            const keyShort = singleKey.slice(-6);
+            if (!usageCounts[providerKey]) usageCounts[providerKey] = {};
+            usageCounts[providerKey][keyShort] = (usageCounts[providerKey][keyShort] || 0) + 1;
+            return result;
+          }
+        } catch (e2) {
+          lastError = e2;
+          if (e2.message?.includes('API Key inválida') || e2.message?.includes('401')) continue;
+          continue; // probar siguiente key
+        }
+      }
     } catch (e) { lastError = e; continue; }
   }
-  throw lastError || new Error('No hay proveedores de IA configurados o disponibles');
+  // COMMIT b9935fb: mensaje de error específico con último error
+  const detail = lastError?.message || 'sin detalles';
+  throw lastError || new Error(`No hay proveedores de IA configurados o disponibles. Último error: ${detail}`);
 };
 
 // ══════════════════════════════════════════════════════════════════════════════

@@ -165,34 +165,29 @@ export const AI_PROVIDERS = {
       );
     },
   },
-  // ── 3. TOGETHER AI - Llama 3.3 70B 100% gratis, robusto ─────────────────
-  together: {
-    name: "Together AI",
+  // ── 3. CEREBRAS - Llama 3.3 70B 100% gratis, CORS habilitado ────────────
+  // COMMIT b9935fb: reemplaza NVIDIA por Cerebras (NVIDIA no soporta CORS desde navegador)
+  cerebras: {
+    name: "Cerebras",
     free: true,
-    badge: "🟢 Gratis · Muy estable",
-    docs: "api.together.ai",
-    hint: "Key gratuita: api.together.ai → Settings → API Keys - copia la key que empieza por letras/números (NO el código Python)",
-    link: "https://api.together.ai",
+    badge: "🟢 Gratis · Rápido",
+    docs: "cloud.cerebras.ai",
+    hint: "Key gratuita: cloud.cerebras.ai → API Keys → Create API Key",
+    link: "https://cloud.cerebras.ai",
     call: async (prompt, systemPrompt, apiKey) => {
       if (!apiKey)
         throw new Error(
-          "Together AI: API Key no configurada - obtenla gratis en api.together.ai → Settings → API Keys"
+          "Cerebras: API Key no configurada - obtenla gratis en cloud.cerebras.ai"
         );
-      // Modelos gratuitos verificados Together AI - marzo 2026
-      // NOTA: los sufijos -Free fueron deprecados; ahora el acceso free
-      // es por tier de cuenta, no por nombre de modelo
       const tryModels = [
-        "meta-llama/Llama-3.3-70B-Instruct-Turbo",
-        "meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo",
-        "meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo",
-        "mistralai/Mistral-7B-Instruct-v0.3",
-        "togethercomputer/llama-2-70b-chat",
+        "llama3.1-8b",
+        "llama-3.3-70b",
       ];
       let lastErr = null;
       for (const model of tryModels) {
         try {
           const res = await fetchWithTimeout(
-            "https://api.together.ai/v1/chat/completions",
+            "https://api.cerebras.ai/v1/chat/completions",
             {
               method: "POST",
               headers: {
@@ -213,11 +208,10 @@ export const AI_PROVIDERS = {
           if (!res.ok) {
             const errData = await res.json().catch(() => ({}));
             const msg = errData?.error?.message || res.statusText;
-            lastErr = new Error(`Together/${model} [${res.status}]: ${msg}`);
+            lastErr = new Error(`Cerebras/${model} [${res.status}]: ${msg}`);
             if (res.status === 401 || res.status === 403) {
-              // Key inválida - no tiene sentido seguir probando modelos
               throw new Error(
-                `Together AI [401]: API Key inválida. Ve a api.together.ai → Settings → API Keys y copia SOLO la key (texto largo, no el código Python).`
+                `Cerebras [401]: API Key inválida. Ve a cloud.cerebras.ai → API Keys para obtener una key gratuita.`
               );
             }
             continue;
@@ -225,11 +219,11 @@ export const AI_PROVIDERS = {
           const data = await res.json();
           const text = data.choices?.[0]?.message?.content;
           if (text?.trim().length > 5) return text.trim();
-          lastErr = new Error(`Together/${model}: respuesta vacía`);
+          lastErr = new Error(`Cerebras/${model}: respuesta vacía`);
         } catch (e) {
-          if (e.message?.includes("API Key inválida")) throw e; // re-throw 401 immediately
+          if (e.message?.includes("API Key inválida")) throw e;
           if (e.name === "AbortError") {
-            lastErr = new Error(`Together/${model}: timeout`);
+            lastErr = new Error(`Cerebras/${model}: timeout`);
             continue;
           }
           lastErr = e;
@@ -238,7 +232,7 @@ export const AI_PROVIDERS = {
       throw (
         lastErr ||
         new Error(
-          "Together AI: todos los modelos fallaron - renueva tu key en api.together.ai"
+          "Cerebras: todos los modelos fallaron - renueva tu key en cloud.cerebras.ai"
         )
       );
     },
@@ -256,9 +250,11 @@ export const AI_PROVIDERS = {
         throw new Error(
           "OpenRouter: API Key no configurada - obtenla gratis en openrouter.ai/keys"
         );
-      // Modelos free VERIFICADOS activos en OpenRouter - marzo 2026
-      // (si alguno da 404, el código pasa automáticamente al siguiente)
+      // COMMIT a85bcf0 + ffc12e6: modelos gratuitos actualizados julio 2026
+      // + prioriza Gemini al principio (mayor calidad)
       const tryModels = [
+        "google/gemini-2.5-flash-lite:free",
+        "google/gemini-2.5-pro:free",
         "openrouter/auto",
         "meta-llama/llama-3.3-70b-instruct:free",
         "deepseek/deepseek-r1-zero:free",
@@ -268,7 +264,6 @@ export const AI_PROVIDERS = {
         "qwen/qwen3-30b-a3b:free",
         "nvidia/llama-3.3-nemotron-super-49b-v1:free",
         "arcee-ai/arcee-blitz:free",
-        "google/gemini-2.5-pro-exp-03-25:free",
       ];
       let lastErr = null;
       for (const model of tryModels) {

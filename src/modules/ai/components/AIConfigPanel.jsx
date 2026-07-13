@@ -215,6 +215,8 @@ export const AIConfigPanel = ({ aiConfig, onSave, onClose }) => {
                 <div className="flex gap-1.5">
                   <input
                     type={showKey[k] ? 'text' : 'password'}
+                    autoComplete="new-password"
+                    name={`ai_key_${k}`}
                     placeholder={`API Key de ${info.label}...`}
                     value={cfg.keys?.[k] || ''}
                     onChange={(e) => setCfg((p) => ({ ...p, keys: { ...p.keys, [k]: e.target.value } }))}
