@@ -68,7 +68,8 @@ const conceptoBadge = (concepto) => {
  * @param {object} options - { width, height, landscape }
  */
 export function openPrintWindow(title, htmlContent, options = {}) {
-  const { width = 800, height = 900, landscape = false } = options;
+  // COMMIT ffc12e6: ZIP certificados a ancho completo
+  const { width = (typeof screen !== 'undefined' ? screen.availWidth || 1024 : 1024), height = 900, landscape = false } = options;
 
   const printStyles = `
     @page {
