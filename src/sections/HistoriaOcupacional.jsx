@@ -226,6 +226,7 @@ export default function HistoriaOcupacional({ ctx }) {
               <option value="ALTURAS">Trabajo en Alturas</option>
               <option value="ALIMENTOS">Manipulación de Alimentos</option>
               <option value="CONFINADOS">Espacios Confinados</option>
+              <option value="CONDUCCION">Conducción de Vehículos</option>
             </select>
           </div>
         </div>

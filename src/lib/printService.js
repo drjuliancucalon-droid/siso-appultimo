@@ -387,6 +387,26 @@ export function generateHCPrintHTML(data, doctorData, companyData, signatureData
       ${osteoExam.diagnosticoFuncional ? `<p><strong>Diagnóstico Funcional:</strong> ${s(osteoExam.diagnosticoFuncional)}</p>` : ''}
     </div>` : '';
 
+  // ── Énfasis: Conducción de Vehículos (F2-06, f4b4431) ──
+  const conducData = data.examenConduccion || {};
+  const manioC = data.maniobrasConduccion || {};
+  const labelsC = { resistenciaMonotonia: "Resistencia a la Monotonía", reaccionMultiple: "Reacción Múltiple", anticipacionVelocidad: "Anticipación de la Velocidad", coordinacionBimanual: "Coordinación Bimanual", reaccionFrenado: "Reacción al Frenado" };
+  const manioRows = Object.entries(labelsC).map(([k, l]) => ({ k, l, v: manioC[k] || {} }));
+  const hayConduccion = conducData.agudezaVisualLejana || conducData.agudezaVisualCercana || manioRows.some(r => r.v.estado);
+  const vehicle = (data.enfasisExamen === "CONDUCCION" && hayConduccion) ? `
+    <div class="section">
+      <h2>🚗 Énfasis: Conducción de Vehículos (Res. 217/2014)</h2>
+      <table>
+        <tr><td class="label" width="25%">Agudeza Visual Lejana</td><td>${s(conducData.agudezaVisualLejana)}</td><td class="label" width="25%">Agudeza Visual Cercana</td><td>${s(conducData.agudezaVisualCercana)}</td></tr>
+        <tr><td class="label">Campimetría (V/H)</td><td>${s(conducData.campimetria)}</td><td class="label">Discriminación de Colores</td><td>${s(conducData.discriminacionColores)}</td></tr>
+        <tr><td class="label">Visión de Profundidad</td><td>${s(conducData.visionProfundidad)}</td><td class="label">Audiometría</td><td>${s(conducData.audiometriaResultado)}</td></tr>
+        <tr><td class="label">Epilepsia/Síncope/Apnea</td><td>${s(conducData.antecedentesNeurologicos)}</td><td class="label">Consumo Alcohol/Psicoactivos</td><td>${s(conducData.consumoSustancias)}</td></tr>
+      </table>
+      ${conducData.valoracionPsicologica ? `<p><strong>Valoración Psicológica:</strong> ${s(conducData.valoracionPsicologica)}</p>` : ''}
+      ${manioRows.some(r => r.v.estado) ? `<h3>🧠 Evaluación Psicomotriz</h3><table><thead><tr><th>Prueba</th><th>Resultado</th><th>Detalle</th></tr></thead><tbody>${manioRows.map(r => `<tr><td>${r.l}</td><td style="color:${r.v.estado==='Bajo'?'#dc2626':r.v.estado==='Alto'?'#065f46':'#374151'}">${r.v.estado||'Medio'}</td><td>${s(r.v.hallazgo)}</td></tr>`).join('')}</tbody></table>` : ''}
+      ${conducData.observaciones ? `<p><strong>Observaciones:</strong> ${s(conducData.observaciones)}</p>` : ''}
+    </div>` : '';
+
   // ── Revisión por Sistemas ──
   const revSistemas = data.revisionSistemas || data.revisionPorSistemas;
   const reviewSystems = revSistemas ? `
@@ -484,7 +504,7 @@ export function generateHCPrintHTML(data, doctorData, companyData, signatureData
     header, identification, labor, cargoProfile, riskFactors,
     occupationalHistory, antPersonales, estilos, motivo,
     vitals, physicalExam, exSegmentario,
-    musculoskeletal, reviewSystems, paraclinical,
+    musculoskeletal, vehicle, reviewSystems, paraclinical,
     analysis, diagnoses, concept, restrictions, recommendations,
     sveSection, signature,
   ].join('\n');
