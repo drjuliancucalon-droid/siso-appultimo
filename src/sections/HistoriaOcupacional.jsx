@@ -1977,6 +1977,78 @@ export default function HistoriaOcupacional({ ctx }) {
             </div>
           </div>
         )}
+        {/* F2-02: Énfasis Conducción de Vehículos (Res. 217/2014) */}
+        {data.enfasisExamen === "CONDUCCION" && (
+          <div className="mt-2 border-2 border-blue-400 p-2 rounded-xl animate-fade-in mb-2">
+            <h3 className="font-black text-blue-800 text-xs mb-1 uppercase text-center">Énfasis: Conducción de Vehículos (Res. 217/2014)</h3>
+            <p className="text-[9px] text-blue-600 text-center mb-2">Aptitud visual, auditiva, psicomotriz y psicológica para conducción de vehículos en misión laboral</p>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-xs mb-2">
+              {[{ k: "agudezaVisualLejana", l: "Agudeza Visual Lejana", t: "texto", ph: "Ej: 20/20 AO" },
+                { k: "agudezaVisualCercana", l: "Agudeza Visual Cercana", t: "texto", ph: "Ej: 20/20 AO" },
+                { k: "campimetria", l: "Campimetría (V/H)", t: "texto", ph: "Ej: >70° / >120°" },
+                { k: "discriminacionColores", l: "Discriminación de Colores", t: "radio", opts: ["Normal", "Alterada"] },
+                { k: "visionProfundidad", l: "Visión de Profundidad", t: "radio", opts: ["Normal", "Alterada"] },
+                { k: "audiometriaResultado", l: "Audiometría", t: "radio", opts: ["Normal", "Hipoacusia Leve", "Hipoacusia Moderada", "Hipoacusia Severa"] },
+                { k: "antecedentesNeurologicos", l: "Epilepsia/Síncope/Apnea", t: "radio", opts: ["Niega", "Refiere"] },
+                { k: "consumoSustancias", l: "Consumo Alcohol/Psicoactivos", t: "radio", opts: ["Niega", "Refiere"] }
+              ].map((f) => (
+                <div key={f.k} className="bg-white p-2 rounded border border-blue-100">
+                  <p className="font-bold text-[10px] mb-1">{f.l}</p>
+                  {f.t === "texto" ? (
+                    <input className="w-full text-xs p-1 border border-blue-200 rounded outline-none" placeholder={f.ph}
+                      value={data.examenConduccion?.[f.k] || ""}
+                      onChange={(e) => setData((p) => ({ ...p, examenConduccion: { ...p.examenConduccion, [f.k]: e.target.value } }))} />
+                  ) : (
+                    <div className="flex flex-wrap gap-2">
+                      {f.opts.map((o) => (
+                        <label key={o} className={`cursor-pointer text-[10px] ${o === "Alterada" || o === "Refiere" || o.startsWith("Hipoacusia") ? "text-red-600" : "text-gray-700"}`}>
+                          <input type="radio" checked={(data.examenConduccion?.[f.k] || f.opts[0]) === o}
+                            onChange={() => setData((p) => ({ ...p, examenConduccion: { ...p.examenConduccion, [f.k]: o } }))} className="mr-1" /> {o}
+                        </label>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+            <p className="text-[9px] font-black text-blue-700 mb-1">EVALUACIÓN PSICOMOTRIZ (pruebas de tiempos de reacción y coordinación)</p>
+            <p className="text-[8px] text-gray-400 mb-1">Bajo = desempeño deficiente · Medio = aceptable/normal · Alto = alto rendimiento</p>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-xs mb-2">
+              {[{ k: "resistenciaMonotonia", l: "Resistencia a la Monotonía", d: "Tiempo reacción + errores" },
+                { k: "reaccionMultiple", l: "Reacción Múltiple", d: "Tiempo reacción + errores" },
+                { k: "anticipacionVelocidad", l: "Anticipación de la Velocidad", d: "% de desviación" },
+                { k: "coordinacionBimanual", l: "Coordinación Bimanual", d: "Tiempo total error + errores" },
+                { k: "reaccionFrenado", l: "Reacción al Frenado", d: "Tiempo medio reacción" }
+              ].map((f) => (
+                <div key={f.k} className="bg-white p-1.5 rounded border border-blue-100">
+                  <p className="font-bold text-[10px]">{f.l}</p><p className="text-[9px] text-gray-400 mb-1">{f.d}</p>
+                  <div className="flex gap-2 mb-1">
+                    {["Bajo", "Medio", "Alto"].map((o) => (
+                      <label key={o} className={`cursor-pointer text-[9px] ${o === "Bajo" ? "text-red-600" : o === "Alto" ? "text-emerald-700" : "text-gray-600"}`}>
+                        <input type="radio" checked={(data.maniobrasConduccion?.[f.k]?.estado || "Medio") === o}
+                          onChange={() => setData((p) => ({ ...p, maniobrasConduccion: { ...p.maniobrasConduccion, [f.k]: { ...p.maniobrasConduccion?.[f.k], estado: o } } }))} className="mr-0.5" /> {o}
+                      </label>
+                    ))}
+                  </div>
+                  <input className="w-full text-[9px] p-1 border border-blue-100 rounded outline-none" placeholder="Detalle (ej: 33 ms, 0 errores)"
+                    value={data.maniobrasConduccion?.[f.k]?.hallazgo || ""}
+                    onChange={(e) => setData((p) => ({ ...p, maniobrasConduccion: { ...p.maniobrasConduccion, [f.k]: { ...p.maniobrasConduccion?.[f.k], hallazgo: e.target.value } } }))} />
+                </div>
+              ))}
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div><p className="text-[9px] font-black text-blue-700 mb-1">VALORACIÓN PSICOLÓGICA GENERAL</p>
+                <textarea rows={2} value={data.examenConduccion?.valoracionPsicologica || ""}
+                  onChange={(e) => setData((p) => ({ ...p, examenConduccion: { ...p.examenConduccion, valoracionPsicologica: e.target.value } }))}
+                  className="w-full text-xs p-1 border border-blue-200 rounded outline-none resize-none" placeholder="Orientación, fluidez verbal, comprensión de instrucciones..." /></div>
+              <div><p className="text-[9px] font-black text-blue-700 mb-1">OBSERVACIONES / RESTRICCIONES</p>
+                <textarea rows={2} value={data.examenConduccion?.observaciones || ""}
+                  onChange={(e) => setData((p) => ({ ...p, examenConduccion: { ...p.examenConduccion, observaciones: e.target.value } }))}
+                  className="w-full text-xs p-1 border border-blue-200 rounded outline-none resize-none" placeholder="Ej: Control auditivo anual. Restricción para conducción nocturna..." /></div>
+            </div>
+          </div>
+        )}
+
         {/* Concepto y Recomendaciones */}
         <div className="print-section-break" />
         <SectionTitle
