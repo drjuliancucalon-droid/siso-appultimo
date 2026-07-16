@@ -1040,3 +1040,322 @@ export const _openPrintRecetaDeriv = (section, titleDoc, data, doctor, signature
   w.document.close();
   w.focus();
 };
+
+// ═══════════════════════════════════════════════════════════════════════════
+// F0-07: _portalPrint — Imprime documentos desde el portal (receta, derivación, exámenes, incapacidad)
+// F0-08: _generarCertificadoDesdePortal — Certificado de aptitud laboral para portal empresa/trabajador
+// F0-09: _generarHCPortalHTML — Historia Clínica completa en HTML para portal (18 secciones)
+// F0-10: _generarCuentaCobroHTML — Cuenta de cobro con tabla de items facturables
+// F0-11: _generarCartaCustodiaHTML — Carta custodia (Res. 1995/1999)
+// ═══════════════════════════════════════════════════════════════════════════
+
+const _BASE_PORTAL_STYLE = `
+  @page { size: A4; margin: 15mm; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; font-size: 10pt; color: #1a1a2e; line-height: 1.5; }
+  .header { text-align: center; border-bottom: 2px solid #059669; padding-bottom: 10px; margin-bottom: 15px; }
+  .header h1 { color: #059669; font-size: 16pt; margin: 0 0 4px; }
+  .header p { color: #666; font-size: 8pt; margin: 2px 0; }
+  .section-title { font-size: 11pt; font-weight: 900; color: #059669; border-bottom: 1px solid #059669; margin: 12px 0 6px; padding-bottom: 2px; text-transform: uppercase; }
+  .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 10px; }
+  .info-item { border: 1px solid #e5e7eb; padding: 6px 8px; border-radius: 4px; }
+  .info-item label { display: block; color: #666; font-size: 7pt; font-weight: 700; text-transform: uppercase; }
+  .info-item span { display: block; color: #111; font-size: 9pt; margin-top: 1px; }
+  .badge-green { background: #d1fae5; color: #065f46; padding: 2px 8px; border-radius: 8px; font-weight: 700; font-size: 8pt; }
+  .badge-yellow { background: #fef3c7; color: #92400e; padding: 2px 8px; border-radius: 8px; font-weight: 700; font-size: 8pt; }
+  .badge-red { background: #fee2e2; color: #991b1b; padding: 2px 8px; border-radius: 8px; font-weight: 700; font-size: 8pt; }
+  table { width: 100%; border-collapse: collapse; margin: 8px 0; }
+  table th { background: #f9fafb; text-align: left; padding: 5px; border: 1px solid #e5e7eb; font-size: 7pt; text-transform: uppercase; color: #666; }
+  table td { padding: 4px 5px; border: 1px solid #e5e7eb; font-size: 8pt; }
+  .firma { margin-top: 30px; text-align: center; border-top: 1px solid #ccc; padding-top: 12px; }
+  .firma img { max-width: 140px; max-height: 55px; }
+  .total-row { font-weight: 900; background: #f0fdf4; }
+  .qr-box { text-align: center; margin: 10px 0; }
+  @media print { .no-print { display: none !important; } }
+`;
+
+function _openPortalPrintWindow(title, bodyHtml) {
+  const html = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>${_sanitize(title)}</title><style>${_BASE_PORTAL_STYLE}</style></head><body>${bodyHtml}</body></html>`;
+  const w = window.open('', '_blank', 'width=920,height=1150');
+  if (!w) { alert('Permita los popups para imprimir este documento.'); return; }
+  w.document.write(html);
+  w.document.close();
+  w.focus();
+}
+
+// ── F0-07: _portalPrint — Imprime documentos desde portal (receta, derivación, exámenes, incapacidad) ──
+export function _portalPrint(doc, doctorData) {
+  if (!doc) return;
+  const nombre = _sanitize(doc.nombres || doc.nombre || 'Paciente');
+
+  let body = `<div class="header"><h1>${_sanitize(doc.titulo || 'Documento Médico')}</h1><p>${_sanitize(doctorData?.nombre || '')} — ${_sanitize(doctorData?.licencia || '')}</p></div>`;
+
+  // Datos paciente
+  body += `<div class="info-grid">
+    <div class="info-item"><label>Paciente</label><span>${nombre}</span></div>
+    <div class="info-item"><label>Documento</label><span>${_sanitize(doc.docTipo || 'CC')} ${_sanitize(doc.docNumero || '—')}</span></div>
+    <div class="info-item"><label>Empresa</label><span>${_sanitize(doc.empresaNombre || '—')}</span></div>
+    <div class="info-item"><label>Fecha</label><span>${_sanitize(doc.fechaExamen || doc.fecha || '—')}</span></div>
+  </div>`;
+
+  // Receta / Fórmula médica
+  if (doc.formulaMedicamentos?.length) {
+    body += `<div class="section-title">💊 Fórmula Médica</div><table><thead><tr><th>Medicamento</th><th>Dosis</th><th>Frecuencia</th><th>Duración</th></tr></thead><tbody>${
+      doc.formulaMedicamentos.map(m => `<tr><td>${_sanitize(m.nombre || m.medicamento || '—')}</td><td>${_sanitize(m.dosis || '—')}</td><td>${_sanitize(m.frecuencia || '—')}</td><td>${_sanitize(m.duracion || '—')}</td></tr>`).join('')
+    }</tbody></table>`;
+  }
+
+  // Derivaciones
+  if (doc.derivaciones?.length) {
+    body += `<div class="section-title">🏥 Derivaciones / Interconsultas</div><table><thead><tr><th>Especialidad</th><th>Motivo</th><th>Prioridad</th></tr></thead><tbody>${
+      doc.derivaciones.map(d => `<tr><td>${_sanitize(d.especialidad || '—')}</td><td>${_sanitize(d.motivo || '—')}</td><td>${_sanitize(d.prioridad || 'Normal')}</td></tr>`).join('')
+    }</tbody></table>`;
+  }
+
+  // Solicitud de exámenes
+  if (doc.solicitudExamenes?.length) {
+    body += `<div class="section-title">🧪 Solicitud de Exámenes</div><table><thead><tr><th>Examen</th><th>Justificación</th></tr></thead><tbody>${
+      doc.solicitudExamenes.map(e => `<tr><td>${_sanitize(e.nombre || e.examen || '—')}</td><td>${_sanitize(e.justificacion || e.diagnostico || '—')}</td></tr>`).join('')
+    }</tbody></table>`;
+  }
+
+  // Incapacidad
+  if (doc.incapacidad?.dias || doc.diasIncapacidad) {
+    const dias = doc.incapacidad?.dias || doc.diasIncapacidad || 0;
+    body += `<div class="section-title">⚠️ Incapacidad Médica</div>
+    <div style="text-align:center;background:#fee2e2;border-radius:6px;padding:10px;margin:8px 0;">
+      <p style="font-size:20pt;font-weight:900;color:#dc2626;margin:0;">${dias} DÍAS</p>
+      <p style="font-size:8pt;color:#991b1b;">Desde: ${_sanitize(doc.incapacidad?.desde || doc.fechaExamen || '—')}</p>
+    </div>`;
+  }
+
+  // QR de verificación
+  if (doc.codigoVerificacion) {
+    body += `<div class="qr-box"><p style="font-size:8pt;color:#666;">Código de verificación: <strong>${_sanitize(doc.codigoVerificacion)}</strong></p></div>`;
+  }
+
+  // Firma
+  body += `<div class="firma"><p>${_sanitize(doctorData?.nombre || 'Médico Tratante')}</p><p style="font-size:7pt;color:#666;">${_sanitize(doctorData?.licencia || '')}</p></div>`;
+
+  _openPortalPrintWindow(`${nombre} — Documentos Médicos`, body);
+}
+
+// ── F0-08: _generarCertificadoDesdePortal — Certificado aptitud laboral para portal ──
+export function _generarCertificadoDesdePortal(portalData, doctorData) {
+  if (!portalData) return;
+  const nombre = _sanitize(portalData.nombres || 'Paciente');
+  const concepto = portalData.conceptoAptitud || 'PENDIENTE';
+  const conceptoColor = concepto.toLowerCase().includes('apto') && !concepto.toLowerCase().includes('no apto') && !concepto.toLowerCase().includes('restricc')
+    ? 'badge-green' : concepto.toLowerCase().includes('restricc') ? 'badge-yellow' : 'badge-red';
+
+  const body = `<div class="header">
+    <h1>CERTIFICADO DE APTITUD LABORAL</h1>
+    <p>Res. 1843/2025 — ${_sanitize(doctorData?.nombre || '')} — ${_sanitize(doctorData?.licencia || '')}</p>
+  </div>
+  <div class="info-grid">
+    <div class="info-item"><label>Paciente</label><span>${nombre}</span></div>
+    <div class="info-item"><label>Documento</label><span>${_sanitize(portalData.docTipo || 'CC')} ${_sanitize(portalData.docNumero || '—')}</span></div>
+    <div class="info-item"><label>Empresa</label><span>${_sanitize(portalData.empresaNombre || '—')}</span></div>
+    <div class="info-item"><label>NIT</label><span>${_sanitize(portalData.empresaNit || '—')}</span></div>
+    <div class="info-item"><label>Cargo</label><span>${_sanitize(portalData.cargo || '—')}</span></div>
+    <div class="info-item"><label>ARL</label><span>${_sanitize(portalData.arl || '—')}</span></div>
+    <div class="info-item"><label>EPS</label><span>${_sanitize(portalData.eps || '—')}</span></div>
+    <div class="info-item"><label>Énfasis</label><span>${_sanitize(portalData.enfasisExamen || 'GENERAL')}</span></div>
+    <div class="info-item"><label>Tipo Examen</label><span>${_sanitize(portalData.tipoExamen || '—')}</span></div>
+    <div class="info-item"><label>Fecha Examen</label><span>${_sanitize(portalData.fechaExamen || '—')}</span></div>
+    <div class="info-item"><label>Vigencia</label><span>${_sanitize(portalData.vigencia || '1 año')}</span></div>
+    <div class="info-item"><label>Diagnóstico</label><span>${_sanitize(portalData.diagnosticoPrincipal || 'Z10.0 — EXAMEN MÉDICO OCUPACIONAL')}</span></div>
+  </div>
+  <div style="text-align:center;margin:15px 0;padding:10px;border:2px solid #059669;border-radius:8px;">
+    <p style="font-size:7pt;color:#666;text-transform:uppercase;margin:0;">Concepto Emitido</p>
+    <p style="font-size:16pt;font-weight:900;color:#065f46;margin:4px 0;text-transform:uppercase;">${concepto}</p>
+    <span class="${conceptoColor}">${concepto.toUpperCase()}</span>
+    ${portalData.vigencia ? `<p style="font-size:8pt;color:#666;margin-top:4px;">Vigencia: ${_sanitize(portalData.vigencia)}</p>` : ''}
+  </div>
+  ${portalData.restricciones ? `<div class="section-title">Restricciones Laborales</div><p style="font-size:9pt;color:#991b1b;font-weight:700;">${_sanitize(portalData.restricciones)}</p>` : ''}
+  ${portalData.recomendaciones ? `<div class="section-title">Recomendaciones</div><p style="font-size:9pt;">${_sanitize(portalData.recomendaciones)}</p>` : ''}
+  ${portalData.codigoVerificacion ? `<div class="qr-box"><p style="font-size:8pt;color:#666;">Código: <strong>${_sanitize(portalData.codigoVerificacion)}</strong></p></div>` : ''}
+  <div class="firma"><p>${_sanitize(doctorData?.nombre || portalData.medicoNombre || 'Médico Evaluador')}</p><p style="font-size:7pt;color:#666;">${_sanitize(doctorData?.licencia || '')}</p></div>`;
+
+  _openPortalPrintWindow(`Certificado — ${nombre}`, body);
+}
+
+// ── F0-09: _generarHCPortalHTML — Historia Clínica completa para portal (18 secciones) ──
+export function _generarHCPortalHTML(hcData, doctorData) {
+  if (!hcData) return '';
+  const d = hcData;
+  const nombre = _sanitize(d.nombres || 'Paciente');
+
+  let body = `<div class="header"><h1>HISTORIA CLÍNICA OCUPACIONAL</h1><p>FOR-SST-001 v4.0 — ${_sanitize(doctorData?.nombre || '')}</p></div>`;
+
+  // 1. Identificación del paciente
+  body += `<div class="section-title">1. Identificación del Paciente</div>
+  <div class="info-grid">
+    <div class="info-item"><label>Nombre</label><span>${nombre}</span></div>
+    <div class="info-item"><label>Documento</label><span>${_sanitize(d.docTipo || 'CC')} ${_sanitize(d.docNumero || '—')}</span></div>
+    <div class="info-item"><label>Edad</label><span>${_sanitize(d.edad || '—')} años</span></div>
+    <div class="info-item"><label>Género</label><span>${_sanitize(d.genero || '—')}</span></div>
+    <div class="info-item"><label>Estado Civil</label><span>${_sanitize(d.estadoCivil || '—')}</span></div>
+    <div class="info-item"><label>Escolaridad</label><span>${_sanitize(d.escolaridad || '—')}</span></div>
+    <div class="info-item"><label>EPS</label><span>${_sanitize(d.eps || '—')}</span></div>
+    <div class="info-item"><label>ARL</label><span>${_sanitize(d.arl || '—')}</span></div>
+    <div class="info-item"><label>AFP</label><span>${_sanitize(d.afp || '—')}</span></div>
+    <div class="info-item"><label>Grupo Sanguíneo</label><span>${_sanitize(d.grupoSanguineo || '—')}</span></div>
+  </div>`;
+
+  // 2. Datos laborales
+  body += `<div class="section-title">2. Datos Laborales</div>
+  <div class="info-grid">
+    <div class="info-item"><label>Empresa</label><span>${_sanitize(d.empresaNombre || '—')}</span></div>
+    <div class="info-item"><label>NIT</label><span>${_sanitize(d.empresaNit || '—')}</span></div>
+    <div class="info-item"><label>Cargo</label><span>${_sanitize(d.cargo || '—')}</span></div>
+    <div class="info-item"><label>Tipo Contrato</label><span>${_sanitize(d.tipoContrato || '—')}</span></div>
+    <div class="info-item"><label>Tipo Examen</label><span>${_sanitize(d.tipoExamen || '—')}</span></div>
+    <div class="info-item"><label>Énfasis</label><span>${_sanitize(d.enfasisExamen || 'GENERAL')}</span></div>
+  </div>`;
+
+  // 3. Signos vitales
+  body += `<div class="section-title">3. Signos Vitales</div>
+  <div class="info-grid">
+    <div class="info-item"><label>TA</label><span>${_sanitize(d.ta || '—')}</span></div>
+    <div class="info-item"><label>FC</label><span>${_sanitize(d.fc || '—')}</span></div>
+    <div class="info-item"><label>FR</label><span>${_sanitize(d.fr || '—')}</span></div>
+    <div class="info-item"><label>Temperatura</label><span>${_sanitize(d.temp || '—')}°C</span></div>
+    <div class="info-item"><label>Peso</label><span>${_sanitize(d.peso || '—')} kg</span></div>
+    <div class="info-item"><label>Talla</label><span>${_sanitize(d.talla || '—')} cm</span></div>
+    <div class="info-item"><label>IMC</label><span>${_sanitize(d.imc || '—')}</span></div>
+  </div>`;
+
+  // 4. Antecedentes
+  body += `<div class="section-title">4. Antecedentes</div>`;
+  ['patologicos', 'quirurgicos', 'traumaticos', 'farmacologicos', 'alergicos'].forEach(cat => {
+    const items = d.antecedentesAgrupados?.[cat];
+    if (items?.length) body += `<p style="font-size:9pt;margin:4px 0;"><strong>${cat.toUpperCase()}:</strong> ${items.map(i => _sanitize(i.nombre || i)).join(', ')}</p>`;
+  });
+
+  // 5. Hábitos
+  body += `<div class="section-title">5. Hábitos</div>`;
+  ['fuma', 'alcohol', 'psicoactivas', 'deporte'].forEach(h => {
+    const hab = d.habitos?.[h];
+    if (hab?.activo) body += `<p style="font-size:9pt;margin:2px 0;">• ${h}: ${_sanitize(hab.cantidad || 'Sí')} ${hab.frecuencia ? `(${_sanitize(hab.frecuencia)})` : ''}</p>`;
+  });
+
+  // 6. Examen físico general
+  body += `<div class="section-title">6. Examen Físico General</div><p style="font-size:9pt;font-style:italic;color:#666;">${_sanitize(d.examenFisicoGeneral || d.examenFisico || 'Sin hallazgos patológicos.')}</p>`;
+
+  // 7. Diagnóstico
+  body += `<div class="section-title">7. Diagnóstico</div>
+  <p style="font-size:9pt;"><strong>Principal:</strong> ${_sanitize(d.diagnosticoPrincipal || 'Z10.0 — EXAMEN MÉDICO OCUPACIONAL')}</p>`;
+  if (d.diagnosticoSecundario1) body += `<p style="font-size:9pt;"><strong>Secundario 1:</strong> ${_sanitize(d.diagnosticoSecundario1)}</p>`;
+  if (d.diagnosticoSecundario2) body += `<p style="font-size:9pt;"><strong>Secundario 2:</strong> ${_sanitize(d.diagnosticoSecundario2)}</p>`;
+
+  // 8. Concepto de aptitud
+  body += `<div class="section-title">8. Concepto de Aptitud</div>
+  <p style="font-size:11pt;font-weight:900;text-transform:uppercase;color:#065f46;">${_sanitize(d.conceptoAptitud || 'PENDIENTE')}</p>
+  ${d.vigencia ? `<p style="font-size:9pt;"><strong>Vigencia:</strong> ${_sanitize(d.vigencia)}</p>` : ''}`;
+
+  // 9. Restricciones
+  if (d.analisisRestricciones || d.restricciones) {
+    body += `<div class="section-title">9. Restricciones Laborales</div><p style="font-size:9pt;color:#991b1b;font-weight:700;">${_sanitize(d.analisisRestricciones || d.restricciones)}</p>`;
+  }
+
+  // 10. Recomendaciones
+  if (d.recomendaciones) {
+    body += `<div class="section-title">10. Recomendaciones</div><p style="font-size:9pt;">${_sanitize(d.recomendaciones)}</p>`;
+  }
+
+  // 11. Fórmula médica
+  if (d.formulaMedicamentos?.length) {
+    body += `<div class="section-title">11. Fórmula Médica</div><table><thead><tr><th>Medicamento</th><th>Dosis</th><th>Frecuencia</th><th>Duración</th></tr></thead><tbody>${
+      d.formulaMedicamentos.map(m => `<tr><td>${_sanitize(m.nombre || m.medicamento || '—')}</td><td>${_sanitize(m.dosis || '—')}</td><td>${_sanitize(m.frecuencia || '—')}</td><td>${_sanitize(m.duracion || '—')}</td></tr>`).join('')
+    }</tbody></table>`;
+  }
+
+  // 12. Derivaciones
+  if (d.derivaciones?.length) {
+    body += `<div class="section-title">12. Derivaciones</div><table><thead><tr><th>Especialidad</th><th>Motivo</th><th>Prioridad</th></tr></thead><tbody>${
+      d.derivaciones.map(dv => `<tr><td>${_sanitize(dv.especialidad || '—')}</td><td>${_sanitize(dv.motivo || '—')}</td><td>${_sanitize(dv.prioridad || 'Normal')}</td></tr>`).join('')
+    }</tbody></table>`;
+  }
+
+  // 13. Fecha, firma, código
+  body += `<div class="section-title">13. Cierre y Verificación</div>
+  <div class="info-grid">
+    <div class="info-item"><label>Fecha Examen</label><span>${_sanitize(d.fechaExamen || '—')}</span></div>
+    <div class="info-item"><label>Estado</label><span>${_sanitize(d.estadoHistoria || '—')}</span></div>
+    <div class="info-item"><label>Código Verificación</label><span style="font-family:monospace;">${_sanitize(d.codigoVerificacion || '—')}</span></div>
+    <div class="info-item"><label>Médico</label><span>${_sanitize(d.medicoNombre || doctorData?.nombre || '—')}</span></div>
+  </div>
+  <div class="firma"><p>${_sanitize(doctorData?.nombre || d.medicoNombre || 'Médico Evaluador')}</p><p style="font-size:7pt;color:#666;">${_sanitize(doctorData?.licencia || '')}</p></div>`;
+
+  // Devolver HTML (para uso en composición de ZIP multi-documento)
+  if (typeof window !== 'undefined') {
+    _openPortalPrintWindow(`HC Completa — ${nombre}`, body);
+  }
+  return `<div class="wrapper">${body}</div>`;
+}
+
+// ── F0-10: _generarCuentaCobroHTML — Cuenta de cobro con tabla de items facturables ──
+export function _generarCuentaCobroHTML(billData, doctorData) {
+  if (!billData) return;
+  const nombre = _sanitize(billData.pacienteNombre || billData.nombres || 'Paciente');
+  const items = billData.items || [{ concepto: billData.concepto || 'Examen Médico Ocupacional', valor: Number(billData.monto || billData.valor || 0) }];
+  const total = items.reduce((sum, i) => sum + Number(i.valor || 0), 0);
+
+  const body = `<div class="header">
+    <h1>CUENTA DE COBRO</h1>
+    <p>${_sanitize(doctorData?.nombre || '')} — ${_sanitize(doctorData?.licencia || '')}</p>
+  </div>
+  <div class="info-grid">
+    <div class="info-item"><label>Paciente</label><span>${nombre}</span></div>
+    <div class="info-item"><label>Documento</label><span>${_sanitize(billData.docNumero || billData.pacienteDoc || '—')}</span></div>
+    <div class="info-item"><label>Empresa</label><span>${_sanitize(billData.empresaNombre || billData.empresa || '—')}</span></div>
+    <div class="info-item"><label>NIT Empresa</label><span>${_sanitize(billData.empresaNit || '—')}</span></div>
+    <div class="info-item"><label>Fecha</label><span>${_sanitize(billData.fecha || billData.fechaExamen || '—')}</span></div>
+    <div class="info-item"><label>Tipo Examen</label><span>${_sanitize(billData.tipoExamen || '—')}</span></div>
+  </div>
+  <table><thead><tr><th>Concepto</th><th style="text-align:right;">Valor</th></tr></thead><tbody>
+    ${items.map(i => `<tr><td>${_sanitize(i.concepto || '—')}</td><td style="text-align:right;">$${Number(i.valor || 0).toLocaleString('es-CO')}</td></tr>`).join('')}
+    <tr class="total-row"><td><strong>TOTAL</strong></td><td style="text-align:right;"><strong>$${total.toLocaleString('es-CO')}</strong></td></tr>
+  </tbody></table>
+  <div class="firma"><p>${_sanitize(doctorData?.nombre || 'Médico Tratante')}</p><p style="font-size:7pt;color:#666;">${_sanitize(doctorData?.licencia || '')}</p></div>`;
+
+  _openPortalPrintWindow(`Cuenta de Cobro — ${nombre}`, body);
+}
+
+// ── F0-11: _generarCartaCustodiaHTML — Carta custodia (Res. 1995/1999) ──
+export function _generarCartaCustodiaHTML(custodiaData, doctorData) {
+  if (!custodiaData) return;
+  const nombre = _sanitize(custodiaData.pacienteNombre || custodiaData.nombres || 'Paciente');
+  const hoy = new Date().toLocaleDateString('es-CO', { year: 'numeric', month: 'long', day: 'numeric' });
+
+  const body = `<div class="header">
+    <h1>CARTA DE CUSTODIA DE HISTORIA CLÍNICA</h1>
+    <p>Resolución 1995 de 1999 — Ministerio de Salud</p>
+  </div>
+  <div style="font-size:9pt;text-align:justify;margin:10px 0;">
+    <p>En cumplimiento de lo establecido en la Resolución 1995 de 1999 del Ministerio de Salud de Colombia, por medio de la presente se certifica que:</p>
+    <p>La <strong>HISTORIA CLÍNICA OCUPACIONAL</strong> del paciente <strong>${nombre}</strong>, identificado con ${_sanitize(custodiaData.docTipo || 'CC')} No. <strong>${_sanitize(custodiaData.docNumero || '—')}</strong>, se encuentra bajo custodia y conservación en el archivo clínico de esta Institución Prestadora de Servicios de Salud Ocupacional.</p>
+  </div>
+  <div class="info-grid">
+    <div class="info-item"><label>Paciente</label><span>${nombre}</span></div>
+    <div class="info-item"><label>Documento</label><span>${_sanitize(custodiaData.docTipo || 'CC')} ${_sanitize(custodiaData.docNumero || '—')}</span></div>
+    <div class="info-item"><label>Empresa</label><span>${_sanitize(custodiaData.empresaNombre || '—')}</span></div>
+    <div class="info-item"><label>Fecha Examen</label><span>${_sanitize(custodiaData.fechaExamen || '—')}</span></div>
+    <div class="info-item"><label>Fecha de Emisión</label><span>${hoy}</span></div>
+    <div class="info-item"><label>Código Verificación</label><span style="font-family:monospace;">${_sanitize(custodiaData.codigoVerificacion || '—')}</span></div>
+  </div>
+  <div style="font-size:8pt;color:#666;margin:15px 0;padding:10px;background:#f9fafb;border-radius:6px;">
+    <p><strong>Normatividad aplicable:</strong></p>
+    <ul style="margin:4px 0;padding-left:18px;">
+      <li>Resolución 1995 de 1999 — Custodia y conservación de Historia Clínica (mínimo 20 años)</li>
+      <li>Ley 23 de 1981 — Ética médica y confidencialidad</li>
+      <li>Ley 1581 de 2012 — Protección de Datos Personales (Habeas Data)</li>
+    </ul>
+  </div>
+  <div style="font-size:8pt;color:#666;margin:10px 0;">
+    <p>El tiempo de conservación de la Historia Clínica es de <strong>veinte (20) años</strong>, contados a partir de la fecha de la última atención, según lo dispuesto en el Artículo 15 de la Resolución 1995 de 1999 del Ministerio de Salud.</p>
+  </div>
+  <div class="firma"><p>${_sanitize(doctorData?.nombre || 'Médico Responsable')}</p><p style="font-size:7pt;color:#666;">${_sanitize(doctorData?.licencia || '')}</p></div>`;
+
+  _openPortalPrintWindow(`Carta Custodia — ${nombre}`, body);
+}

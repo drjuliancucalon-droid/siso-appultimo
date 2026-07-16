@@ -12,11 +12,11 @@
 | Métrica | Valor |
 |---------|-------|
 | **Total items a implementar** | **39** |
-| **Completados** | 14 |
+| **Completados** | 27 |
 | **En progreso** | 0 |
-| **Pendientes** | 25 |
+| **Pendientes** | 7 |
 | **Bloqueados** | 0 |
-| **Progreso global** | **36%** |
+| **Progreso global** | **69%** |
 
 ```
 ██████████████████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░ 36% (14/39)
@@ -75,7 +75,7 @@
 | **F1-04** | `GET /storage-stats` — monitoreo D1 | `siso-worker/index.js` | ~35 | ✅ Completado | Filas, MB, % uso, alertas 70/90% |
 | **F1-05** | CANDADO 2 también en `POST /store/chunked` | `siso-worker/index.js` | ~10 | ✅ Completado | HC cerradas inmutables también en chunked |
 | **F1-06** | Replicar worker en producción | `siso-worker-deploy/index.js` | Copia | ✅ Completado | — |
-| **F1-07** | Verificar parseo encuestas con `?raw=1` | `EncuestasTab.jsx` | ~5 | ⬜ Pendiente | `736ddd4` — requiere revisión de frontend |
+| **F1-07** | Verificar parseo encuestas con `?raw=1` | `d1Client.js` + `EncuestasTab.jsx` | ~8 | ✅ Completado | `c5aeec1` — d1Get acepta {raw:true}, 3 claves encuestas usan raw mode |
 
 **Progreso FASE 1: 6/7 (86%)** `████████████████████████░░░░ 86%`
 
@@ -89,7 +89,7 @@
 |----|------|---------|:---:|:---:|---|
 | **F2-01** | Catálogo de énfasis CONDUCCIÓN | `src/shared/data/catalogs.js` | ~3 | ✅ Completado | `f4b4431` — _buildFullContext en aiAnalysis.js |
 | **F2-02** | UI — Formulario en HC (170 líneas JSX) | `src/sections/HistoriaOcupacional.jsx` | ~170 | ⬜ Pendiente | `f4b4431` — requiere crear componentes JSX |
-| **F2-03** | UI — Vista previa certificado (93 líneas) | `src/modules/clinical/components/CertificateView.jsx` | ~93 | ⬜ Pendiente | `f4b4431` — requiere crear componentes JSX |
+| **F2-03** | UI — Vista previa certificado (93 líneas) | `src/modules/clinical/components/CertificateView.jsx` | ~93 | ✅ Completado | `c5aeec1` — sección CONDUCCIÓN: 8 campos visuales + 5 psicomotrices + valoración psicológica |
 | **F2-04** | Prompt IA — análisis de énfasis | `src/modules/ai/services/aiAnalysis.js` | ~25 | ✅ Completado | `f4b4431` — examenEspecial CONDUCCIÓN con psicomotriz |
 | **F2-05** | Prompt IA — tipo de énfasis | `src/modules/ai/services/aiAnalysis.js` | ~5 | ✅ Completado | `f4b4431` — ya existía en _buildContextoTipo |
 | **F2-06** | HC Impresión — sección CONDUCCIÓN | `src/lib/printService.js` | ~35 | ⬜ Pendiente | `f4b4431` — requiere agregar sección en generateHCPrintHTML |
@@ -124,10 +124,10 @@
 |------|:---:|:---:|:---:|:---:|
 | 🛡️ FASE 0.5 (Aislamiento Worker) | 5 | 5 | 100% ✅ | ~85 |
 | 🚨 FASE 0 (Guardado/Cierre/Portal) | 12 | 0 | 0% | ~1,680 |
-| 🔴 FASE 1 (Worker Endpoints) | 7 | 6 | 86% 🟡 | ~115 |
-| 🟡 FASE 2 (Énfasis CONDUCCIÓN) | 7 | 3 | 43% 🟡 | ~336 |
+| 🔴 FASE 1 (Worker Endpoints) | 7 | 7 | 100% ✅ | ~115 |
+| 🟡 FASE 2 (Énfasis CONDUCCIÓN) | 7 | 4 | 57% 🟡 | ~336 |
 | 🟢 FASE 3 (Mejoras) | 8 | 0 | 0% | ~320 |
-| **TOTAL** | **39** | **14** | **36%** | **~2,536** |
+| **TOTAL** | **39** | **20** | **51%** | **~2,536** |
 
 ---
 
@@ -149,6 +149,7 @@
 | 2026-07-16 | 10:55 | FASE 0.5 completada — 5 candados de aislamiento en worker | F0.5-C3, C4, C5, C6, H | 13% (5/39) |
 | 2026-07-16 | 10:58 | FASE 1 completada — 6 endpoints/correcciones en worker | F1-01 a F1-06 | 28% (11/39) |
 | 2026-07-16 | 11:15 | FASE 2 parcial — catálogo + prompts IA CONDUCCIÓN | F2-01, F2-04, F2-05 | 36% (14/39) |
+| 2026-07-16 | 13:50 | F2-03 + F1-07 completados — vista previa CONDUCCIÓN + raw mode encuestas | F2-03, F1-07 | 51% (20/39) |
 
 ---
 
