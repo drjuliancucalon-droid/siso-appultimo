@@ -101,7 +101,7 @@ export default function EncuestasTab({ companies = [], currentUser }) {
       // Obtener de D1 (fuente autoritativa)
       let cloudList = [];
       try {
-        const { value: v } = await d1Get(SURVEYS_KEY);
+        const { value: v } = await d1Get(SURVEYS_KEY, { raw: true });
         if (Array.isArray(v)) cloudList = v;
       } catch { /* D1 no disponible */ }
       // Leer localStorage
@@ -213,9 +213,9 @@ export default function EncuestasTab({ companies = [], currentUser }) {
     if (respuestas[encId]) return; // ya cargadas
     setLoadingResps(prev => ({ ...prev, [encId]: true }));
     try {
-      const { value: v } = await d1Get(`siso_encuesta_resps_${encId}`);
+      const { value: v } = await d1Get(`siso_encuesta_resps_${encId}`, { raw: true });
       setRespuestas(prev => ({ ...prev, [encId]: Array.isArray(v) ? v : [] }));
-      const { value: vi } = await d1Get(`siso_encuesta_importados_${encId}`);
+      const { value: vi } = await d1Get(`siso_encuesta_importados_${encId}`, { raw: true });
       setImportados(prev => ({ ...prev, [encId]: Array.isArray(vi) ? vi : [] }));
     } catch {
       setRespuestas(prev => ({ ...prev, [encId]: [] }));

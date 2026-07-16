@@ -217,19 +217,24 @@ async function _chunkSet(key, value) {
   return { ok: true, chunked: true, chunks: pieces.length };
 }
 
-async function _chunkGet(key, ts) {
+async function _chunkGet(key, ts, opts = {}) {
+  const rawParam = opts.raw ? '?raw=1' : '';
   const resp = await _retry(
     () =>
-      fetch(`${WORKER_URL}/store/${encodeURIComponent(key)}`, {
+      fetch(`${WORKER_URL}/store/${encodeURIComponent(key)}${rawParam}`, {
         method: 'GET',
         headers: _authHeaders(),
       }).then(_checkResponse),
-    `d1Get(${key})`
+    `d1Get(${key})${opts.raw ? ' raw' : ''}`
   );
 
   const rows = resp.json || (Array.isArray(resp) ? resp : []);
   const row = rows?.[0] || null;
-  const value = row?.value ?? null;
+  let value = row?.value ?? null;
+  // F1-07: si modo raw, el valor es string crudo → parsear en cliente
+  if (opts.raw && typeof value === 'string') {
+    try { value = JSON.parse(value); } catch { /* dejar como string */ }
+  }
 
   // ── Formato Platform A: manifest en la clave principal ──────────────
   if (value && typeof value === 'object' && value._chunked) {
@@ -333,15 +338,18 @@ async function _checkResponse(response) {
 // ── PUBLIC API ─────────────────────────────────────────────────────────
 
 /**
- * d1Get(key)
+ * d1Get(key, opts?)
  * GET /store/:key del Worker.
  * Devuelve { value, ts } donde ts es el timestamp para If-Match.
+ * opts.raw: si true, usa ?raw=1 para evitar JSON.parse en el worker
+ *           (reduce riesgo de 503 por CPU timeout en valores grandes).
  *
  * Ejemplo:
  *   const { value, ts } = await d1Get('siso_patients_drcucalon');
+ *   const { value } = await d1Get('siso_encuestas', { raw: true });
  */
-export async function d1Get(key) {
-  return _chunkGet(key);
+export async function d1Get(key, opts = {}) {
+  return _chunkGet(key, undefined, opts);
 }
 
 /**

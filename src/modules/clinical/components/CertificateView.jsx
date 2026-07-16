@@ -110,18 +110,20 @@ export const CertificateView = ({
         <div className="mb-4 border border-gray-300 rounded-xl overflow-hidden">
           <div className={
             'px-3 py-1.5 font-black text-xs uppercase ' +
-            (enf === 'ALTURAS' ? 'bg-sky-100 text-sky-800' :
-             enf === 'ALIMENTOS' ? 'bg-yellow-100 text-yellow-800' :
-             enf === 'CONFINADOS' ? 'bg-orange-100 text-orange-800' :
-             enf === 'OSTEOMUSCULAR' ? 'bg-violet-100 text-violet-800' :
-             'bg-rose-100 text-rose-800')
+             (enf === 'ALTURAS' ? 'bg-sky-100 text-sky-800' :
+              enf === 'ALIMENTOS' ? 'bg-yellow-100 text-yellow-800' :
+              enf === 'CONFINADOS' ? 'bg-orange-100 text-orange-800' :
+              enf === 'OSTEOMUSCULAR' ? 'bg-violet-100 text-violet-800' :
+              enf === 'CONDUCCION' ? 'bg-blue-100 text-blue-800' :
+              'bg-rose-100 text-rose-800')
           }>
             Hallazgos Examen Énfasis:{' '}
-            {enf === 'ALTURAS' ? 'Trabajo en Alturas (Res. 4272/2021)' :
-             enf === 'ALIMENTOS' ? 'Manipulación de Alimentos (Res. 2674/2013)' :
-             enf === 'CONFINADOS' ? 'Espacios Confinados (Res. 0491/2020)' :
-             enf === 'OSTEOMUSCULAR' ? 'Osteomuscular (Res. 2404/2019)' :
-             'Cardiovascular (Res. 1843/2025)'}
+             {enf === 'ALTURAS' ? 'Trabajo en Alturas (Res. 4272/2021)' :
+              enf === 'ALIMENTOS' ? 'Manipulación de Alimentos (Res. 2674/2013)' :
+              enf === 'CONFINADOS' ? 'Espacios Confinados (Res. 0491/2020)' :
+              enf === 'OSTEOMUSCULAR' ? 'Osteomuscular (Res. 2404/2019)' :
+              enf === 'CONDUCCION' ? 'Conducción de Vehículos (Res. 217/2014)' :
+              'Cardiovascular (Res. 1843/2025)'}
           </div>
           <div className="p-3 grid grid-cols-2 gap-x-4 gap-y-0 text-[10px]">
             {/* ── Alturas ──────────────────────────────────────── */}
@@ -196,35 +198,81 @@ export const CertificateView = ({
                 )}
               </>
             )}
-            {/* ── Cardiovascular ────────────────────────────────── */}
-            {enf === 'CORAZON' && (
-              <>
-                <div className={rowCls}><span className="text-gray-500">Frecuencia Cardiaca</span><span className={badNorm(data.examenCorazon?.frecuenciaCardiaca)}>{data.examenCorazon?.frecuenciaCardiaca || '--'}</span></div>
-                <div className={rowCls}><span className="text-gray-500">Presión Arterial</span><span className={badNorm(data.examenCorazon?.presionArterial)}>{data.examenCorazon?.presionArterial || '--'}</span></div>
-                <div className={rowCls}><span className="text-gray-500">Ritmo y Tonos</span><span className={badNorm(data.examenCorazon?.ritmoyTonos)}>{data.examenCorazon?.ritmoyTonos || '--'}</span></div>
-                <div className={rowCls}><span className="text-gray-500">Pulsos Periféricos</span><span className={badNorm(data.examenCorazon?.pulsos)}>{data.examenCorazon?.pulsos || '--'}</span></div>
-                <div className={rowCls}><span className="text-gray-500">Edemas</span><span className={badNorm(data.examenCorazon?.edemas, 'Ausente')}>{data.examenCorazon?.edemas || '--'}</span></div>
-                <div className={rowCls}><span className="text-gray-500">Perfusión Periférica</span><span className={badNorm(data.examenCorazon?.perfusionPeriferica)}>{data.examenCorazon?.perfusionPeriferica || '--'}</span></div>
-                {data.examenCorazon?.signosVitales && (
-                  <div className="col-span-2 mt-1 text-gray-700"><span className="font-bold">Signos vitales: </span>{data.examenCorazon.signosVitales}</div>
-                )}
-                {data.examenCorazon?.imc && (
-                  <div className="col-span-2 text-gray-700"><span className="font-bold">Antropometría: </span>{data.examenCorazon.imc}</div>
-                )}
-                {data.examenCorazon?.riesgoCV && (
-                  <div className="col-span-2 text-gray-700"><span className="font-bold">Riesgo cardiovascular: </span>{data.examenCorazon.riesgoCV}</div>
-                )}
-                {data.examenCorazon?.hallazgos && (
-                  <div className="col-span-2 mt-1 text-gray-600 italic">{data.examenCorazon.hallazgos}</div>
-                )}
-                {data.examenCorazon?.restricciones && (
-                  <div className="col-span-2 font-bold text-gray-700">{data.examenCorazon.restricciones}</div>
-                )}
-              </>
-            )}
-          </div>
-        </div>
-      )}
+             {/* ── Cardiovascular ────────────────────────────────── */}
+             {enf === 'CORAZON' && (
+               <>
+                 <div className={rowCls}><span className="text-gray-500">Frecuencia Cardiaca</span><span className={badNorm(data.examenCorazon?.frecuenciaCardiaca)}>{data.examenCorazon?.frecuenciaCardiaca || '--'}</span></div>
+                 <div className={rowCls}><span className="text-gray-500">Presión Arterial</span><span className={badNorm(data.examenCorazon?.presionArterial)}>{data.examenCorazon?.presionArterial || '--'}</span></div>
+                 <div className={rowCls}><span className="text-gray-500">Ritmo y Tonos</span><span className={badNorm(data.examenCorazon?.ritmoyTonos)}>{data.examenCorazon?.ritmoyTonos || '--'}</span></div>
+                 <div className={rowCls}><span className="text-gray-500">Pulsos Periféricos</span><span className={badNorm(data.examenCorazon?.pulsos)}>{data.examenCorazon?.pulsos || '--'}</span></div>
+                 <div className={rowCls}><span className="text-gray-500">Edemas</span><span className={badNorm(data.examenCorazon?.edemas, 'Ausente')}>{data.examenCorazon?.edemas || '--'}</span></div>
+                 <div className={rowCls}><span className="text-gray-500">Perfusión Periférica</span><span className={badNorm(data.examenCorazon?.perfusionPeriferica)}>{data.examenCorazon?.perfusionPeriferica || '--'}</span></div>
+                 {data.examenCorazon?.signosVitales && (
+                   <div className="col-span-2 mt-1 text-gray-700"><span className="font-bold">Signos vitales: </span>{data.examenCorazon.signosVitales}</div>
+                 )}
+                 {data.examenCorazon?.imc && (
+                   <div className="col-span-2 text-gray-700"><span className="font-bold">Antropometría: </span>{data.examenCorazon.imc}</div>
+                 )}
+                 {data.examenCorazon?.riesgoCV && (
+                   <div className="col-span-2 text-gray-700"><span className="font-bold">Riesgo cardiovascular: </span>{data.examenCorazon.riesgoCV}</div>
+                 )}
+                 {data.examenCorazon?.hallazgos && (
+                   <div className="col-span-2 mt-1 text-gray-600 italic">{data.examenCorazon.hallazgos}</div>
+                 )}
+                 {data.examenCorazon?.restricciones && (
+                   <div className="col-span-2 font-bold text-gray-700">{data.examenCorazon.restricciones}</div>
+                 )}
+               </>
+             )}
+             {/* ── Conducción de Vehículos ─────────────────────────── */}
+             {enf === 'CONDUCCION' && (
+               <>
+                 <div className="col-span-2 mb-1"><span className="font-black text-xs text-blue-800">Examen Visual y Auditivo</span></div>
+                 <div className={rowCls}><span className="text-gray-500">Agudeza Visual Lejana</span><span className={badNorm(data.examenConduccion?.agudezaVisualLejana)}>{data.examenConduccion?.agudezaVisualLejana || '--'}</span></div>
+                 <div className={rowCls}><span className="text-gray-500">Agudeza Visual Cercana</span><span className={badNorm(data.examenConduccion?.agudezaVisualCercana)}>{data.examenConduccion?.agudezaVisualCercana || '--'}</span></div>
+                 <div className={rowCls}><span className="text-gray-500">Campimetría (V/H)</span><span className={badNorm(data.examenConduccion?.campimetria)}>{data.examenConduccion?.campimetria || '--'}</span></div>
+                 <div className={rowCls}><span className="text-gray-500">Discriminación Colores</span><span className={badNorm(data.examenConduccion?.discriminacionColores, 'Normal')}>{data.examenConduccion?.discriminacionColores || '--'}</span></div>
+                 <div className={rowCls}><span className="text-gray-500">Visión de Profundidad</span><span className={badNorm(data.examenConduccion?.visionProfundidad, 'Normal')}>{data.examenConduccion?.visionProfundidad || '--'}</span></div>
+                 <div className={rowCls}><span className="text-gray-500">Audiometría</span><span className={badNorm(data.examenConduccion?.audiometriaResultado, 'Normal')}>{data.examenConduccion?.audiometriaResultado || '--'}</span></div>
+                 <div className={rowCls}><span className="text-gray-500">Epilepsia/Síncope/Apnea</span><span className={badNorm(data.examenConduccion?.antecedentesNeurologicos, 'Niega')}>{data.examenConduccion?.antecedentesNeurologicos || '--'}</span></div>
+                 <div className={rowCls}><span className="text-gray-500">Consumo Alcohol/Psicoactivos</span><span className={badNorm(data.examenConduccion?.consumoSustancias, 'Niega')}>{data.examenConduccion?.consumoSustancias || '--'}</span></div>
+                 {data.maniobrasConduccion && (
+                   <>
+                     <div className="col-span-2 mt-2 mb-1"><span className="font-black text-xs text-blue-800">Evaluación Psicomotriz (Tiempos de Reacción)</span></div>
+                     {[{ k: 'resistenciaMonotonia', l: 'Resistencia a la Monotonía' },
+                       { k: 'reaccionMultiple', l: 'Reacción Múltiple' },
+                       { k: 'anticipacionVelocidad', l: 'Anticipación de la Velocidad' },
+                       { k: 'coordinacionBimanual', l: 'Coordinación Bimanual' },
+                       { k: 'reaccionFrenado', l: 'Reacción al Frenado' }
+                     ].map((m) => {
+                       const maniobra = data.maniobrasConduccion?.[m.k];
+                       const estado = maniobra?.estado || '--';
+                       return (
+                         <div key={m.k} className={rowCls}>
+                           <span className="text-gray-500">{m.l}</span>
+                           <span className={estado === 'Bajo' ? 'font-bold text-red-700' : estado === 'Alto' ? 'font-bold text-emerald-700' : 'text-gray-700'}>
+                             {estado}{maniobra?.hallazgo ? ` (${maniobra.hallazgo})` : ''}
+                           </span>
+                         </div>
+                       );
+                     })}
+                   </>
+                 )}
+                 {data.examenConduccion?.valoracionPsicologica && (
+                   <div className="col-span-2 mt-1 text-gray-600 italic">
+                     <span className="font-bold">Valoración Psicológica: </span>{data.examenConduccion.valoracionPsicologica}
+                   </div>
+                 )}
+                 {data.examenConduccion?.observaciones && (
+                   <div className="col-span-2 mt-1 text-gray-600 italic">
+                     <span className="font-bold">Observaciones: </span>{data.examenConduccion.observaciones}
+                   </div>
+                 )}
+               </>
+             )}
+           </div>
+         </div>
+       )}
 
       {/* ══════════════════════════════════════════════════════════ */}
       {/* CONCEPTO EMITIDO                                          */}
