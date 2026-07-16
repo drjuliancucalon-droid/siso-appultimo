@@ -75,14 +75,19 @@ export default {
     try {
       // ── GET /store/:key ──────────────────────────────────────────────
       // Devuelve también `ts` (updated_at) para soporte de If-Match en POST
+      // COMMIT 1bf1233 — modo ?raw=1 evita JSON.parse + 503 por CPU timeout
       if (request.method === "GET" && path.startsWith("/store/") && !path.startsWith("/store/prefix/")) {
         const key = decodeURIComponent(path.slice(7));
+        const rawMode = url.searchParams.get("raw") === "1";
         const row = await env.DB.prepare("SELECT value, updated_at FROM siso_store WHERE key = ?").bind(key).first();
         if (!row) return new Response(JSON.stringify([]), { headers });
-        const value = JSON.parse(row.value);
         const ts = row.updated_at;
-        // Exponer también el etag en header para uso fácil del cliente
         const respHeaders = { ...headers, "ETag": ts ? `"${ts}"` : '""', "X-Siso-Ts": ts || "" };
+        if (rawMode) {
+          // Modo raw: retorna value como string crudo sin JSON.parse
+          return new Response(JSON.stringify([{ key, value: row.value, ts }]), { headers: respHeaders });
+        }
+        const value = JSON.parse(row.value);
         return new Response(JSON.stringify([{ key, value, ts }]), { headers: respHeaders });
       }
 
@@ -203,13 +208,13 @@ export default {
       // almacenado, con la fusión hecha EN EL SERVIDOR (2026-07-09).
       // Evita la carrera read-modify-write de clientes concurrentes: varios
       // trabajadores enviando la encuesta a la vez se pisaban la respuesta.
+      // COMMIT 3531448 — fusión por ID para siso_encuestas (antes se reemplazaba completo)
       if (request.method === "POST" && path === "/store/append") {
         const body = await request.json();
         const { key, item, idField = "id" } = body;
         if (!key || !item) {
           return new Response(JSON.stringify({ error: "key e item requeridos" }), { status: 400, headers });
         }
-        // Leer array actual
         let arr = [];
         try {
           const row = await env.DB.prepare("SELECT value FROM siso_store WHERE key = ?").bind(key).first();
@@ -218,8 +223,10 @@ export default {
             if (Array.isArray(parsed)) arr = parsed;
           }
         } catch {}
-        const idVal = item[idField];
-        const idx = idVal != null ? arr.findIndex(x => x && String(x[idField]) === String(idVal)) : -1;
+        // F1-02: para siso_encuestas, usar doble ID (encuestaId + trabajadorId)
+        const effectiveIdField = key.includes('siso_encuesta') ? 'encuestaId' : idField;
+        const idVal = item[effectiveIdField];
+        const idx = idVal != null ? arr.findIndex(x => x && String(x[effectiveIdField]) === String(idVal)) : -1;
         if (idx >= 0) arr[idx] = item; else arr.push(item);
         const cv = await compressValue(JSON.stringify(arr));
         await env.DB.prepare(
@@ -230,6 +237,7 @@ export default {
 
       // ── POST /store/chunked — escritura atómica multi-chunk ────────────
       // COMMIT e7ed13a — candado anti-encogimiento server-side.
+      // F1-05: CANDADO 2 también aplica aquí (HC cerradas inmutables)
       // Body: { baseKey: string, pieces: string[], meta: object }
       // El worker:
       //   1. Borra todos los chunks viejos (baseKey__c0..cN, baseKey__meta)
@@ -304,6 +312,55 @@ export default {
           count: pieces.length,
           totalBytes,
           previousBytes: previousSize,
+        }), { headers });
+      }
+
+      // ── POST /cleanup — limpieza de emergencia ─────────────────────────
+      // F1-03: Borra snapshots viejos (>7d), chunks huérfanos, autosaves (>48h).
+      // Útil cuando D1 se llena y no se puede esperar al cron diario.
+      if (request.method === "POST" && path === "/cleanup") {
+        const snapCutoff = new Date(Date.now() - 7 * 86400000).toISOString().slice(0, 10);
+        const autoCutoff = new Date(Date.now() - 48 * 3600000).toISOString();
+        const snapDel = await env.DB.prepare(
+          "DELETE FROM siso_store WHERE key LIKE 'siso_snapshot_%' AND substr(key, 15, 10) < ?"
+        ).bind(snapCutoff).run();
+        const tmpDel = await env.DB.prepare(
+          "DELETE FROM siso_store WHERE key LIKE '%\\_\\_new%' ESCAPE '\\'"
+        ).run();
+        const autoDel = await env.DB.prepare(
+          "DELETE FROM siso_store WHERE key LIKE 'siso_autosave_cloud_%' AND updated_at < ?"
+        ).bind(autoCutoff).run();
+        return new Response(JSON.stringify({
+          ok: true,
+          snapshotsDeleted: snapDel.meta?.changes ?? 0,
+          tmpDeleted: tmpDel.meta?.changes ?? 0,
+          autosavesDeleted: autoDel.meta?.changes ?? 0,
+        }), { headers });
+      }
+
+      // ── GET /storage-stats — monitoreo de uso D1 ──────────────────────
+      // F1-04: Retorna filas, MB usados, % uso y alertas 70/90%.
+      if (request.method === "GET" && path === "/storage-stats") {
+        const count = await env.DB.prepare("SELECT COUNT(*) AS c FROM siso_store").first();
+        const filas = count?.c ?? 0;
+        const mbUsados = Math.round((filas * 2048) / (1024 * 1024) * 100) / 100;
+        const limiteMb = 500;
+        const usoPct = Math.round((mbUsados / limiteMb) * 100);
+        const grupos = await env.DB.prepare(`
+          SELECT CASE 
+            WHEN key LIKE 'siso_patients_%' OR key LIKE 'siso_db_patients_%' THEN 'patients'
+            WHEN key LIKE 'siso_hc_%' THEN 'hc'
+            WHEN key LIKE 'siso_portal_%' THEN 'portal'
+            WHEN key LIKE 'siso_snapshot_%' THEN 'snapshots'
+            WHEN key LIKE 'siso_encuesta_%' THEN 'encuestas'
+            ELSE 'otros'
+          END as grupo, COUNT(*) as cnt
+          FROM siso_store GROUP BY grupo ORDER BY cnt DESC
+        `).all();
+        return new Response(JSON.stringify({
+          filas, mb_usados: mbUsados, limite_mb: limiteMb, uso_pct: usoPct,
+          alerta_70: usoPct > 70, alerta_90: usoPct > 90,
+          top_grupos: grupos.results || [],
         }), { headers });
       }
 

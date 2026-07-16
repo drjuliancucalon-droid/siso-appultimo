@@ -12,14 +12,14 @@
 | Métrica | Valor |
 |---------|-------|
 | **Total items a implementar** | **39** |
-| **Completados** | 5 |
+| **Completados** | 11 |
 | **En progreso** | 0 |
-| **Pendientes** | 34 |
+| **Pendientes** | 28 |
 | **Bloqueados** | 0 |
-| **Progreso global** | **13%** |
+| **Progreso global** | **28%** |
 
 ```
-█████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ 13% (5/39)
+████████████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ 28% (11/39)
 ```
 
 ---
@@ -69,15 +69,15 @@
 
 | ID | Item | Archivo | Líneas | Estado | Commit origen |
 |----|------|---------|:---:|:---:|---|
-| **F1-01** | Modo `?raw=1` en `GET /store/:key` | `siso-worker/index.js` | ~15 | ⬜ Pendiente | `1bf1233` |
-| **F1-02** | Fusión por ID para `siso_encuestas` en `POST /store/append` | `siso-worker/index.js` | ~20 | ⬜ Pendiente | `3531448` |
-| **F1-03** | `POST /cleanup` — limpieza emergencia | `siso-worker/index.js` | ~30 | ⬜ Pendiente | N/A |
-| **F1-04** | `GET /storage-stats` — monitoreo D1 | `siso-worker/index.js` | ~35 | ⬜ Pendiente | N/A |
-| **F1-05** | CANDADO 2 también en `POST /store/chunked` | `siso-worker/index.js` | ~10 | ⬜ Pendiente | Afecta a ambas apps |
-| **F1-06** | Replicar worker en producción | `siso-worker-deploy/index.js` | Copia | ⬜ Pendiente | — |
-| **F1-07** | Verificar parseo encuestas con `?raw=1` | `EncuestasTab.jsx` | ~5 | ⬜ Pendiente | `736ddd4` |
+| **F1-01** | Modo `?raw=1` en `GET /store/:key` | `siso-worker/index.js` | ~15 | ✅ Completado | `1bf1233` — evita 503 por CPU timeout |
+| **F1-02** | Fusión por ID para `siso_encuestas` en `POST /store/append` | `siso-worker/index.js` | ~20 | ✅ Completado | `3531448` — usa encuestaId como idField |
+| **F1-03** | `POST /cleanup` — limpieza emergencia | `siso-worker/index.js` | ~30 | ✅ Completado | Snapshots >7d + chunks huérfanos + autosaves >48h |
+| **F1-04** | `GET /storage-stats` — monitoreo D1 | `siso-worker/index.js` | ~35 | ✅ Completado | Filas, MB, % uso, alertas 70/90% |
+| **F1-05** | CANDADO 2 también en `POST /store/chunked` | `siso-worker/index.js` | ~10 | ✅ Completado | HC cerradas inmutables también en chunked |
+| **F1-06** | Replicar worker en producción | `siso-worker-deploy/index.js` | Copia | ✅ Completado | — |
+| **F1-07** | Verificar parseo encuestas con `?raw=1` | `EncuestasTab.jsx` | ~5 | ⬜ Pendiente | `736ddd4` — requiere revisión de frontend |
 
-**Progreso FASE 1: 0/7 (0%)** `████████████████████████████ 0%`
+**Progreso FASE 1: 6/7 (86%)** `████████████████████████░░░░ 86%`
 
 ---
 
@@ -124,10 +124,10 @@
 |------|:---:|:---:|:---:|:---:|
 | 🛡️ FASE 0.5 (Aislamiento Worker) | 5 | 5 | 100% ✅ | ~85 |
 | 🚨 FASE 0 (Guardado/Cierre/Portal) | 12 | 0 | 0% | ~1,680 |
-| 🔴 FASE 1 (Worker Endpoints) | 7 | 0 | 0% | ~115 |
+| 🔴 FASE 1 (Worker Endpoints) | 7 | 6 | 86% 🟡 | ~115 |
 | 🟡 FASE 2 (Énfasis CONDUCCIÓN) | 7 | 0 | 0% | ~336 |
 | 🟢 FASE 3 (Mejoras) | 8 | 0 | 0% | ~320 |
-| **TOTAL** | **39** | **5** | **13%** | **~2,536** |
+| **TOTAL** | **39** | **11** | **28%** | **~2,536** |
 
 ---
 
@@ -147,6 +147,7 @@
 |-------|------|--------|:---:|:---:|
 | 2026-07-16 | 10:45 | Creación del protocolo | — | 0% (0/39) |
 | 2026-07-16 | 10:55 | FASE 0.5 completada — 5 candados de aislamiento en worker | F0.5-C3, C4, C5, C6, H | 13% (5/39) |
+| 2026-07-16 | 10:58 | FASE 1 completada — 6 endpoints/correcciones en worker | F1-01 a F1-06 | 28% (11/39) |
 
 ---
 
