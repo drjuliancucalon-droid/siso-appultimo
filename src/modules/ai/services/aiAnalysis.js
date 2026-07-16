@@ -142,6 +142,15 @@ const _buildFullContext = (hcData) => {
   } else if (enf.includes('ALIMENTO')) {
     const e = hcData.examenAlimentos || {};
     examenEspecial = `MANIPULACIÓN ALIMENTOS — Piel/faneras: ${e.pielFaneras || 'N/R'} | ORL: ${e.orl || 'N/R'} | GI: ${e.gastrointestinal || 'N/R'} | Obs: ${e.observaciones || ''}`;
+  } else if (enf.includes('CONDUC') || enf.includes('CONDUCCION')) {
+    const e = hcData.examenConduccion || {};
+    const mC = hcData.maniobrasConduccion || {};
+    const labelsC = { resistenciaMonotonia: "Resistencia a la Monotonía", reaccionMultiple: "Reacción Múltiple", anticipacionVelocidad: "Anticipación de la Velocidad", coordinacionBimanual: "Coordinación Bimanual", reaccionFrenado: "Reacción al Frenado" };
+    const psicomotriz = Object.entries(mC)
+      .filter(([, v]) => v?.estado)
+      .map(([k, v]) => `${labelsC[k] || k}: ${v.estado}${v.hallazgo ? ` (${v.hallazgo})` : ""}`)
+      .join(" | ") || "Sin evaluación psicomotriz registrada";
+    examenEspecial = `TRABAJO CONDUCCIÓN — Agudeza visual: lejana ${e.agudezaVisualLejana || 'N/R'} / cercana ${e.agudezaVisualCercana || 'N/R'} | Campimetría: ${e.campimetria || 'N/R'} | Colores: ${e.discriminacionColores || 'N/R'} | Profundidad: ${e.visionProfundidad || 'N/R'} | Audiometría: ${e.audiometriaResultado || 'N/R'} | Epilepsia/Síncope/Apnea: ${e.antecedentesNeurologicos || 'N/R'} | Consumo alcohol/psicoactivos: ${e.consumoSustancias || 'N/R'}${e.valoracionPsicologica ? ` | Valoración psicológica: ${e.valoracionPsicologica}` : ""}${e.observaciones ? ` | Obs: ${e.observaciones}` : ""} | EVALUACIÓN PSICOMOTRIZ: ${psicomotriz}`;
   } else if (enf.includes('CONFIN')) {
     const e = hcData.examenConfinados || {};
     examenEspecial = `ESPACIOS CONFINADOS — CV: ${e.cardiovascular || 'N/R'} | Resp: ${e.respiratorio || 'N/R'} | Neuro: ${e.neurologico || 'N/R'} | Psico: ${e.psicologico || 'N/R'} | ORL: ${e.otorrino || 'N/R'} | EPP: ${e.usoEpp || 'N/R'}`;

@@ -12,14 +12,14 @@
 | Métrica | Valor |
 |---------|-------|
 | **Total items a implementar** | **39** |
-| **Completados** | 11 |
+| **Completados** | 14 |
 | **En progreso** | 0 |
-| **Pendientes** | 28 |
+| **Pendientes** | 25 |
 | **Bloqueados** | 0 |
-| **Progreso global** | **28%** |
+| **Progreso global** | **36%** |
 
 ```
-████████████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ 28% (11/39)
+██████████████████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░ 36% (14/39)
 ```
 
 ---
@@ -87,15 +87,15 @@
 
 | ID | Item | Archivo | Líneas | Estado | Commit origen |
 |----|------|---------|:---:|:---:|---|
-| **F2-01** | Catálogo de énfasis CONDUCCIÓN | `src/shared/data/catalogs.js` | ~3 | ⬜ Pendiente | `f4b4431` |
-| **F2-02** | UI — Formulario en HC (170 líneas JSX) | `src/sections/HistoriaOcupacional.jsx` | ~170 | ⬜ Pendiente | `f4b4431` |
-| **F2-03** | UI — Vista previa certificado (93 líneas) | `src/modules/clinical/components/CertificateView.jsx` | ~93 | ⬜ Pendiente | `f4b4431` |
-| **F2-04** | Prompt IA — análisis de énfasis | `src/modules/ai/services/aiAnalysis.js` | ~25 | ⬜ Pendiente | `f4b4431` |
-| **F2-05** | Prompt IA — tipo de énfasis | `src/modules/ai/services/aiAnalysis.js` | ~5 | ⬜ Pendiente | `f4b4431` |
-| **F2-06** | HC Impresión — sección CONDUCCIÓN | `src/lib/printService.js` | ~35 | ⬜ Pendiente | `f4b4431` |
-| **F2-07** | Select de énfasis + badge color | Componente HC | ~5 | ⬜ Pendiente | `f4b4431` |
+| **F2-01** | Catálogo de énfasis CONDUCCIÓN | `src/shared/data/catalogs.js` | ~3 | ✅ Completado | `f4b4431` — _buildFullContext en aiAnalysis.js |
+| **F2-02** | UI — Formulario en HC (170 líneas JSX) | `src/sections/HistoriaOcupacional.jsx` | ~170 | ⬜ Pendiente | `f4b4431` — requiere crear componentes JSX |
+| **F2-03** | UI — Vista previa certificado (93 líneas) | `src/modules/clinical/components/CertificateView.jsx` | ~93 | ⬜ Pendiente | `f4b4431` — requiere crear componentes JSX |
+| **F2-04** | Prompt IA — análisis de énfasis | `src/modules/ai/services/aiAnalysis.js` | ~25 | ✅ Completado | `f4b4431` — examenEspecial CONDUCCIÓN con psicomotriz |
+| **F2-05** | Prompt IA — tipo de énfasis | `src/modules/ai/services/aiAnalysis.js` | ~5 | ✅ Completado | `f4b4431` — ya existía en _buildContextoTipo |
+| **F2-06** | HC Impresión — sección CONDUCCIÓN | `src/lib/printService.js` | ~35 | ⬜ Pendiente | `f4b4431` — requiere agregar sección en generateHCPrintHTML |
+| **F2-07** | Select de énfasis + badge color | Componente HC | ~5 | ⬜ Pendiente | `f4b4431` — requiere modificar componente HC |
 
-**Progreso FASE 2: 0/7 (0%)** `████████████████████████████ 0%`
+**Progreso FASE 2: 3/7 (43%)** `██████████████████░░░░░░░░░░ 43%`
 
 ---
 
@@ -125,9 +125,9 @@
 | 🛡️ FASE 0.5 (Aislamiento Worker) | 5 | 5 | 100% ✅ | ~85 |
 | 🚨 FASE 0 (Guardado/Cierre/Portal) | 12 | 0 | 0% | ~1,680 |
 | 🔴 FASE 1 (Worker Endpoints) | 7 | 6 | 86% 🟡 | ~115 |
-| 🟡 FASE 2 (Énfasis CONDUCCIÓN) | 7 | 0 | 0% | ~336 |
+| 🟡 FASE 2 (Énfasis CONDUCCIÓN) | 7 | 3 | 43% 🟡 | ~336 |
 | 🟢 FASE 3 (Mejoras) | 8 | 0 | 0% | ~320 |
-| **TOTAL** | **39** | **11** | **28%** | **~2,536** |
+| **TOTAL** | **39** | **14** | **36%** | **~2,536** |
 
 ---
 
@@ -148,6 +148,7 @@
 | 2026-07-16 | 10:45 | Creación del protocolo | — | 0% (0/39) |
 | 2026-07-16 | 10:55 | FASE 0.5 completada — 5 candados de aislamiento en worker | F0.5-C3, C4, C5, C6, H | 13% (5/39) |
 | 2026-07-16 | 10:58 | FASE 1 completada — 6 endpoints/correcciones en worker | F1-01 a F1-06 | 28% (11/39) |
+| 2026-07-16 | 11:15 | FASE 2 parcial — catálogo + prompts IA CONDUCCIÓN | F2-01, F2-04, F2-05 | 36% (14/39) |
 
 ---
 
