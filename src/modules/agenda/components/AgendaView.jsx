@@ -1,6 +1,6 @@
 // src/modules/agenda/components/AgendaView.jsx — SPRINT 6: D1-powered
 import React, { useState, useMemo } from 'react';
-import { Calendar, Search, CheckCircle, Clock, User, Filter, Sparkles, Loader2, Download } from 'lucide-react';
+import { Calendar, Search, CheckCircle, Clock, User, Filter, Sparkles, Loader2, Download, Stethoscope } from 'lucide-react';
 import { useAIStore } from '../../../stores/aiStore';
 import { optimizeSchedule } from '../../ai/services/aiAnalysis';
 
@@ -19,6 +19,14 @@ export const AgendaView = ({ currentUser, appointments = [], onAppointmentsChang
   const [aiResult, setAiResult] = useState(null);
   const [aiError, setAiError] = useState(null);
   const [vistaAgenda, setVistaAgenda] = useState('dia');
+  // F3-07: Médico de turno funcional
+  const [medicoDeTurno, setMedicoDeTurno] = useState(() => {
+    try { return localStorage.getItem('siso_medico_turno') || (currentUser?.user || ''); } catch { return currentUser?.user || ''; }
+  });
+  const cambiarMedicoTurno = (val) => {
+    setMedicoDeTurno(val);
+    try { localStorage.setItem('siso_medico_turno', val); } catch {}
+  };
 
   const handleOptimizarIA = async () => {
     const aiConfig = useAIStore.getState().getConfig();
@@ -100,6 +108,25 @@ export const AgendaView = ({ currentUser, appointments = [], onAppointmentsChang
           <p className="text-gray-500 text-xs mt-2">Eficiencia estimada: {aiResult.eficienciaEstimada}</p>
         </div>
       )}
+
+      {/* F3-07: Médico de turno funcional */}
+      <div className="flex items-center gap-2 p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs">
+        <Stethoscope className="w-4 h-4 text-amber-700" />
+        <span className="font-black text-amber-800">Médico de Turno:</span>
+        <select
+          value={medicoDeTurno}
+          onChange={(e) => cambiarMedicoTurno(e.target.value)}
+          className="p-1.5 border border-amber-300 rounded-lg text-xs bg-white font-bold text-amber-900"
+        >
+          <option value={currentUser?.user || ''}>{currentUser?.name || currentUser?.nombre || currentUser?.user || 'Dr. Principal'}</option>
+          {['dr.garcia', 'admin.ips'].filter(u => u !== (currentUser?.user || '')).map(u => (
+            <option key={u} value={u}>{u === 'dr.garcia' ? 'Dr. Carlos García' : 'Administrador IPS'}</option>
+          ))}
+        </select>
+        {medicoDeTurno && medicoDeTurno !== (currentUser?.user || '') && (
+          <span className="text-[10px] text-amber-600">⚠️ Asignado temporalmente</span>
+        )}
+      </div>
 
       {/* P2-03: Vistas Semanal / Mensual / Día */}
       <div className="flex gap-2 mb-2">

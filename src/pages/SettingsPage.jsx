@@ -6,6 +6,10 @@ import {
   Loader2, Database, Shield, RefreshCw, FileText,
 } from 'lucide-react';
 import { useAIStore } from '../stores/aiStore';
+import { d1Get, d1Set } from '../lib/d1Client';
+
+const SISO_IPS_CONFIG_KEY = 'siso_ips_config';
+const DEFAULT_IPS_CONFIG = { nombre: '', nit: '', direccion: '', bannerTexto: '', telefono: '', correo: '', logoUrl: '', ciudad: '' };
 
 const SB_URL = import.meta.env.VITE_SUPABASE_URL || 'https://yqrrktrgoijgzccrxnpz.supabase.co';
 const SB_KEY = import.meta.env.VITE_SUPABASE_KEY || 'sb_publishable_K88qYuJ9wsWjQqnIhLVK7Q_NroFvPI7';
@@ -132,6 +136,20 @@ export default function SettingsPage() {
   const [csvFileName, setCsvFileName] = useState('');
   const [csvImporting, setCsvImporting] = useState(false);
 
+  // F3-06+F3-08: Banner IPS + Configuración IPS completa
+  const [ipsConfig, setIpsConfig] = useState(DEFAULT_IPS_CONFIG);
+  const [ipsLoading, setIpsLoading] = useState(false);
+  const [ipsSaved, setIpsSaved] = useState(false);
+  const loadIpsConfig = useCallback(async () => {
+    try { const { value } = await d1Get(SISO_IPS_CONFIG_KEY); if (value) setIpsConfig({ ...DEFAULT_IPS_CONFIG, ...value }); } catch {}
+  }, []);
+  useEffect(() => { loadIpsConfig(); }, [loadIpsConfig]);
+  const saveIpsConfig = async () => {
+    setIpsLoading(true);
+    try { await d1Set(SISO_IPS_CONFIG_KEY, ipsConfig); setIpsSaved(true); setTimeout(() => setIpsSaved(false), 3000); } catch {}
+    setIpsLoading(false);
+  };
+
   const handleCsvFile = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -196,6 +214,7 @@ export default function SettingsPage() {
         {[
           { k: 'backup', l: '💾 Backup' },
           { k: 'import', l: '📥 Importar CSV' },
+          { k: 'ips', l: '🏢 IPS' },
         ].map(t => (
           <button key={t.k} onClick={() => setActiveTab(t.k)}
             className={`flex-1 py-2 text-xs font-black rounded-lg transition ${activeTab === t.k ? 'bg-emerald-600 text-white' : 'text-gray-600 hover:bg-gray-100'}`}>
@@ -255,6 +274,75 @@ export default function SettingsPage() {
                   {csvImporting ? 'Importando...' : `Importar ${csvPreview.length} pacientes`}
                 </button>
               </>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* TAB: IPS — F3-06 Banner IPS + F3-08 Configuración IPS completa */}
+      {activeTab === 'ips' && (
+        <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+          <div className="flex items-center gap-2 mb-4">
+            <Shield className="w-5 h-5 text-emerald-600" />
+            <h2 className="text-sm font-black text-gray-800">Configuración IPS y Banner</h2>
+          </div>
+          <div className="space-y-3">
+            {/* F3-08: Configuración IPS completa */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div>
+                <label className="block text-[10px] font-bold text-gray-600 mb-0.5">Nombre IPS</label>
+                <input value={ipsConfig.nombre} onChange={e => setIpsConfig(p => ({ ...p, nombre: e.target.value }))}
+                  className="w-full p-1.5 border rounded text-xs" placeholder="Ej: OcupaSalud IPS" />
+              </div>
+              <div>
+                <label className="block text-[10px] font-bold text-gray-600 mb-0.5">NIT</label>
+                <input value={ipsConfig.nit} onChange={e => setIpsConfig(p => ({ ...p, nit: e.target.value }))}
+                  className="w-full p-1.5 border rounded text-xs" placeholder="Ej: 900123456" />
+              </div>
+              <div>
+                <label className="block text-[10px] font-bold text-gray-600 mb-0.5">Ciudad</label>
+                <input value={ipsConfig.ciudad} onChange={e => setIpsConfig(p => ({ ...p, ciudad: e.target.value }))}
+                  className="w-full p-1.5 border rounded text-xs" placeholder="Ej: Popayán" />
+              </div>
+              <div>
+                <label className="block text-[10px] font-bold text-gray-600 mb-0.5">Teléfono</label>
+                <input value={ipsConfig.telefono} onChange={e => setIpsConfig(p => ({ ...p, telefono: e.target.value }))}
+                  className="w-full p-1.5 border rounded text-xs" placeholder="Ej: 300 123 4567" />
+              </div>
+              <div>
+                <label className="block text-[10px] font-bold text-gray-600 mb-0.5">Correo electrónico</label>
+                <input value={ipsConfig.correo} onChange={e => setIpsConfig(p => ({ ...p, correo: e.target.value }))}
+                  className="w-full p-1.5 border rounded text-xs" placeholder="Ej: contacto@ips.com" />
+              </div>
+              <div>
+                <label className="block text-[10px] font-bold text-gray-600 mb-0.5">URL Logo</label>
+                <input value={ipsConfig.logoUrl} onChange={e => setIpsConfig(p => ({ ...p, logoUrl: e.target.value }))}
+                  className="w-full p-1.5 border rounded text-xs" placeholder="Ej: https://ips.com/logo.png" />
+              </div>
+            </div>
+            <div>
+              <label className="block text-[10px] font-bold text-gray-600 mb-0.5">Dirección completa</label>
+              <input value={ipsConfig.direccion} onChange={e => setIpsConfig(p => ({ ...p, direccion: e.target.value }))}
+                className="w-full p-1.5 border rounded text-xs" placeholder="Ej: Calle 5 #10-20, Centro, Popayán - Cauca" />
+            </div>
+            {/* F3-06: Banner IPS personalizable */}
+            <div>
+              <label className="block text-[10px] font-bold text-gray-600 mb-0.5 flex items-center gap-1">📢 Banner IPS personalizable (visible en header de documentos)</label>
+              <textarea rows={2} value={ipsConfig.bannerTexto} onChange={e => setIpsConfig(p => ({ ...p, bannerTexto: e.target.value }))}
+                className="w-full p-2 border rounded text-xs resize-none" placeholder="Ej: 'Comprometidos con la salud ocupacional de nuestros trabajadores — Popayán, Cauca'" />
+            </div>
+            <button onClick={saveIpsConfig} disabled={ipsLoading}
+              className="w-full py-2.5 bg-emerald-600 text-white rounded-xl font-black text-xs hover:bg-emerald-700 disabled:opacity-50">
+              {ipsLoading ? 'Guardando...' : ipsSaved ? '✅ Configuración guardada' : '💾 Guardar Configuración IPS'}
+            </button>
+            {ipsConfig.nombre && (
+              <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-lg text-xs">
+                <p className="font-black text-emerald-800 mb-1">Vista previa del banner:</p>
+                <div className="bg-white rounded-lg p-3 border border-emerald-100 text-center">
+                  <p className="text-[10px] font-bold text-emerald-700">{ipsConfig.nombre} {ipsConfig.nit ? `— NIT: ${ipsConfig.nit}` : ''}</p>
+                  <p className="text-[9px] text-emerald-600 italic">{ipsConfig.bannerTexto || 'Añada un texto de banner arriba'}</p>
+                </div>
+              </div>
             )}
           </div>
         </div>
