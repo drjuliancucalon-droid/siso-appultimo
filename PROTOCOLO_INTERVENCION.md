@@ -11,15 +11,15 @@
 
 | Métrica | Valor |
 |---------|-------|
-| **Total items a implementar** | **36** |
-| **Completados** | 0 |
+| **Total items a implementar** | **39** |
+| **Completados** | 5 |
 | **En progreso** | 0 |
-| **Pendientes** | 36 |
+| **Pendientes** | 34 |
 | **Bloqueados** | 0 |
-| **Progreso global** | **0%** |
+| **Progreso global** | **13%** |
 
 ```
-████████████████████████████████████████████████████ 0% (0/36)
+█████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ 13% (5/39)
 ```
 
 ---
@@ -30,13 +30,13 @@
 
 | ID | Item | Archivo | Líneas | Estado | Notas |
 |----|------|---------|:---:|:---:|---|
-| **F0.5-C3** | CANDADO 3: Validación de userId en claves de pacientes | `siso-worker/index.js` | ~20 | ⬜ Pendiente | POST /store y /store/chunked |
-| **F0.5-C4** | CANDADO 4: Anti-borrado de claves críticas | `siso-worker/index.js` | ~15 | ⬜ Pendiente | DELETE /store/:key |
-| **F0.5-C5** | CANDADO 5: Snapshot automático antes de DELETE | `siso-worker/index.js` | ~10 | ⬜ Pendiente | Backup en `siso_deleted_<ts>_<key>` |
-| **F0.5-C6** | CANDADO 6: Merge atómico server-side (NUEVO endpoint) | `siso-worker/index.js` | ~35 | ⬜ Pendiente | POST /store/merge |
-| **F0.5-H** | Header X-Siso-App para identificación de app | `siso-worker/index.js` | ~5 | ⬜ Pendiente | Identifica quién escribe |
+| **F0.5-C3** | CANDADO 3: Validación de userId en claves de pacientes | `siso-worker/index.js` | ~20 | ✅ Completado | POST /store — bloquea escrituras con userId incorrecto |
+| **F0.5-C4** | CANDADO 4: Anti-borrado de claves críticas | `siso-worker/index.js` | ~15 | ✅ Completado | DELETE — bloquea borrado de `siso_users`, `siso_portal_empresa_*`, `siso_ai_keys_*`, `siso_snapshot_*` |
+| **F0.5-C5** | CANDADO 5: Snapshot automático antes de DELETE | `siso-worker/index.js` | ~10 | ✅ Completado | Backup automático en `siso_deleted_<ts>_<key>` |
+| **F0.5-C6** | CANDADO 6: Merge atómico server-side (NUEVO endpoint) | `siso-worker/index.js` | ~35 | ✅ Completado | POST /store/merge — fusión por idField |
+| **F0.5-H** | Header X-Siso-App para identificación de app | `siso-worker/index.js` | ~5 | ✅ Completado | CORS permite X-Siso-App + X-Siso-UserId |
 
-**Progreso FASE 0.5: 0/5 (0%)** `████████████████████████████ 0%`
+**Progreso FASE 0.5: 5/5 (100%)** `████████████████████████████ 100%`
 
 ---
 
@@ -122,12 +122,12 @@
 
 | Fase | Items | Completados | Progreso | Líneas |
 |------|:---:|:---:|:---:|:---:|
-| 🛡️ FASE 0.5 (Aislamiento Worker) | 5 | 0 | 0% | ~85 |
+| 🛡️ FASE 0.5 (Aislamiento Worker) | 5 | 5 | 100% ✅ | ~85 |
 | 🚨 FASE 0 (Guardado/Cierre/Portal) | 12 | 0 | 0% | ~1,680 |
 | 🔴 FASE 1 (Worker Endpoints) | 7 | 0 | 0% | ~115 |
 | 🟡 FASE 2 (Énfasis CONDUCCIÓN) | 7 | 0 | 0% | ~336 |
 | 🟢 FASE 3 (Mejoras) | 8 | 0 | 0% | ~320 |
-| **TOTAL** | **39** | **0** | **0%** | **~2,536** |
+| **TOTAL** | **39** | **5** | **13%** | **~2,536** |
 
 ---
 
@@ -146,6 +146,7 @@
 | Fecha | Hora | Acción | Items afectados | Progreso |
 |-------|------|--------|:---:|:---:|
 | 2026-07-16 | 10:45 | Creación del protocolo | — | 0% (0/39) |
+| 2026-07-16 | 10:55 | FASE 0.5 completada — 5 candados de aislamiento en worker | F0.5-C3, C4, C5, C6, H | 13% (5/39) |
 
 ---
 

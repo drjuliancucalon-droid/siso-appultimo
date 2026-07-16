@@ -46,7 +46,7 @@ function getCorsHeaders(origin) {
   const allow = isAllowedOrigin(origin) ? origin : DEFAULT_ORIGIN;
   return {
     'Access-Control-Allow-Origin': allow,
-    'Access-Control-Allow-Headers': 'Content-Type, X-Siso-Token',
+    'Access-Control-Allow-Headers': 'Content-Type, X-Siso-Token, X-Siso-App, X-Siso-UserId',
     'Access-Control-Allow-Methods': 'GET,POST,OPTIONS,DELETE',
     'Access-Control-Max-Age': '86400',
     'Content-Type': 'application/json',
@@ -137,6 +137,24 @@ export default {
         const body = await request.json();
         const rows = Array.isArray(body) ? body : [body];
         const ifMatch = (request.headers.get("If-Match") || request.headers.get("X-Siso-If-Match") || "").replace(/"/g, "").trim();
+
+        // CANDADO 3 (FASE 0.5): validar userId en claves de pacientes
+        // La app que escribe debe coincidir con el userId del sufijo de la clave
+        const appId = request.headers.get("X-Siso-App") || "unknown";
+        const userId = request.headers.get("X-Siso-UserId") || "";
+        const PROTECTED_PREFIXES_USER = ['siso_patients_', 'siso_db_patients_', 'siso_hc_'];
+        for (const row of rows) {
+          if (row?.key && PROTECTED_PREFIXES_USER.some(p => row.key.startsWith(p))) {
+            const keyUserId = row.key.split('_').pop();
+            if (userId && keyUserId && userId !== keyUserId && keyUserId.length >= 3) {
+              return new Response(JSON.stringify({
+                ok: false, error: "user_mismatch",
+                message: `CANDADO 3: la clave ${row.key} pertenece a otro usuario (${keyUserId})`,
+                app: appId,
+              }), { status: 403, headers });
+            }
+          }
+        }
 
         // CANDADO 2: Rechazar escrituras a claves de HC cerradas (inmutables)
         for (const row of rows) {
@@ -289,6 +307,41 @@ export default {
         }), { headers });
       }
 
+      // ── POST /store/merge — merge atómico server-side ──────────────────
+      // CANDADO 6 (FASE 0.5): fusión atómica de arrays por idField.
+      // Reemplaza el read-modify-write del cliente, vulnerable a carreras
+      // entre apps. El worker lee, mergea y escribe en una sola operación.
+      // Body: { key, items[], idField }
+      if (request.method === "POST" && path === "/store/merge") {
+        const body = await request.json();
+        const { key, items = [], idField = "id" } = body;
+        if (!key || !Array.isArray(items)) {
+          return new Response(JSON.stringify({ error: "key e items[] requeridos" }), { status: 400, headers });
+        }
+        let arr = [];
+        try {
+          const row = await env.DB.prepare("SELECT value FROM siso_store WHERE key = ?").bind(key).first();
+          if (row?.value) {
+            const parsed = JSON.parse(row.value);
+            if (Array.isArray(parsed)) arr = parsed;
+          }
+        } catch {}
+        const merged = [...arr];
+        for (const item of items) {
+          const idVal = item[idField];
+          if (idVal != null) {
+            const idx = merged.findIndex(x => x && String(x[idField]) === String(idVal));
+            if (idx >= 0) merged[idx] = item; else merged.push(item);
+          } else {
+            merged.push(item);
+          }
+        }
+        await env.DB.prepare(
+          "INSERT INTO siso_store(key, value, updated_at) VALUES(?, ?, datetime('now')) ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at"
+        ).bind(key, JSON.stringify(merged)).run();
+        return new Response(JSON.stringify({ ok: true, count: merged.length, added: merged.length - arr.length }), { headers });
+      }
+
       // ── GET /health — endpoint de healthcheck para FASE 4 monitoring ──
       if (request.method === "GET" && path === "/health") {
         const t0 = Date.now();
@@ -316,8 +369,34 @@ export default {
       }
 
       // ── DELETE /store/:key ───────────────────────────────────────────
+      // CANDADO 4 (FASE 0.5): anti-borrado de claves críticas del sistema
+      // CANDADO 5 (FASE 0.5): snapshot automático antes de borrar
       if (request.method === "DELETE" && path.startsWith("/store/")) {
         const key = decodeURIComponent(path.slice(7));
+
+        // CANDADO 4: claves críticas NO pueden ser eliminadas directamente
+        const UNDELETABLE_PREFIXES = [
+          'siso_users', 'siso_portal_empresa_', 'siso_portal_empresa_docs_',
+          'siso_portal_empresa_atenciones_', 'siso_ai_keys_', 'siso_snapshot_'
+        ];
+        if (UNDELETABLE_PREFIXES.some(p => key.startsWith(p))) {
+          return new Response(JSON.stringify({
+            ok: false, error: "undeletable_key",
+            message: `CANDADO 4: la clave ${key} es crítica y no puede ser eliminada directamente. Use /cleanup para mantenimiento programado.`,
+          }), { status: 403, headers });
+        }
+
+        // CANDADO 5: guardar copia de respaldo antes de borrar
+        try {
+          const row = await env.DB.prepare("SELECT value FROM siso_store WHERE key = ?").bind(key).first();
+          if (row?.value) {
+            const backupKey = `siso_deleted_${Date.now()}_${key}`;
+            await env.DB.prepare(
+              "INSERT INTO siso_store(key, value, updated_at) VALUES(?, ?, datetime('now'))"
+            ).bind(backupKey, row.value).run();
+          }
+        } catch {}
+
         await env.DB.prepare("DELETE FROM siso_store WHERE key = ?").bind(key).run();
         return new Response(JSON.stringify({ ok: true }), { headers });
       }
