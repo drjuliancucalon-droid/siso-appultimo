@@ -11,6 +11,7 @@ import { useAIStore } from './aiStore';
 
 const MAX_LOGIN_ATTEMPTS = 5;
 const BLOCK_DURATION_MS = 15 * 60 * 1000;
+const SESSION_TIMEOUT_MS = 30 * 60 * 1000; // F3-04: 30 min inactividad → logout automático
 const SISO_USERS_KEY = 'siso_users';
 
 // ── Helpers ────────────────────────────────────────────────────────
@@ -342,6 +343,26 @@ export const useAuthStore = create(
 
       resetActivity: () => {
         set({ lastActivity: Date.now() });
+      },
+
+      // F3-04: Timeout de sesión por inactividad — 30 minutos
+      checkSessionTimeout: () => {
+        const { isAuthenticated, lastActivity } = get();
+        if (!isAuthenticated || !lastActivity) return;
+        const elapsed = Date.now() - lastActivity;
+        if (elapsed > SESSION_TIMEOUT_MS) {
+          console.warn('[authStore] Sesión expirada por inactividad (>30 min). Cerrando sesión automáticamente.');
+          set({
+            currentUser: null,
+            token: null,
+            refreshToken: null,
+            isAuthenticated: false,
+            lastActivity: null,
+            privacidadAceptada: false,
+            mustChangePassword: false,
+            twoFARequired: false,
+          });
+        }
       },
 
       acceptPrivacy: () => {
