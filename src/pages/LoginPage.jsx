@@ -92,81 +92,23 @@ export default function LoginPage() {
       const pVal  = pass.trim();
 
       console.log('[login] attempt', uName);
-      // ── 1. Usuarios en D1 (siso_users) — vía authStore.login() ──
+      // ── 1. Autenticación vía authStore.login() (D1 primario, PBKDF2+salt) ──
       // FIX 2026-07-21: SEED_USERS con contraseñas en texto plano eliminado.
-      // La autenticación ahora es exclusivamente vía D1 con verificación de hash.
+      // authStore.login() maneja rate limiting (5 intentos/15 min) y navega
+      // automáticamente al dashboard vía Zustand (isAuthenticated → useEffect).
       try {
-        const result = await useAuthStore.getState().login(uName, pVal);
-        if (result) {
-          console.log('[login] ✅ authStore.login OK');
-          navigate('/dashboard', { replace: true });
-          return;
-        }
+        await useAuthStore.getState().login(uName, pVal);
+        console.log('[login] ✅ authStore.login OK');
+        // La navegación ocurre vía el useEffect que vigila isAuthenticated
+        return;
       } catch (authErr) {
-        // Si authStore.login() lanza (ej. D1 caído), continuar con fallbacks
-        console.warn('[login] authStore.login falló, probando fallbacks:', authErr.message);
+        // authStore.login() lanza errores descriptivos: credenciales incorrectas,
+        // cuenta bloqueada, etc. Se muestran directamente al usuario.
+        setError(authErr.message);
+        setLoading(false);
+        return;
       }
 
-      // ── 2. Usuarios en localStorage (importados desde backup/panel) ──
-      const storedUsers = JSON.parse(localStorage.getItem('siso_users') || '[]');
-      let found = null;
-      for (const u of storedUsers) {
-        if ((u.user === uName || u.usuario === uName) && u.activo !== false) {
-          const ok = (u.password && u.password === pVal)
-            || await _verifyHash(pVal, u.passHash, u.passSalt);
-          if (ok) { found = u; break; }
-        }
-      }
-
-      // ── 3. Fallback a Supabase (otro dispositivo / panel en la nube) ──
-      if (!found) {
-        try {
-          const SB_URL = import.meta.env.VITE_SUPABASE_URL;
-          const SB_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
-          if (SB_URL && SB_KEY) {
-            const r = await fetch(
-              `${SB_URL}/rest/v1/siso_store?key=eq.siso_users&select=value`,
-              { headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` } }
-            );
-            if (r.ok) {
-              const rows = await r.json();
-              const sbUsers = rows?.[0]?.value;
-              if (Array.isArray(sbUsers)) {
-                for (const u of sbUsers) {
-                  if ((u.user === uName || u.usuario === uName) && u.activo !== false) {
-                    const ok = (u.password && u.password === pVal)
-                      || await _verifyHash(pVal, u.passHash, u.passSalt);
-                    if (ok) { found = u; break; }
-                  }
-                }
-              }
-            }
-          }
-        } catch (sbErr) {
-          console.warn('Supabase user lookup failed:', sbErr.message);
-        }
-      }
-
-      if (!found) {
-        useAuthStore.setState(s => ({ loginAttempts: s.loginAttempts + 1 }));
-        const attempts = useAuthStore.getState().loginAttempts;
-        throw new Error(`Credenciales incorrectas. Intentos fallidos: ${attempts}/5`);
-      }
-
-      await loginLocal({
-        id: found.id || ('usr_' + uName),
-        user: found.user || found.usuario || uName,
-        nombre: found.nombre || found.name || uName,
-        role: found.role || 'medico',
-        license: found.license || 'libre',
-        licenseExpiry: found.licenseExpiry || null,
-        email: found.email || '',
-        activo: true,
-        secretariaPermisos: found.secretariaPermisos || null,
-      });
-
-      console.log('[login] ✅ loginLocal OK (found user)');
-      navigate('/dashboard', { replace: true });
     } catch (err) {
       console.error('[login] ❌ login error', err);
       setError(err.message || 'Error al iniciar sesión');
