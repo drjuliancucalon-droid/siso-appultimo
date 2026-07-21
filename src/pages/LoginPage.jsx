@@ -8,27 +8,6 @@ import { Stethoscope, Eye, EyeOff, AlertCircle, Loader2, Shield, BrainCircuit, U
 import { AIConfigPanel } from '../modules/ai/components/AIConfigPanel';
 import { useAIStore } from '../stores/aiStore';
 
-// ── Helpers de hash (igual que el monolito) ─────────────────────
-const _sha256 = async (str) => {
-  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
-  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
-};
-const _pbkdf2Verify = async (password, saltHex, hashHex) => {
-  const saltBytes = Uint8Array.from(saltHex.match(/.{2}/g).map(h => parseInt(h, 16)));
-  const keyMaterial = await crypto.subtle.importKey('raw', new TextEncoder().encode(password), 'PBKDF2', false, ['deriveBits']);
-  const derivedBits = await crypto.subtle.deriveBits(
-    { name: 'PBKDF2', salt: saltBytes, iterations: 100000, hash: 'SHA-256' },
-    keyMaterial, 256
-  );
-  const computed = Array.from(new Uint8Array(derivedBits)).map(b => b.toString(16).padStart(2, '0')).join('');
-  return computed === hashHex;
-};
-const _verifyHash = async (password, passHash, passSalt) => {
-  if (!passHash) return false;
-  if (passSalt) return _pbkdf2Verify(password, passSalt, passHash);
-  return (await _sha256(password)) === passHash;
-};
-
 // FIX 2026-07-21 (FASE 1 PROMPT_MAESTRO): SEED_USERS con contraseñas en texto
 // plano ELIMINADO — era el problema de seguridad más grave del proyecto.
 // La autenticación ahora depende exclusivamente de D1 (siso_users) con
@@ -87,7 +66,6 @@ export default function LoginPage() {
 
     setLoading(true);
     try {
-      const { loginLocal } = useAuthStore.getState();
       const uName = user.trim();
       const pVal  = pass.trim();
 

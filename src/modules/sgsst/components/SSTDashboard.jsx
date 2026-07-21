@@ -38,19 +38,21 @@ const SSTDashboard = ({ onNavigate }) => {
   const [configForm, setConfigForm] = useState(companyConfig);
   const [showEstandares, setShowEstandares] = useState(false);
 
-  const cargarDatos = useCallback(() => {
+  const cargarDatos = useCallback(async () => {
     const config = getCompanyConfig();
     setCompanyConfigState(config);
 
     const cumpl = calcularCumplimiento(config.tipoEmpresa);
     setCumplimiento(cumpl);
 
-    const riesgos = riesgosCRUD.getAll();
-    const capacitaciones = capacitacionesCRUD.getAll();
-    const accidentes = accidentesCRUD.getAll();
-    const inspecciones = inspeccionesCRUD.getAll();
-    const documentos = documentosCRUD.getAll();
-    const actividades = actividadesCRUD.getAll();
+    const [riesgos, capacitaciones, accidentes, inspecciones, documentos, actividades] = await Promise.all([
+      riesgosCRUD.getAll(),
+      capacitacionesCRUD.getAll(),
+      accidentesCRUD.getAll(),
+      inspeccionesCRUD.getAll(),
+      documentosCRUD.getAll(),
+      actividadesCRUD.getAll(),
+    ]);
 
     const indicadoresCalc = calcularIndicadores(accidentes, config.numTrabajadores || 1, null);
     setIndicadores(indicadoresCalc);

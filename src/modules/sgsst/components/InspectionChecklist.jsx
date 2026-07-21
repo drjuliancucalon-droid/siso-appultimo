@@ -4,7 +4,7 @@
  * Decreto 1072/2015 Art. 2.2.4.6.31
  */
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   ClipboardCheck, Plus, Edit3, Trash2, Search, Filter, X, Save,
   CheckCircle2, XCircle, MinusCircle, Calendar, Clock, Users,
@@ -27,7 +27,7 @@ const ESTADOS = {
 };
 
 const InspectionChecklist = () => {
-  const [inspecciones, setInspecciones] = useState(inspeccionesCRUD.getAll());
+  const [inspecciones, setInspecciones] = useState([]);
   const [activeTab, setActiveTab] = useState('inspecciones'); // inspecciones | plantillas | nueva
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
@@ -53,7 +53,8 @@ const InspectionChecklist = () => {
   };
   const [form, setForm] = useState({ ...emptyForm });
 
-  const refresh = () => setInspecciones(inspeccionesCRUD.getAll());
+  const refresh = () => { inspeccionesCRUD.getAll().then(setInspecciones); };
+  useEffect(() => { refresh(); }, []);
 
   const filteredInspecciones = useMemo(() => {
     return inspecciones.filter(i => {
@@ -126,12 +127,8 @@ const InspectionChecklist = () => {
     const allChecked = data.items.length > 0 && data.items.every(i => i.resultado !== null);
     if (allChecked && data.estado === 'Pendiente') data.estado = 'Completado';
 
-    if (editingId) {
-      inspeccionesCRUD.update(editingId, data);
-    } else {
-      inspeccionesCRUD.create(data);
-    }
-    refresh();
+    const op = editingId ? inspeccionesCRUD.update(editingId, data) : inspeccionesCRUD.create(data);
+    op.then(refresh);
     setShowForm(false);
     setActiveTab('inspecciones');
     setEditingId(null);
@@ -145,7 +142,7 @@ const InspectionChecklist = () => {
   };
 
   const handleDelete = (id) => {
-    if (window.confirm('¿Eliminar esta inspección?')) { inspeccionesCRUD.remove(id); refresh(); }
+    if (window.confirm('¿Eliminar esta inspección?')) { inspeccionesCRUD.remove(id).then(refresh); }
   };
 
   const executeInspection = (insp) => {

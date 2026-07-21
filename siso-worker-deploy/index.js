@@ -169,28 +169,34 @@ export default {
           // Modo raw: retorna value como string crudo sin JSON.parse
           return new Response(JSON.stringify([{ key, value: row.value, ts }]), { headers: respHeaders });
         }
-        const value = JSON.parse(row.value);
+        // FIX 2026-07-21: decompressValue por si el valor legacy viene con prefijo gz:
+        const dv = await decompressValue(row.value);
+        const value = JSON.parse(dv);
         return new Response(JSON.stringify([{ key, value, ts }]), { headers: respHeaders });
       }
 
       // ── GET /store/prefix/:prefix — buscar por prefijo ───────────────
       // COMMIT 4f8b81f — modo ?raw=1 salta JSON.parse por fila (reduce
       // latencia y CPU cuando el cliente solo necesita las claves).
+      // FIX 2026-07-21: excluir piezas de chunk para no contaminar la
+      // respuesta con __cN y _chunk_N_of_N (monolito ya lo hace).
       if (request.method === "GET" && path.startsWith("/store/prefix/")) {
         const prefix = decodeURIComponent(path.slice(14));
         const raw = url.searchParams.get("raw") === "1";
         const rows = await env.DB.prepare(
-          "SELECT key, value FROM siso_store WHERE key LIKE ? LIMIT 2000"
+          "SELECT key, value FROM siso_store WHERE key LIKE ? AND key NOT GLOB '*__c[0-9]*' AND key NOT LIKE '%__new%' AND key NOT GLOB '*_chunk_[0-9]*_of_[0-9]*' LIMIT 2000"
         ).bind(prefix + "%").all();
+        // FIX 2026-07-21: decompressValue por si el valor legacy viene con prefijo gz:
         const result = raw
           ? (rows.results || []).map(r => ({ key: r.key, value: r.value }))
-          : (rows.results || []).map(r => {
+          : await Promise.all((rows.results || []).map(async r => {
               try {
-                return { key: r.key, value: JSON.parse(r.value) };
+                const dv = await decompressValue(r.value);
+                return { key: r.key, value: JSON.parse(dv) };
               } catch {
                 return { key: r.key, value: r.value };
               }
-            });
+            }));
         return new Response(JSON.stringify(result), { headers });
       }
 
@@ -207,10 +213,13 @@ export default {
             "SELECT key, value, updated_at FROM siso_store LIMIT 2000"
           ).all();
         }
-        const result = (rows.results || []).map(r => ({
-          key: r.key,
-          value: JSON.parse(r.value),
-          updated_at: r.updated_at,
+        const result = await Promise.all((rows.results || []).map(async r => {
+          try {
+            const dv = await decompressValue(r.value);
+            return { key: r.key, value: JSON.parse(dv), updated_at: r.updated_at };
+          } catch {
+            return { key: r.key, value: r.value, updated_at: r.updated_at };
+          }
         }));
         return new Response(JSON.stringify(result), { headers });
       }
@@ -225,8 +234,14 @@ export default {
         const rows = Array.isArray(body) ? body : [body];
         const ifMatch = (request.headers.get("If-Match") || request.headers.get("X-Siso-If-Match") || "").replace(/"/g, "").trim();
 
-        // CANDADO 3 (FASE 0.5): validar userId en claves de pacientes
+        // CANDADO 3 (2026-07-21 — INERTE): validar userId en claves de pacientes.
+        // Ningún cliente (monolito ni refactor) envía actualmente los headers
+        // X-Siso-App / X-Siso-UserId que este bloque requiere. Permanece aquí para
+        // futura activación cuando d1Client.js envíe esos headers en cada request
+        // (ver FASE 5.6 del PROMPT_MAESTRO_IGUALACION_2026-07-21). Mientras tanto,
+        // la protección real contra escritura cruzada la da _mergeProtegido (CANDADO 1).
         // La app que escribe debe coincidir con el userId del sufijo de la clave
+
         const appId = request.headers.get("X-Siso-App") || "unknown";
         const userId = request.headers.get("X-Siso-UserId") || "";
         const PROTECTED_PREFIXES_USER = ['siso_patients_', 'siso_db_patients_', 'siso_hc_'];
@@ -406,10 +421,13 @@ export default {
 
       // ── GET /storage-stats — monitoreo de uso D1 ──────────────────────
       // F1-04: Retorna filas, MB usados, % uso y alertas 70/90%.
+      // FIX 2026-07-21: usa SUM(LENGTH(value)) real en vez de estimación filas*2048.
       if (request.method === "GET" && path === "/storage-stats") {
         const count = await env.DB.prepare("SELECT COUNT(*) AS c FROM siso_store").first();
         const filas = count?.c ?? 0;
-        const mbUsados = Math.round((filas * 2048) / (1024 * 1024) * 100) / 100;
+        const sizeRow = await env.DB.prepare("SELECT SUM(LENGTH(value)) AS total_bytes FROM siso_store").first();
+        const mbUsados = sizeRow?.total_bytes ? Math.round((sizeRow.total_bytes / (1024 * 1024)) * 100) / 100 : 0;
+
         const limiteMb = 500;
         const usoPct = Math.round((mbUsados / limiteMb) * 100);
         const grupos = await env.DB.prepare(`
@@ -466,8 +484,21 @@ export default {
       }
 
       // ── GET /health — endpoint de healthcheck para FASE 4 monitoring ──
+      // AUDITORÍA 2026-07-10: los 5 COUNT(*) escanean ~2.300 filas cada uno
+      // (~11K filas leídas POR LLAMADA). Ambas apps (monolito y refactor) lo
+      // llaman cada 2 min → ~7M filas/día con 2 pestañas, superando el límite
+      // gratis de D1 (5M lecturas/día). Por defecto ahora responde con un ping
+      // barato (SELECT 1 ≈ 0 filas); los conteos completos solo con ?full=1.
       if (request.method === "GET" && path === "/health") {
         const t0 = Date.now();
+        if (url.searchParams.get("full") !== "1") {
+          try {
+            await env.DB.prepare("SELECT 1").first();
+            return new Response(JSON.stringify({ ok: true, latencyMs: Date.now() - t0, ts: new Date().toISOString() }), { headers });
+          } catch (e) {
+            return new Response(JSON.stringify({ ok: false, error: e.message, latencyMs: Date.now() - t0 }), { status: 500, headers });
+          }
+        }
         const counts = {};
         try {
           const r1 = await env.DB.prepare("SELECT COUNT(*) AS c FROM siso_store").first();
@@ -571,6 +602,27 @@ async function runDailySnapshot(env) {
   const t0 = Date.now();
   const log = [];
 
+  // FIX 2026-07-21: limpieza de chunks temporales __new<ts>__cN/__meta abandonados
+  // (>1h) — mismo GC que el monolito, evita que D1 acumule piezas huérfanas de
+  // escrituras interrumpidas.
+  try {
+    const cutoffMs = Date.now() - 60 * 60 * 1000;
+    const gcRows = await env.DB.prepare(
+      "SELECT key FROM siso_store WHERE key LIKE '%\\_\\_new%\\_\\_c%' OR key LIKE '%\\_\\_new%\\_\\_meta' ESCAPE '\\'"
+    ).all();
+    let tempsBorrados = 0;
+    for (const r of (gcRows.results || [])) {
+      const m = r.key.match(/__new(\d+)__/);
+      if (m && parseInt(m[1], 10) < cutoffMs) {
+        await env.DB.prepare("DELETE FROM siso_store WHERE key = ?").bind(r.key).run();
+        tempsBorrados++;
+      }
+    }
+    log.push(`[GC-TEMP] borrados ${tempsBorrados} chunks temporales abandonados`);
+  } catch (e) {
+    log.push(`[GC-TEMP] error: ${e?.message}`);
+  }
+
   // 1) Leer todas las claves (excluir snapshots y legacy — no respaldar respaldos)
   const allRows = await env.DB.prepare(
     "SELECT key, value FROM siso_store WHERE key NOT LIKE 'siso_snapshot_%' AND key NOT LIKE 'siso_legacy_%'"
@@ -584,17 +636,19 @@ async function runDailySnapshot(env) {
   const direct = {};
   const chunkRe = /__c(\d+)$/;
   for (const row of rows) {
+    // FIX 2026-07-21: decompressValue por si el valor legacy viene con prefijo gz:
+    const rawVal = await decompressValue(row.value);
     if (row.key.endsWith("__meta")) {
-      try { metas[row.key.slice(0, -6)] = JSON.parse(row.value); } catch {}
+      try { metas[row.key.slice(0, -6)] = JSON.parse(rawVal); } catch {}
       continue;
     }
     const m = chunkRe.exec(row.key);
     if (m) {
       const base = row.key.slice(0, -m[0].length);
-      (chunkBags[base] ||= {})[Number(m[1])] = JSON.parse(row.value);
+      (chunkBags[base] ||= {})[Number(m[1])] = JSON.parse(rawVal);
       continue;
     }
-    try { direct[row.key] = JSON.parse(row.value); } catch { direct[row.key] = row.value; }
+    try { direct[row.key] = JSON.parse(rawVal); } catch { direct[row.key] = rawVal; }
   }
 
   const reconstructed = { ...direct };
@@ -613,7 +667,15 @@ async function runDailySnapshot(env) {
   }
   log.push(`reconstruidas ${reconstructedCount} claves chunked`);
 
-  // 3) Serializar y trocear el snapshot
+  // 3) Rotar snapshots viejos ANTES de escribir el nuevo (monolito ya lo hace)
+  //    Evita que D1 se llene con snapshots acumulados si el cron diario falla.
+  const cutoff = new Date(Date.now() - 7 * 86400000).toISOString().slice(0, 10);
+  const delRes = await env.DB.prepare(
+    "DELETE FROM siso_store WHERE key LIKE 'siso_snapshot_%' AND substr(key, 15, 10) < ?"
+  ).bind(cutoff).run();
+  log.push(`rotación previa: borradas ${delRes.meta?.changes ?? 0} claves anteriores a ${cutoff}`);
+
+  // 4) Serializar y trocear el snapshot
   const serialized = JSON.stringify({
     snapshotVersion: "v1",
     createdAt: new Date().toISOString(),
@@ -625,7 +687,8 @@ async function runDailySnapshot(env) {
   const pieceCount = Math.ceil(totalBytes / CHUNK);
   log.push(`serializado ${(totalBytes/1024).toFixed(0)} KB → ${pieceCount} piezas`);
 
-  // 4) Escribir piezas + meta + manifest
+  // 5) Escribir piezas + meta + manifest
+
   const insertStmt = env.DB.prepare(
     "INSERT INTO siso_store(key, value, updated_at) VALUES(?, ?, datetime('now')) ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at"
   );
@@ -660,14 +723,6 @@ async function runDailySnapshot(env) {
     await env.DB.batch(writeBatch.slice(i, i + 50));
   }
   log.push(`escritas ${writeBatch.length} claves del snapshot`);
-
-  // 5) Rotación: borrar snapshots cuya fecha (extraída de la clave) sea > 7 días atrás
-  const cutoff = new Date(Date.now() - 7 * 86400000).toISOString().slice(0, 10);
-  // siso_snapshot_YYYY-MM-DD__... → substr(15, 10) = "YYYY-MM-DD"
-  const delRes = await env.DB.prepare(
-    "DELETE FROM siso_store WHERE key LIKE 'siso_snapshot_%' AND substr(key, 15, 10) < ?"
-  ).bind(cutoff).run();
-  log.push(`rotación: borradas ${delRes.meta?.changes ?? 0} claves anteriores a ${cutoff}`);
-
+  // (La rotación ya se hizo antes de escribir — ver paso 3)
   return { ok: true, snapshotKey: snapPrefix, manifest, log };
 }

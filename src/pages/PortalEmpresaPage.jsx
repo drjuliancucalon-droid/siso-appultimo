@@ -3,7 +3,21 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Building2, Loader2, Download, Search, FileText, BarChart3, Users, Activity, Printer, Shield, TrendingUp, CheckSquare, Square, ChevronDown } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
-import { d1Get } from '../lib/d1Client';
+import { d1Get, _readSmart } from '../lib/d1Client';
+
+// FIX 2026-07-21 (FASE 2 PROMPT_MAESTRO): consulta Supabase para _readSmart —
+// antes esta pantalla leía siso_portal_empresa_docs SOLO de D1, sin ningún
+// respaldo/reconciliación si D1 quedaba desactualizado respecto a Supabase.
+const _SB_URL = import.meta.env.VITE_SUPABASE_URL || 'https://yqrrktrgoijgzccrxnpz.supabase.co';
+const _SB_KEY = import.meta.env.VITE_SUPABASE_KEY || 'sb_publishable_K88qYuJ9wsWjQqnIhLVK7Q_NroFvPI7';
+const _sbQueryFor = async (key) => {
+  const r = await fetch(`${_SB_URL}/rest/v1/siso_store?key=eq.${encodeURIComponent(key)}&select=value`, {
+    headers: { apikey: _SB_KEY, Authorization: `Bearer ${_SB_KEY}` },
+  });
+  if (!r.ok) return null;
+  const rows = await r.json();
+  return rows?.[0]?.value ?? null;
+};
 import { _generarCertificadoHTMLNormalizado, _generarQRDataUrl } from '../shared/lib/printUtils';
 import { _openPrintRecetaDeriv, _mkPrintHeaderMod } from '../lib/printService';
 
@@ -138,7 +152,8 @@ export default function PortalEmpresaPage() {
       const periodMap = new Map(); // periodo -> { periodo, informe, cuenta, custodia, certificados }
       for (const nv of nitVariants) {
         let val = null;
-        try { const r = await d1Get(`siso_portal_empresa_docs_${nv}`); val = r.value; } catch {}
+        const _key = `siso_portal_empresa_docs_${nv}`;
+        try { val = await _readSmart(_key, _sbQueryFor(_key)); } catch {}
         if (!val || !Array.isArray(val.periodos)) continue;
         if (!baseDocs) baseDocs = { nit: val.nit || nv, nombre: val.nombre || '', codigoAcceso: val.codigoAcceso };
         else {

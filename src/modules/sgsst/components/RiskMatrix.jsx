@@ -4,7 +4,7 @@
  * Metodología GTC-45 (2012), Decreto 1072/2015 Art. 2.2.4.6.15
  */
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   AlertTriangle, Plus, Edit3, Trash2, Filter, Printer, Search,
   ChevronDown, ChevronUp, X, Save, Info, Eye, BarChart3,
@@ -25,7 +25,7 @@ import {
 } from '../services/sgsstService';
 
 const RiskMatrix = () => {
-  const [riesgos, setRiesgos] = useState(riesgosCRUD.getAll());
+  const [riesgos, setRiesgos] = useState([]);
   const [aiLoading, setAiLoading] = useState(false);
   const [aiResult, setAiResult] = useState(null);
   const [aiError, setAiError] = useState(null);
@@ -74,7 +74,8 @@ const RiskMatrix = () => {
 
   const [form, setForm] = useState({ ...emptyForm });
 
-  const refreshData = () => setRiesgos(riesgosCRUD.getAll());
+  const refreshData = () => { riesgosCRUD.getAll().then(setRiesgos); };
+  useEffect(() => { refreshData(); }, []);
 
   const riesgosCalculados = useMemo(() => {
     return riesgos.map(r => {
@@ -110,12 +111,8 @@ const RiskMatrix = () => {
       alert('Complete los campos obligatorios: Área, Categoría y Peligro');
       return;
     }
-    if (editingId) {
-      riesgosCRUD.update(editingId, form);
-    } else {
-      riesgosCRUD.create(form);
-    }
-    refreshData();
+    const op = editingId ? riesgosCRUD.update(editingId, form) : riesgosCRUD.create(form);
+    op.then(refreshData);
     setShowForm(false);
     setEditingId(null);
     setForm({ ...emptyForm });
@@ -129,8 +126,7 @@ const RiskMatrix = () => {
 
   const handleDelete = (id) => {
     if (window.confirm('¿Está seguro de eliminar este riesgo de la matriz IPEVR?')) {
-      riesgosCRUD.remove(id);
-      refreshData();
+      riesgosCRUD.remove(id).then(refreshData);
     }
   };
 

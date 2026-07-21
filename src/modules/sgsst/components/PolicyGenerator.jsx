@@ -27,7 +27,7 @@ const PolicyGenerator = () => {
   const [newObjective, setNewObjective] = useState('');
   const [generatedPolicy, setGeneratedPolicy] = useState('');
   const [editMode, setEditMode] = useState(false);
-  const [policies, setPolicies] = useState(politicasCRUD.getAll());
+  const [policies, setPolicies] = useState([]);
   const [showHistory, setShowHistory] = useState(false);
   const [approvalStatus, setApprovalStatus] = useState('borrador'); // borrador, en_revision, aprobada
   const [approver, setApprover] = useState('');
@@ -118,6 +118,8 @@ const PolicyGenerator = () => {
     if (step === 4) handleGenerate();
   }, [step]);
 
+  useEffect(() => { politicasCRUD.getAll().then(setPolicies); }, []);
+
   const savePolicy = () => {
     const policyData = {
       contenido: generatedPolicy,
@@ -130,8 +132,7 @@ const PolicyGenerator = () => {
       comentarios: approvalComments,
       version: policies.length + 1,
     };
-    politicasCRUD.create(policyData);
-    setPolicies(politicasCRUD.getAll());
+    politicasCRUD.create(policyData).then(() => politicasCRUD.getAll().then(setPolicies));
     alert('Política guardada exitosamente');
   };
 

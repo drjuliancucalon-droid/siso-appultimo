@@ -139,10 +139,8 @@ export default function App() {
             <Route path="/verificar/:codigo" element={<VerificacionPage />} />
             {/* Sprint 6: Encuesta pública (sin login) */}
             <Route path="/encuesta/:token" element={<SurveyResponsePage />} />
-            {/* Portales públicos — login NIT+código, sin sesión interna de SISO */}
+            {/* Portal público de empresa — login NIT+código propio, sin sesión interna de SISO */}
             <Route path="portal-empresa" element={<PortalEmpresaPage />} />
-            <Route path="portal-certificados/:companyId" element={<PortalCertificadosEmpresa />} />
-            <Route path="portal-certificados" element={<PortalCertificadosEmpresa />} />
 
             {/* Protected routes inside Layout */}
             <Route path="/" element={
@@ -167,6 +165,12 @@ export default function App() {
               <Route path="billing" element={<BillingPage />} />
               <Route path="caja" element={<CajaPage />} />
               <Route path="reports" element={<ReportsPage />} />
+              {/* FIX 2026-07-21: PortalCertificadosEmpresa no tiene gate propio (NIT+código)
+                  y su lectura de documentos depende de un backend REST inexistente en este
+                  repo — moverla a pública exponía nombre/NIT de empresas sin autenticación.
+                  PortalEmpresaPage.jsx ya cubre certificados públicamente con su propio login. */}
+              <Route path="portal-certificados/:companyId" element={<PortalCertificadosEmpresa />} />
+              <Route path="portal-certificados" element={<PortalCertificadosEmpresa />} />
               <Route path="sgsst" element={<SGSSTPage />} />
               <Route path="telemedicine" element={<TelemedicinePage />} />
               <Route path="habeas-data" element={<HabeasDataPage />} />

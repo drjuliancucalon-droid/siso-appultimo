@@ -25,19 +25,24 @@ const setItem = (key, value) => {
   } catch (e) { console.error('Error guardando en localStorage:', e); }
 };
 
-const _getList = async (key) => {
+const _getList = async (d1Key, localKey) => {
   try {
-    const { value } = await d1Get(key);
+    const { value } = await d1Get(d1Key);
     if (Array.isArray(value)) return value;
   } catch { /* D1 no disponible, usar localStorage */ }
-  return getItem(key) || [];
+  return getItem(localKey) || [];
 };
 
 // ─── CRUD genérico (D1 primario, localStorage fallback) ────────────────────────
-const createCRUD = (collectionKey) => ({
-  getAll: async () => _getList(collectionKey),
+// FIX 2026-07-21: la clave D1 lleva el prefijo siso_sgsst_ explícito (evita
+// colisión en el D1 compartido con el monolito); la clave local NO lo lleva
+// porque getItem/setItem ya lo anteponen — de lo contrario quedaría duplicado.
+const createCRUD = (collectionKey) => {
+  const d1Key = `${STORAGE_PREFIX}${collectionKey}`;
+  return {
+  getAll: async () => _getList(d1Key, collectionKey),
   getById: async (id) => {
-    const list = await _getList(collectionKey);
+    const list = await _getList(d1Key, collectionKey);
     return list.find(item => item.id === id);
   },
   create: async (item) => {
@@ -47,7 +52,7 @@ const createCRUD = (collectionKey) => ({
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
-    try { await d1WriteArrayMerge(collectionKey, [newItem], 'id'); } catch { /* D1 fallback */ }
+    try { await d1WriteArrayMerge(d1Key, [newItem], 'id'); } catch { /* D1 fallback */ }
     const items = getItem(collectionKey) || [];
     items.push(newItem);
     setItem(collectionKey, items);
@@ -59,24 +64,25 @@ const createCRUD = (collectionKey) => ({
     if (idx === -1) return null;
     items[idx] = { ...items[idx], ...updates, updatedAt: new Date().toISOString() };
     setItem(collectionKey, items);
-    try { await d1WriteArrayMerge(collectionKey, [items[idx]], 'id'); } catch { /* D1 fallback */ }
+    try { await d1WriteArrayMerge(d1Key, [items[idx]], 'id'); } catch { /* D1 fallback */ }
     return items[idx];
   },
   remove: async (id) => {
     try {
-      const { value } = await d1Get(collectionKey);
+      const { value } = await d1Get(d1Key);
       if (Array.isArray(value)) {
-        await d1Set(collectionKey, value.filter(item => item.id !== id));
+        await d1Set(d1Key, value.filter(item => item.id !== id));
       }
     } catch { /* D1 fallback */ }
     const items = (getItem(collectionKey) || []).filter(item => item.id !== id);
     setItem(collectionKey, items);
   },
   count: async () => {
-    const list = await _getList(collectionKey);
+    const list = await _getList(d1Key, collectionKey);
     return list.length;
   },
-});
+  };
+};
 
 // ─── Colecciones ───────────────────────────────────────────────────────────────
 export const riesgosCRUD = createCRUD('riesgos');

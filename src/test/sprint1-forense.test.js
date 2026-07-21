@@ -64,9 +64,12 @@ describe('Sprint 1 Forense — Impresión + Interacciones automáticas', () => {
   });
 
   // F20: Portal
+  // FIX 2026-07-21: PortalPublicoTrabajador.jsx (arquitectura Supabase pre-D1,
+  // código muerto sin ningún import activo) se eliminó — este test ahora
+  // verifica el portal público real: WorkerPortalPage → /portal/:code.
   describe('Portal (F17-F18)', () => {
-    it('PortalPublicoTrabajador existe', async () => {
-      const mod = await import('../components/modals/PortalPublicoTrabajador.jsx');
+    it('WorkerPortalPage existe', async () => {
+      const mod = await import('../pages/WorkerPortalPage.jsx');
       expect(mod.default).toBeDefined();
     });
   });

@@ -5,7 +5,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { d1Get, d1Set, d1WriteArrayMerge, _markUnsyncedHC } from '../lib/d1Client';
 import { migrateLocalStorageToCloud } from '../lib/migrateStorage';
-import { _sha256 } from '../shared/lib/crypto';
+import { _sha256, _verifyPassword, _totpVerify } from '../shared/lib/crypto';
 import { _canUse, _secretariaPuede, PLAN_CONFIG, SECRETARIA_PERMISOS_DEFAULT } from '../shared/data/planConfig.js';
 import { useAIStore } from './aiStore';
 
@@ -112,14 +112,21 @@ async function _loadUsersFromD1() {
  */
 async function _authenticateUser(username, password) {
   const users = await _loadUsersFromD1();
-  const user = users.find((u) => u.user === username && u.activo !== false);
+  // FIX 2026-07-21: UserForm.jsx (el flujo real de creación de usuarios, vía
+  // UsersPage.jsx) guarda el campo `usuario`, nunca `user` — un usuario nuevo
+  // real nunca calzaba con la búsqueda original, que solo miraba `.user`.
+  const user = users.find((u) => (u.user === username || u.usuario === username) && u.activo !== false);
   if (!user) return null;
 
-  const hash = await _sha256(password);
-  if (hash !== user.passHash) return null;
+  // FIX 2026-07-21: _verifyPassword soporta PBKDF2+salt (el hash que genera
+  // UserForm.jsx, 100k iteraciones) con fallback a SHA-256 legacy sin salt
+  // (los usuarios semilla). La comparación anterior solo hacía SHA-256 simple,
+  // por lo que ningún usuario creado por UserForm.jsx podía autenticarse.
+  const ok = await _verifyPassword(password, user.passHash, user.passSalt);
+  if (!ok) return null;
 
   // Limpiar campos sensibles
-  const { passHash: _, ...cleanUser } = user;
+  const { passHash: _, passSalt: __, ...cleanUser } = user;
   return cleanUser;
 }
 
@@ -512,7 +519,7 @@ export const useAuthStore = create(
        */
       generateTOTPSecret: async (username) => {
         const users = await _loadUsersFromD1();
-        const idx = users.findIndex((u) => u.user === username);
+        const idx = users.findIndex((u) => u.user === username || u.usuario === username);
         if (idx === -1) throw new Error('Usuario no encontrado');
 
         // Generar secreto base32 aleatorio (20 bytes)
@@ -545,43 +552,41 @@ export const useAuthStore = create(
        */
       verifyTOTP: async (username, code) => {
         const users = await _loadUsersFromD1();
-        const idx = users.findIndex((u) => u.user === username);
+        const idx = users.findIndex((u) => u.user === username || u.usuario === username);
         if (idx === -1) throw new Error('Usuario no encontrado');
 
         const { totpSecret } = users[idx];
         if (!totpSecret) throw new Error('No hay secreto TOTP configurado. Genera uno primero.');
 
-        // Validar código TOTP (algoritmo simplificado)
-        // En producción usaría otplib o similar. Aquí validamos formato.
-        if (!code || code.length < 4 || code.length > 8) {
-          throw new Error('Código TOTP inválido');
+        if (!code || !/^\d{6}$/.test(code)) {
+          throw new Error('Código TOTP inválido. Use un código de 6 dígitos.');
         }
 
-        // Para MVP: marcar como verificado si el código tiene 6 dígitos
-        // (Validación real TOTP requiere librería otplib)
-        if (code.length === 6 && /^\d{6}$/.test(code)) {
-          users[idx].twoFAEnabled = true;
-          users[idx]._twoFAVerified = true;
-          await d1Set(SISO_USERS_KEY, users);
+        // FIX 2026-07-21 (FASE 1 PROMPT_MAESTRO): validación real RFC 6238
+        // (HMAC-SHA1 contra el secreto, ventana +/-1x30s) — antes cualquier
+        // código de 6 dígitos se aceptaba sin comparar contra el secreto.
+        const valid = await _totpVerify(totpSecret, code, 1);
+        if (!valid) throw new Error('Código TOTP incorrecto.');
 
-          // Actualizar cache local
-          const { usersList: currentList } = get();
-          const newList = currentList.map((u) => {
-            if (u.user === username) return { ...u, twoFAEnabled: true, _twoFAVerified: true };
-            return u;
-          });
-          set({ usersList: newList });
+        users[idx].twoFAEnabled = true;
+        users[idx]._twoFAVerified = true;
+        await d1Set(SISO_USERS_KEY, users);
 
-          // Si el currentUser es este usuario, actualizar currentUser
-          const { currentUser } = get();
-          if (currentUser?.user === username) {
-            set({ currentUser: { ...currentUser, twoFAEnabled: true, _twoFAVerified: true }, twoFARequired: false });
-          }
+        // Actualizar cache local
+        const { usersList: currentList } = get();
+        const newList = currentList.map((u) => {
+          if (u.user === username || u.usuario === username) return { ...u, twoFAEnabled: true, _twoFAVerified: true };
+          return u;
+        });
+        set({ usersList: newList });
 
-          return { ok: true, verified: true };
+        // Si el currentUser es este usuario, actualizar currentUser
+        const { currentUser } = get();
+        if (currentUser?.user === username || currentUser?.usuario === username) {
+          set({ currentUser: { ...currentUser, twoFAEnabled: true, _twoFAVerified: true }, twoFARequired: false });
         }
 
-        throw new Error('Código TOTP inválido. Use un código de 6 dígitos.');
+        return { ok: true, verified: true };
       },
 
       /**
@@ -789,6 +794,11 @@ export const useAuthStore = create(
         refreshToken: state.refreshToken,
         isAuthenticated: state.isAuthenticated,
         privacidadAceptada: state.privacidadAceptada,
+        // FIX 2026-07-21: sin esto, el bloqueo por 5 intentos fallidos se
+        // reseteaba con solo recargar la página (F5) — Zustand rehidrataba
+        // loginAttempts/blockedUntil a sus valores iniciales en cada carga.
+        loginAttempts: state.loginAttempts,
+        blockedUntil: state.blockedUntil,
       }),
     }
   )

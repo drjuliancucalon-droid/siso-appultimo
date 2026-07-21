@@ -4,7 +4,7 @@
  * Decreto 1072/2015 Art. 2.2.4.6.17
  */
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   Calendar, Plus, Edit3, Trash2, ChevronLeft, ChevronRight, Filter,
   CheckCircle2, Clock, AlertTriangle, X, Save, Printer, Download,
@@ -35,7 +35,7 @@ const ESTADOS = {
 };
 
 const AnnualPlan = () => {
-  const [actividades, setActividades] = useState(actividadesCRUD.getAll());
+  const [actividades, setActividades] = useState([]);
   const [anio, setAnio] = useState(new Date().getFullYear());
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
@@ -75,7 +75,8 @@ const AnnualPlan = () => {
   };
   const [form, setForm] = useState({ ...emptyForm });
 
-  const refresh = () => setActividades(actividadesCRUD.getAll());
+  const refresh = () => { actividadesCRUD.getAll().then(setActividades); };
+  useEffect(() => { refresh(); }, []);
 
   const actividadesAnio = useMemo(() => {
     return actividades.filter(a => {
@@ -124,12 +125,8 @@ const AnnualPlan = () => {
   const handleSave = () => {
     if (!form.nombre) { alert('El nombre de la actividad es obligatorio'); return; }
     const data = { ...form, anio };
-    if (editingId) {
-      actividadesCRUD.update(editingId, data);
-    } else {
-      actividadesCRUD.create(data);
-    }
-    refresh();
+    const op = editingId ? actividadesCRUD.update(editingId, data) : actividadesCRUD.create(data);
+    op.then(refresh);
     setShowForm(false);
     setEditingId(null);
     setForm({ ...emptyForm });
@@ -143,8 +140,7 @@ const AnnualPlan = () => {
 
   const handleDelete = (id) => {
     if (window.confirm('¿Eliminar esta actividad del plan anual?')) {
-      actividadesCRUD.remove(id);
-      refresh();
+      actividadesCRUD.remove(id).then(refresh);
     }
   };
 
@@ -152,8 +148,7 @@ const AnnualPlan = () => {
     const estados = ['Pendiente', 'En progreso', 'Completado'];
     const currentIdx = estados.indexOf(act.estado);
     const nextEstado = estados[(currentIdx + 1) % estados.length];
-    actividadesCRUD.update(act.id, { estado: nextEstado });
-    refresh();
+    actividadesCRUD.update(act.id, { estado: nextEstado }).then(refresh);
   };
 
   const getCatInfo = (catId) => CATEGORIAS.find(c => c.id === catId) || CATEGORIAS[CATEGORIAS.length - 1];

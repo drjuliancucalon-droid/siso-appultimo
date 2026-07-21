@@ -507,10 +507,21 @@ export async function _readSmart(key, supabaseQuery) {
   if (d1Has && sbHas) {
     const tD1 = _tsOf(d1Val);
     const tSB = _tsOf(sbVal);
-    return tD1 >= tSB ? d1Val : sbVal;
+    if (tSB > tD1) {
+      // FIX 2026-07-21 (FASE 2 PROMPT_MAESTRO): catch-up a D1 cuando Supabase
+      // gana — sin esto, D1 se queda desactualizado indefinidamente y la
+      // próxima fusión server-side (_mergeProtegido) compara contra una
+      // versión vieja. Mismo patrón que el monolito (App.jsx:804,813).
+      d1Set(key, sbVal).catch(() => {});
+      return sbVal;
+    }
+    return d1Val;
   }
   if (d1Has) return d1Val;
-  if (sbHas) return sbVal;
+  if (sbHas) {
+    d1Set(key, sbVal).catch(() => {});
+    return sbVal;
+  }
   return null;
 }
 

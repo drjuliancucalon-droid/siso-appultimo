@@ -169,7 +169,9 @@ export default {
           // Modo raw: retorna value como string crudo sin JSON.parse
           return new Response(JSON.stringify([{ key, value: row.value, ts }]), { headers: respHeaders });
         }
-        const value = JSON.parse(row.value);
+        // FIX 2026-07-21: decompressValue por si el valor legacy viene con prefijo gz:
+        const dv = await decompressValue(row.value);
+        const value = JSON.parse(dv);
         return new Response(JSON.stringify([{ key, value, ts }]), { headers: respHeaders });
       }
 
@@ -184,15 +186,17 @@ export default {
         const rows = await env.DB.prepare(
           "SELECT key, value FROM siso_store WHERE key LIKE ? AND key NOT GLOB '*__c[0-9]*' AND key NOT LIKE '%__new%' AND key NOT GLOB '*_chunk_[0-9]*_of_[0-9]*' LIMIT 2000"
         ).bind(prefix + "%").all();
+        // FIX 2026-07-21: decompressValue por si el valor legacy viene con prefijo gz:
         const result = raw
           ? (rows.results || []).map(r => ({ key: r.key, value: r.value }))
-          : (rows.results || []).map(r => {
+          : await Promise.all((rows.results || []).map(async r => {
               try {
-                return { key: r.key, value: JSON.parse(r.value) };
+                const dv = await decompressValue(r.value);
+                return { key: r.key, value: JSON.parse(dv) };
               } catch {
                 return { key: r.key, value: r.value };
               }
-            });
+            }));
         return new Response(JSON.stringify(result), { headers });
       }
 
@@ -598,6 +602,27 @@ async function runDailySnapshot(env) {
   const t0 = Date.now();
   const log = [];
 
+  // FIX 2026-07-21: limpieza de chunks temporales __new<ts>__cN/__meta abandonados
+  // (>1h) — mismo GC que el monolito, evita que D1 acumule piezas huérfanas de
+  // escrituras interrumpidas.
+  try {
+    const cutoffMs = Date.now() - 60 * 60 * 1000;
+    const gcRows = await env.DB.prepare(
+      "SELECT key FROM siso_store WHERE key LIKE '%\\_\\_new%\\_\\_c%' OR key LIKE '%\\_\\_new%\\_\\_meta' ESCAPE '\\'"
+    ).all();
+    let tempsBorrados = 0;
+    for (const r of (gcRows.results || [])) {
+      const m = r.key.match(/__new(\d+)__/);
+      if (m && parseInt(m[1], 10) < cutoffMs) {
+        await env.DB.prepare("DELETE FROM siso_store WHERE key = ?").bind(r.key).run();
+        tempsBorrados++;
+      }
+    }
+    log.push(`[GC-TEMP] borrados ${tempsBorrados} chunks temporales abandonados`);
+  } catch (e) {
+    log.push(`[GC-TEMP] error: ${e?.message}`);
+  }
+
   // 1) Leer todas las claves (excluir snapshots y legacy — no respaldar respaldos)
   const allRows = await env.DB.prepare(
     "SELECT key, value FROM siso_store WHERE key NOT LIKE 'siso_snapshot_%' AND key NOT LIKE 'siso_legacy_%'"
@@ -611,17 +636,19 @@ async function runDailySnapshot(env) {
   const direct = {};
   const chunkRe = /__c(\d+)$/;
   for (const row of rows) {
+    // FIX 2026-07-21: decompressValue por si el valor legacy viene con prefijo gz:
+    const rawVal = await decompressValue(row.value);
     if (row.key.endsWith("__meta")) {
-      try { metas[row.key.slice(0, -6)] = JSON.parse(row.value); } catch {}
+      try { metas[row.key.slice(0, -6)] = JSON.parse(rawVal); } catch {}
       continue;
     }
     const m = chunkRe.exec(row.key);
     if (m) {
       const base = row.key.slice(0, -m[0].length);
-      (chunkBags[base] ||= {})[Number(m[1])] = JSON.parse(row.value);
+      (chunkBags[base] ||= {})[Number(m[1])] = JSON.parse(rawVal);
       continue;
     }
-    try { direct[row.key] = JSON.parse(row.value); } catch { direct[row.key] = row.value; }
+    try { direct[row.key] = JSON.parse(rawVal); } catch { direct[row.key] = rawVal; }
   }
 
   const reconstructed = { ...direct };

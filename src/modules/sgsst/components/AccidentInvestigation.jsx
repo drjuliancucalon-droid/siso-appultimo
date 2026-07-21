@@ -5,7 +5,7 @@
  * FURAT y FUREP digitales
  */
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   Activity, Plus, Edit3, Trash2, Search, Filter, X, Save,
   AlertTriangle, FileText, Calendar, Clock, Users, BarChart3,
@@ -28,7 +28,7 @@ const AGENTE_CAUSANTE = ['Máquinas/equipos', 'Herramientas', 'Materiales/sustan
 const MECANISMO = ['Caída de personas', 'Caída de objetos', 'Pisadas/choques/golpes', 'Atrapamiento', 'Sobreesfuerzo', 'Contacto con sustancia', 'Exposición', 'Accidente de tránsito', 'Agresión', 'Otro'];
 
 const AccidentInvestigation = () => {
-  const [accidentes, setAccidentes] = useState(accidentesCRUD.getAll());
+  const [accidentes, setAccidentes] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [activeTab, setActiveTab] = useState('registros'); // registros | indicadores | investigacion
@@ -78,7 +78,8 @@ const AccidentInvestigation = () => {
   };
   const [form, setForm] = useState({ ...emptyForm });
 
-  const refresh = () => setAccidentes(accidentesCRUD.getAll());
+  const refresh = () => { accidentesCRUD.getAll().then(setAccidentes); };
+  useEffect(() => { refresh(); }, []);
 
   const indicadores = useMemo(() => {
     return calcularIndicadores(accidentes, companyConfig.numTrabajadores || 1, null);
@@ -114,12 +115,8 @@ const AccidentInvestigation = () => {
     if (!form.fecha || !form.clasificacion) { alert('La fecha y clasificación son obligatorias'); return; }
     const data = { ...form };
     delete data.nuevaAccion;
-    if (editingId) {
-      accidentesCRUD.update(editingId, data);
-    } else {
-      accidentesCRUD.create(data);
-    }
-    refresh();
+    const op = editingId ? accidentesCRUD.update(editingId, data) : accidentesCRUD.create(data);
+    op.then(refresh);
     setShowForm(false);
     setEditingId(null);
     setForm({ ...emptyForm });
@@ -132,7 +129,7 @@ const AccidentInvestigation = () => {
   };
 
   const handleDelete = (id) => {
-    if (window.confirm('¿Eliminar este reporte de accidente?')) { accidentesCRUD.remove(id); refresh(); }
+    if (window.confirm('¿Eliminar este reporte de accidente?')) { accidentesCRUD.remove(id).then(refresh); }
   };
 
   const addAccionCorrectiva = () => {

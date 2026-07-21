@@ -4,7 +4,7 @@
  * Resolución 0312/2019 — 21 documentos obligatorios
  */
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   FileText, Upload, Search, Filter, X, Plus, Edit3, Trash2,
   CheckCircle2, XCircle, Clock, AlertTriangle, Download, Eye,
@@ -36,7 +36,7 @@ const ESTADO_DOC = {
 };
 
 const DocumentRepository = () => {
-  const [documentos, setDocumentos] = useState(documentosCRUD.getAll());
+  const [documentos, setDocumentos] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [selectedDoc, setSelectedDoc] = useState(null);
@@ -66,7 +66,8 @@ const DocumentRepository = () => {
   };
   const [form, setForm] = useState({ ...emptyForm });
 
-  const refresh = () => setDocumentos(documentosCRUD.getAll());
+  const refresh = () => { documentosCRUD.getAll().then(setDocumentos); };
+  useEffect(() => { refresh(); }, []);
 
   // Merge obligatorios con registrados
   const documentosCompletos = useMemo(() => {
@@ -136,13 +137,13 @@ const DocumentRepository = () => {
     setShowForm(true);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!form.nombre) { alert('El nombre del documento es obligatorio'); return; }
     const data = { ...form };
 
     // Add version to history
     if (editingId) {
-      const existing = documentosCRUD.getById(editingId);
+      const existing = await documentosCRUD.getById(editingId);
       if (existing && existing.version !== data.version) {
         data.versiones = [...(existing.versiones || []), {
           version: existing.version,
@@ -151,9 +152,9 @@ const DocumentRepository = () => {
           cambios: 'Versión anterior',
         }];
       }
-      documentosCRUD.update(editingId, data);
+      await documentosCRUD.update(editingId, data);
     } else {
-      documentosCRUD.create(data);
+      await documentosCRUD.create(data);
     }
     refresh();
     setShowForm(false);
@@ -163,8 +164,7 @@ const DocumentRepository = () => {
 
   const handleDelete = (id) => {
     if (window.confirm('¿Eliminar este documento del repositorio?')) {
-      documentosCRUD.remove(id);
-      refresh();
+      documentosCRUD.remove(id).then(refresh);
     }
   };
 

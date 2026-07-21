@@ -4,7 +4,7 @@
  * Res. 4927/2016, Decreto 1072/2015 Art. 2.2.4.6.11
  */
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   BookOpen, Plus, Edit3, Trash2, Users, Calendar, Clock,
   CheckCircle2, Award, Printer, Search, Filter, X, Save,
@@ -14,7 +14,7 @@ import {
 import { capacitacionesCRUD, CATALOGO_CAPACITACIONES } from '../services/sgsstService';
 
 const TrainingModule = () => {
-  const [capacitaciones, setCapacitaciones] = useState(capacitacionesCRUD.getAll());
+  const [capacitaciones, setCapacitaciones] = useState([]);
   const [activeTab, setActiveTab] = useState('programadas'); // programadas | catalogo | certificados
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
@@ -53,7 +53,8 @@ const TrainingModule = () => {
     ],
   });
 
-  const refresh = () => setCapacitaciones(capacitacionesCRUD.getAll());
+  const refresh = () => { capacitacionesCRUD.getAll().then(setCapacitaciones); };
+  useEffect(() => { refresh(); }, []);
 
   const filteredCaps = useMemo(() => {
     return capacitaciones.filter(c => {
@@ -81,12 +82,8 @@ const TrainingModule = () => {
     if (!form.nombre && !form.tema) { alert('El nombre o tema de la capacitación es obligatorio'); return; }
     const data = { ...form };
     delete data.nuevoAsistente;
-    if (editingId) {
-      capacitacionesCRUD.update(editingId, data);
-    } else {
-      capacitacionesCRUD.create(data);
-    }
-    refresh();
+    const op = editingId ? capacitacionesCRUD.update(editingId, data) : capacitacionesCRUD.create(data);
+    op.then(refresh);
     setShowForm(false);
     setEditingId(null);
     setForm({ ...emptyForm });
@@ -100,8 +97,7 @@ const TrainingModule = () => {
 
   const handleDelete = (id) => {
     if (window.confirm('¿Eliminar esta capacitación?')) {
-      capacitacionesCRUD.remove(id);
-      refresh();
+      capacitacionesCRUD.remove(id).then(refresh);
     }
   };
 
@@ -120,8 +116,7 @@ const TrainingModule = () => {
     if (!cap) return;
     const asistentes = [...(cap.asistentes || [])];
     asistentes[asistenteIdx] = { ...asistentes[asistenteIdx], firma: !asistentes[asistenteIdx].firma, horaFirma: new Date().toISOString() };
-    capacitacionesCRUD.update(capId, { asistentes });
-    refresh();
+    capacitacionesCRUD.update(capId, { asistentes }).then(refresh);
   };
 
   const scheduleFromCatalog = (catalogItem) => {
