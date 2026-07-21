@@ -241,14 +241,14 @@ async function _chunkGet(key, ts, opts = {}) {
     const totalChunks = value._chunks || 1;
     let assembled = '';
     for (let i = 0; i < totalChunks; i++) {
-      const chunkResp = await _retry(
-        () =>
-          fetch(`${WORKER_URL}/store/${encodeURIComponent(key + '_chunk_' + i + '_of_' + totalChunks)}`, {
-            method: 'GET',
-            headers: _authHeaders(),
-          }).then(_checkResponse),
-        `d1Get chunk ${i}/${totalChunks} (${key})`
-      );
+          const chunkResp = await _retry(
+            () =>
+              fetch(`${WORKER_URL}/store/${encodeURIComponent(key + '_chunk_' + i + '_of_' + totalChunks)}?raw=1`, {
+                method: 'GET',
+                headers: _authHeaders(),
+              }).then(_checkResponse),
+            `d1Get chunk ${i}/${totalChunks} (${key})`
+          );
       const chunkRows = chunkResp.json || (Array.isArray(chunkResp) ? chunkResp : []);
       if (chunkRows.length > 0 && chunkRows[0].value?.data) {
         assembled += chunkRows[0].value.data;
@@ -281,7 +281,7 @@ async function _chunkGet(key, ts, opts = {}) {
         for (let i = 0; i < count; i++) {
           const chunkResp = await _retry(
             () =>
-              fetch(`${WORKER_URL}/store/${encodeURIComponent(key + '__c' + i)}`, {
+              fetch(`${WORKER_URL}/store/${encodeURIComponent(key + '__c' + i)}?raw=1`, {
                 method: 'GET',
                 headers: _authHeaders(),
               }).then(_checkResponse),
@@ -479,6 +479,8 @@ export async function d1GetMany(keys) {
 export function _tsOf(v) {
   if (!v) return 0;
   if (v._updatedAt) return new Date(v._updatedAt).getTime();
+  if (v.updatedAt) return new Date(v.updatedAt).getTime();
+  if (v.updated_at) return new Date(v.updated_at).getTime();
   if (v.ts) return new Date(v.ts).getTime();
   return 0;
 }

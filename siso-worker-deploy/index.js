@@ -42,6 +42,88 @@ function isAllowedOrigin(origin) {
   return false;
 }
 
+// ── CLAVES PROTEGIDAS (fusión por id, nunca reemplazo total) ───────────────
+// COMMIT 3531448: siso_encuestas entra en la protección
+// COMMIT a28c77e: siso_companies entra en la protección
+// COMMIT 1661b5f: custodias, informes, propuestas, usuarios
+// COMMIT 50f852b: portal_empresa_docs, portal_empresa_atenciones
+const _PROTECTED = /^siso_(db_)?patients_|^siso_atenciones|^siso_hc_|^siso_encuestas|^siso_companies|^siso_cartas_custodia|^siso_saved_reports|^siso_informes|^siso_users|^siso_portal_empresa_docs|^siso_portal_empresa_atenciones/;
+
+// COMMIT 50f852b: siso_portal_empresa_docs_<nit> no es un arreglo: es un objeto
+// {nit, nombre, codigoAcceso, periodos:[{periodo, informe, cuenta, custodia, certificados}]}.
+// Fusiona por periodo, y dentro de cada periodo preserva informe/cuenta/custodia/
+// certificados que el entrante traiga en null pero el viejo sí tenía.
+async function _mergePeriodosObjeto(env, key, incoming) {
+  try {
+    const oldRow = await env.DB.prepare("SELECT value FROM siso_store WHERE key = ?").bind(key).first();
+    if (!oldRow?.value) return incoming;
+    let old = null;
+    try { old = JSON.parse(await decompressValue(oldRow.value)); } catch { return incoming; }
+    if (!old || typeof old !== "object" || !Array.isArray(old.periodos)) return incoming;
+    const byPeriodo = new Map(old.periodos.map(p => [p?.periodo, p]));
+    const merged = incoming.periodos.map(p => {
+      const op = byPeriodo.get(p?.periodo);
+      if (!op) return p;
+      byPeriodo.delete(p?.periodo);
+      return {
+        ...op, ...p,
+        informe: p.informe || op.informe || null,
+        cuenta: p.cuenta || op.cuenta || null,
+        custodia: p.custodia || op.custodia || null,
+        certificados: (p.certificados && p.certificados.count) ? p.certificados : (op.certificados || p.certificados || null),
+      };
+    });
+    const extras = [...byPeriodo.values()];
+    if (extras.length > 0) console.log(`[merge] CANDADO ${key}: +${extras.length} periodos preservados`);
+    return { ...incoming, periodos: [...merged, ...extras] };
+  } catch (e) { console.warn(`[merge] candado-objeto ${key} error:`, e.message); return incoming; }
+}
+
+// COMMIT 3531448: Fusiona por id: lo entrante gana por-id, lo existente que el
+// entrante no conoce se preserva. Usado por POST /store y POST /store/chunked.
+// COMMIT 50f852b: extendido para detectar objetos con .periodos y delegar a
+// _mergePeriodosObjeto (portal_empresa_docs).
+async function _mergeProtegido(env, key, incoming) {
+  if (!_PROTECTED.test(key)) return incoming;
+  if (incoming && typeof incoming === "object" && !Array.isArray(incoming) && Array.isArray(incoming.periodos)) {
+    return _mergePeriodosObjeto(env, key, incoming);
+  }
+  if (!Array.isArray(incoming)) return incoming;
+  try {
+    let old = null;
+    const oldRow = await env.DB.prepare("SELECT value FROM siso_store WHERE key = ?").bind(key).first();
+    if (oldRow?.value) {
+      try { old = JSON.parse(await decompressValue(oldRow.value)); } catch {}
+    }
+    if (!Array.isArray(old)) {
+      const om = await env.DB.prepare("SELECT value FROM siso_store WHERE key = ?").bind(key + "__meta").first();
+      if (om?.value) {
+        const m = JSON.parse(await decompressValue(om.value));
+        if (m?.chunked && Number.isFinite(m.count)) {
+          let joined = "";
+          for (let i = 0; i < m.count; i++) {
+            const pr = await env.DB.prepare("SELECT value FROM siso_store WHERE key = ?").bind(`${key}__c${i}`).first();
+            if (!pr?.value) { joined = null; break; }
+            const pv = JSON.parse(await decompressValue(pr.value));
+            joined += (typeof pv === "string") ? pv : "";
+          }
+          if (joined) { try { const p = JSON.parse(joined); if (Array.isArray(p)) old = p; } catch {} }
+        }
+      }
+    }
+    if (Array.isArray(old) && old.length > 0) {
+      const ids = new Set(incoming.filter(x => x && x.id != null).map(x => String(x.id)));
+      const idsByToken = new Set(incoming.filter(x => x && x.token != null).map(x => String(x.token)));
+      const extras = old.filter(x => x && ((x.id != null && !ids.has(String(x.id))) || (x.id == null && x.token != null && !idsByToken.has(String(x.token)))));
+      if (extras.length > 0) {
+        console.log(`[merge] CANDADO ${key}: +${extras.length} preservados (entrante=${incoming.length}, final=${incoming.length + extras.length})`);
+        return [...incoming, ...extras];
+      }
+    }
+  } catch (e) { console.warn(`[merge] candado ${key} error:`, e.message); }
+  return incoming;
+}
+
 function getCorsHeaders(origin) {
   const allow = isAllowedOrigin(origin) ? origin : DEFAULT_ORIGIN;
   return {
@@ -194,11 +276,16 @@ export default {
         const stmt = env.DB.prepare(
           "INSERT INTO siso_store(key, value, updated_at) VALUES(?, ?, datetime('now')) ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at"
         );
-        // Batch en chunks de 50
+        // Batch en chunks de 50 — COMMIT 3531448: fusión por id para claves
+        // protegidas (incluye siso_encuestas)
         const CHUNK = 50;
         for (let i = 0; i < rows.length; i += CHUNK) {
           const chunk = rows.slice(i, i + CHUNK);
-          const batch = chunk.map(({ key, value }) => stmt.bind(key, JSON.stringify(value)));
+          const comp = await Promise.all(chunk.map(async ({ key, value }) => {
+            const merged = await _mergeProtegido(env, key, value);
+            return { key, cv: JSON.stringify(merged) };
+          }));
+          const batch = comp.map(({ key, cv }) => stmt.bind(key, cv));
           await env.DB.batch(batch);
         }
         return new Response(JSON.stringify({ ok: true, count: rows.length }), { headers });
@@ -235,84 +322,63 @@ export default {
         return new Response(JSON.stringify({ ok: true, count: arr.length }), { headers });
       }
 
-      // ── POST /store/chunked — escritura atómica multi-chunk ────────────
-      // COMMIT e7ed13a — candado anti-encogimiento server-side.
-      // F1-05: CANDADO 2 también aplica aquí (HC cerradas inmutables)
-      // Body: { baseKey: string, pieces: string[], meta: object }
-      // El worker:
-      //   1. Borra todos los chunks viejos (baseKey__c0..cN, baseKey__meta)
-      //   2. Inserta chunks nuevos + meta en UNA transacción D1
-      //   3. Verifica que el valor reconstruido NO sea menor que el anterior
-      //      (anti-encogimiento). Si hay encogimiento → rechaza.
-      // Propósito: eliminar condiciones de carrera entre pestañas/monolito
-      // al escribir datos grandes (>500KB) que requieren chunking.
+      // ── POST /store/chunked — escritura chunked ATÓMICA (2026-07-11) ──
+      // El troceo cliente (piezas __cN escritas una a una) no es atómico:
+      // dos guardados simultáneos (dos pestañas, o monolito + refactor)
+      // entrelazaban piezas de generaciones distintas → hash mismatch →
+      // "CORRUPCIÓN detectada" y lectura descartada. Aquí el servidor
+      // trocea y escribe TODO (piezas + __meta con hash + borrado de la
+      // clave base y de piezas sobrantes) en UN env.DB.batch — transaccional
+      // en D1: los lectores ven la generación vieja o la nueva, nunca mezcla.
+      // Body: { key, value }. Formato 100% compatible con _workerGet del
+      // monolito y _chunkGet del refactor.
       if (request.method === "POST" && path === "/store/chunked") {
         const body = await request.json();
-        const { baseKey, pieces = [], meta = {} } = body;
-        if (!baseKey || !Array.isArray(pieces) || pieces.length === 0) {
-          return new Response(JSON.stringify({ error: "baseKey y pieces[] requeridos" }), { status: 400, headers });
+        const { key, value } = body || {};
+        if (!key || value === undefined) {
+          return new Response(JSON.stringify({ ok: false, error: "key y value requeridos" }), { status: 400, headers });
         }
-
-        // CANDADO anti-encogimiento: leer tamaño anterior para comparar
-        let previousSize = 0;
+        // ── CANDADO ANTI-ENCOGIMIENTO (2026-07-11, compartido con POST /store) ──
+        // Incidente: una pestaña con estado viejo reescribió la lista de
+        // pacientes y borró de la nube los 23 exámenes del día (3 veces).
+        // Para colecciones protegidas, el SERVIDOR fusiona por id con lo ya
+        // almacenado: lo entrante gana por-id (ediciones), pero los
+        // registros existentes que lo entrante NO conoce se PRESERVAN.
+        // Ninguna sesión — ni con código viejo, ni con estado incompleto —
+        // puede volver a encoger estas listas. Ver _mergeProtegido (module
+        // scope) — misma función que usa POST /store.
+        const toStore = await _mergeProtegido(env, key, value);
+        const payload = JSON.stringify(toStore);
+        // Hash idéntico al _hash64 del monolito (h1 base31 + h2 base127*31)
+        let h1 = 0, h2 = 0;
+        for (let i = 0; i < payload.length; i++) {
+          const c = payload.charCodeAt(i);
+          h1 = ((h1 << 5) - h1 + c) | 0;
+          h2 = ((h2 << 7) - h2 + c * 31) | 0;
+        }
+        const hash = (h1 >>> 0).toString(16) + "_" + (h2 >>> 0).toString(16);
+        const PIECE = 500 * 1024;
+        const pieces = [];
+        for (let off = 0; off < payload.length; off += PIECE) pieces.push(payload.slice(off, off + PIECE));
+        // Piezas viejas a borrar más allá del nuevo count (evita __cN huérfanos)
+        let oldCount = 0;
         try {
-          const prevMetaRow = await env.DB.prepare(
-            "SELECT value FROM siso_store WHERE key = ?"
-          ).bind(baseKey + "__meta").first();
-          if (prevMetaRow?.value) {
-            const prevMeta = JSON.parse(prevMetaRow.value);
-            previousSize = prevMeta?.totalBytes ?? prevMeta?.size ?? 0;
-          }
+          const om = await env.DB.prepare("SELECT value FROM siso_store WHERE key = ?").bind(key + "__meta").first();
+          if (om?.value) { const m = JSON.parse(await decompressValue(om.value)); if (m?.chunked && Number.isFinite(m.count)) oldCount = m.count; }
         } catch {}
-
-        // Calcular tamaño total de los nuevos chunks
-        const totalBytes = pieces.reduce((sum, p) => sum + (typeof p === "string" ? p.length : JSON.stringify(p).length), 0);
-
-        // Validación anti-encogimiento: si hay tamaño anterior y el nuevo es menor → rechazar
-        if (previousSize > 0 && totalBytes < previousSize) {
-          return new Response(JSON.stringify({
-            ok: false,
-            error: "shrink_detected",
-            message: "CANDADO anti-encogimiento: valor nuevo menor que el anterior",
-            previousBytes: previousSize,
-            newBytes: totalBytes,
-          }), { status: 409, headers });
-        }
-
-        // Borrar chunks viejos de esta baseKey
-        await env.DB.prepare(
-          "DELETE FROM siso_store WHERE key LIKE ?"
-        ).bind(baseKey + "__c%").run();
-        await env.DB.prepare(
-          "DELETE FROM siso_store WHERE key = ?"
-        ).bind(baseKey + "__meta").run();
-
-        // Insertar chunks nuevos + meta en batch atómico
-        const insertStmt = env.DB.prepare(
-          "INSERT INTO siso_store(key, value, updated_at) VALUES(?, ?, datetime('now'))"
+        const up = env.DB.prepare(
+          "INSERT INTO siso_store(key, value, updated_at) VALUES(?, ?, datetime('now')) ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at"
         );
-        const batch = pieces.map((piece, i) =>
-          insertStmt.bind(`${baseKey}__c${i}`, JSON.stringify(typeof piece === "string" ? piece : JSON.stringify(piece)))
-        );
-        batch.push(insertStmt.bind(`${baseKey}__meta`, JSON.stringify({
-          ...meta,
-          chunked: true,
-          count: pieces.length,
-          totalBytes,
-          ts: Date.now(),
-        })));
-
-        // Ejecutar en batches de 50 (límite D1)
-        for (let i = 0; i < batch.length; i += 50) {
-          await env.DB.batch(batch.slice(i, i + 50));
-        }
-
-        return new Response(JSON.stringify({
-          ok: true,
-          count: pieces.length,
-          totalBytes,
-          previousBytes: previousSize,
-        }), { headers });
+        const del = env.DB.prepare("DELETE FROM siso_store WHERE key = ?");
+        const meta = { chunked: true, count: pieces.length, totalBytes: payload.length, hash, ts: Date.now() };
+        const batch = [
+          ...pieces.map((p, i) => up.bind(key + "__c" + i, JSON.stringify(p))),
+          up.bind(key + "__meta", JSON.stringify(meta)),
+          del.bind(key), // los lectores caen al __meta
+        ];
+        for (let i = pieces.length; i < oldCount; i++) batch.push(del.bind(key + "__c" + i));
+        await env.DB.batch(batch); // ← transaccional: todo o nada
+        return new Response(JSON.stringify({ ok: true, chunks: pieces.length, hash }), { headers });
       }
 
       // ── POST /cleanup — limpieza de emergencia ─────────────────────────

@@ -10,7 +10,7 @@ import { printHC, generateHCPrintHTML, openPrintWindow, _printHCClean, PrintStyl
 import { initialOccupPatientState } from '../shared/data/initialStates';
 import { _sha256 } from '../shared/lib/crypto';
 import { _generarCertificadoHTMLNormalizado, _generarQRDataUrl } from '../shared/lib/printUtils';
-import { d1Set, d1WriteArrayMerge } from '../lib/d1Client';
+import { d1Set, d1Get, d1WriteArrayMerge } from '../lib/d1Client';
 import { cleanFirma } from '../shared/lib/utils/cleanFirma';
 
 // Lucide icons — imported ONCE at page level
@@ -462,10 +462,35 @@ export default function HistoriaPage() {
         console.log(`${logPrefix} ✅ empresa`);
       } catch (e) { failedKeys.push(`empresa: ${e.message}`); console.warn(`${logPrefix} ❌ empresa:`, e.message); }
 
-      // Clave 6 (array — MERGE, idField='periodo')
+      // Clave 6 (objeto con periodos — MERGE por periodo preservando codigoAcceso/informe/cuenta/custodia)
+      // FIX 2026-07-21: d1WriteArrayMerge escribía un array, destruyendo el objeto {nit, nombre,
+      // codigoAcceso, periodos:[]} que el resto del sistema (portal empresa, worker _mergePeriodosObjeto)
+      // espera como esquema canónico. Ahora lee el objeto existente, fusiona el periodoDoc dentro
+      // de periodos[] y escribe de vuelta el objeto completo.
       try {
-        await d1WriteArrayMerge(`siso_portal_empresa_docs_${nitClean}`, [periodoDoc], 'periodo');
-        console.log(`${logPrefix} ✅ empresa_docs`);
+        const docsKey = `siso_portal_empresa_docs_${nitClean}`;
+        const { value: existente } = await d1Get(docsKey);
+        let base = (existente && typeof existente === 'object' && !Array.isArray(existente))
+          ? existente
+          : { nit: nitClean, nombre: portalData.empresaNombre || '', codigoAcceso: existente?.codigoAcceso || null, periodos: [] };
+        if (!Array.isArray(base.periodos)) base.periodos = [];
+        const idx = base.periodos.findIndex(p => p?.periodo === periodo);
+        if (idx >= 0) {
+          // Preservar informe/cuenta/custodia/certificados existentes que periodoDoc no traiga
+          const prev = base.periodos[idx];
+          base.periodos[idx] = {
+            ...prev,
+            ...periodoDoc,
+            informe: periodoDoc.informe || prev.informe || null,
+            cuenta: periodoDoc.cuenta || prev.cuenta || null,
+            custodia: periodoDoc.custodia || prev.custodia || null,
+            certificados: (periodoDoc.certificados && periodoDoc.certificados.count) ? periodoDoc.certificados : (prev.certificados || periodoDoc.certificados || null),
+          };
+        } else {
+          base.periodos.push(periodoDoc);
+        }
+        await d1Set(docsKey, base);
+        console.log(`${logPrefix} ✅ empresa_docs (objeto, ${base.periodos.length} periodo(s))`);
       } catch (e) { failedKeys.push(`empresa_docs: ${e.message}`); console.warn(`${logPrefix} ❌ empresa_docs:`, e.message); }
     }
 

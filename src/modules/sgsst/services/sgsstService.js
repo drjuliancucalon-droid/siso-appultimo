@@ -6,6 +6,11 @@
 
 const STORAGE_PREFIX = 'siso_sgsst_';
 
+// FIX 2026-07-21 (FASE 4 PROMPT_MAESTRO): Migración de localStorage a D1.
+// Todas las 9 colecciones SGSST ahora persisten en D1 (d1WriteArrayMerge,
+// merge por id) con localStorage como fallback.
+import { d1Get, d1WriteArrayMerge, d1Set } from '../../../lib/d1Client';
+
 // ─── Helpers de localStorage ───────────────────────────────────────────────────
 const getItem = (key) => {
   try {
@@ -20,35 +25,57 @@ const setItem = (key, value) => {
   } catch (e) { console.error('Error guardando en localStorage:', e); }
 };
 
-// ─── CRUD genérico ─────────────────────────────────────────────────────────────
+const _getList = async (key) => {
+  try {
+    const { value } = await d1Get(key);
+    if (Array.isArray(value)) return value;
+  } catch { /* D1 no disponible, usar localStorage */ }
+  return getItem(key) || [];
+};
+
+// ─── CRUD genérico (D1 primario, localStorage fallback) ────────────────────────
 const createCRUD = (collectionKey) => ({
-  getAll: () => getItem(collectionKey) || [],
-  getById: (id) => (getItem(collectionKey) || []).find(item => item.id === id),
-  create: (item) => {
-    const items = getItem(collectionKey) || [];
+  getAll: async () => _getList(collectionKey),
+  getById: async (id) => {
+    const list = await _getList(collectionKey);
+    return list.find(item => item.id === id);
+  },
+  create: async (item) => {
     const newItem = {
       ...item,
       id: item.id || `${collectionKey}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
+    try { await d1WriteArrayMerge(collectionKey, [newItem], 'id'); } catch { /* D1 fallback */ }
+    const items = getItem(collectionKey) || [];
     items.push(newItem);
     setItem(collectionKey, items);
     return newItem;
   },
-  update: (id, updates) => {
+  update: async (id, updates) => {
     const items = getItem(collectionKey) || [];
     const idx = items.findIndex(item => item.id === id);
     if (idx === -1) return null;
     items[idx] = { ...items[idx], ...updates, updatedAt: new Date().toISOString() };
     setItem(collectionKey, items);
+    try { await d1WriteArrayMerge(collectionKey, [items[idx]], 'id'); } catch { /* D1 fallback */ }
     return items[idx];
   },
-  remove: (id) => {
+  remove: async (id) => {
+    try {
+      const { value } = await d1Get(collectionKey);
+      if (Array.isArray(value)) {
+        await d1Set(collectionKey, value.filter(item => item.id !== id));
+      }
+    } catch { /* D1 fallback */ }
     const items = (getItem(collectionKey) || []).filter(item => item.id !== id);
     setItem(collectionKey, items);
   },
-  count: () => (getItem(collectionKey) || []).length,
+  count: async () => {
+    const list = await _getList(collectionKey);
+    return list.length;
+  },
 });
 
 // ─── Colecciones ───────────────────────────────────────────────────────────────

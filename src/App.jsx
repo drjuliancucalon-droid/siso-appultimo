@@ -139,6 +139,10 @@ export default function App() {
             <Route path="/verificar/:codigo" element={<VerificacionPage />} />
             {/* Sprint 6: Encuesta pública (sin login) */}
             <Route path="/encuesta/:token" element={<SurveyResponsePage />} />
+            {/* Portales públicos — login NIT+código, sin sesión interna de SISO */}
+            <Route path="portal-empresa" element={<PortalEmpresaPage />} />
+            <Route path="portal-certificados/:companyId" element={<PortalCertificadosEmpresa />} />
+            <Route path="portal-certificados" element={<PortalCertificadosEmpresa />} />
 
             {/* Protected routes inside Layout */}
             <Route path="/" element={
@@ -165,9 +169,6 @@ export default function App() {
               <Route path="reports" element={<ReportsPage />} />
               <Route path="sgsst" element={<SGSSTPage />} />
               <Route path="telemedicine" element={<TelemedicinePage />} />
-              <Route path="portal-empresa" element={<PortalEmpresaPage />} />
-              <Route path="portal-certificados/:companyId" element={<PortalCertificadosEmpresa />} />
-              <Route path="portal-certificados" element={<PortalCertificadosEmpresa />} />
               <Route path="habeas-data" element={<HabeasDataPage />} />
               <Route path="cotizaciones" element={<CotizacionesPage />} />
               <Route path="config/ips" element={<ConfigIPSPage />} />
