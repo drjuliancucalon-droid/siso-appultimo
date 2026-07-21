@@ -73,6 +73,26 @@ Cero referencias a `d1Get`/`d1Set`/`d1WriteArrayMerge` en `src/modules/telemedic
 
 ---
 
-## Correcciones aplicadas en esta pasada
+## Correcciones aplicadas en esta pasada (commit `ddc56b0`)
 
-Ver el registro de cambios más abajo en este documento — se corrigieron directamente los hallazgos críticos #1, #2 y #4, más el punto más tractable de #3 (autenticación), dejando el resto documentado para una siguiente iteración.
+Se corrigieron directamente, verificando con build (`vite build`, 1824 módulos, sin errores) y suite de tests (163 passing):
+
+1. **SGSST (hallazgo crítico #1) — arreglado.** Los 8 componentes (`RiskMatrix.jsx`, `AccidentInvestigation.jsx`, `AnnualPlan.jsx`, `DocumentRepository.jsx`, `TrainingModule.jsx`, `PolicyGenerator.jsx`, `InspectionChecklist.jsx`, `SSTDashboard.jsx`) ahora manejan correctamente el CRUD async (`useEffect` + `.then()`/`await` en vez de asignar la Promise directo al `useState`). Además se namespacearon las 9 claves D1 con prefijo `siso_sgsst_` (antes literales como `"riesgos"`, riesgo de colisión con el D1 compartido).
+
+2. **`PortalCertificadosEmpresa.jsx` (hallazgo crítico #2) — arreglado.** Devuelta detrás de `ProtectedRoute` en `App.jsx` (no tiene gate propio y depende de un backend inexistente). `PortalEmpresaPage.jsx` queda como el portal público canónico — ya cubre certificados con su propio login NIT+código funcional.
+
+3. **`siso-worker/index.js` vs `siso-worker-deploy/index.js` (hallazgo #4) — resincronizados.** Además se completaron los puntos de FASE 5 que faltaban en ambos: `decompressValue` en los 3 puntos restantes (`GET /store/:key`, `GET /store/prefix`, `runDailySnapshot`) y el GC de chunks `__new*` huérfanos (>1h) dentro de `runDailySnapshot`.
+
+4. **Autenticación (hallazgo #3) — corregida en `authStore.js`.**
+   - `_authenticateUser` ahora usa `_verifyPassword` (PBKDF2+salt con fallback SHA-256 legacy, ya escrita y probada en `crypto.js`) en vez de solo SHA-256, y busca por `.user` o `.usuario` (antes solo `.user`, que `UserForm.jsx` nunca escribe).
+   - `verifyTOTP` ahora usa `_totpVerify` real (HMAC-SHA1, RFC 6238, ventana ±1×30s, portado tal cual del monolito) en vez de aceptar cualquier código de 6 dígitos.
+   - `loginAttempts`/`blockedUntil` agregados al `partialize` del `persist` — el bloqueo ya no se resetea con F5.
+   - Limpieza de código muerto en `LoginPage.jsx` (`_sha256`/`_pbkdf2Verify`/`_verifyHash`/`loginLocal` sin usar) y del import roto en `modules/auth/index.js` hacia el `useAuth.js` ya eliminado.
+
+5. **`_readSmart` — conectada.** Se le agregó el catch-up a D1 (escribe de vuelta si Supabase gana la comparación de timestamp) y se enganchó en la lectura principal de `siso_portal_empresa_docs` en `PortalEmpresaPage.jsx` (antes `d1Get` directo, sin reconciliación).
+
+6. **Limpieza de código muerto confirmado.** `PortalPublicoTrabajador.jsx` y `modules/clinical/services/printService.js` (vacío) eliminados, junto con sus referencias rotas (`modules/patients/index.js`, y el test forense que los verificaba — actualizado para apuntar al portal público real, `WorkerPortalPage.jsx`).
+
+7. **Bug preexistente no relacionado, corregido de paso:** `src/test/setup.js` usaba `beforeEach` sin importarlo — bloqueaba la ejecución de TODA la suite de tests (0 tests corrían). Una vez arreglado, se pudo verificar que 163 tests pasan; quedan 9 fallos preexistentes en 4 archivos (`src/sections/*` legacy con imports a rutas movidas, `LicenciasTab.jsx`, y 3 tests con rutas de import incorrectas) — no relacionados con el protocolo de igualación, documentados aquí para una futura limpieza separada.
+
+**Pendiente para una siguiente iteración** (no corregido en esta pasada, por alcance/tiempo): Telemedicina sin conexión a D1 (hallazgo #7 de la matriz), y la verificación completa de la Sección C (áreas del monolito aún no comparadas contra el refactor).
