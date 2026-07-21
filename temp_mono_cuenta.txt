@@ -1,0 +1,201 @@
+﻿32800:                      const f = p.fechaExamen || "Sin fecha";
+32801:                      if (!acc[f]) acc[f] = [];
+32802:                      acc[f].push(p);
+32803:                      return acc;
+32804:                    }, {});
+32805:                    const _totalPorFecha = Object.entries(_gruposFecha).reduce((sum, [f, pacs]) => {
+32806:                      return sum + (parseFloat(preciosPorFecha[f] || precioPorPaciente || 0) * pacs.length);
+32807:                    }, 0);
+32808:
+32809:                    const _totalFinal = precioModo === "global" ? _totalGlobal
+32810:                      : precioModo === "individual" ? _totalIndividual
+32811:                      : _totalPorFecha;
+32812:
+32813:                    const _hayTotal = _totalFinal > 0;
+32814:
+32815:                    // â”€â”€ Concepto para la cuenta de cobro â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+32816:                    const _concepto = precioModo === "global"
+32817:                      ? `EXAMENES MEDICOS OCUPACIONALES - ${total} trabajador(es) evaluado(s) Â· $${parseFloat(precioPorPaciente||0).toLocaleString("es-CO")} c/u`
+32818:                      : precioModo === "individual"
+32819:                      ? `EXAMENES MEDICOS OCUPACIONALES - ${total} trabajador(es) Â· Precios individuales Â· Total $${_totalIndividual.toLocaleString("es-CO")}`
+32820:                      : `EXAMENES MEDICOS OCUPACIONALES - ` + Object.entries(_gruposFecha).map(([f, pacs]) =>
+32821:                          `${f}: ${pacs.length} pacÃ—$${parseFloat(preciosPorFecha[f]||precioPorPaciente||0).toLocaleString("es-CO")}`
+32822:                        ).join(" Â· ") + ` Â· Total $${_totalPorFecha.toLocaleString("es-CO")}`;
+32823:
+32824:                    // â”€â”€ Generar cuenta de cobro â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+32825:                    const _generarCuenta = () => {
+32826:                      const comp = companies.find(c => c.id === selectedCompanyReport);
+32827:                      const _maxBill = savedBillsList.reduce((mx, b) => {
+32828:                        const n = parseInt(b.number || "0", 10); return n > mx ? n : mx;
+32829:                      }, 0);
+32830:                      const nextNum = String(_maxBill + 1).padStart(3, "0");
+32831:                      setBillData(p => ({
+32832:                        ...p,
+32833:                        companyId: selectedCompanyReport || "",
+32834:                        clientName: comp?.nombre || compName,
+32835:                        clientNit: comp ? `${comp.nit}${comp.dv ? "-" + comp.dv : ""}` : "",
+32836:                        amount: String(_totalFinal),
+32837:                        number: nextNum,
+32838:                        date: new Date().toISOString().split("T")[0],
+32839:                        concept: _concepto,
+32840:                      }));
+32841:                      goTo("bill");
+32842:                    };
+32843:
+32844:                    return (
+32845:                      <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 mb-4 no-print">
+32846:                        {/* Selector de modo */}
+32847:                        <div className="flex items-center gap-2 mb-3 flex-wrap">
+32848:                          <span className="text-xs font-bold text-gray-700">ðŸ’° Modo de precio:</span>
+32849:                          {[
+32850:                            { id: "global",     label: "ðŸ”µ Precio Ãºnico" },
+32851:                            { id: "individual", label: "ðŸ‘¤ Individual" },
+32852:                            { id: "porFecha",   label: "ðŸ“… Por fecha" },
+32853:                          ].map(m => (
+32854:                            <button
+32855:                              key={m.id}
+32856:                              onClick={() => setPrecioModo(m.id)}
+32857:                              className={`px-3 py-1 rounded-lg text-xs font-bold border transition ${
+32858:                                precioModo === m.id
+32859:                                  ? "bg-orange-600 text-white border-orange-600"
+32860:                                  : "bg-white text-gray-600 border-gray-300 hover:border-orange-400"
+32861:                              }`}
+32862:                            >{m.label}</button>
+32863:                          ))}
+32864:                        </div>
+32865:
+32866:                        {/* â”€â”€ MODO GLOBAL â”€â”€ */}
+32867:                        {precioModo === "global" && (
+32868:                          <div className="flex flex-wrap items-center gap-3">
+32869:                            <div className="flex items-center gap-2">
+32870:                              <label className="text-xs font-bold text-gray-700 whitespace-nowrap">Precio por paciente ($):</label>
+32871:                              <input
+32872:                                type="number" min="0" placeholder="0"
+32873:                                value={precioPorPaciente}
+32874:                                onChange={e => setPrecioPorPaciente(e.target.value)}
+32875:                                className="border border-orange-300 rounded-lg px-2 py-1.5 text-sm font-bold w-32 text-right focus:outline-none focus:ring-2 focus:ring-orange-400"
+32876:                              />
+32877:                            </div>
+32878:                            {precioPorPaciente && total > 0 && (
+32879:                              <>
+32880:                                <div className="bg-white border border-orange-300 rounded-lg px-3 py-1.5 text-sm font-black text-orange-700">
+32881:                                  Total: ${_totalGlobal.toLocaleString("es-CO")}
+32882:                                </div>
+32883:                                <div className="text-[10px] text-gray-500">
+32884:                                  {total} pacientes Ã— ${parseFloat(precioPorPaciente).toLocaleString("es-CO")}
+32885:                                </div>
+32886:                              </>
+32887:                            )}
+32888:                          </div>
+32889:                        )}
+32890:
+32891:                        {/* â”€â”€ MODO INDIVIDUAL â”€â”€ */}
+32892:                        {precioModo === "individual" && (
+32893:                          <div>
+32894:                            <div className="flex flex-wrap items-center gap-2 mb-2">
+32895:                              <div className="flex items-center gap-2">
+32896:                                <label className="text-xs font-bold text-gray-700 whitespace-nowrap">Precio base ($):</label>
+32897:                                <input
+32898:                                  type="number" min="0" placeholder="0"
+32899:                                  value={precioPorPaciente}
+32900:                                  onChange={e => setPrecioPorPaciente(e.target.value)}
+32901:                                  className="border border-orange-300 rounded-lg px-2 py-1.5 text-sm font-bold w-32 text-right focus:outline-none focus:ring-2 focus:ring-orange-400"
+32902:                                />
+32903:                              </div>
+32904:                              <button
+32905:                                onClick={() => {
+32906:                                  const init = {};
+32907:                                  filtered.forEach((_, i) => { init[i] = parseFloat(precioPorPaciente || 0); });
+32908:                                  setPreciosIndividuales(init);
+32909:                                }}
+32910:                                className="bg-orange-100 text-orange-700 border border-orange-300 px-3 py-1 rounded-lg text-xs font-bold hover:bg-orange-200"
+32911:                              >â†• Aplicar base a todos</button>
+32912:                              {_totalIndividual > 0 && (
+32913:                                <div className="bg-white border border-orange-300 rounded-lg px-3 py-1.5 text-sm font-black text-orange-700 ml-auto">
+32914:                                  Total: ${_totalIndividual.toLocaleString("es-CO")}
+32915:                                </div>
+32916:                              )}
+32917:                            </div>
+32918:                            <p className="text-[10px] text-gray-400 mb-1">
+32919:                              ðŸ’¡ Usa "Aplicar base a todos" y luego edita el precio de cada fila en la tabla de abajo
+32920:                            </p>
+32921:                          </div>
+32922:                        )}
+32923:
+32924:                        {/* â”€â”€ MODO POR FECHA â”€â”€ */}
+32925:                        {precioModo === "porFecha" && (
+32926:                          <div>
+32927:                            <div className="flex items-center gap-2 mb-2 flex-wrap">
+32928:                              <div className="flex items-center gap-2">
+32929:                                <label className="text-xs font-bold text-gray-700 whitespace-nowrap">Precio base ($):</label>
+32930:                                <input
+32931:                                  type="number" min="0" placeholder="0"
+32932:                                  value={precioPorPaciente}
+32933:                                  onChange={e => setPrecioPorPaciente(e.target.value)}
+32934:                                  className="border border-orange-300 rounded-lg px-2 py-1.5 text-sm font-bold w-28 text-right focus:outline-none focus:ring-2 focus:ring-orange-400"
+32935:                                />
+32936:                              </div>
+32937:                              <button
+32938:                                onClick={() => {
+32939:                                  const init = {};
+32940:                                  Object.keys(_gruposFecha).forEach(f => { init[f] = parseFloat(precioPorPaciente || 0); });
+32941:                                  setPreciosPorFecha(init);
+32942:                                }}
+32943:                                className="bg-orange-100 text-orange-700 border border-orange-300 px-3 py-1 rounded-lg text-xs font-bold hover:bg-orange-200"
+32944:                              >â†• Aplicar base a todas las fechas</button>
+32945:                            </div>
+32946:                            <div className="space-y-1.5 mb-2">
+32947:                              {Object.entries(_gruposFecha).sort(([a],[b])=>a.localeCompare(b)).map(([fecha, pacs]) => {
+32948:                                const precioF = parseFloat(preciosPorFecha[fecha] || precioPorPaciente || 0);
+32949:                                const subtotal = precioF * pacs.length;
+32950:                                return (
+32951:                                  <div key={fecha} className="flex items-center gap-2 bg-white border border-orange-100 rounded-lg px-3 py-1.5 flex-wrap">
+32952:                                    <span className="text-xs font-black text-orange-800 w-24">ðŸ“… {fecha}</span>
+32953:                                    <span className="text-[10px] text-gray-500">{pacs.length} pac.</span>
+32954:                                    <span className="text-[10px] text-gray-400">Ã—</span>
+32955:                                    <input
+32956:                                      type="number" min="0" placeholder="0"
+32957:                                      value={preciosPorFecha[fecha] ?? precioPorPaciente ?? ""}
+32958:                                      onChange={e => setPreciosPorFecha(p => ({...p, [fecha]: e.target.value}))}
+32959:                                      className="border border-orange-300 rounded px-2 py-1 text-xs font-bold w-28 text-right focus:outline-none focus:ring-1 focus:ring-orange-400"
+32960:                                    />
+32961:                                    <span className="text-[10px] text-gray-400">=</span>
+32962:                                    <span className="text-xs font-black text-emerald-700">${subtotal.toLocaleString("es-CO")}</span>
+32963:                                  </div>
+32964:                                );
+32965:                              })}
+32966:                            </div>
+32967:                            {_totalPorFecha > 0 && (
+32968:                              <div className="flex items-center justify-end gap-2">
+32969:                                <span className="text-[10px] text-gray-500">{total} pacientes en {Object.keys(_gruposFecha).length} fecha(s)</span>
+32970:                                <div className="bg-white border border-orange-300 rounded-lg px-3 py-1.5 text-sm font-black text-orange-700">
+32971:                                  Total: ${_totalPorFecha.toLocaleString("es-CO")}
+32972:                                </div>
+32973:                              </div>
+32974:                            )}
+32975:                          </div>
+32976:                        )}
+32977:
+32978:                        {/* BotÃ³n generar cuenta â€” visible en todos los modos cuando hay total */}
+32979:                        {_hayTotal && (
+32980:                          <div className="flex justify-end mt-3">
+32981:                            <button
+32982:                              onClick={_generarCuenta}
+32983:                              className="bg-orange-600 text-white px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 hover:bg-orange-700 shadow"
+32984:                            >
+32985:                              <Receipt className="w-3.5 h-3.5" /> Generar Cuenta de Cobro
+32986:                            </button>
+32987:                          </div>
+32988:                        )}
+32989:                      </div>
+32990:                    );
+32991:                  })()}
+32992:                  {/* Botones de exportaciÃ³n y tabla */}
+32993:                  <div className="flex flex-wrap gap-2 mb-4 no-print">
+32994:                    <button
+32995:                      onClick={() => exportPatientTable(filtered, compName)}
+32996:                      className="bg-emerald-600 text-white px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 hover:bg-emerald-700 shadow"
+32997:                    >
+32998:                      <HardDrive className="w-3.5 h-3.5" /> Exportar CSV
+32999:                    </button>
+33000:                    <button

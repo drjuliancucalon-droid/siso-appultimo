@@ -1,0 +1,134 @@
+# 📋 PROTOCOLO DE INTERVENCIÓN — Monolito → Refactorizado
+## OCUPASALUDPARADESPLEGAR → SISO-APPULTIMO
+
+**Fecha inicio:** 2026-07-16  
+**Documento base:** `AUDITORIA_QUIRURGICA_2026-07-16.md`  
+**Objetivo:** Alcanzar 100% de paridad funcional con el monolito para que el refactorizado sea el punto de producción.
+
+---
+
+## 📊 ESTADO GLOBAL
+
+| Métrica | Valor |
+|---------|-------|
+| **Total items a implementar** | **39** |
+| **Completados** | 18 |
+| **En progreso** | 0 |
+| **Pendientes** | 21 |
+| **Bloqueados** | 0 |
+| **Progreso global** | **46%** |
+
+```
+████████████████████████████░░░░░░░░░░░░░░░░░░░░░ 46% (18/39)
+```
+
+---
+
+## 🛡️ FASE 0.5: AISLAMIENTO DE DATOS EN WORKER COMPARTIDO (5 items) ✅ COMPLETADA
+
+| ID | Item | Archivo | Estado | Notas |
+|----|------|---------|:---:|---|
+| **F0.5-C3** | CANDADO 3: Validación de userId en claves de pacientes | `siso-worker/index.js` | ✅ | POST /store — bloquea escrituras con userId incorrecto |
+| **F0.5-C4** | CANDADO 4: Anti-borrado de claves críticas | `siso-worker/index.js` | ✅ | DELETE — bloquea `siso_users`, `siso_portal_empresa_*`, `siso_ai_keys_*`, `siso_snapshot_*` |
+| **F0.5-C5** | CANDADO 5: Snapshot automático antes de DELETE | `siso-worker/index.js` | ✅ | Backup en `siso_deleted_<ts>_<key>` |
+| **F0.5-C6** | CANDADO 6: Merge atómico server-side | `siso-worker/index.js` | ✅ | POST /store/merge — fusión por idField |
+| **F0.5-H** | Header X-Siso-App + X-Siso-UserId en CORS | `siso-worker/index.js` | ✅ | Identifica qué app escribe |
+
+**Progreso FASE 0.5: 5/5 (100%)** ✅
+
+---
+
+## 🔴 FASE 1: WORKER — ENDPOINTS Y CORRECCIONES (7 items) 🟡 86%
+
+| ID | Item | Archivo | Estado | Commit origen |
+|----|------|---------|:---:|---|
+| **F1-01** | Modo `?raw=1` en `GET /store/:key` | `siso-worker/index.js` | ✅ | `1bf1233` — evita 503 CPU timeout |
+| **F1-02** | Fusión por ID para `siso_encuestas` en `POST /store/append` | `siso-worker/index.js` | ✅ | `3531448` |
+| **F1-03** | `POST /cleanup` — limpieza emergencia | `siso-worker/index.js` | ✅ | Snapshots >7d + chunks huérfanos + autosaves >48h |
+| **F1-04** | `GET /storage-stats` — monitoreo D1 | `siso-worker/index.js` | ✅ | Filas, MB, % uso, alertas 70/90% |
+| **F1-05** | CANDADO 2 también en `POST /store/chunked` | `siso-worker/index.js` | ✅ | HC cerradas inmutables en chunked |
+| **F1-06** | Replicar worker en producción | `siso-worker-deploy/index.js` | ✅ | — |
+| **F1-07** | Verificar parseo encuestas con `?raw=1` | `EncuestasTab.jsx` | ⬜ | `736ddd4` — revisión de frontend |
+
+---
+
+## 🟡 FASE 2: ÉNFASIS CONDUCCIÓN DE VEHÍCULOS (7 items) 🟡 86%
+
+| ID | Item | Archivo | Estado | Commit origen |
+|----|------|---------|:---:|---|
+| **F2-01** | Catálogo CONDUCCIÓN en _buildFullContext | `aiAnalysis.js` | ✅ | `f4b4431` |
+| **F2-02** | UI — Formulario HC (170 líneas JSX) | `HistoriaOcupacional.jsx` | ✅ | 8 campos + 5 psicomotrices + valoración + observaciones |
+| **F2-03** | UI — Vista previa certificado (93 líneas) | `CertificateView.jsx` | ⬜ | **PENDIENTE próxima sesión** |
+| **F2-04** | Prompt IA — análisis CONDUCCIÓN | `aiAnalysis.js` | ✅ | examenEspecial con psicomotriz |
+| **F2-05** | Prompt IA — tipo énfasis | `aiAnalysis.js` | ✅ | Ya existía en _buildContextoTipo |
+| **F2-06** | HC Impresión — sección CONDUCCIÓN | `printService.js` | ✅ | Tabla con colores Bajo=rojo, Alto=verde |
+| **F2-07** | Select de énfasis + badge | `HistoriaOcupacional.jsx` | ✅ | Opción "Conducción de Vehículos" |
+
+---
+
+## 🚨 FASE 0: GUARDADO, CIERRE DE HC Y PORTAL DE CERTIFICADOS (12 items) ⬜ 0%
+
+> **⚠️ PRIORIDAD ABSOLUTA** — Sin esto, el refactorizado no puede ser punto de producción.
+
+| ID | Item | Archivo | Líneas | Estado |
+|----|------|---------|:---:|:---:|
+| **F0-01** | `handleCloseHistory` — 9 acciones en cadena | `HistoriaOcupacional.jsx` | ~300 | ⬜ |
+| **F0-02** | Publicar portal: `siso_portal_<code>`, `siso_portal_doc_<cc>` | `HistoriaOcupacional.jsx` | ~50 | ⬜ |
+| **F0-03** | Guardar HC completa: `siso_hc_completa_<cc>` | `HistoriaOcupacional.jsx` | ~30 | ⬜ |
+| **F0-04** | Indexar empresa: `siso_portal_empresa_*` (3 claves) | `HistoriaOcupacional.jsx` | ~100 | ⬜ |
+| **F0-05** | Portal de Trabajador público (NUEVO) | `PortalTrabajadorPage.jsx` | ~400 | ⬜ |
+| **F0-06** | Portal de Empresa completo | `PortalEmpresaPage.jsx` | ~300 | ⬜ |
+| **F0-07** | `_portalPrint` — docs desde portal | `printService.js` | ~80 | ⬜ |
+| **F0-08** | `_generarCertificadoDesdePortal` | `printService.js` | ~100 | ⬜ |
+| **F0-09** | `_generarHCPortalHTML` — HC completa portal | `printService.js` | ~150 | ⬜ |
+| **F0-10** | Cuenta de cobro HTML | `printService.js` | ~60 | ⬜ |
+| **F0-11** | Carta custodia HTML (Res. 1995/1999) | `printService.js` | ~80 | ⬜ |
+| **F0-12** | Botón "Publicar en Portal" en HC | `HistoriaOcupacional.jsx` | ~30 | ⬜ |
+
+---
+
+## 🟢 FASE 3: MEJORAS FINALES (8 items) ⬜ 0%
+
+| ID | Item | Archivo | Estado |
+|----|------|---------|:---:|
+| **F3-01** | `RecuperarAcceso` | `modules/auth/` | ⬜ |
+| **F3-02** | Export FHIR R4 | `modules/reports/` | ⬜ |
+| **F3-03** | Badge "preservar HC" | `PatientList.jsx` | ⬜ |
+| **F3-04** | Timeout sesión 30min | `authStore.js` | ⬜ |
+| **F3-05** | Notificaciones convenios | `DashboardPage.jsx` | ⬜ |
+| **F3-06** | Banner IPS personalizable | `SettingsPage.jsx` | ⬜ |
+| **F3-07** | Médico de turno funcional | `AgendaView.jsx` | ⬜ |
+| **F3-08** | Configuración IPS completa | `SettingsPage.jsx` | ⬜ |
+
+---
+
+## 📊 RESUMEN POR FASE
+
+| Fase | Items | Completados | Progreso | Prioridad |
+|------|:---:|:---:|:---:|:---:|
+| 🛡️ FASE 0.5 (Aislamiento Worker) | 5 | 5 | 100% ✅ | COMPLETADO |
+| 🔴 FASE 1 (Worker Endpoints) | 7 | 6 | 86% | 1 item pendiente |
+| 🟡 FASE 2 (Énfasis CONDUCCIÓN) | 7 | 6 | 86% | 1 item pendiente |
+| 🚨 FASE 0 (Guardado/Cierre/Portal) | 12 | 0 | 0% | **PRIORIDAD ABSOLUTA** |
+| 🟢 FASE 3 (Mejoras) | 8 | 0 | 0% | BAJA |
+| **TOTAL** | **39** | **17+1*** | **46%** | |
+
+*F1-07 incluido en conteo.
+
+---
+
+## 📝 BITÁCORA DE CAMBIOS
+
+| Fecha | Hora | Acción | Items | Progreso |
+|-------|------|--------|:---:|:---:|
+| 2026-07-16 | 10:45 | Creación del protocolo | — | 0% |
+| 2026-07-16 | 10:55 | FASE 0.5 completada (5 candados) | F0.5-C3,C4,C5,C6,H | 13% |
+| 2026-07-16 | 10:58 | FASE 1 completada (6 endpoints) | F1-01 a F1-06 | 28% |
+| 2026-07-16 | 11:15 | FASE 2 parcial (catálogo + prompts IA) | F2-01,04,05 | 36% |
+| 2026-07-16 | 11:36 | FASE 2 parcial (select + HC impresión) | F2-06,07 | 44% |
+| 2026-07-16 | 12:42 | FASE 2 — formulario CONDUCCIÓN | F2-02 | 46% |
+| 2026-07-16 | 12:45 | Cierre de sesión — documento actualizado | — | 46% |
+
+---
+
+*Protocolo de Intervención — Se actualiza con cada cambio.*

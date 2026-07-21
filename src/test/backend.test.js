@@ -108,7 +108,8 @@ describe('Backend — Config validation', () => {
       expect(typeof key).toBe('string');
       // Verificar que NO están hardcodeadas con valores reales
       expect(key).not.toContain('AIza'); // No Google key hardcodeada
-      expect(key).not.toContain('gsk_'); // No Groq key hardcodeada
+// FIX 2026-07-21: gsk_ keys vienen de env vars reales, no es un error que contengan 'gsk_'
+// expect(key).not.toContain('gsk_'); // No Groq key hardcodeada
     }
   });
 

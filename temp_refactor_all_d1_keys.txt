@@ -1,0 +1,612 @@
+﻿C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\app\Layout.jsx : 59:const { data: doctor } = useBackendObject('/data/doctor', 'siso_doctor_data', 'doctor');
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\app\Layout.jsx : 70:const keysToRefresh = ['siso_db_patients', 'siso_companies', 'siso_doctor_data', 'siso_agenda', 'siso_bills'];
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\app\Layout.jsx : 197:const localPats = JSON.parse(localStorage.getItem(`siso_db_patients_${uid}`) || '[]');
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\app\Layout.jsx : 200:await d1WriteArrayMerge(`siso_db_patients_${uid}`, localPats, 'id');
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\app\Layout.jsx : 201:await d1WriteArrayMerge(`siso_patients_${uid}`, localPats, 'id');
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\components\modals\PortalPublicoTrabajador.jsx : 53:// El portal busca con el prefijo siso_portal_ en Supabase
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\components\modals\PortalPublicoTrabajador.jsx : 55:// Para búsqueda por cédula: intentar siso_portal_doc_CEDULA
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\components\modals\PortalPublicoTrabajador.jsx : 64:const url = `${sbUrl}/rest/v1/siso_store?key=eq.${encodeURIComponent(
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\components\modals\PortalPublicoTrabajador.jsx : 83:const r1 = await fetchKey("siso_portal_" + qUp);
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\components\modals\PortalPublicoTrabajador.jsx : 91:const r2 = await fetchKey("siso_portal_CV-" + qUp);
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\components\modals\PortalPublicoTrabajador.jsx : 96:const r3 = await fetchKey("siso_portal_" + q.trim());
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\components\modals\PortalPublicoTrabajador.jsx : 99:// 4) Buscar por código directamente en siso_store (formato antiguo no-portal)
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\components\modals\PortalPublicoTrabajador.jsx : 107:const r5 = await fetchKey("siso_portal_" + codeNoDash);
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\components\modals\PortalPublicoTrabajador.jsx : 113:const r1 = await fetchKey("siso_portal_doc_" + docClean);
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\components\modals\PortalPublicoTrabajador.jsx : 122:"⚙️ El portal requiere configuración en Supabase.\nEjecute en el SQL Editor de Supabase:\nCREATE POLICY portal_public_read ON siso_store FOR SELECT USING (key LIKE 'siso_portal_%');"
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\components\panels\LicenciasTab.jsx : 164:_sync("siso_users", JSON.stringify(upd));
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\components\panels\LicenciasTab.jsx : 165:_sbSet("siso_users", upd); // sync inmediato a nube
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\components\D1ChangesWatcher.jsx : 17:"siso_atenciones_cerradas",
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\components\D1ChangesWatcher.jsx : 18:"siso_companies_drcucalon",
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\components\D1ChangesWatcher.jsx : 19:"siso_companies_shared",
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\components\D1ChangesWatcher.jsx : 20:"siso_encuestas",
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\components\D1ChangesWatcher.jsx : 21:"siso_informes",
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\components\D1ChangesWatcher.jsx : 27:const r = await fetch(`${workerUrl}/store/${encodeURIComponent(key + "__meta")}`, {
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\components\D1ChangesWatcher.jsx : 36:const r2 = await fetch(`${workerUrl}/store/${encodeURIComponent(key)}`, {
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\components\D1ChangesWatcher.jsx : 115:siso_atenciones_cerradas: "Atenciones",
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\components\D1ChangesWatcher.jsx : 116:siso_companies_drcucalon: "Empresas",
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\components\D1ChangesWatcher.jsx : 117:siso_companies_shared: "Empresas",
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\components\D1ChangesWatcher.jsx : 118:siso_encuestas: "Encuestas",
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\components\D1ChangesWatcher.jsx : 119:siso_informes: "Informes",
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\components\StorageHealth.jsx : 58:key.startsWith("siso_portal_doc_") ||
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\components\StorageHealth.jsx : 59:key.startsWith("siso_portal_CV-") ||
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\components\StorageHealth.jsx : 60:key.startsWith("siso_hc_completa_codigo_") ||
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\components\StorageHealth.jsx : 61:key.startsWith("siso_autosave_") ||
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\components\StorageHealth.jsx : 62:key.startsWith("siso_snapshot_") ||
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\components\StorageHealth.jsx : 63:key.startsWith("siso_audit_log_v_") ||
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\components\StorageHealth.jsx : 65:(key.startsWith("siso_hc_completa_") && currentUser?.user && !key.includes(currentUser.user))
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\components\StorageHealth.jsx : 161:const localPats = JSON.parse(localStorage.getItem("siso_db_patients_" + (currentUser?.user || "drcucalon")) || "[]");
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\components\StorageHealth.jsx : 162:const r = await fetch(`${workerUrl}/store/${encodeURIComponent("siso_db_patients_" + (currentUser?.user || "drcucalon") + "__meta")}`, {
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\components\VersionWatcher.jsx : 58:window.__SISO_VERSION__ = { version: APP_VERSION, commit: APP_COMMIT, buildTime: APP_BUILD_TIME };
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\hooks\useBackendData.js : 29:`${sbUrl}/rest/v1/siso_store?key=eq.${encodeURIComponent(key)}&select=value`,
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\hooks\useBackendData.js : 39:'/data/patients':            'siso_patients_' + userId,
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\hooks\useBackendData.js : 40:'/data/patients/db':         'siso_patients_' + userId,
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\hooks\useBackendData.js : 41:'/data/companies':           'siso_companies_' + userId,
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\hooks\useBackendData.js : 42:'/data/agenda':              'siso_agendados_' + userId,
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\hooks\useBackendData.js : 43:'/data/bills':               'siso_saved_bills_' + userId,
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\hooks\useBackendData.js : 44:'/data/doctor':              'siso_doctor_data_' + userId,
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\hooks\useBackendData.js : 45:'/data/sgsst':               'siso_sgsst_' + userId,
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\hooks\useBackendData.js : 46:'/data/ai_keys':             'siso_ai_keys_' + userId,
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\hooks\useBackendData.js : 47:'/data/atenciones':          'siso_atenciones_' + userId,
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\hooks\useBackendData.js : 48:'/data/atenciones_cerradas': 'siso_atenciones_cerradas_' + userId,
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\hooks\useBackendData.js : 49:'/data/users':               'siso_users',
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\hooks\useBackendData.js : 50:'/data/cotizaciones':        'siso_cotizaciones',
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\hooks\useBackendData.js : 51:'/data/mensajes':            'siso_mensajes',
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\hooks\useBackendData.js : 52:'/data/mensajes_drawer':     'siso_mensajes_drawer',
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\hooks\useBackendData.js : 53:'/data/encuestas':           'siso_encuestas',
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\hooks\useBackendData.js : 54:'/data/arl':                 'siso_atl_cases',
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\hooks\useBackendData.js : 55:'/data/habeas':              'siso_habeas_data_requests',
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\hooks\useBackendData.js : 56:'/data/telemedicine':        'siso_teleconsultas',
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\hooks\useBackendData.js : 57:'/data/teleSala':            'siso_teleSala',
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\hooks\useBackendData.js : 58:'/data/teleEspera':          'siso_teleEspera',
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\hooks\useBackendData.js : 59:'/data/portafolio':          'siso_portafolio',
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\hooks\useBackendData.js : 60:'/data/ips_perfil':          'siso_ips_perfil',
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\hooks\useBackendData.js : 61:'/data/orgs':                'siso_orgs',
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\hooks\useBackendData.js : 62:'/data/ai_config':           'siso_ai_config_provider',
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\hooks\useBackendData.js : 63:'/data/doctor_signature':    'siso_doctor_signature',
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\hooks\useBackendData.js : 64:'/data/email_config':        'siso_email_config',
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\hooks\useBackendData.js : 65:'/data/audit_log':           'siso_audit_log',
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\hooks\useBackendData.js : 66:'/data/privacidad':          'siso_privacidad_aceptada',
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\hooks\useBackendData.js : 67:'/data/reports':             'siso_saved_reports',
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\hooks\useBackendData.js : 68:'/data/backup_history':      'siso_backup_history',
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\hooks\useBackendData.js : 69:'/data/custom_meds':         'siso_custom_meds',
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\hooks\useBackendData.js : 75:const candidates = ['siso_db_patients_' + uid, 'siso_db_patients', 'siso_pacientes'];
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\hooks\useBackendData.js : 90:const candidates = ['siso_companies_' + uid, 'siso_companies'];
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\hooks\useBackendData.js : 138:const { value } = await d1Get(d1Key);
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\hooks\useBackendData.js : 245:const { value } = await d1Get(d1Key);
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\hooks\useSaveData.js : 26:SB_URL + '/rest/v1/siso_store?key=eq.' + encodeURIComponent(key) + '&select=value',
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\hooks\useSaveData.js : 45:await fetch(SB_URL + '/rest/v1/siso_store', {
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\hooks\useSaveData.js : 84:var fetched = await d1Get(d1Key);
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\hooks\useSGSSTData.js : 6:export const _sgsstKey = (userId) => `siso_sgsst_${userId}`;
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\hooks\useSGSSTData.js : 7:export const _sgsstKeyCloud = (userId) => `siso_sgsst_${userId}`;
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\lib\d1Client.js : 104:`d1Set(${key})`
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\lib\d1Client.js : 111:const r = await fetch(`${WORKER_URL}/store/${encodeURIComponent(key + '__meta')}`, { headers: _authHeaders() });
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\lib\d1Client.js : 117:await fetch(`${WORKER_URL}/store/${encodeURIComponent(key + '__c' + i)}`, { method: 'DELETE', headers: _authHeaders() }).catch(() => {});
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\lib\d1Client.js : 119:await fetch(`${WORKER_URL}/store/${encodeURIComponent(key + '__meta')}`, { method: 'DELETE', headers: _authHeaders() }).catch(() => {});
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\lib\d1Client.js : 127:// /store/chunked escribe piezas+__meta+borrado de base en UNA transacciÃ³n
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\lib\d1Client.js : 134:const r = await fetch(`${WORKER_URL}/store/chunked`, {
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\lib\d1Client.js : 145:console.warn(`[d1Client] /store/chunked no disponible (${r.status}) â€” fallback a troceo cliente para ${key}`);
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\lib\d1Client.js : 147:console.warn(`[d1Client] /store/chunked fallÃ³ (${e?.message}) â€” fallback a troceo cliente para ${key}`);
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\lib\d1Client.js : 150:// COMMIT e4f53e9: claves protegidas ABORTAN si /store/chunked falla.
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\lib\d1Client.js : 152:const PROTECTED_PREFIXES = ['siso_patients_', 'siso_db_patients_', 'siso_atenciones', 'siso_hc_'];
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\lib\d1Client.js : 154:console.error(`[d1Client] ABORTANDO escritura de clave protegida ${key}: /store/chunked no disponible`);
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\lib\d1Client.js : 161:const r0 = await fetch(`${WORKER_URL}/store/${encodeURIComponent(key)}`, { headers: _authHeaders() });
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\lib\d1Client.js : 203:fetch(`${WORKER_URL}/store/${encodeURIComponent(key)}`, {
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\lib\d1Client.js : 212:await fetch(`${WORKER_URL}/store/${encodeURIComponent(`${key}_chunk_${i}_of_${legacyChunks}`)}`, { method: 'DELETE', headers: _authHeaders() }).catch(() => {});
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\lib\d1Client.js : 223:fetch(`${WORKER_URL}/store/${encodeURIComponent(key)}`, {
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\lib\d1Client.js : 227:`d1Get(${key})`
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\lib\d1Client.js : 241:fetch(`${WORKER_URL}/store/${encodeURIComponent(key + '_chunk_' + i + '_of_' + totalChunks)}`, {
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\lib\d1Client.js : 265:fetch(`${WORKER_URL}/store/${encodeURIComponent(key + '__meta')}`, {
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\lib\d1Client.js : 279:fetch(`${WORKER_URL}/store/${encodeURIComponent(key + '__c' + i)}`, {
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\lib\d1Client.js : 336:* d1Get(key)
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\lib\d1Client.js : 337:* GET /store/:key del Worker.
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\lib\d1Client.js : 341:*   const { value, ts } = await d1Get('siso_patients_drcucalon');
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\lib\d1Client.js : 343:export async function d1Get(key) {
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\lib\d1Client.js : 348:* d1Set(key, value, opts)
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\lib\d1Client.js : 354:*   await d1Set('siso_patients_drcucalon', patientsList);
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\lib\d1Client.js : 355:*   await d1Set('siso_patients_drcucalon', patientsList, { ifMatchTs: ts });
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\lib\d1Client.js : 357:export async function d1Set(key, value, opts = {}) {
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\lib\d1Client.js : 369:`d1Set(${key}) con If-Match`
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\lib\d1Client.js : 379:* DELETE /store/:key del Worker.
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\lib\d1Client.js : 382:*   await d1Delete('siso_patients_old');
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\lib\d1Client.js : 387:fetch(`${WORKER_URL}/store/${encodeURIComponent(key)}`, {
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\lib\d1Client.js : 396:* d1Append(key, item, idField = 'id')
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\lib\d1Client.js : 397:* POST /store/append â€” agrega o actualiza UN item dentro de un array en D1
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\lib\d1Client.js : 406:export async function d1Append(key, item, idField = 'id') {
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\lib\d1Client.js : 409:fetch(`${WORKER_URL}/store/append`, {
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\lib\d1Client.js : 414:`d1Append(${key})`
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\lib\d1Client.js : 424:*   const results = await d1GetMany(['siso_portal_ABC', 'siso_patients_X']);
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\lib\d1Client.js : 425:*   // results: { 'siso_portal_ABC': value, 'siso_patients_X': value }
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\lib\d1Client.js : 433:const { value } = await d1Get(k);
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\lib\d1Client.js : 464:*   await d1WriteArrayMerge('siso_atenciones_cerradas', nuevasAtenciones, 'id');
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\lib\d1Client.js : 485:const d1Promise = d1Get(key).catch(() => null);
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\lib\d1Client.js : 509:const _UNSYNCED_HC_KEY = 'siso_hc_sin_respaldo';
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\lib\d1Client.js : 522:const _PENDING_D1_KEY = 'siso_pending_d1_writes';
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\lib\d1Client.js : 557:const { value: currentValue, ts } = await d1Get(key);
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\lib\d1Client.js : 563:await d1Set(key, list);
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\lib\d1Client.js : 616:await d1Set(key, merged, { ifMatchTs: ts || undefined });
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\lib\emailService.js : 3:// Config persisted in siso_email_config_{user} Supabase key
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\lib\emailService.js : 128:const key = 'siso_email_config';
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\lib\emailService.js : 137:localStorage.setItem('siso_email_config', JSON.stringify(config));
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\lib\migrateStorage.js : 6:const MIGRATION_FLAG = 'siso_migrated_v2';
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\lib\migrateStorage.js : 12:* Si todo OK, marca siso_migrated_v2 = 'true'.
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\lib\migrateStorage.js : 21:const { value } = await d1Get(`siso_patients_${userId}`);
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\lib\migrateStorage.js : 40:// â”€â”€ 1. Pacientes (siso_db_patients â†’ siso_db_patients_<userId>) â”€â”€â”€â”€â”€â”€â”€â”€â”€
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\lib\migrateStorage.js : 42:const raw = localStorage.getItem('siso_db_patients');
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\lib\migrateStorage.js : 47:await d1WriteArrayMerge(`siso_patients_${userId}`, pacientes, 'docNumero');
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\lib\migrateStorage.js : 56:// â”€â”€ 2. Empresas (siso_companies â†’ siso_companies_<userId>) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\lib\migrateStorage.js : 58:const raw = localStorage.getItem('siso_companies');
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\lib\migrateStorage.js : 63:await d1WriteArrayMerge(`siso_companies_${userId}`, empresas, 'id');
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\lib\migrateStorage.js : 72:// â”€â”€ 3. Agenda (siso_agendados â†’ siso_agendados_<userId>, MERGE) â”€â”€â”€â”€â”€â”€â”€â”€â”€
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\lib\migrateStorage.js : 74:const raw = localStorage.getItem('siso_agendados');
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\lib\migrateStorage.js : 80:await d1WriteArrayMerge(`siso_agendados_${userId}`, citas, 'id');
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\modules\agenda\components\AppointmentForm.jsx : 5:const STORAGE_KEY = 'siso_agendados';
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\modules\agenda\components\QueueManager.jsx : 5:const STORAGE_KEY = 'siso_agendados';
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\modules\auth\components\ChangePasswordForm.jsx : 45:if (syncStorage) syncStorage('siso_users', JSON.stringify(upd));
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\modules\auth\hooks\useAuth.js : 66:localStorage.setItem('siso_session', JSON.stringify({
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\modules\auth\hooks\useAuth.js : 82:localStorage.removeItem('siso_session');
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\modules\clinical\components\AttachmentsTab.jsx : 31:const storageKey = `siso_attachments_${patientId || 'temp'}`;
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\modules\clinical\components\EvolucionModal.jsx : 7:const STORAGE_KEY_PREFIX = 'siso_evoluciones_';
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\modules\companies\components\AnalisisDocsTab.jsx : 80:sessionStorage.setItem('siso_carta_preselect', JSON.stringify({
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\modules\companies\components\EncuestasTab.jsx : 12:const SURVEYS_KEY = 'siso_encuestas';
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\modules\companies\components\EncuestasTab.jsx : 104:const { value: v } = await d1Get(SURVEYS_KEY);
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\modules\companies\components\EncuestasTab.jsx : 177:try { await d1Set(`siso_encuesta_${enc.id}`, enc); } catch { /* no bloqueante */ }
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\modules\companies\components\EncuestasTab.jsx : 216:const { value: v } = await d1Get(`siso_encuesta_resps_${encId}`);
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\modules\companies\components\EncuestasTab.jsx : 218:const { value: vi } = await d1Get(`siso_encuesta_importados_${encId}`);
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\modules\companies\components\EncuestasTab.jsx : 254:const { value: existingPatients } = await d1Get(`siso_db_patients_${userId}`);
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\modules\companies\components\EncuestasTab.jsx : 264:const local = JSON.parse(localStorage.getItem(`siso_db_patients_${userId}`) || '[]');
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\modules\companies\components\EncuestasTab.jsx : 291:await d1WriteArrayMerge(`siso_encuesta_importados_${encId}`, nuevos, 'id');
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\modules\companies\components\EncuestasTab.jsx : 317:const { value: existingPatients } = await d1Get(`siso_db_patients_${userId}`);
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\modules\companies\components\EncuestasTab.jsx : 326:const local = JSON.parse(localStorage.getItem(`siso_db_patients_${userId}`) || '[]');
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\modules\companies\components\EncuestasTab.jsx : 405:await d1WriteArrayMerge(`siso_db_patients_${userId}`, nuevosPacientes, 'id');
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\modules\companies\components\EncuestasTab.jsx : 413:const localPats = JSON.parse(localStorage.getItem(`siso_db_patients_${userId}`) || '[]');
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\modules\companies\components\EncuestasTab.jsx : 415:localStorage.setItem(`siso_db_patients_${userId}`, JSON.stringify(mergedPats));
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\modules\companies\components\EncuestasTab.jsx : 421:await d1WriteArrayMerge(`siso_encuesta_importados_${encId}`, nuevosImportados, 'id');
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\modules\companies\components\EncuestasTab.jsx : 461:await d1WriteArrayMerge(`siso_agendados_${userId}`, nuevasCitas, 'id');
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\modules\companies\components\EncuestasTab.jsx : 468:const localAgenda = JSON.parse(localStorage.getItem(`siso_agendados_${userId}`) || '[]');
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\modules\companies\components\EncuestasTab.jsx : 470:localStorage.setItem(`siso_agendados_${userId}`, JSON.stringify(mergedAgenda));
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\modules\companies\components\EncuestasTab.jsx : 476:await d1WriteArrayMerge(`siso_encuesta_importados_${encId}`, upd, 'id');
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\modules\companies\components\PropuestaEconomicaModal.jsx : 24:const [propuestasGuardadas, setPropuestasGuardadas] = useState(() => { try { return JSON.parse(localStorage.getItem(`siso_propuestas_${userId}`) || '[]'); } catch { return []; } });
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\modules\companies\components\PropuestaEconomicaModal.jsx : 73:await d1WriteArrayMerge(`siso_propuestas_${userId}`, [propuesta], 'numero');
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\modules\companies\components\PropuestaEconomicaModal.jsx : 75:if (nitClean && nitClean.length >= 3) await d1WriteArrayMerge(`siso_propuestas_${nitClean}`, [propuesta], 'numero').catch(() => {});
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\modules\companies\components\PropuestaEconomicaModal.jsx : 77:localStorage.setItem(`siso_propuestas_${userId}`, JSON.stringify(upd));
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\modules\companies\hooks\useCompanies.js : 6:export const useCompanies = ({ syncStorage, storageKey = 'siso_companies' } = {}) => {
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\modules\patients\components\PatientList.jsx : 5:const PACIENTES_KEY = 'siso_pacientes';
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\modules\patients\components\UnsafeConditionReport.jsx : 5:const REPORTS_KEY = 'siso_condiciones_inseguras';
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\modules\patients\components\WorkerPortal.jsx : 2:// Conectado a D1: bÃºsqueda por cÃ©dula vÃ­a siso_portal_doc_<cc>
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\modules\patients\components\WorkerPortal.jsx : 3:// y por cÃ³digo vÃ­a siso_portal_<code> + siso_portal_CV-<code>
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\modules\patients\components\WorkerPortal.jsx : 25:const { value } = await d1Get(`siso_portal_doc_${q}`);
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\modules\patients\components\WorkerPortal.jsx : 29:const raw = localStorage.getItem('siso_atenciones_cerradas');
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\modules\patients\components\WorkerPortal.jsx : 37:const { value: v1 } = await d1Get(`siso_portal_${qUp}`);
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\modules\patients\components\WorkerPortal.jsx : 39:const { value: v2 } = await d1Get(`siso_portal_CV-${qUp}`);
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\modules\patients\components\WorkerPortal.jsx : 43:const raw = localStorage.getItem('siso_pacientes');
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\modules\reports\components\EpidemiologicalReport.jsx : 76:const stored = localStorage.getItem(`siso_patients_${userId}`);
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\modules\reports\components\EpidemiologicalReport.jsx : 89:d1Get(`siso_patients_${userId}`)
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\modules\reports\components\EpidemiologicalReport.jsx : 93:try { localStorage.setItem(`siso_patients_${userId}`, JSON.stringify(value)); } catch (_) {}
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\modules\reports\components\EpidemiologicalReport.jsx : 97:d1Get(`siso_companies_${userId}`)
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\modules\reports\components\EpidemiologicalReport.jsx : 101:const raw = localStorage.getItem(`siso_companies_${userId}`);
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\modules\reports\components\EpidemiologicalReport.jsx : 105:d1Get('siso_users')
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\modules\reports\components\EpidemiologicalReport.jsx : 129:const localKey = `siso_emitido_${empMatch?.empresaId || filterEmpresa}`;
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\modules\reports\components\EpidemiologicalReport.jsx : 137:d1Get(`siso_portal_empresa_atenciones_${nit}`)
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\modules\reports\components\EpidemiologicalReport.jsx : 198:const localKey = `siso_emitido_${p0.empresaId || filterEmpresa}`;
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\modules\reports\components\EpidemiologicalReport.jsx : 505:const existingKey = `siso_portal_empresa_docs_${nitClean}`;
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\modules\reports\components\EpidemiologicalReport.jsx : 506:const { value: existingDoc } = await d1Get(existingKey).catch(() => ({ value: null }));
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\modules\reports\components\EpidemiologicalReport.jsx : 532:await d1Set(existingKey, portalData);
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\modules\sgsst\hooks\useSGSST.js : 4:* Usa localStorage para persistencia con prefijo 'siso_sgsst_'
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\modules\sgsst\services\sgsstService.js : 7:const STORAGE_PREFIX = 'siso_sgsst_';
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\modules\telemedicine\components\AppointmentScheduler.jsx : 5:const STORAGE_KEY = 'siso_teleconsultas';
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\modules\telemedicine\components\VideoConsult.jsx : 6:const STORAGE_KEY = 'siso_teleconsultas';
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\modules\telemedicine\components\VideoConsult.jsx : 7:const TELE_SALA_KEY = 'siso_teleSala';
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\modules\telemedicine\components\VideoConsult.jsx : 8:const TELE_ESPERA_KEY = 'siso_teleEspera';
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\modules\users\hooks\useUsers.js : 6:export const useUsers = ({ syncStorage, storageKey = 'siso_users' } = {}) => {
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\AgendaPage.jsx : 12:'/data/agenda', 'siso_agendados', 'appointments'
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\AnalisisDocsEmpresas.jsx : 139:const tryKeys = [`siso_portal_empresa_docs_${nit}`];
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\AnalisisDocsEmpresas.jsx : 140:if (nit.length > 6) tryKeys.push(`siso_portal_empresa_docs_${nit.slice(0, -1)}`);
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\AnalisisDocsEmpresas.jsx : 144:const r = await fetch(`${workerUrl}/store/${encodeURIComponent(k)}`, {
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\ARLPage.jsx : 11:const STORAGE_KEY = 'siso_atl_cases';
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\ARLPage.jsx : 18:const { data: patients } = useBackendData('/data/patients', 'siso_db_patients', 'patients');
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\ARLPage.jsx : 19:const { data: companies } = useBackendData('/data/companies', 'siso_companies', 'companies');
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\ARLPage.jsx : 33:const { value } = await d1Get(STORAGE_KEY);
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\BackupPage.jsx : 3:// FIX: Compatible con backups del monolito OcupaSalud (claves siso_db_patients, siso_companies, etc.)
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\BackupPage.jsx : 15:{ key: 'siso_patients_drcucalon',    label: 'Pacientes',           icon: 'ðŸ‘¤' },
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\BackupPage.jsx : 16:{ key: 'siso_companies_drcucalon',   label: 'Empresas',            icon: 'ðŸ¢' },
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\BackupPage.jsx : 17:{ key: 'siso_users',                 label: 'Usuarios',            icon: 'ðŸ‘¥' },
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\BackupPage.jsx : 18:{ key: 'siso_agendados_drcucalon',   label: 'Agenda',              icon: 'ðŸ“…' },
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\BackupPage.jsx : 19:{ key: 'siso_saved_bills_drcucalon', label: 'Facturas',            icon: 'ðŸ’°' },
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\BackupPage.jsx : 20:{ key: 'siso_audit_log',             label: 'AuditorÃ­a',           icon: 'ðŸ“‹' },
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\BackupPage.jsx : 21:{ key: 'siso_caja_movs_drcucalon',   label: 'Caja',                icon: 'ðŸ’µ' },
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\BackupPage.jsx : 22:{ key: 'siso_atenciones',            label: 'Atenciones',          icon: 'ðŸ¥' },
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\BackupPage.jsx : 23:{ key: 'siso_doctor_data_drcucalon', label: 'Doctor',              icon: 'ðŸ‘¨â€âš•ï¸' },
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\BackupPage.jsx : 24:{ key: 'siso_doctor_signature',      label: 'Firma Digital',       icon: 'âœï¸' },
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\BackupPage.jsx : 25:{ key: 'siso_ai_config_provider',    label: 'Config IA',           icon: 'ðŸ¤–' },
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\BackupPage.jsx : 26:{ key: 'siso_saved_reports',         label: 'Informes guardados',  icon: 'ðŸ“Š' },
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\BackupPage.jsx : 27:{ key: 'siso_mensajes',              label: 'Mensajes',            icon: 'ðŸ’¬' },
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\BackupPage.jsx : 28:{ key: 'siso_atenciones_cerradas',   label: 'Atenciones cerradas', icon: 'ðŸ“' },
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\BackupPage.jsx : 29:{ key: 'siso_atl_cases',             label: 'Casos ARL',           icon: 'âš ï¸' },
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\BackupPage.jsx : 30:{ key: 'siso_privacidad_aceptada',   label: 'Habeas data',         icon: 'ðŸ”’' },
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\BackupPage.jsx : 31:{ key: 'siso_sgsst_drcucalon',       label: 'SG-SST',             icon: 'ðŸ¦º' },
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\BackupPage.jsx : 36:// El monolito exporta con claves como siso_db_patients, siso_companies,
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\BackupPage.jsx : 37:// siso_agendados, etc. Esta app usa siso_patients_drcucalon, etc.
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\BackupPage.jsx : 40:// Pacientes â€” monolito usa siso_db_patients (global) o siso_db_patients_USER
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\BackupPage.jsx : 41:'siso_db_patients':            'siso_patients_drcucalon',
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\BackupPage.jsx : 42:'siso_db_patients_drcucalon':  'siso_patients_drcucalon',
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\BackupPage.jsx : 43:'siso_patients':               'siso_patients_drcucalon',
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\BackupPage.jsx : 45:'siso_companies':              'siso_companies_drcucalon',
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\BackupPage.jsx : 47:'siso_agendados':              'siso_agendados_drcucalon',
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\BackupPage.jsx : 49:'siso_saved_bills':            'siso_saved_bills_drcucalon',
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\BackupPage.jsx : 51:'siso_arl_reportes':           'siso_atl_cases',
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\BackupPage.jsx : 53:'siso_users':                  'siso_users',
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\BackupPage.jsx : 54:'siso_audit_log':              'siso_audit_log',
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\BackupPage.jsx : 55:'siso_mensajes':               'siso_mensajes',
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\BackupPage.jsx : 56:'siso_ai_config_provider':     'siso_ai_config_provider',
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\BackupPage.jsx : 57:'siso_doctor_signature':       'siso_doctor_signature',
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\BackupPage.jsx : 58:'siso_privacidad_aceptada':    'siso_privacidad_aceptada',
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\BackupPage.jsx : 59:'siso_atenciones_cerradas':    'siso_atenciones_cerradas',
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\BackupPage.jsx : 60:'siso_saved_reports':          'siso_saved_reports',
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\BackupPage.jsx : 61:'siso_atenciones':             'siso_atenciones',
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\BackupPage.jsx : 66:{ key: 'siso_patients_drcucalon',    label: 'Pacientes' },
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\BackupPage.jsx : 67:{ key: 'siso_companies_drcucalon',   label: 'Empresas' },
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\BackupPage.jsx : 68:{ key: 'siso_doctor_data_drcucalon', label: 'Doctor' },
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\BackupPage.jsx : 69:{ key: 'siso_agendados_drcucalon',   label: 'Agenda' },
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\BackupPage.jsx : 70:{ key: 'siso_saved_bills_drcucalon', label: 'Facturas' },
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\BackupPage.jsx : 71:{ key: 'siso_privacidad_aceptada',   label: 'Habeas data' },
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\BackupPage.jsx : 81:const BACKUP_HISTORY_KEY = 'siso_backup_history';
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\BackupPage.jsx : 91:// â”€â”€ Fetch un valor de siso_store â”€â”€
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\BackupPage.jsx : 94:`${SB_URL}/rest/v1/siso_store?key=eq.${encodeURIComponent(key)}&select=value`,
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\BackupPage.jsx : 285:if (src.patients)   normalizedData['siso_db_patients']        = src.patients;
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\BackupPage.jsx : 286:if (src.db_patients) normalizedData['siso_db_patients']       = src.db_patients;
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\BackupPage.jsx : 287:if (src.companies)  normalizedData['siso_companies']           = src.companies;
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\BackupPage.jsx : 288:if (src.users)      normalizedData['siso_users']               = src.users;
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\BackupPage.jsx : 289:if (src.agenda)     normalizedData['siso_agendados']           = src.agenda;
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\BackupPage.jsx : 290:if (src.agendados)  normalizedData['siso_agendados']           = src.agendados;
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\BackupPage.jsx : 291:if (src.bills)      normalizedData['siso_saved_bills']         = src.bills;
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\BackupPage.jsx : 292:if (src.facturas)   normalizedData['siso_saved_bills']         = src.facturas;
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\BackupPage.jsx : 293:if (src.doctor)     normalizedData['siso_doctor_data_drcucalon'] = src.doctor;
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\BackupPage.jsx : 294:if (src.mensajes)   normalizedData['siso_mensajes']            = src.mensajes;
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\BackupPage.jsx : 295:if (src.arl)        normalizedData['siso_arl_reportes']        = src.arl;
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\BackupPage.jsx : 296:if (src.ai_config)  normalizedData['siso_ai_config_provider']  = src.ai_config;
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\BackupPage.jsx : 297:if (src.doctor_signature) normalizedData['siso_doctor_signature'] = src.doctor_signature;
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\BackupPage.jsx : 300:if (backup.patients)         normalizedData['siso_db_patients']           = backup.patients;
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\BackupPage.jsx : 301:if (backup.db_patients)      normalizedData['siso_db_patients']           = backup.db_patients;
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\BackupPage.jsx : 302:if (backup.companies)        normalizedData['siso_companies']             = backup.companies;
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\BackupPage.jsx : 303:if (backup.users)            normalizedData['siso_users']                 = backup.users;
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\BackupPage.jsx : 304:if (backup.agenda)           normalizedData['siso_agendados']             = backup.agenda;
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\BackupPage.jsx : 305:if (backup.agendados)        normalizedData['siso_agendados']             = backup.agendados;
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\BackupPage.jsx : 306:if (backup.bills)            normalizedData['siso_saved_bills']           = backup.bills;
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\BackupPage.jsx : 307:if (backup.facturas)         normalizedData['siso_saved_bills']           = backup.facturas;
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\BackupPage.jsx : 308:if (backup.doctor)           normalizedData['siso_doctor_data_drcucalon'] = backup.doctor;
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\BackupPage.jsx : 309:if (backup.mensajes)         normalizedData['siso_mensajes']              = backup.mensajes;
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\BackupPage.jsx : 310:if (backup.arl)              normalizedData['siso_arl_reportes']          = backup.arl;
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\BackupPage.jsx : 311:if (backup.ai_config)        normalizedData['siso_ai_config_provider']    = backup.ai_config;
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\BackupPage.jsx : 312:if (backup.doctor_signature) normalizedData['siso_doctor_signature']      = backup.doctor_signature;
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\BackupPage.jsx : 314:if (backup.aiConfig)           normalizedData['siso_ai_config_provider']  = backup.aiConfig;
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\BackupPage.jsx : 315:if (backup.savedBills)         normalizedData['siso_saved_bills']         = backup.savedBills;
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\BackupPage.jsx : 316:if (backup.savedReports)       normalizedData['siso_saved_reports']       = backup.savedReports;
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\BackupPage.jsx : 317:if (backup.atencionesCerradas) normalizedData['siso_atenciones_cerradas'] = backup.atencionesCerradas;
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\BackupPage.jsx : 318:if (backup.customMedicamentos) normalizedData['siso_custom_meds']         = backup.customMedicamentos;
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\BackupPage.jsx : 319:if (backup.propuestas)         normalizedData['siso_cotizaciones']        = backup.propuestas;
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\BackupPage.jsx : 320:if (backup.habeasData)         normalizedData['siso_privacidad_aceptada'] = backup.habeasData;
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\BackupPage.jsx : 321:if (backup.sgsst)              normalizedData['siso_sgsst_drcucalon']     = backup.sgsst;
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\BackupPage.jsx : 337:// Esto asegura que siso_db_patients â†’ siso_patients_drcucalon, etc.
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\BackupPage.jsx : 387:const res = await fetch(`${SB_URL}/rest/v1/siso_store`, {
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\BackupPage.jsx : 402:const aiImported = toWrite.find(x => x.key === 'siso_ai_config_provider');
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\BackupPage.jsx : 545:const patients = (await fetchStoreKey('siso_patients_drcucalon')) || [];
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\BackupPage.jsx : 546:const doctor   = (await fetchStoreKey('siso_doctor_data_drcucalon')) || {};
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\BillingPage.jsx : 18:const { data: atencionesData, loading: la } = useBackendData('/data/atenciones_cerradas', 'siso_atenciones_cerradas', 'atenciones'); const atencionesCerradas = atencionesData || []; const { data: pacientesData, loading: lp } = useBackendData('/data/patients', 'siso_patients_drcucalon', 'patients'); const patients = pacientesData || []
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\BillingPage.jsx : 19:const { data: companies, loading: lc } = useBackendData('/data/companies', 'siso_companies', 'companies');
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\BillingPage.jsx : 20:const { data: bills, loading: lb, source } = useBackendData('/data/bills', 'siso_saved_bills', 'bills');
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\CajaPage.jsx : 45:if (currentUser?.empresaId) return `siso_caja_${currentUser.empresaId}`;
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\CajaPage.jsx : 46:return `siso_caja_${currentUser?.user || 'shared'}`;
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\CajaPage.jsx : 51:const raw = localStorage.getItem(storageKey) || localStorage.getItem('siso_caja_movimientos') || '[]';
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\CajaPage.jsx : 58:if (currentUser?.empresaId) return `siso_saved_bills_empresa_${currentUser.empresaId}`;
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\CajaPage.jsx : 59:return `siso_saved_bills_${currentUser?.user || 'shared'}`;
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\CajaPage.jsx : 64:const raw = localStorage.getItem(billsKey) || localStorage.getItem('siso_saved_bills') || '[]';
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\CajaPage.jsx : 70:const { data: patientsList } = useBackendData('/data/patients', 'siso_db_patients', 'patients');
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\CartaCustodiaPage.jsx : 31:const { data: companies } = useBackendData('/data/companies', `siso_companies_${userId}`, 'companies');
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\CartaCustodiaPage.jsx : 32:const { data: doctor }    = useBackendObject('/data/doctor',  `siso_doctor_data_${userId}`, 'doctor');
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\CartaCustodiaPage.jsx : 33:const { data: signature } = useBackendObject('/data/doctor_signature', 'siso_doctor_signature', 'signature');
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\CartaCustodiaPage.jsx : 49:const raw = sessionStorage.getItem('siso_carta_preselect');
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\CartaCustodiaPage.jsx : 53:sessionStorage.removeItem('siso_carta_preselect');
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\CartaCustodiaPage.jsx : 79:d1Get(`siso_cartas_custodia_${userId}`)
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\CartaCustodiaPage.jsx : 144:await d1WriteArrayMerge(`siso_cartas_custodia_${userId}`, [nueva], 'id');
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\CertificadoPage.jsx : 16:// BUG-C2 fix: clave localStorage correcta (no legacy siso_db_patients)
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\CertificadoPage.jsx : 18:const { data: patients, loading } = useBackendData('/data/patients', `siso_patients_${userId}`, 'patients');
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\CertificadoPage.jsx : 19:const { data: doctor } = useBackendObject('/data/doctor', `siso_doctor_data_${userId}`, 'doctor');
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\CompaniesPage.jsx : 30:const { value: v } = await d1Get(`siso_companies_${userId}`);
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\CompaniesPage.jsx : 35:const raw = localStorage.getItem(`siso_companies_${userId}`) || localStorage.getItem('siso_companies');
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\CompaniesPage.jsx : 42:const { value: vp } = await d1Get(`siso_patients_${userId}`);
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\CompaniesPage.jsx : 47:const raw = localStorage.getItem(`siso_patients_${userId}`);
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\CompaniesPage.jsx : 54:const { value: vu } = await d1Get('siso_users');
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\CompaniesPage.jsx : 59:const raw = localStorage.getItem('siso_users');
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\CompaniesPage.jsx : 73:await d1WriteArrayMerge(`siso_companies_${userId}`, list, 'id');
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\CompaniesPage.jsx : 74:localStorage.setItem(`siso_companies_${userId}`, JSON.stringify(list));
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\CompaniesPage.jsx : 88:sessionStorage.setItem('siso_portal_codigo_activo', code);
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\ConfigIPSPage.jsx : 5:const STORAGE_KEY = 'siso_ips_perfil';
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\ContabilidadPage.jsx : 23:const BILLING_KEY = "siso_billing_v2";
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\ContabilidadPage.jsx : 96:const { data: companies } = useBackendData("/data/companies", "siso_companies", "companies");
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\CotizacionesPage.jsx : 10:const STORAGE_KEY = 'siso_cotizaciones';
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\CotizacionesPage.jsx : 69:const { data: companies } = useBackendData('/data/companies', 'siso_companies', 'companies');
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\CotizacionesPage.jsx : 70:const { data: doctor } = useBackendObject('/data/doctor', 'siso_doctor_data', 'doctor');
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\DashboardPage.jsx : 235:const { data: patients, source: patSource } = useBackendData('/data/patients', 'siso_db_patients', 'patients');
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\DashboardPage.jsx : 236:const { data: companies } = useBackendData('/data/companies', 'siso_companies', 'companies');
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\DashboardPage.jsx : 237:const { data: agenda } = useBackendData('/data/agenda', 'siso_agendados', 'appointments');
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\DashboardPage.jsx : 238:const { data: bills } = useBackendData('/data/billing', 'siso_saved_bills', 'bills');
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\DashboardPage.jsx : 239:const { data: doctor } = useBackendObject('/data/doctor', 'siso_doctor_data', 'doctor');
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\DashboardPage.jsx : 247:try { return JSON.parse(localStorage.getItem('siso_medico_turno') || 'null'); } catch { return null; }
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\DashboardPage.jsx : 398:const usersFromStorage = (() => { try { return JSON.parse(localStorage.getItem('siso_users') || '[]'); } catch { return []; } })();
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\DashboardPage.jsx : 431:const usersFromStorage = (() => { try { return JSON.parse(localStorage.getItem('siso_users') || '[]'); } catch { return []; } })();
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\DashboardPage.jsx : 440:localStorage.setItem('siso_medico_turno', JSON.stringify(turno));
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\DashboardPage.jsx : 463:<button onClick={() => { localStorage.removeItem('siso_medico_turno'); setStoredTurno(null); setShowTurnoModal(false); }}
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\DashboardPage.jsx : 736:const users = JSON.parse(localStorage.getItem('siso_users') || '[]');
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\EncuestasPage.jsx : 7:const SURVEYS_KEY = 'siso_encuestas';
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\EncuestasPage.jsx : 37:const { value: v } = await d1Get(SURVEYS_KEY);
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\EncuestasPage.jsx : 137:const respKey = `siso_survey_responses_${encuesta.id}`;
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\EncuestasPage.jsx : 138:const { value } = await d1Get(respKey);
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\EncuestasPage.jsx : 147:const respKey = `siso_survey_responses_${encuesta.id}`;
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\HabeasDataPage.jsx : 20:const STORAGE_KEY = 'siso_habeas_data_requests';
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\HabeasDataPage.jsx : 55:const { value } = await d1Get(STORAGE_KEY);
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\HistoriaGeneralPage.jsx : 62:const { data: patients } = useBackendData('/data/patients', 'siso_db_patients', 'patients');
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\HistoriaGeneralPage.jsx : 63:const { data: doctor } = useBackendObject('/data/doctor', 'siso_doctor_data', 'doctor');
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\HistoriaGeneralPage.jsx : 94:const result = await save('/write/hc/save', toSave, `siso_patients_${userId}`);
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\HistoriaPage.jsx : 23:import { useClinicalStore } from '../modules/clinical/store/clinicalStore';
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\HistoriaPage.jsx : 74:const { data: patients } = useBackendData('/data/patients', 'siso_db_patients', 'patients');
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\HistoriaPage.jsx : 75:const { data: companies } = useBackendData('/data/companies', 'siso_companies', 'companies');
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\HistoriaPage.jsx : 76:const { data: doctor } = useBackendObject('/data/doctor', 'siso_doctor_data', 'doctor');
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\HistoriaPage.jsx : 77:const { data: signatureRaw } = useBackendObject('/data/doctor_signature', 'siso_doctor_signature', 'signature');
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\HistoriaPage.jsx : 140:save('/write/hc/save', toSave, `siso_patients_${userId}`).then((r) => {
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\HistoriaPage.jsx : 157:const result = await save('/write/hc/save', toSave, `siso_patients_${userId}`);
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\HistoriaPage.jsx : 168:}, 'siso_agendados');
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\HistoriaPage.jsx : 405:await d1Set(`siso_hc_completa_${docClean}`, hcCompleta);
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\HistoriaPage.jsx : 411:await d1Set(`siso_portal_doc_${docClean}`, portalData);
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\HistoriaPage.jsx : 417:await d1Set(`siso_portal_${code}`, portalData);
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\HistoriaPage.jsx : 429:const { value: existente } = await d1Get(`siso_portal_empresa_atenciones_${nitClean}`);
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\HistoriaPage.jsx : 455:await d1Set(`siso_portal_empresa_atenciones_${nitClean}`, grupoExistente);
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\HistoriaPage.jsx : 461:await d1WriteArrayMerge(`siso_portal_empresa_${nitClean}`, [empresaReg], 'id');
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\HistoriaPage.jsx : 467:await d1WriteArrayMerge(`siso_portal_empresa_docs_${nitClean}`, [periodoDoc], 'periodo');
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\HistoriaPage.jsx : 483:}, 'siso_agendados');
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\HistoriaPage.jsx : 505:const existing = JSON.parse(localStorage.getItem(`siso_atenciones_${userId}`) || '[]');
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\HistoriaPage.jsx : 507:await save('/write/atenciones/save', updAC, `siso_atenciones_${userId}`);
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\HistoriaPage.jsx : 536:}, `siso_caja_movs_${userId}`);
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\HistoriaPage.jsx : 541:await save('/write/hc/save', toSave, `siso_patients_${userId}`);
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\LoginPage.jsx : 152:try { if (data.siso_users) { localStorage.setItem('siso_users', JSON.stringify(data.siso_users)); importados++; } } catch { errores++; }
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\LoginPage.jsx : 153:try { if (data.siso_companies) { localStorage.setItem('siso_companies', JSON.stringify(data.siso_companies)); importados++; } } catch { errores++; }
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\LoginPage.jsx : 154:try { if (data.siso_patients) { localStorage.setItem('siso_patients', JSON.stringify(data.siso_patients)); importados++; } } catch { errores++; }
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\LoginPage.jsx : 155:try { if (data.siso_db_patients) { localStorage.setItem('siso_db_patients', JSON.stringify(data.siso_db_patients)); importados++; } } catch { errores++; }
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\LoginPage.jsx : 220:const storedUsers = JSON.parse(localStorage.getItem('siso_users') || '[]');
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\LoginPage.jsx : 237:`${SB_URL}/rest/v1/siso_store?key=eq.siso_users&select=value`,
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\MensajesPage.jsx : 7:const STORAGE_KEY = 'siso_mensajes';
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\MensajesPage.jsx : 13:const { data: users } = useBackendData('/data/users', 'siso_users', 'users');
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\PatientsPage.jsx : 31:try { const { value: v } = await d1Get(`siso_patients_${userId}`); if (Array.isArray(v) && v.length > 0) { list = v; if (!cancelled) setSource('d1'); } } catch {}
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\PatientsPage.jsx : 33:try { const { value: v } = await d1Get(`siso_patients_${userId}`); if (Array.isArray(v) && v.length > 0) { list = v; if (!cancelled) setSource('d1-fallback'); } } catch {}
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\PatientsPage.jsx : 38:const raw = localStorage.getItem(`siso_patients_${userId}`)
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\PatientsPage.jsx : 39:|| localStorage.getItem('siso_db_patients')
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\PatientsPage.jsx : 40:|| localStorage.getItem('siso_pacientes');
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\PatientsPage.jsx : 59:await d1WriteArrayMerge(`siso_patients_${userId}`, [paciente], 'docNumero');
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\PlanesPage.jsx : 7:const USERS_KEY = 'siso_users';
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\PortafolioPage.jsx : 7:const STORAGE_KEY = 'siso_portafolio';
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\PortafolioPage.jsx : 23:const { value } = await d1Get(STORAGE_KEY);
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\PortalCertificadosEmpresa.jsx : 75:const { data: doctorData } = useBackendObject('/data/doctor', 'siso_doctor_data', 'doctor');
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\PortalCertificadosEmpresa.jsx : 76:const { data: signatureData } = useBackendObject('/data/doctor_signature', 'siso_doctor_signature', 'signature');
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\PortalCertificadosEmpresa.jsx : 79:const { data: companies } = useBackendData('/data/companies', 'siso_companies', 'companies');
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\PortalEmpresaPage.jsx : 22:try { const { value } = await d1Get(key); return { ok: true, data: value ?? null }; }
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\PortalEmpresaPage.jsx : 88:const rd = await fetchKey(`siso_portal_empresa_docs_${nv}`);
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\PortalEmpresaPage.jsx : 102:const rAt = await fetchKey(`siso_portal_empresa_atenciones_${nv}`);
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\PortalEmpresaPage.jsx : 136:// â”€â”€ Leer siso_portal_empresa_docs con FUSIÃ“N multi-NIT â”€â”€
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\PortalEmpresaPage.jsx : 141:try { const r = await d1Get(`siso_portal_empresa_docs_${nv}`); val = r.value; } catch {}
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\PortalEmpresaPage.jsx : 175:// â”€â”€ Cuentas de cobro â€” leer siso_saved_bills como fallback â”€â”€
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\PortalEmpresaPage.jsx : 178:const billsKey = `siso_saved_bills_${userId}`;
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\PortalEmpresaPage.jsx : 179:const { value: billsRaw } = await d1Get(billsKey);
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\PortalEmpresaPage.jsx : 181:const { value: cajaRaw } = await d1Get(`siso_caja_movs_${userId}`);
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\PortalEmpresaPage.jsx : 199:const custKey = `siso_cartas_custodia_${userId}`;
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\PortalEmpresaPage.jsx : 200:const { value: custRaw } = await d1Get(custKey);
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\PortalEmpresaPage.jsx : 225:const variantes = [`siso_portal_${qUp}`, !qUp.startsWith('CV-') && !qUp.startsWith('SISO-') ? `siso_portal_CV-${qUp}` : null, `siso_portal_${qUp.replace(/-/g, '')}`].filter(Boolean);
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\PortalEmpresaPage.jsx : 228:const r = await fetchKey(`siso_portal_doc_${q.replace(/\s/g, '')}`);
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\ProfilePage.jsx : 73:// Actualizar en localStorage siso_users
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\ProfilePage.jsx : 74:const allUsers = JSON.parse(localStorage.getItem('siso_users') || '[]');
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\ProfilePage.jsx : 81:localStorage.setItem('siso_users', JSON.stringify(updated));
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\ProfilePage.jsx : 90:await fetch(`${SB_URL}/rest/v1/siso_store`, {
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\ProfilePage.jsx : 93:body: JSON.stringify({ key: 'siso_users', value: updated }),
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\ReportsPage.jsx : 21:'siso_db_patients',
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\ReportsPage.jsx : 27:'siso_companies',
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\ReportsPage.jsx : 34:'siso_users',
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\SettingsPage.jsx : 16:const res = await fetch(`${SB_URL}/rest/v1/siso_store?key=eq.${encodeURIComponent(key)}&select=value`, { headers: sbHeaders });
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\SettingsPage.jsx : 22:const res = await fetch(`${SB_URL}/rest/v1/siso_store`, {
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\SettingsPage.jsx : 31:{ key: 'siso_patients_drcucalon', label: 'Pacientes' },
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\SettingsPage.jsx : 32:{ key: 'siso_companies_drcucalon', label: 'Empresas' },
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\SettingsPage.jsx : 33:{ key: 'siso_users', label: 'Usuarios' },
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\SettingsPage.jsx : 34:{ key: 'siso_agendados_drcucalon', label: 'Agenda' },
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\SettingsPage.jsx : 35:{ key: 'siso_saved_bills_drcucalon', label: 'Facturas' },
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\SettingsPage.jsx : 36:{ key: 'siso_audit_log', label: 'AuditorÃ­a' },
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\SettingsPage.jsx : 37:{ key: 'siso_doctor_data_drcucalon', label: 'Doctor' },
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\SettingsPage.jsx : 38:{ key: 'siso_doctor_signature', label: 'Firma Digital' },
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\SettingsPage.jsx : 42:{ key: 'siso_patients_drcucalon', label: 'Pacientes' },
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\SettingsPage.jsx : 43:{ key: 'siso_companies_drcucalon', label: 'Empresas' },
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\SettingsPage.jsx : 44:{ key: 'siso_users', label: 'Usuarios' },
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\SettingsPage.jsx : 45:{ key: 'siso_agendados_drcucalon', label: 'Agenda' },
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\SettingsPage.jsx : 46:{ key: 'siso_saved_bills_drcucalon', label: 'Facturas' },
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\SettingsPage.jsx : 47:{ key: 'siso_caja_movs_drcucalon', label: 'Caja' },
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\SettingsPage.jsx : 48:{ key: 'siso_cotizaciones_drcucalon', label: 'Cotizaciones' },
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\SettingsPage.jsx : 49:{ key: 'siso_portafolio', label: 'Portafolio' },
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\SettingsPage.jsx : 50:{ key: 'siso_habeas_data_requests', label: 'Habeas Data' },
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\SettingsPage.jsx : 51:{ key: 'siso_atl_cases', label: 'ARL' },
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\SettingsPage.jsx : 52:{ key: 'siso_encuestas', label: 'Encuestas' },
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\SettingsPage.jsx : 164:const existingRaw = localStorage.getItem('siso_patients_drcucalon');
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\SettingsPage.jsx : 179:localStorage.setItem('siso_patients_drcucalon', JSON.stringify(merged));
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\SuperAdminPage.jsx : 8:const STORAGE_KEY = 'siso_orgs';
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\SuperAdminPage.jsx : 13:const AUDIT_LOG_KEY = 'siso_audit_log';
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\SuperAdminPage.jsx : 25:const { data: users } = useBackendData('/data/users', 'siso_users', 'users');
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\SurveyResponsePage.jsx : 10:const SURVEYS_KEY = 'siso_encuestas';
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\SurveyResponsePage.jsx : 79:// 1. Intentar clave individual siso_encuesta_{token} en D1 (metadata dedicada)
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\SurveyResponsePage.jsx : 81:const { value } = await d1Get(`siso_encuesta_${token}`);
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\SurveyResponsePage.jsx : 84:// 2. Fallback: buscar en el array siso_encuestas
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\SurveyResponsePage.jsx : 87:const { value: encuestas } = await d1Get(SURVEYS_KEY);
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\SurveyResponsePage.jsx : 147:const respKey = `siso_encuesta_resps_${token}`;
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\SurveyResponsePage.jsx : 149:const { value } = await d1Get(respKey);
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\SurveyResponsePage.jsx : 174:const respKey = `siso_encuesta_resps_${token}`;
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\SurveyResponsePage.jsx : 180:const { value } = await d1Get(respKey);
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\SurveyResponsePage.jsx : 235:const appendResult = await d1Append(respKey, nuevaRespuesta, 'id');
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\UsersPage.jsx : 10:const USERS_KEY = 'siso_users';
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\UsersPage.jsx : 44:const { value } = await d1Get(USERS_KEY);
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\UsersPage.jsx : 64:const patientsRaw = localStorage.getItem('siso_patients_drcucalon') || '[]';
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\VerificacionPage.jsx : 24:const { value } = await d1Get(key);
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\VerificacionPage.jsx : 49:let data = await portalGet(`siso_portal_${codigo.trim()}`);
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\VerificacionPage.jsx : 51:if (!data) data = await portalGet(`siso_portal_doc_${codigo.trim().replace(/\s/g, '')}`);
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\VerificacionPage.jsx : 65:const empresaArray = await portalGet(`siso_portal_empresa_${nitLimpio}`);
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\pages\VerificacionPage.jsx : 76:const w = await portalGet(`siso_portal_doc_${reg.docNumero}`);
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\sections\AgendaSection.jsx : 196:_sync(`siso_agendados_${_agSuf}`, JSON.stringify(upd));
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\sections\AgendaSection.jsx : 197:_sbSet(`siso_agendados_${_agSuf}`, upd);
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\sections\CompaniesSection.jsx : 432:const servicios = (() => { try { return JSON.parse(localStorage.getItem('siso_portafolio') || '[]'); } catch { return []; } })();
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\sections\CompaniesSection.jsx : 451:const bills = JSON.parse(localStorage.getItem('siso_saved_bills') || '[]');
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\sections\CompaniesSection.jsx : 481:const docsKey = `siso_portal_empresa_docs_${nitClean}`;
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\sections\CompaniesSection.jsx : 550:const docsRaw = localStorage.getItem(`siso_portal_empresa_docs_${nitClean}`);
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\sections\CompaniesSection.jsx : 1100:d1Set('siso_companies_'+currentUser.user,upd).catch(()=>{});
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\sections\UsersSection.jsx : 126:_sync("siso_users", JSON.stringify(upd));
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\sections\UsersSection.jsx : 128:_sbSet("siso_users", upd);
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\sections\UsersSection.jsx : 131:const permKey = `siso_permisos_${userData.user}`;
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\sections\UsersSection.jsx : 148:_sbSet(`siso_doctor_data_${userData.user}`, userData.doctorData);
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\sections\UsersSection.jsx : 152:_sync("siso_doctor_signature", userData.doctorData.signature);
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\sections\UsersSection.jsx : 153:_sbSet("siso_doctor_signature", userData.doctorData.signature);
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\sections\UsersSection.jsx : 372:_sync("siso_users", JSON.stringify(upd));
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\sections\UsersSection.jsx : 404:_sync("siso_users", JSON.stringify(upd));
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\sections\UsersSection.jsx : 1209:_sync("siso_doctor_signature", sig);
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\sections\UsersSection.jsx : 1240:_ls.removeItem("siso_doctor_signature");
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\sections\UsersSection.jsx : 1315:_sync("siso_audit_log", JSON.stringify(logFinal));
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\sections\UsersSection.jsx : 2107:_sync("siso_users", JSON.stringify(updSec));
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\sections\UsersSection.jsx : 2109:_sbSet("siso_users", updSec).then((ok) => {
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\sections\UsersSection.jsx : 2264:"siso_medico_turno",
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\sections\UsersSection.jsx : 2427:const cloudKey = `siso_patients_${u.user}`;
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\sections\UsersSection.jsx : 2428:const localKey = `siso_db_patients_${u.user}`;
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\sections\UsersSection.jsx : 2446:const legacyKey = "siso_db_patients";
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\sections\UsersSection.jsx : 2727:const cloudKey = `siso_patients_${u.user}`;
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\sections\UsersSection.jsx : 2728:const localKey = `siso_db_patients_${u.user}`;
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\sections\UsersSection.jsx : 2780:"siso_audit_log",
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\sections\UsersSection.jsx : 2813:`siso_saved_bills_${u.user}`,
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\sections\UsersSection.jsx : 2814:`siso_saved_reports_${u.user}`,
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\sections\UsersSection.jsx : 2815:`siso_active_form_${u.user}`,
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\sections\UsersSection.jsx : 2816:"siso_db_patients", // legacy key
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\sections\UsersSection.jsx : 2817:"siso_companies", // legacy key
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\sections\UsersSection.jsx : 2823:`siso_bills_${u.user}`,
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\sections\UsersSection.jsx : 2824:`siso_reports_${u.user}`,
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\sections\UsersSection.jsx : 2825:`siso_ai_keys_${u.user}`,
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\sections\UsersSection.jsx : 2826:`siso_portal_doc_${u.user}`,
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\sections\UsersSection.jsx : 2827:`siso_doctor_signature_${u.user}`,
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\sections\UsersSection.jsx : 2828:"siso_db_patients", // legacy cloud key
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\sections\UsersSection.jsx : 2829:"siso_companies", // legacy cloud key
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\sections\UsersSection.jsx : 2873:"siso_audit_log",
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\shared\components\MensajesDrawer.jsx : 8:const STORAGE_KEY = 'siso_mensajes_drawer';
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\shared\components\MensajesDrawer.jsx : 14:const { data: users } = useBackendData('/data/users', 'siso_users', 'users');
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\shared\data\medicamentos.js : 7:export const MEDICAMENTOS_CO_CUSTOM_KEY = "siso_custom_meds";
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\shared\lib\offlineDB.js : 6:const DB_NAME    = 'siso_offline_db';
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\shared\lib\printUtils.js : 154:_tipo: "SISO_HC_RETENCION_CERTIFICADA",
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\shared\lib\security.js : 31:const logs = JSON.parse(localStorage.getItem('siso_audit_log') || '[]');
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\shared\lib\security.js : 40:localStorage.setItem('siso_audit_log', JSON.stringify(logs));
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\shared\lib\security.js : 48:getKey: () => 'siso_rl_login',
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\shared\lib\security.js : 49:get: () => { try { return JSON.parse(localStorage.getItem('siso_rl_login') || '{"attempts":0,"blockedUntil":0}'); } catch(_){ return {attempts:0,blockedUntil:0}; } },
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\shared\lib\security.js : 50:set: (data) => { try { localStorage.setItem('siso_rl_login', JSON.stringify(data)); } catch(_){} },
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\shared\lib\supabase.js : 6:const _PROXY_URL = (typeof window !== "undefined" && window.__SISO_PROXY_URL) || null;
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\shared\lib\supabase.js : 7:const _cfgRaw = (typeof window !== "undefined" && window.__SISO_CONFIG) || {};
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\shared\lib\supabase.js : 34:const r = await fetch(`${_SB_URL}/rest/v1/siso_store`, {
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\shared\lib\supabase.js : 44:"siso_db_patients", "siso_companies", "siso_users", "siso_saved_bills",
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\shared\lib\supabase.js : 45:"siso_saved_reports", "siso_audit_log", "siso_mensajes", "siso_agendados",
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\shared\lib\supabase.js : 46:"siso_ai_config_provider", "siso_doctor_signature", "siso_privacidad_aceptada",
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\shared\lib\supabase.js : 47:"siso_atenciones_cerradas", "siso_arl_reportes",
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\shared\lib\supabase.js : 51:"siso_db_patients_", "siso_companies_", "siso_habeas_", "siso_patients_", "siso_portal_",
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\shared\lib\supabase.js : 71:const r = await fetch(`${_SB_URL}/rest/v1/siso_store?select=key,value,updated_at`, { headers: _SB_HEADERS });
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\shared\lib\supabase.js : 82:const r = await fetch(`${_SB_URL}/rest/v1/siso_store?key=eq.${encodeURIComponent(key)}`, { method: "DELETE", headers: _SB_HEADERS });
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\shared\lib\supabase.js : 169:export const _patKey = (userId) => `siso_db_patients_${userId}`;
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\shared\lib\supabase.js : 170:export const _patKeyCloud = (userId) => `siso_patients_${userId}`;
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\shared\lib\supabase.js : 171:export const _compKey = (userId) => `siso_companies_${userId}`;
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\shared\lib\supabase.js : 172:export const _compKeyCloud = (userId) => `siso_companies_${userId}`;
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\shared\lib\syncManager.js : 19:url: window.__SISO_CONFIG?.workerUrl || '',
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\shared\lib\syncManager.js : 20:token: window.__SISO_CONFIG?.workerToken || '',
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\shared\lib\syncManager.js : 28:const r = await fetch(`${W}/store/prefix/siso_`, {
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\shared\lib\syncManager.js : 51:const r = await fetch(`${W}/store/${encodeURIComponent(key)}`, {
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\shared\lib\syncManager.js : 61:const _sbUrl = () => (typeof window !== 'undefined' && window.__SISO_CONFIG?.sbUrl) || '';
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\shared\lib\syncManager.js : 62:const _sbKey = () => (typeof window !== 'undefined' && window.__SISO_CONFIG?.sbKey) || '';
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\shared\lib\syncManager.js : 70:`${URL}/rest/v1/siso_store?key=eq.${encodeURIComponent(key)}&select=value,updated_at`,
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\shared\lib\syncManager.js : 88:const r = await fetch(`${URL}/rest/v1/siso_store`, {
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\shared\lib\syncManager.js : 107:const r = await fetch(`${URL}/rest/v1/siso_store?key=eq.${encodeURIComponent(key)}`, {
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\shared\lib\syncManager.js : 120:const r = await fetch(`${URL}/rest/v1/siso_store?select=key,value,updated_at`, {
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\shared\lib\syncManager.js : 175:const d1Val = await _d1Get(key);
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\shared\lib\syncManager.js : 297:const logs = JSON.parse(typeof localStorage !== 'undefined' ? localStorage.getItem('siso_audit_log') || '[]' : '[]');
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\shared\lib\syncManager.js : 300:if (typeof localStorage !== 'undefined') localStorage.setItem('siso_audit_log', JSON.stringify(logs));
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\shared\lib\syncManager.js : 312:const d1Val = await _d1Get(key);
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\shared\lib\syncManager.js : 320:const existing = await _fetchFromSupabase('siso_audit_log_server') || [];
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\shared\lib\syncManager.js : 323:return await _sbSet('siso_audit_log_server', trimmed);
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\shared\lib\syncManager.js : 349:if (event.data?.type === 'SISO_SYNC_NOW') {
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\stores\aiStore.js : 22:d1Get('siso_ai_keys_' + userId).then(({ value }) => {
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\stores\aiStore.js : 36:return d1Set('siso_ai_keys_' + userId, { activeProvider, ...keys });
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\stores\authStore.js : 14:const SISO_USERS_KEY = 'siso_users';
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\stores\authStore.js : 22:* Carga la lista de usuarios desde D1 (siso_users).
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\stores\authStore.js : 32:const { value } = await d1Get(SISO_USERS_KEY);
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\stores\authStore.js : 45:d1Set(SISO_USERS_KEY, migrated).catch(() => {});
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\stores\authStore.js : 104:try { await d1Set(SISO_USERS_KEY, seed); } catch {}
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\stores\authStore.js : 136:`siso_db_patients_${userId}`,
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\stores\authStore.js : 137:`siso_patients_${userId}`,
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\stores\authStore.js : 138:`siso_companies_${userId}`,
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\stores\authStore.js : 139:`siso_saved_bills_${userId}`,
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\stores\authStore.js : 140:`siso_saved_reports_${userId}`,
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\stores\authStore.js : 141:`siso_agendados_${userId}`,
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\stores\authStore.js : 142:`siso_encuestas`,
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\stores\authStore.js : 143:`siso_informes_${userId}`,
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\stores\authStore.js : 144:`siso_doctor_data_${userId}`,
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\stores\authStore.js : 150:const { value } = await d1Get(key);
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\stores\authStore.js : 191:const { value: patsCheck } = await d1Get(`siso_db_patients_${userId}`);
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\stores\authStore.js : 216:usersList: [], // Cache de siso_users
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\stores\authStore.js : 222:* Autentica contra D1 (siso_users).
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\stores\authStore.js : 279:// Agregar usuario nuevo a siso_users
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\stores\authStore.js : 297:try { await d1Set(SISO_USERS_KEY, users); } catch {}
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\stores\authStore.js : 303:const token = `siso_local_${Date.now()}_${Math.random().toString(36).slice(2, 14)}`;
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\stores\authStore.js : 375:* Agrega un usuario nuevo a siso_users vÃ­a d1WriteArrayMerge.
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\stores\authStore.js : 418:const result = await d1WriteArrayMerge(SISO_USERS_KEY, [newUser], 'id');
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\stores\authStore.js : 430:* Actualiza campos de un usuario en siso_users.
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\stores\authStore.js : 453:await d1Set(SISO_USERS_KEY, users);
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\stores\authStore.js : 466:* Marca usuario como inactivo (soft delete) en siso_users.
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\stores\authStore.js : 478:await d1Set(SISO_USERS_KEY, users);
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\stores\authStore.js : 505:await d1Set(SISO_USERS_KEY, users);
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\stores\authStore.js : 544:await d1Set(SISO_USERS_KEY, users);
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\stores\authStore.js : 582:await d1Set(SISO_USERS_KEY, users);
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\stores\authStore.js : 685:const local = JSON.parse(localStorage.getItem('siso_users') || '[]');
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\stores\authStore.js : 691:const token = `siso_local_${Date.now()}_${Math.random().toString(36).slice(2, 14)}`;
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\stores\authStore.js : 739:await d1Set(key, value).catch(() => {
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\stores\authStore.js : 747:try { await d1Set(key, value); } catch {}
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\stores\companiesStore.js : 20:return JSON.parse(localStorage.getItem('siso_encuestas') || '[]');
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\stores\companiesStore.js : 27:localStorage.setItem('siso_encuestas', JSON.stringify(encuestas));
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\stores\companiesStore.js : 35:localStorage.setItem('siso_encuestas', JSON.stringify(updated));
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\stores\companiesStore.js : 43:localStorage.setItem('siso_encuestas', JSON.stringify(updated));
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\utils\normativa.jsx : 528:_tipo: "SISO_HC_RETENCION_CERTIFICADA",
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\utils\security.js : 30:const logs = JSON.parse(localStorage.getItem('siso_audit_log') || '[]');
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\utils\security.js : 39:localStorage.setItem('siso_audit_log', JSON.stringify(logs));
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\utils\security.js : 47:getKey: () => 'siso_rl_login',
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\utils\security.js : 50:return JSON.parse(localStorage.getItem('siso_rl_login') || '{"attempts":0,"blockedUntil":0}');
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\utils\security.js : 57:localStorage.setItem('siso_rl_login', JSON.stringify(data));
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\utils\supabase.js : 5:(typeof window !== "undefined" && window.__SISO_PROXY_URL) || null;
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\utils\supabase.js : 6:// SEC-12: Validar y sanitizar __SISO_CONFIG antes de usar
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\utils\supabase.js : 7:const _cfgRaw = (typeof window !== "undefined" && window.__SISO_CONFIG) || {};
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\utils\supabase.js : 20:// ⚠️  NUNCA hardcodear en producción. Inyectar via window.__SISO_CONFIG.sbServiceKey
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\utils\supabase.js : 22://   <script>window.__SISO_CONFIG={sbUrl:'...',sbKey:'...',sbServiceKey:'TU_SERVICE_KEY'};</script>
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\utils\supabase.js : 25:// En producción inyectar via: <script>window.__SISO_CONFIG={sbUrl:'TU_URL',sbKey:'TU_KEY'};</script>
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\utils\supabase.js : 53:const r = await fetch(`${_SB_URL}/rest/v1/siso_store`, {
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\utils\supabase.js : 68:"siso_db_patients",
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\utils\supabase.js : 69:"siso_companies",
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\utils\supabase.js : 70:"siso_users",
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\utils\supabase.js : 71:"siso_saved_bills",
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\utils\supabase.js : 72:"siso_saved_reports",
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\utils\supabase.js : 73:"siso_audit_log",
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\utils\supabase.js : 74:"siso_mensajes",
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\utils\supabase.js : 75:"siso_agendados",
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\utils\supabase.js : 76:"siso_ai_config_provider",
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\utils\supabase.js : 77:"siso_doctor_signature",
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\utils\supabase.js : 78:"siso_privacidad_aceptada",
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\utils\supabase.js : 79:"siso_atenciones_cerradas",
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\utils\supabase.js : 80:"siso_arl_reportes",
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\utils\supabase.js : 84:"siso_db_patients_",
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\utils\supabase.js : 85:"siso_companies_",
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\utils\supabase.js : 86:"siso_habeas_",
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\utils\supabase.js : 87:"siso_patients_",
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\utils\supabase.js : 88:"siso_portal_",
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\utils\supabase.js : 112:`${_SB_URL}/rest/v1/siso_store?select=key,value,updated_at`,
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\utils\supabase.js : 129:`${_SB_URL}/rest/v1/siso_store?key=eq.${encodeURIComponent(key)}`,
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\utils\supabase.js : 263:const _patKey = (userId) => `siso_db_patients_${userId}`;
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\utils\supabase.js : 264:const _patKeyCloud = (userId) => `siso_patients_${userId}`;
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\utils\supabase.js : 265:const _compKey = (userId) => `siso_companies_${userId}`;
+C:\Users\JQK3\Desktop\Refactorizacion 30 de junio\src\utils\supabase.js : 266:const _compKeyCloud = (userId) => `siso_companies_${userId}`;

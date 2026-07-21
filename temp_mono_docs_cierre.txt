@@ -1,0 +1,781 @@
+﻿5:import CartaCustodia from "./pages/CartaCustodia";
+683:// propuestas, informes). Guarda un mapa { fuente: ts } â€” el badge se muestra
+706:// propuestas e informes "desaparecÃ­an"). D1 es el autoritativo â€” se lee
+751:// Solo se usa para claves CRÃTICAS (portal, informes, cartas, contabilidad).
+1382:"siso_cartas_custodia"
+1716:"siso_informes_",
+1720:"siso_cartas_custodia",
+1727:"siso_cartas_custodia",
+1788:["siso_saved_reports", "siso_cartas_custodia", "siso_atenciones_cerradas", "siso_users"].includes(key);
+1819:// PORTAL: Re-publicar todas las HCs cerradas al portal de Supabase
+1824:// mÃ©dico o instituciÃ³n puede consultar su certificado desde el portal pÃºblico.
+2091:const _rePublicarPortalTodos = async (patients, activeDoctorData, activeSignature) => {
+2128:// ni recomendaciones, ej. importado de encuesta), NO republicar â€” pelarÃ­a la
+2201:// re-publicar tras editar/reabrir una HC. Se fusiona en la forma mÃ¡s corta (sin
+2228:// â”€â”€ 4. Cargar informes, custodias y facturas desde localStorage â”€â”€
+2229:const _allInformes = (() => {
+2230:const sets = ["siso_informes"];
+2231:try { Object.keys(localStorage).filter(k => k.startsWith("siso_informes_")).forEach(k => sets.push(k)); } catch {}
+2253:const _allCustodias = (() => {
+2254:try { return JSON.parse(localStorage.getItem("siso_cartas_custodia") || "[]"); } catch { return []; }
+2283:// Reconstruir siso_portal_empresa_docs_{nit} desde localStorage
+2285:// Buscar informes, custodias y facturas de esta empresa por NIT
+2286:const empInformes = _allInformes.filter(i => {
+2294:const empCustodias = _allCustodias.filter(c => {
+2299:if (empInformes.length === 0 && empBills.length === 0 && empCustodias.length === 0) continue;
+2304:try { existDocs = await _workerGet(`siso_portal_empresa_docs_${nitIdx}`); } catch {}
+2308:const rdExist = await fetch(`${_SB_URL}/rest/v1/siso_store?key=eq.siso_portal_empresa_docs_${nitIdx}&select=value`, { headers: _getSbHeaders() });
+2318:if (!periodoMap[periodo]) periodoMap[periodo] = { periodo, fecha: periodo + "-01", informe: null, certificados: null, cuenta: null, custodia: null };
+2321:// Informes epidemiolÃ³gicos
+2322:empInformes.filter(i => !i.tipo).forEach(inf => {
+2324:addToPeriodo(per, "informe", { totalPacientes: inf.totalPacientes || 0, resumen: inf.resumen || "", fecha: inf.fecha || per + "-01", statsKey: inf.statsKey || null });
+2327:// Custodias
+2328:const custTipos = ["custodia", "carta_custodia"];
+2329:empInformes.filter(i => custTipos.includes(i.tipo)).concat(empCustodias).forEach(cust => {
+2331:addToPeriodo(per, "custodia", {
+2361:// Certificados: contar los del periodo por empresa
+2363:// Agregar certificados al periodo mÃ¡s reciente (o al Ãºnico disponible)
+2366:periodos[0].certificados = { count: certCount, documentos: [...data.documentos] };
+2377:key: `siso_portal_empresa_docs_${nitIdx}`,
+2566:tarifaInforme: "0",
+6049:"No exposiciÃ³n a polvos orgÃ¡nicos/inorgÃ¡nicos sin uso de respirador N95 o superior certificado",
+6073:"No exposiciÃ³n a agentes sensibilizantes respiratorios (lÃ¡tex, isocianatos, harinas) sin EPP certificado",
+6098:"No exposiciÃ³n a solventes neurotÃ³xicos (benceno, tolueno, xileno) sin ventilaciÃ³n y EPP certificado",
+6221:"Uso obligatorio de arnÃ©s de cuerpo completo certificado y lÃ­nea de vida en toda tarea >1.5 m",
+6227:"AcompaÃ±amiento permanente de vigÃ­a certificado en trabajo en alturas durante perÃ­odo de restricciÃ³n parcial",
+6240:"No contacto directo con agentes irritantes/sensibilizantes cutÃ¡neos sin guantes de nitrilo/neopreno certificados",
+9182:// NORMATIVO: Res. 1843/2025 Art. 25 - Entrega del certificado al trabajador
+9183:certificadoEntregado: false,
+9184:fechaEntregaCertificado: "",
+9185:metodoEntregaCertificado: "FÃ­sica",
+12013:// que fallaba silenciosamente por CSP/navegador. Mismo mÃ©todo que certificados.
+12691:Compartir el <em>Certificado de Aptitud Laboral</em> con la
+12712:imposibilidad de emitir el certificado de aptitud laboral requerido
+12979:`Puede verificar su certificado en cualquier momento solicitando este cÃ³digo al mÃ©dico.\n\n` +
+13002:`Puede verificar su certificado presentando este cÃ³digo al mÃ©dico tratante.
+13487:// B-23: CERTIFICADO DE APTITUD ESTANDARIZADO - Res. 1843/2025
+13489:const _generarCertificadoHTMLNormalizado = (
+13605:"<title>Certificado de Aptitud Laboral - " +
+13612:// cuando varios certificados se concatenan en un solo documento (portal).
+13636:// Restricciones en 2 columnas (ver fmtBlocks) â€” el certificado de RETIRO
+13689:// lÃ­neas cortas y mÃ¡s altura total, empujando el certificado a 2 pÃ¡ginas.
+13732:'<div class="title">Certificado de Aptitud Laboral</div>' +
+13898:// certificado se concatene con otros (portal de empresa: varios
+13900:// PROPIO wrapper anterior, nunca toca <body> (compartido entre certificados
+13910:// html2canvas (exportaciÃ³n ZIP: certificados/informe/cuenta de cobro/
+13911:// custodia â€” ver _htmlToPdfBlobMod y sus copias), NO aplicar zoom: esa
+14101:// GENERADOR DE CERTIFICADO PARA PORTAL (usa datos de siso_portal_doc_*)
+14102:// Reutiliza _generarCertificadoHTMLNormalizado con mapeo de campos
+14104:const _generarCertificadoDesdePortal = (portalData) => {
+14135:return _generarCertificadoHTMLNormalizado(mappedData, doctorData, signature, null);
+14161:// _generarCertificadoHTMLNormalizado). Mismo criterio: encoge hasta un piso
+14167:// FIX 2026-07-13: escalar SIEMPRE lo necesario para que el certificado
+14170:// ("se come las letras"). Un certificado nunca es tan largo como para
+14183:// singlePage=true intenta ajustar a una sola hoja (solo para certificados).
+14218:// Genera el HTML de TODOS los certificados de una lista de pacientes (cada uno
+14219:// hidratado con su mÃ©dico/firma). Reutiliza _generarCertificadoDesdePortal.
+14220:const _buildCertificadosEmpresaHTML = (pacientes) => {
+14222:const certHtml = _generarCertificadoDesdePortal(p);
+14227:const first = (pacientes && pacientes[0]) ? _generarCertificadoDesdePortal(pacientes[0]) : "";
+14233:// Genera el HTML de la Carta de Custodia (extraÃ­do de printCarta â€” autocontenido).
+14234:const _buildCartaCustodiaHTML = (c) => {
+14264:<p style="text-align:center;font-weight:700;margin-bottom:26px;">ASUNTO: CARTA CUSTODIA DE LAS HISTORIAS CLÃNICAS OCUPACIONALES</p>
+14265:<p style="line-height:1.65;text-align:justify;margin-bottom:14px;">Por medio de la presente se hace constar la custodia de las Historias ClÃ­nicas Ocupacionales del personal valorado durante el <strong>mes de ${mesTexto} de ${anioVal}</strong>, las cuales reposan bajo la responsabilidad del mÃ©dico especialista en Seguridad y Salud en el Trabajo abajo firmante, en cumplimiento de la ResoluciÃ³n 2346 de 2007 y la ResoluciÃ³n 1843 de 2025.</p>
+14266:<p style="line-height:1.65;text-align:justify;margin-bottom:14px;">Las historias clÃ­nicas son documentos privados sometidos a reserva, por lo que solo pueden ser conocidas por terceros previa autorizaciÃ³n del trabajador o en los casos previstos por la ley. La empresa podrÃ¡ solicitar los certificados de aptitud laboral y los informes de condiciones de salud, que no contienen diagnÃ³stico clÃ­nico (Art. 16 Res. 1843/2025).</p>
+14279:// Alimentado del objeto `cuenta` guardado en el portal (siso_portal_empresa_docs).
+14280:const _buildCuentaCobroHTMLMod = (c) => {
+14362:// Genera el HTML REAL del Informe EpidemiolÃ³gico (rÃ©plica del componente del portal,
+14363:// CSS en lÃ­nea). `d` = fullData cargado de informe.statsKey = {stats, aiResult, pacientes}.
+14396:const _buildInformeHTMLMod = (informe, d, empName) => {
+14397:informe = informe || {}; d = d || {};
+14398:const total = informe.totalPacientes || 0;
+14417:${informe.fecha ? `<p style="font-size:9pt;color:#9ca3af;margin:2px 0 0;">PerÃ­odo: ${_sanitize(informe.fecha)}</p>` : ""}
+14420:${informe.resumen ? `<div style="background:#eef2ff;border:1px solid #c7d2fe;border-radius:12px;padding:14px;margin-bottom:16px;"><p style="font-size:8pt;font-weight:900;color:#3730a3;text-transform:uppercase;margin:0 0 6px;">ðŸ“ Resumen Ejecutivo</p><p style="font-size:9pt;color:#312e81;line-height:1.6;margin:0;">${_sanitize(informe.resumen)}</p></div>` : ""}
+14467:${ai.recomendacionesInforme ? aiBlock("#ecfdf5", "#a7f3d0", "#065f46", "Recomendaciones â€” Acciones Correctivas y PVE", ai.recomendacionesInforme) : ""}
+14476:// FORMULARIO PÃšBLICO DE ENCUESTA SOCIODEMOGRÃFICA - Acceso sin login
+14478:// Los trabajadores llenan sus datos sociodemogrÃ¡ficos antes de la consulta.
+14780:<p className="text-sm text-gray-600 mb-1">Sus datos sociodemogrÃ¡ficos fueron <strong>guardados correctamente</strong> en el sistema.</p>
+14796:<h1 className="text-lg font-black">ðŸ“‹ Encuesta SociodemogrÃ¡fica</h1>
+15114:// â”€â”€ Carta de Custodia â€” rÃ©plica del documento (inline styles, sin Tailwind) â”€
+15156:<p style={s.subject}>ASUNTO: CARTA CUSTODIA DE LAS HISTORIAS CLÃNICAS OCUPACIONALES</p>
+15158:<p style={s.p}>Por medio de la presente se hace constar la custodia de las Historias ClÃ­nicas Ocupacionales del personal valorado durante el <strong>mes de {mesTexto} de {anioVal}.</strong></p>
+15160:<p style={s.p}>Doy garantÃ­a de que el archivo de las historias clÃ­nicas se encuentra bajo custodia electrÃ³nica en la ciudad de {safe(docCiudad, "PopayÃ¡n")}, dando asÃ­ estricto cumplimiento a lo establecido en la <strong>ResoluciÃ³n 1072 de 2015</strong> del Ministerio de la ProtecciÃ³n Social. La custodia estÃ¡ garantizada por un periodo de <strong>15 aÃ±os</strong> contados a partir de la fecha de la Ãºltima atenciÃ³n, conforme a lo dispuesto en la <strong>ResoluciÃ³n 1843 de 2025</strong> del Ministerio de Salud y ProtecciÃ³n Social.</p>
+15182:// â”€â”€ Carta de Custodia Viewer (portal empresa) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+15183:function PortalCustodiaViewer({ custodia, empresaNombre, periodo, sbUrl, sbKey }) {
+15192:if (!custodia) return null;
+15194:const fechaISO = custodia.fecha || new Date().toISOString().split("T")[0];
+15200:const docNombre = (custodia.medicoNombre || "JULIAN CUCALON").toUpperCase();
+15201:const docTitulo = (custodia.medicoTitulo || "MEDICO ESPECIALISTA EN SST").toUpperCase();
+15202:const docLicencia = custodia.medicoLicencia || "14497-12-2019";
+15203:const docCC = custodia.medicoCC || "1061750704";
+15204:const docCel = custodia.medicoTel || "3182213979";
+15205:const docEmail = custodia.medicoEmail || "dr.juliancucalon@gmail.com";
+15206:const docCiudad = custodia.medicoCiudad || "PopayÃ¡n";
+15207:const firmaSrc = custodia.firma || null;
+15217:try { const v = await _workerGet("siso_cartas_custodia"); if (Array.isArray(v)) arr = v; } catch {}
+15221:const r = await fetch(`${sbUrl}/rest/v1/siso_store?key=eq.siso_cartas_custodia&select=value`, { headers: { apikey: sbKey, Authorization: `Bearer ${sbKey}` } });
+15230:const raw = await _workerGetRaw("siso_cartas_custodia");
+15231:const meta = await _workerGetRaw("siso_cartas_custodia" + _CHUNK_SUF_META);
+15245:await _sbPortalSave(sbUrl, sbKey, "siso_cartas_custodia", merged);
+15259:try { val = await _workerGet("siso_cartas_custodia"); } catch {}
+15262:const r = await fetch(`${sbUrl}/rest/v1/siso_store?key=eq.siso_cartas_custodia&select=value`, { headers: { apikey: sbKey, Authorization: `Bearer ${sbKey}` } });
+15306:<p style="text-align:center;font-weight:700;font-size:11pt;margin-bottom:26px;">ASUNTO: CARTA CUSTODIA DE LAS HISTORIAS CLÃNICAS OCUPACIONALES</p>
+15308:<p style="font-size:11pt;line-height:1.65;margin-bottom:14px;text-align:justify;">Por medio de la presente se hace constar la custodia de las Historias ClÃ­nicas Ocupacionales del personal valorado durante el <strong>mes de ${c.mesTexto} de ${c.anioVal}.</strong></p>
+15310:<p style="font-size:11pt;line-height:1.65;margin-bottom:14px;text-align:justify;">Doy garantÃ­a de que el archivo de las historias clÃ­nicas se encuentra bajo custodia electrÃ³nica en la ciudad de ${c.docCiudad||"PopayÃ¡n"}, dando asÃ­ estricto cumplimiento a lo establecido en la <strong>ResoluciÃ³n 1072 de 2015</strong> del Ministerio de la ProtecciÃ³n Social. La custodia estÃ¡ garantizada por un periodo de <strong>15 aÃ±os</strong> contados a partir de la fecha de la Ãºltima atenciÃ³n, conforme a lo dispuesto en la <strong>ResoluciÃ³n 1843 de 2025</strong> del Ministerio de Salud y ProtecciÃ³n Social.</p>
+15329:w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Carta Custodia â€” ${c.empresaNombre}</title><style>*{box-sizing:border-box;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}body{margin:0;padding:0;background:#e5e7eb;}@media print{body{background:white;}.no-print{display:none!important;}@page{size:letter portrait;margin:0;}}</style></head><body><div class="no-print" style="padding:10px 16px;background:#1e3a5f;display:flex;gap:10px;align-items:center;"><button onclick="window.print()" style="background:#10b981;color:white;border:none;padding:8px 20px;border-radius:6px;font-weight:900;cursor:pointer;font-size:12px;">ðŸ“¥ Imprimir / PDF</button><button onclick="window.close()" style="background:#ef4444;color:white;border:none;padding:8px 16px;border-radius:6px;font-weight:900;cursor:pointer;font-size:12px;">âœ• Cerrar</button><span style="color:#94a3b8;font-size:11px;margin-left:8px;">Carta Custodia â€” ${c.empresaNombre}</span></div><div style="padding:24px;display:flex;justify-content:center;">${cartaHtml}</div></body></html>`);
+15339:<p className="text-sm font-black text-purple-800">ðŸ“ Carta de Custodia</p>
+15340:<p className="text-[10px] text-purple-600">{custodia.fecha} Â· {custodia.medicoNombre}</p>
+15385:<p className="text-xs font-black text-gray-600">Carta de Custodia â€” {empresaNombre}</p>
+15415:function PortalCuentaCobroCard({ cuenta, empresaNombre, periodo, sbUrl, sbKey, nitBusq }) {
+15434:try { docs = await _workerGet(`siso_portal_empresa_docs_${nit}`); } catch {}
+15438:const r = await fetch(`${sbUrl}/rest/v1/siso_store?key=eq.siso_portal_empresa_docs_${nit}&select=value`, { headers: { apikey: sbKey, Authorization: `Bearer ${sbKey}` } });
+15447:await _sbPortalSave(sbUrl, sbKey, `siso_portal_empresa_docs_${nit}`, docs);
+15684:// â”€â”€ Informe EpidemiolÃ³gico Viewer (portal empresa) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+16036:function PortalInformeViewer({ informe, empresaNombre, sbUrl, sbKey }) {
+16041:if (!informe) return null;
+16042:const total = informe.totalPacientes || 0;
+16045:if (fullData || !informe.statsKey) return;
+16052:if (_WORKER_TOKEN) { try { val = await _workerGet(informe.statsKey); } catch {} }
+16080:const el = document.getElementById("portal-informe-content");
+16084:w.document.write(`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Informe EpidemiolÃ³gico â€” ${empresaNombre}</title><script src="https://cdn.tailwindcss.com"><\/script><style>*{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}body{font-family:sans-serif;padding:0;margin:0;}@media print{.no-print{display:none!important;}body{padding:8mm 10mm;}}@page{size:letter landscape;margin:0.8cm 1cm;}</style></head><body><div class="no-print" style="background:#1e3a5f;padding:10px 16px;display:flex;gap:10px;margin-bottom:16px;"><button onclick="window.print()" style="background:#10b981;color:white;border:none;padding:8px 20px;border-radius:6px;font-weight:900;cursor:pointer;">ðŸ“¥ Imprimir / PDF</button><button onclick="window.close()" style="background:#ef4444;color:white;border:none;padding:8px 14px;border-radius:6px;font-weight:900;cursor:pointer;">âœ• Cerrar</button></div><div style="padding:16px;">${el.innerHTML}</div></body></html>`);
+16093:<p className="text-sm font-black text-blue-800">ðŸ“‹ Informe EpidemiolÃ³gico</p>
+16094:<p className="text-[10px] text-blue-600">{total} trabajadores Â· {informe.fecha}</p>
+16101:{loading && <p className="text-xs text-blue-500 py-6 text-center">â³ Cargando informe completo...</p>}
+16103:<div id="portal-informe-content">
+16110:{informe.fecha && <p className="text-xs text-gray-400">PerÃ­odo: {informe.fecha}</p>}
+16115:{informe.resumen && (
+16118:<p className="text-xs text-indigo-900 leading-relaxed">{informe.resumen}</p>
+16235:{aiResult.recomendacionesInforme && (
+16238:<div className="text-xs text-justify text-emerald-900 leading-relaxed whitespace-pre-wrap">{aiResult.recomendacionesInforme}</div>
+16289:{!informe.statsKey && !loading && (
+16291:âš ï¸ Este informe fue generado antes de la actualizaciÃ³n. Contiene solo el resumen ejecutivo. Para ver el informe completo con estadÃ­sticas, guarda un nuevo informe desde la plataforma.
+16296:ðŸ“¥ Descargar / Imprimir Informe Completo
+16319:// de periodo, tomando cada documento (informe/cuenta/custodia/certificados) de
+16326:try { val = await _readSmart(`siso_portal_empresa_docs_${n}`); } catch {}
+16338:informe: per.informe || prev.informe || null,
+16340:custodia: per.custodia || prev.custodia || null,
+16341:certificados: (per.certificados && per.certificados.count) ? per.certificados : (prev.certificados || per.certificados || null),
+16373:{per.informe    && <span className="text-[9px] bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded font-bold">ðŸ“‹ Informe</span>}
+16374:{per.certificados && <span className="text-[9px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded font-bold">ðŸ“„ {per.certificados.count} cert.</span>}
+16376:{per.custodia   && <span className="text-[9px] bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded font-bold">ðŸ“ Custodia</span>}
+16383:{/* 1. Informe epidemiolÃ³gico */}
+16384:{per.informe && (
+16385:<PortalInformeViewer
+16386:informe={per.informe}
+16393:{/* 2. Certificados â€” individual + bulk */}
+16394:{per.certificados && (
+16397:<p className="text-sm font-black text-emerald-800 mb-1">ðŸ“„ Certificados de Aptitud Laboral</p>
+16398:<p className="text-[10px] text-emerald-600 mb-2">{per.certificados.count} trabajador(es)</p>
+16402:if (!pacs.length) { alert("Consulta primero la empresa en el buscador para cargar los certificados."); return; }
+16406:const certHtml = _generarCertificadoDesdePortal(p);
+16411:const firstCert = _generarCertificadoDesdePortal(pacs[0]);
+16415:// SOLO el padding interno del certificado (12mm 8mm).
+16419:w.document.write(`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Certificados â€” ${portalDocs.nombre}</title><style>@page{size:letter portrait;margin:0;}*{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}table{border-collapse:collapse;page-break-inside:auto;}tr{page-break-inside:avoid;page-break-after:auto;}td,th{page-break-inside:avoid;}${styles}.np-dl{position:fixed;top:10px;right:10px;z-index:9999;}@media print{.np-dl{display:none!important;}body{padding:0!important;}}</style></head><body><div class="np-dl"><button onclick="window.print()" style="background:#065f46;color:#fff;border:none;padding:10px 24px;border-radius:10px;font-weight:900;cursor:pointer;font-size:12px;box-shadow:0 4px 12px rgba(0,0,0,.2);">ðŸ“¥ Guardar PDF / Imprimir (${pacs.length} certificados)</button></div>${certs}</body></html>`);
+16424:ðŸ“¥ Descargar todos ({per.certificados.count})
+16463:title="Descargar certificado individual"
+16465:const html = _generarCertificadoDesdePortal(p);
+16490:<PortalCuentaCobroCard
+16500:{/* 4. Carta de custodia */}
+16501:{per.custodia && (
+16502:<PortalCustodiaViewer
+16503:custodia={per.custodia}
+16536:const [tabEmpresa, setTabEmpresa] = React.useState("certificados"); // certificados|documentos|estadisticas
+16659:// â”€â”€ Validar cÃ³digo de acceso contra siso_portal_empresa_docs_{nit} â”€â”€
+16665:// Validar cÃ³digo de acceso contra siso_portal_empresa_docs_{nit}
+16673:const rd = await fetchKey("siso_portal_empresa_docs_" + nv);
+16742:// FIX 2026-06-02: invertir flujo. ANTES de salir con "sin certificados",
+16776:// certificados en el Ã­ndice (publicados por script) y luego se cerraba
+16830:"â„¹ï¸ Empresa encontrada (" + (empresaIdx.nombre || empresaIdx.nit || "sin nombre") + "), pero aÃºn no tiene certificados disponibles.\n\n" +
+16837:setError("âŒ No se encontraron certificados para esta empresa.\n\nVerifique el NIT o nombre. Solo aparecen empresas con historias clÃ­nicas cerradas.");
+17013:<h1 className="text-white font-black text-sm tracking-tight leading-tight">Portal de Certificados</h1>
+17028:{ id:"trabajador", icon:"ðŸ‘¤", title:"Trabajador", sub:"Consulta tu certificado personal" },
+17036:setTipoBusqueda("empresa"); setBusqueda(""); setCodigoPortal(""); setError(""); setResultado(null); setResultadosEmpresa([]); setEmpresaAtenciones(null); setFechaFiltroEmpresa(""); setTabEmpresa("certificados");
+17175:const html = _generarCertificadoDesdePortal(resultado);
+17177:if (!w) { alert("El navegador bloqueÃ³ la ventana emergente. Permita los popups para descargar el certificado."); return; }
+17184:Descargar Certificado PDF
+17204:<p>Tu historia clÃ­nica completa es custodiada por el mÃ©dico ocupacional. Para consultas sobre tu resultado, comunÃ­cate con el servicio mÃ©dico.</p>
+17222:<p className="text-blue-300 text-[11px] mt-1">Consulta y descarga todos los certificados de tu nÃ³mina</p>
+17277:{ icon: "ðŸ“‹", label: "Certificados", sub: "Aptitud de cada trabajador" },
+17337:{/* PestaÃ±as internas: Certificados / Documentos / EstadÃ­sticas */}
+17340:{ id: "certificados", icon: "ðŸ“‹", label: "Certificados", dot: false },
+17356:{/* â”€â”€ PestaÃ±a: CERTIFICADOS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+17357:{tabEmpresa === "certificados" && (
+17363:<p className="text-xs font-black text-emerald-800">Informes, Custodia y Cuentas de cobro</p>
+17364:<p className="text-[10px] text-emerald-600 leading-tight">Informes sociodemogrÃ¡ficos Â· Cartas de custodia Â· Cuentas de cobro disponibles en la pestaÃ±a Documentos</p>
+17372:<p className="text-white font-black text-sm">ðŸ“‹ Certificados de aptitud</p>
+17382:const certs = pacs.map((p, idx) => { const certHtml = _generarCertificadoDesdePortal(p); const bodyMatch = certHtml.match(/<body[^>]*>([\s\S]*)<\/body>/); const bodyContent = bodyMatch ? bodyMatch[1] : certHtml; return "<div style=\"" + (idx > 0 ? "page-break-before:always;" : "") + "padding-top:" + (idx > 0 ? "10mm" : "0") + ";\">" + bodyContent + "</div>"; }).join("");
+17383:const firstCert = _generarCertificadoDesdePortal(pacs[0]);
+17386:const htmlContent = "<!DOCTYPE html><html lang=\"es\"><head><meta charset=\"UTF-8\"><title>Certificados - " + empNombreActual + "</title><style>@page{size:letter portrait;margin:12mm 14mm 14mm 14mm;}*{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}table{border-collapse:collapse;page-break-inside:auto;}tr{page-break-inside:avoid;page-break-after:auto;}td,th{page-break-inside:avoid;}" + styles + ".np-dl{position:fixed;top:10px;right:10px;z-index:9999;}@media print{.np-dl{display:none!important;}body{padding:0!important;}}</style></head><body><div class=\"np-dl\"><button onclick=\"window.print()\" style=\"background:#065f46;color:#fff;border:none;padding:10px 24px;border-radius:10px;font-weight:900;cursor:pointer;font-size:12px;box-shadow:0 4px 12px rgba(0,0,0,.2);\">ðŸ“¥ Guardar PDF / Imprimir (" + pacs.length + " certificados)</button></div>" + certs + "</body></html>";
+17525:<p>Esta informaciÃ³n es de uso exclusivo del responsable de SST de la empresa. Los datos mÃ©dicos individuales son reservados y custodiados por el mÃ©dico ocupacional responsable.</p>
+17578:de historias clÃ­nicas ocupacionales, emisiÃ³n de certificados de
+18141:const [enviarChecklist, setEnviarChecklist] = useState({ certificado: true, historia: false, formula: false, derivacion: false, examenes: false });
+18145:const [savedInformes, setSavedInformes] = useState(() => {
+18146:try { return JSON.parse(localStorage.getItem("siso_informes") || "[]"); } catch { return []; }
+18152:// Cada vez que se guarda un informe (sociodemogrÃ¡fico) o una carta de custodia,
+18153:// se publica automÃ¡ticamente en `siso_portal_empresa_docs_{nit}.periodos[]`.
+18159:// Permite que el caller (saveInforme, cierre HC) sepa si la publicaciÃ³n
+18161:const _publicarAlPortalEmpresa = async (informe) => {
+18164:// por id exacto: si la empresa se recreÃ³ con id nuevo, la custodia/informe
+18167:let emp = companies.find(c => c.id === informe.empresaId);
+18168:if (!emp && informe.empresaNit) {
+18169:const iNit = _ppNormNit(informe.empresaNit);
+18172:if (!emp && informe.empresaNombre) {
+18173:const iNom = informe.empresaNombre.trim().toUpperCase();
+18180:const ymMatch = (informe.periodo || "").match(/^(\d{4}-\d{2})/);
+18181:const ym = ymMatch ? ymMatch[1] : (informe.fecha || "").slice(0, 7);
+18192:let portalKey = `siso_portal_empresa_docs_${nit}`;
+18197:const altKey = `siso_portal_empresa_docs_${nit.slice(0, -1)}`;
+18251:periodo = { periodo: periodoLabel, periodoLabel: periodoNombreLargo, fecha: informe.fecha || `${ym}-01` };
+18258:// Vincular segÃºn el tipo (custodia o informe sociodemogrÃ¡fico)
+18259:if (informe.tipo === "custodia") {
+18260:periodo.custodia = {
+18261:id: informe.id,
+18262:fecha: informe.fecha,
+18263:// mantener solo metadatos en portal â€” el documento completo vive en savedInformes
+18266:// Informe sociodemogrÃ¡fico (sin tipo)
+18267:periodo.informe = {
+18268:id: informe.id,
+18269:fecha: informe.fecha,
+18270:totalPacientes: informe.totalPacientes,
+18271:resumen: informe.resumen,
+18283:// El caller (saveInforme) decide si mostrar Ã©xito o alerta al usuario.
+18289:console.warn("[_publicarAlPortalEmpresa] D1 write excepciÃ³n:", e?.message);
+18293:_sbSet(portalKey, portalData).catch((e) => console.warn("[_publicarAlPortalEmpresa] SB backup fallÃ³:", e?.message));
+18295:console.warn("[_publicarAlPortalEmpresa] D1 write fallÃ³ para", portalKey);
+18300:console.warn("[_publicarAlPortalEmpresa] error:", e?.message);
+18330:// FIX 2026-06-05 (FASE 3): saveInforme async con D1 bloqueante.
+18332:// el informe se perdÃ­a. Ahora escribe a D1 PRIMERO con verificaciÃ³n,
+18334:const saveInforme = async (informe) => {
+18335:const updated = [...savedInformes.filter(i => !(i.empresaId === informe.empresaId && i.periodo === informe.periodo && i.tipo === informe.tipo)), informe];
+18336:setSavedInformes(updated);
+18338:// 1Â° D1 BLOQUEANTE (autoritativo) con MERGE anti-regresiÃ³n por id de informe
+18339:// FIX 2026-06-09 (OpciÃ³n B): _writeArrayMergeD1 preserva informes en D1 que
+18342:const sufKey = "siso_informes_" + (currentUser?.user || "shared");
+18345:await _writeArrayMergeD1("siso_informes", updated, "id");
+18348:console.warn("[saveInforme] D1 escritura excepciÃ³n:", e?.message);
+18352:console.warn("[saveInforme] D1 write fallÃ³ â€” el informe puede perderse en prÃ³xima sync");
+18354:_markUnsyncedHC(!okD1, "informes");
+18357:try { localStorage.setItem("siso_informes", JSON.stringify(updated)); }
+18358:catch (e) { console.warn("[saveInforme] LS quota:", e?.message); }
+18359:_idbSet("siso_informes", updated).catch(() => {}); // ETAPA 1: espejo a IndexedDB
+18362:_sbSet(sufKey, updated).catch((e) => console.warn("[saveInforme] SB fallÃ³:", e?.message));
+18363:_sbSet("siso_informes", updated).catch(() => {}); // segundo backup
+18365:// 4Â° AUTO-PUBLICAR al portal (ahora await + verificaciÃ³n)
+18366:if (informe?.empresaId) {
+18368:const result = await _publicarAlPortalEmpresa(informe);
+18370:console.warn("[saveInforme] portal publish fallÃ³:", result?.error);
+18372:try { showAlert(`âš ï¸ Informe guardado pero NO se publicÃ³ al portal: ${result?.error || "desconocido"}\n\nReintente publicar manualmente.`); } catch {}
+18375:console.warn("[saveInforme] publish excepciÃ³n:", e?.message);
+18378:// 5Â° FASE 2 D: al guardar una CUSTODIA, limpiar custodias HUÃ‰RFANAS de la misma
+18380:// en savedInformes, siso_cartas_custodia y el portal. Conserva las de meses CON
+18382:// nombre exactos) para no tocar custodias de otra empresa.
+18383:if (informe?.tipo === "custodia") {
+18386:let _emp = companies.find((c) => c.id === informe.empresaId);
+18387:if (!_emp && informe.empresaNit) { const iN = _cdNit(informe.empresaNit); if (iN) _emp = companies.find((c) => { const cN = _cdNit(c.nit); return cN && (cN === iN || cN.startsWith(iN) || iN.startsWith(cN)); }); }
+18388:if (!_emp && informe.empresaNombre) { const iNom = informe.empresaNombre.trim().toUpperCase(); if (iNom && iNom !== "NOMBRE DE LA EMPRESA") _emp = companies.find((c) => (c.nombre || "").trim().toUpperCase() === iNom); }
+18414:const _esHuerfana = (i) => i.id !== informe.id && i.tipo === "custodia" && _esDeEmp(i) && !_validP.has(_perDe(i));
+18415:// 1) savedInformes
+18419:setSavedInformes(_limpio);
+18420:try { localStorage.setItem("siso_informes", JSON.stringify(_limpio)); } catch {}
+18421:if (_WORKER_TOKEN) { _writeArrayMergeD1("siso_informes", _limpio, "id").catch(() => {}); _writeArrayMergeD1(sufKey, _limpio, "id").catch(() => {}); }
+18422:_sbSet("siso_informes", _limpio).catch(() => {});
+18424:console.warn(`[custodia] huÃ©rfanas removidas de savedInformes: ${_huerfanas.length}`);
+18426:// 2) siso_cartas_custodia
+18428:const _cartas = JSON.parse(localStorage.getItem("siso_cartas_custodia") || "[]");
+18430:const _cl = _cartas.filter((c) => !(c && c.id !== informe.id && _esDeEmp(c) && !_validP.has(_perDe(c))));
+18432:localStorage.setItem("siso_cartas_custodia", JSON.stringify(_cl));
+18433:if (_WORKER_TOKEN) { _workerSet("siso_cartas_custodia", _cl).catch(() => {}); }
+18434:_sbSet("siso_cartas_custodia_" + (currentUser?.user || "shared"), _cl).catch(() => {});
+18438:// 3) Portal: quitar la custodia de periodos huÃ©rfanos; eliminar periodos vacÃ­os.
+18442:let _pKey = `siso_portal_empresa_docs_${_empNit}`;
+18445:if (!_pData && _empNit.length > 6) { const _alt = `siso_portal_empresa_docs_${_empNit.slice(0, -1)}`; try { const _a = await _workerGet(_alt); if (_a) { _pKey = _alt; _pData = _a; } } catch {} }
+18452:if (per.custodia && ym && !_validP.has(ym)) { per.custodia = null; _cambio = true; }
+18453:if (!per.custodia && !per.informe && !per.certificados && !per.cuenta) { _cambio = true; return false; }
+18460:console.warn("[custodia] portal limpiado de custodias huÃ©rfanas (NIT " + _empNit + ")");
+18463:} catch (e) { console.warn("[custodia] limpieza portal:", e?.message); }
+18466:} catch (e) { console.warn("[custodia] limpieza huÃ©rfanas excepciÃ³n:", e?.message); }
+18475:// Genera HTML profesional para emails de certificados
+18489:: `1. Haga clic en el botÃ³n verde<br/>2. Seleccione "ðŸªª CÃ©dula"<br/>3. Ingrese: <strong>${docNumero || ""}</strong><br/>4. Descargue su certificado en PDF`;
+18492:`<h1 style="color:#ffffff;margin:0;font-size:18px;font-weight:900;">${modoEmpresa ? "ðŸ“¦ DocumentaciÃ³n MÃ©dica Ocupacional" : "ðŸ“‹ Certificado MÃ©dico Ocupacional"}</h1>` +
+18497:? `<p style="font-size:13px;color:#374151;line-height:1.6;margin:0 0 20px;">Le hacemos entrega de la documentaciÃ³n mÃ©dica ocupacional completa correspondiente a su empresa. A continuaciÃ³n encontrarÃ¡ el informe epidemiolÃ³gico, los certificados de aptitud laboral de sus trabajadores, la cuenta de cobro y la carta de custodia de historias clÃ­nicas.</p>`
+18498:: `<p style="font-size:13px;color:#374151;line-height:1.6;margin:0 0 20px;">Le informamos que su certificado de aptitud mÃ©dica ocupacional ha sido emitido. Puede descargarlo a travÃ©s de nuestro portal.</p>`) +
+18501:`<p style="color:#a7f3d0;font-size:11px;margin:0 0 8px;text-transform:uppercase;letter-spacing:2px;font-weight:700;">${modoEmpresa ? "Acceda a sus documentos" : "Descargue su certificado"}</p>` +
+18502:`<a href="${portalUrl}" style="display:inline-block;background:#10b981;color:#ffffff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:900;font-size:14px;">ðŸ“¥ Abrir Portal de Certificados</a>` +
+18550:// FunciÃ³n de envÃ­o masivo de certificados por email
+18551:const enviarCertificadosMasivo = async (pacientes, empresaEmail, modo) => {
+18566:const subject = `Certificados MÃ©dicos Ocupacionales â€” ${empNombre} â€” ${pacientes.length} trabajador(es)`;
+18569:const body = `Estimado/a encargado de SST,\n\n${empNombre}\n\nSe han emitido ${pacientes.length} certificados de aptitud mÃ©dica ocupacional:\n\n${listaTexto}\n\n\nDESCARGAR CERTIFICADOS\n\nPortal de Certificados:\n${portalUrl}\n\n  1. Abra el link\n  2. Seleccione "Empresa"\n  3. Ingrese el NIT: ${empNit}\n  4. Descargue todos los certificados en PDF\n\nCada trabajador tambiÃ©n puede consultar con su cÃ©dula.\n\n\nCordialmente,\n${docData.nombre || remitente}\n${docData.titulo || "MÃ©dico Especialista en Salud Ocupacional"}\n${docData.licencia ? "Licencia S.O.: " + docData.licencia : ""}\n${docData.ciudad || ""}\n${docData.email || emailConfig.email || ""}`;
+18571:const extraHTML = `<p style="font-size:12px;color:#065f46;font-weight:900;margin:0 0 8px;">ðŸ¢ ${empNombre} â€” ${pacientes.length} certificados</p><table style="width:100%;border-collapse:collapse;"><thead><tr style="background:#f3f4f6;"><th style="padding:6px 8px;font-size:10px;text-align:left;color:#6b7280;">#</th><th style="padding:6px 8px;font-size:10px;text-align:left;color:#6b7280;">Trabajador</th><th style="padding:6px 8px;font-size:10px;text-align:left;color:#6b7280;">Documento</th></tr></thead><tbody>${listaHTML}</tbody></table>`;
+18574:if (r.method === "emailjs") showAlert(`âœ… Email enviado automÃ¡ticamente a ${empresaEmail}\n\n${pacientes.length} certificados notificados.`);
+18580:const subject = `Certificado MÃ©dico Ocupacional â€” ${pac.nombres || ""}`;
+18582:const body = `Estimado/a ${pac.nombres || ""},\n\nSu certificado de aptitud mÃ©dica ocupacional ha sido emitido.\n\n\nDESCARGUE SU CERTIFICADO\n\nPortal de Certificados:\n${portalUrl}\n\n  1. Abra el link\n  2. Seleccione "CÃ©dula"\n  3. Ingrese: ${pac.docNumero || ""}\n  4. Descargue su certificado en PDF\n\n\nCordialmente,\n${docData2.nombre || remitente}\n${docData2.titulo || "MÃ©dico Especialista en Salud Ocupacional"}\n${docData2.licencia ? "Licencia S.O.: " + docData2.licencia : ""}\n${docData2.ciudad || ""}\n${docData2.email || emailConfig.email || ""}`;
+18617:// portal (siso_portal_empresa_docs). Funciona retroactivamente para empresas que
+18635:try { docs = await _workerGet(`siso_portal_empresa_docs_${nv}`); } catch {}
+18642:informe: per.informe || prev.informe || null,
+18644:custodia: per.custodia || prev.custodia || null,
+18645:certificados: (per.certificados && per.certificados.count) ? per.certificados : (prev.certificados || per.certificados || null),
+18652:// El mÃ¡s reciente que tenga al menos certificados + (informe o cuenta o custodia)
+18653:const emitido = periodos.find((p) => (p.certificados?.count > 0) && (p.informe || p.cuenta || p.custodia));
+18656:certificados: emitido.certificados?.count || 0,
+18657:informe: !!emitido.informe, cuenta: !!emitido.cuenta, custodia: !!emitido.custodia,
+18659:const n = (docs.certificados > 0 ? 1 : 0) + (docs.informe ? 1 : 0) + (docs.cuenta ? 1 : 0) + (docs.custodia ? 1 : 0);
+18668:// FASE 2: descargar en ZIP los documentos emitidos de la empresa (certificados +
+18669:// informe + cuenta de cobro + carta custodia). Reusa _htmlToPdfBlobMod + JSZip.
+18681:// local haya perdido informe/cuenta/custodia al reentrar). Une variantes de NIT.
+18687:let docs = null; try { docs = await _workerGet(`siso_portal_empresa_docs_${nv}`); } catch {}
+18689:for (const pp of docs.periodos) { const k = pp.periodo || ""; const prev = pMap.get(k) || { periodo: k }; pMap.set(k, { ...prev, ...pp, informe: pp.informe || prev.informe || null, cuenta: pp.cuenta || prev.cuenta || null, custodia: pp.custodia || prev.custodia || null, certificados: (pp.certificados && pp.certificados.count) ? pp.certificados : (prev.certificados || pp.certificados || null) }); }
+18692:per = periodos.find(p => (p.certificados?.count > 0) || p.informe || p.cuenta || p.custodia) || null;
+18695:// 1) Certificados â€” uno por trabajador con el generador REAL (idÃ©ntico a la app).
+18697:let cedulas = (per?.certificados?.documentos || []).map(d => String(d).replace(/\s/g, "")).filter(Boolean);
+18706:const html = _generarCertificadoDesdePortal(pd); // HTML completo, diseÃ±o real
+18710:zip.file(`01_Certificados/${String(idx).padStart(2, "0")}_${nm}_${cc}.pdf`, blob); total++;
+18713:} catch (e) { console.warn("[ZIP] certificados:", e?.message); }
+18715:// 2) Informe epidemiolÃ³gico â€” diseÃ±o REAL (rÃ©plica del portal, carga statsKey)
+18717:const local = savedInformes.find(i => i.empresaId === selectedCompanyReport && !i.tipo);
+18719:totalPacientes: local?.totalPacientes || per?.informe?.totalPacientes || 0,
+18720:resumen: local?.resumen || per?.informe?.resumen || "",
+18721:fecha: local?.fecha || per?.informe?.fecha || (per?.periodo || ""),
+18722:statsKey: local?.statsKey || per?.informe?.statsKey || null,
+18724:if (per?.informe || local) {
+18728:const html = _buildInformeHTMLMod(infMeta, fullData || {}, empName);
+18729:const blob = await _htmlToPdfBlobMod(_wrapDoc(html)); zip.file("02_Informe_Epidemiologico.pdf", blob); total++;
+18731:} catch (e) { console.warn("[ZIP] informe:", e?.message); }
+18760:const blob = await _htmlToPdfBlobMod(_wrapDoc(_buildCuentaCobroHTMLMod(c))); zip.file("03_Cuenta_de_Cobro_No" + String(c.number || "1").padStart(3, "0") + ".pdf", blob); total++;
+18764:// 4) Carta de custodia (portal con respaldo local)
+18766:let cartas = null; if (_WORKER_TOKEN) { try { cartas = await _workerGet("siso_cartas_custodia"); } catch {} }
+18768:if (!cust && per?.custodia) { const pc = per.custodia; cust = { empresaNombre: empName, docNombre: pc.medicoNombre, medicoNombre: pc.medicoNombre, docTitulo: pc.medicoTitulo, docLicencia: pc.medicoLicencia, docCC: pc.medicoCC, docEmail: pc.medicoEmail, docCel: pc.medicoTel, docCiudad: pc.medicoCiudad, firma: pc.firma, firmaSrc: pc.firma, fecha: pc.fecha }; }
+18769:if (cust) { const blob = await _htmlToPdfBlobMod(_wrapDoc(_buildCartaCustodiaHTML(cust))); zip.file("04_Carta_de_Custodia.pdf", blob); total++; }
+18770:} catch (e) { console.warn("[ZIP] custodia:", e?.message); }
+18785:const [reporteActiveTab, setReporteActiveTab] = useState("estadisticas"); // 'estadisticas' | 'certificados'
+18791:const [lastSavedInforme, setLastSavedInforme] = useState(null); // informe guardado listo para publicar en portal
+18861:certificado: true, hcCompleta: true, incapacidad: true,
+18892:"EXAMENES MEDICOS OCUPACIONALES E INFORME DE SALUD DE LOS TRABAJADORES",
+18980:"Informe/Reporte", "PVE/CapacitaciÃ³n", "Telemedicina", "Otro Ingreso"
+19096:// â•â•â• MÃ“DULO ENCUESTAS SOCIODEMOGRÃFICAS â•â•â•
+19159:// SociodemogrÃ¡ficos
+19287:const [portalDescargaTipos, setPortalDescargaTipos] = useState({ cert: true, deriv: false, formula: false, examen: false, interconsulta: false, informe: false });
+19356:// Deep-link: #encuesta?token=xxx â€” formulario pÃºblico de encuesta sociodemogrÃ¡fica
+19544:// a llenar el LS. Procesa: pacientes, atenciones (2 claves) y cartas de custodia.
+19580:run("siso_cartas_custodia", "firma", "custodias");
+19940:const val = await _workerGet(`siso_portal_empresa_docs_${nitClean}`);
+19946:const r = await fetch(_SB_URL + "/rest/v1/siso_store?key=eq.siso_portal_empresa_docs_" + nitClean + "&select=value", { headers: _getSbHeaders() });
+20017:reporte:    [`siso_informes_${userId}`, `siso_saved_reports`, `siso_patients_${userId}`, `siso_db_patients_${userId}`],
+20024:custodia:   [`siso_cartas_custodia_${userId}`, `siso_cartas_custodia`],
+20116:// â”€â”€ Informes epidemiolÃ³gicos â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+20117:if (key.startsWith("siso_informes_") && Array.isArray(value)) {
+20118:setSavedInformes(prev => value.length >= prev.length ? value : prev);
+20119:try { localStorage.setItem("siso_informes", JSON.stringify(value)); } catch {}
+20147:// â”€â”€ Cartas custodia â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+20148:if (key.startsWith("siso_cartas_custodia") && Array.isArray(value)) {
+20149:try { localStorage.setItem("siso_cartas_custodia", JSON.stringify(value)); } catch {}
+20654:// certificados ya publicados con firma + recomendaciones (ej. pacientes
+20717:// propuestas, informes "desaparecÃ­an"). Ahora: D1 (autoritativo) PRIMERO
+20736:`siso_informes_${_loginUid}`,
+20737:`siso_informes`,
+20739:`siso_cartas_custodia_${_loginUid}`,
+20740:`siso_cartas_custodia`,
+20799:// Informes guardados (fusiÃ³n por id con lo local â€” no reemplazo)
+20802:const _infData = cloud?.[`siso_informes_${_infSuf}`]?.value
+20803:|| cloud?.["siso_informes"]?.value;
+20805:const _infMerged = _mergeCloudLocalById(_infData, _ls.getItem("siso_informes"));
+20806:setSavedInformes(_infMerged);
+20807:localStorage.setItem("siso_informes", JSON.stringify(_infMerged));
+20808:localStorage.setItem(`siso_informes_${_infSuf}`, JSON.stringify(_infMerged));
+20811:// Cartas de custodia
+20814:const _custData = cloud?.[`siso_cartas_custodia_${_custSuf}`]?.value
+20815:|| cloud?.["siso_cartas_custodia"]?.value;
+20817:try { localStorage.setItem("siso_cartas_custodia", JSON.stringify(_custData)); } catch {}
+21083:const _cartasCustodia = sp("siso_cartas_custodia", null);
+21084:if (_cartasCustodia?.length)
+21085:tasks.push(_sbSet("siso_cartas_custodia", _cartasCustodia));
+21089:const _informesMedico = sp(`siso_informes_${_u}`, null);
+21090:if (_informesMedico?.length)
+21091:tasks.push(_sbSet(`siso_informes_${_u}`, _informesMedico));
+21092:// â”€â”€ Informes (doble escritura por usuario y clave compartida) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+21093:const _informesSuf = currentUser?.user || "shared";
+21094:const _informesData = sp(`siso_informes_${_informesSuf}`, null) || sp("siso_informes", null);
+21095:if (_informesData?.length) {
+21096:tasks.push(_sbSet(`siso_informes_${_informesSuf}`, _informesData));
+21097:tasks.push(_sbSet("siso_informes", _informesData));
+21104:// â”€â”€ Cartas de custodia (doble clave) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+21105:const _custodiasData = sp("siso_cartas_custodia", null);
+21106:if (_custodiasData?.length) {
+21107:tasks.push(_sbSet("siso_cartas_custodia", _custodiasData));
+21108:tasks.push(_sbSet(`siso_cartas_custodia_${_informesSuf}`, _custodiasData));
+21113:// â”€â”€ Encuestas sociodemogrÃ¡ficas (lista + respuestas individuales) â”€â”€â”€â”€â”€â”€â”€â”€â”€
+21441:// IA nunca veÃ­a estos resultados (aunque sÃ­ salen en el certificado).
+22164:`SOCIODEM: GÃ©nero: ${fmtDist(stats.genero)} | Edad: ${fmtDist(
+22206:"\n\nElabora un informe tÃ©cnico-epidemiolÃ³gico completo con las siguientes 3 secciones:" +
+22210:'\n\nDevuelve ÃšNICAMENTE JSON vÃ¡lido sin markdown: {"analisisJustificado":"texto completo secciÃ³n 1","conclusiones":"texto completo secciÃ³n 2","recomendacionesInforme":"texto completo secciÃ³n 3"}';
+22220:setReportAIResult({ ...parte1, conclusiones: parte2.conclusiones || "", analisisJustificado: parte2.analisisJustificado || "", recomendacionesInforme: parte2.recomendacionesInforme || "" });
+22279:"Informes guardados": ((savedReports || []).length ? _sbSet("siso_saved_reports", savedReports) : Promise.resolve(true)),
+22332:informes: savedReports.length,
+22382:{ key: `siso_saved_reports`,        label: "Informes guardados" },
+23403:// y los certificados ya emitidos NO se tocan.
+23789:// â”€â”€ Ã‰nfasis especiales (necesarios para secciÃ³n Alturas en certificado) â”€â”€
+23808:// directo de localStorage para garantizar firma en certificado.
+23912:// (ej. AMEZQUITA) quedaban sin firma y sus certificados salÃ­an vacÃ­os.
+23927:// 5c) portal_empresa_docs_<NIT> â€” contador del periodo actual
+23929:if (_WORKER_TOKEN) { try { pd = await _workerGet(`siso_portal_empresa_docs_${_nitIdx}`); } catch {} }
+23935:periodo = { periodo: periodoYM, fecha: periodoYM + "-01", certificados: { count: 0, updatedAt: new Date().toISOString() } };
+23938:if (!periodo.certificados) periodo.certificados = { count: 0 };
+23939:if (!yaExiste) periodo.certificados.count = (periodo.certificados.count || 0) + 1;
+23940:periodo.certificados.updatedAt = new Date().toISOString();
+23944:try { await _workerSet(`siso_portal_empresa_docs_${_nitIdx}`, pd); } catch (e) { console.warn("[cierre] D1 portal_empresa_docs:", e?.message); }
+23946:_sbSet(`siso_portal_empresa_docs_${_nitIdx}`, pd).catch(() => {});
+24748:// Informes / reportes guardados
+24774:// AUTO-SYNC PORTAL: publicar certificados en Supabase al restaurar backup
+24850:} usuarios\nâœï¸ ${sigsRestored} firma(s) Â· ðŸ§¾ ${billsR} cuentas Â· ðŸ“Š ${repsR} informes restaurados\nâ˜ï¸ ${synced} certificado(s) sincronizados al Portal del Trabajador`
+24858:} usuarios\nâœï¸ ${sigsRestored} firma(s) Â· ðŸ§¾ ${billsR} cuentas Â· ðŸ“Š ${repsR} informes restaurados`
+24986:// Para consultar certificados de TODOS los mÃ©dicos (solo certificados)
+25949:{/* BotÃ³n Ãºnico: EvoluciÃ³n (incluye nota clÃ­nica, fÃ³rmula, exÃ¡menes, incapacidad, nuevo certificado) */}
+25983:<ClipboardList className="w-3.5 h-3.5" /> EvoluciÃ³n / Nuevo Certificado
+26015:onClick={() => setActiveTab("certificado")}
+26016:className={_tabCls("certificado")}
+26018:Certificado
+26223:{ k: "certificado", l: "ðŸ“‹ Certificado de Aptitud", available: true },
+26244:if (selected[0] === "certificado") {
+26245:const html = _generarCertificadoHTMLNormalizado(data, activeDoctorData, activeSignature, null);
+26277:// Certificado: extraer styles y body del HTML completo
+26278:if (selected.includes("certificado")) {
+26279:const certHtml = _generarCertificadoHTMLNormalizado(data, activeDoctorData, activeSignature, null);
+26333:const selDocs = Object.entries(enviarChecklist).filter(([,v]) => v).map(([k]) => ({certificado:"Certificado",historia:"Historia ClÃ­nica",formula:"FÃ³rmula MÃ©dica",derivacion:"DerivaciÃ³n",examenes:"ExÃ¡menes"}[k])).join(", ");
+26336:const body = `Estimado/a ${nombre},\n\nDocumentos emitidos: ${selDocs}\n\nPortal de Certificados:\n${portalLink}\nâ†’ CÃ©dula: ${data.docNumero || ""}\n\nCordialmente,\n${docD.nombre || ""}\n${docD.titulo || ""}\n${docD.licencia ? "Lic: " + docD.licencia : ""}\n${docD.email || emailConfig?.email || ""}`;
+26589:title={"Hay datos guardados SOLO en este equipo (HCs, cuentas, propuestas o informes) que aÃºn no se respaldaron en la nube. NO borre los datos del navegador. Se reintenta automÃ¡ticamente al recuperar conexiÃ³n â€” o haga clic aquÃ­ para reintentar ahora."}
+26595:const _inf = JSON.parse(localStorage.getItem("siso_informes") || "[]");
+26598:_writeArrayMergeD1("siso_informes", _inf, "id"),
+26599:_writeArrayMergeD1("siso_informes_" + (currentUser?.user || "shared"), _inf, "id"),
+26600:]).then(([a, b]) => _markUnsyncedHC(!(a && b), "informes"))
+26601:.catch(() => _markUnsyncedHC(true, "informes"));
+26629:onClick={() => goTo("custodia")}
+26631:view === "custodia"
+26635:title="Carta de Custodia - Res. 1918/2009"
+26637:ðŸ“ Custodia
+27112:Certificados
+27531:// Facturas, caja, informes
+27534:await push(`siso_informes_${uid}`, JSON.parse(localStorage.getItem(`siso_informes_${uid}`) || "null"));
+27572:`siso_caja_movs_${suf}`, `siso_informes_${uid}`,
+27574:`siso_cartas_custodia_${uid}`, "siso_cartas_custodia",
+27658:Portal de Certificados
+28019:: "certificado"
+28024:title="Certificado"
+28359:<SectionTitle title="Datos SociodemogrÃ¡ficos y Laborales" icon={User} />
+31335:{/* Firma Digital movida al Ã¡rea inferior del certificado */}
+31351:// â”€â”€â”€ RENDER: CERTIFICADO â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+31352:const renderCertificado = () => (
+31376:Certificado de Aptitud Laboral
+31495:{/* â”€â”€ RESULTADOS Ã‰NFASIS ESPECIALIZADO en certificado â”€â”€ */}
+32023:{/* CÃ³digo de verificaciÃ³n integrado en la firma del certificado */}
+32033:{/* â”€â”€ NORMATIVO: Res. 1843/2025 Art. 25 - Registro entrega certificado â”€â”€ */}
+32034:{/* Evoluciones clÃ­nicas: se gestionan desde la HC, no aparecen en el certificado */}
+32056:data.certificadoEntregado
+32065:checked={!!data.certificadoEntregado}
+32069:certificadoEntregado: e.target.checked,
+32070:fechaEntregaCertificado: e.target.checked
+32071:? p.fechaEntregaCertificado ||
+32073:: p.fechaEntregaCertificado,
+32081:data.certificadoEntregado ? "text-emerald-800" : "text-blue-800"
+32084:{data.certificadoEntregado
+32093:{data.certificadoEntregado && (
+32101:value={data.fechaEntregaCertificado || ""}
+32105:fechaEntregaCertificado: e.target.value,
+32117:value={data.metodoEntregaCertificado || "FÃ­sica"}
+32121:metodoEntregaCertificado: e.target.value,
+32457:{/* Guardar informe */}
+32462:const statsKey = "siso_informe_stats_" + selectedCompanyReport + "_" + Date.now();
+32483:const informe = {
+32494:saveInforme(informe);
+32495:setLastSavedInforme(informe);
+32496:showAlert("âœ… Informe guardado para " + compName + "\nPeriodo: " + periodo + "\n\nUsa el botÃ³n ðŸ“¤ Publicar en portal para que la empresa lo vea.");
+32500:<Save className="w-4 h-4" /> Guardar Informe
+32503:{/* Publicar informe en portal empresa */}
+32504:{selectedCompanyReport && savedInformes.some(i => i.empresaId === selectedCompanyReport && !i.tipo) && (() => {
+32505:const _inf = lastSavedInforme?.empresaId === selectedCompanyReport
+32506:? lastSavedInforme
+32507:: savedInformes.find(i => i.empresaId === selectedCompanyReport && !i.tipo);
+32510:// Normalizar perÃ­odo: extraer YYYY-MM del string del informe
+32523:if (!_nit) { showAlert("âš ï¸ La empresa no tiene NIT registrado."); btn.disabled=false; btn.textContent="ðŸ“¤ Publicar en portal"; return; }
+32526:if (_WORKER_TOKEN) { try { _docsExist = await _workerGet(`siso_portal_empresa_docs_${_nit}`); } catch {} }
+32527:if (!_docsExist) { try { const r = await fetch(`${_SB_URL}/rest/v1/siso_store?key=eq.siso_portal_empresa_docs_${_nit}&select=value`, { headers: { apikey: _SB_KEY, Authorization: `Bearer ${_SB_KEY}` } }); const d = await r.json(); _docsExist = d[0]?.value || null; } catch {} }
+32528:const informePayload = { totalPacientes: _inf.totalPacientes, resumen: _inf.resumen || "", fecha: _inf.fecha, statsKey: _inf.statsKey || null };
+32534:if (pKey === _periodoKey) { found = true; return { ...p, informe: informePayload }; }
+32537:if (!found) docs.periodos.unshift({ periodo: _periodoKey, fecha: _inf.fecha, informe: informePayload, certificados: null, cuenta: null, custodia: null });
+32539:await _sbSet(`siso_portal_empresa_docs_${_nit}`, docs);
+32548:const _raw = await _workerGetRaw(`siso_portal_empresa_docs_${_nit}`);
+32549:const _meta = await _workerGetRaw(`siso_portal_empresa_docs_${_nit}` + _CHUNK_SUF_META);
+32554:btn.disabled = false; btn.textContent = "ðŸ“¤ Publicar en portal";
+32563:const newDoc = { nit: _nit, nombre: compName, codigoAcceso: _codigoNuevo, updatedAt: new Date().toISOString(), periodos: [{ periodo: _periodoKey, fecha: _inf.fecha, informe: informePayload, certificados: null, cuenta: null, custodia: null }] };
+32564:await _sbSet(`siso_portal_empresa_docs_${_nit}`, newDoc);
+32574:showAlert("âœ… Informe publicado en el portal de " + compName + ".\nLa empresa ya puede verlo al ingresar al portal con su NIT.");
+32577:btn.textContent = "ðŸ“¤ Publicar en portal";
+32578:showAlert("âš ï¸ Error al publicar: " + err.message);
+32583:ðŸ“¤ Publicar en portal
+32612:{" "}({emitidoEmpresa.docs.certificados > 0 ? "ðŸ“„" : ""}{emitidoEmpresa.docs.informe ? "ðŸ“‹" : ""}{emitidoEmpresa.docs.cuenta ? "ðŸ’°" : ""}{emitidoEmpresa.docs.custodia ? "ðŸ“" : ""})
+32623:{/* â”€â”€ TABS: EstadÃ­sticas | Certificados por empresa â”€â”€ */}
+32628:{ k: "certificados", l: "ðŸ“„ Certificados por empresa" },
+33284:{/* Tablas sociodemogrÃ¡ficas ampliadas (20+ variables) */}
+33287:1. Perfil SociodemogrÃ¡fico y Ocupacional
+33664:{/* â”€â”€ Recomendaciones del Informe (Punto 11) â”€â”€ */}
+33665:{reportAIResult.recomendacionesInforme && (
+33671:{reportAIResult.recomendacionesInforme}
+33912:desc: "Custodia y retenciÃ³n de historias clÃ­nicas - mÃ­nimo 20 aÃ±os (GestiÃ³n 5 + Central 10 + HistÃ³rico 5)",
+33941:<p>Seleccione una empresa para ver su informe.</p>
+33946:{/* â•â• TAB: CERTIFICADOS POR EMPRESA â•â• */}
+33947:{reporteActiveTab === "certificados" &&
+33957:// _generarCertificadoHTMLNormalizado produce el HTML canÃ³nico.
+33965:// â”€â”€ Certificado individual: idÃ©ntico a "Ver Certificado" en la HC â”€â”€
+33970:const html = _generarCertificadoHTMLNormalizado(
+33992:// â”€â”€ MÃºltiples certificados: mismo CSS, un <body> por pÃ¡gina â”€â”€â”€â”€â”€
+33997:const sampleFull = _generarCertificadoHTMLNormalizado(
+34009:const full = _generarCertificadoHTMLNormalizado(
+34049:"<span>ðŸ“„ Certificados - " +
+34070:ðŸ“„ Certificados de Aptitud - {compName}
+34114:if (selectedList.length === 0) { showAlert("Seleccione al menos un certificado con el checkbox."); return; }
+34120:showAlert(`ðŸ“¦ Generando ZIP con ${selectedList.length} certificado${selectedList.length > 1 ? 's' : ''}...\nEspera, esto puede tardar unos segundos.`);
+34141:const mg = 12, cW = pW - mg*2, pcH = pH - mg*2; // FIX 2026-07-13: unificado a 12mm (era 15) con el resto de conversores de certificado
+34168:const html = _generarCertificadoHTMLNormalizado(p, docData, sig, _miIPSCertSel);
+34179:a.href = url; a.download = `Certificados_${(compName||'empresa').replace(/[^a-zA-Z0-9]/g,'_')}_${new Date().toISOString().slice(0,10)}.zip`;
+34182:showAlert(`âœ… ZIP descargado con ${selectedList.length - errCount} certificado${selectedList.length - errCount !== 1 ? 's' : ''}${errCount > 0 ? ` (${errCount} con error)` : ''}.\n\nAbre el ZIP para acceder a cada PDF por separado.`);
+34187:title={`Descargar los ${selectedList.length} certificados seleccionados como PDFs individuales`}
+34195:if (filtered.length === 0) { showAlert("No hay certificados en el perÃ­odo seleccionado."); return; }
+34202:const sampleAll = _generarCertificadoHTMLNormalizado(
+34207:// Generar todos los certificados concatenados
+34209:const full = _generarCertificadoHTMLNormalizado(p, docData, sig, _miIPSCertAll);
+34231:'<span>ðŸ“„ Todos los Certificados â€” ' + compName + ' (' + filtered.length + ' trabajadores)</span>' +
+34242:title={`Descargar los ${filtered.length} certificados del perÃ­odo en un solo PDF`}
+34257:showPrompt(`ðŸ“§ Email de la empresa para enviar ${selectedList.length} certificado(s):\n\n(Se enviarÃ¡ un solo email con la lista completa)`, (emailDest) => {
+34259:enviarCertificadosMasivo(selectedList, emailDest, "empresa");
+34274:showConfirm(`ðŸ“§ Enviar certificado individual a cada trabajador?\n\nâœ… Con email: ${conEmail.length}\nâš ï¸ Sin email: ${sinEmail.length} (se omitirÃ¡n)\n\nCada trabajador recibirÃ¡ su certificado SIN ver el de los demÃ¡s.`, () => {
+34275:enviarCertificadosMasivo(selectedList, null, "individual");
+34293:const msg = encodeURIComponent(`Estimado/a ${pac.nombres || ""}, su certificado de aptitud mÃ©dica ocupacional estÃ¡ listo. Consulte en nuestro portal con su documento: ${pac.docNumero || ""}. ${emailConfig.nombre || activeDoctorData?.nombre || "OcupaSalud"}`);
+34298:w.document.write(`<!DOCTYPE html><html><head><title>EnvÃ­o WhatsApp</title><style>body{font-family:Arial;padding:20px}table{width:100%;border-collapse:collapse}th{background:#25d366;color:white;padding:8px;text-align:left}td{border-bottom:1px solid #eee}h2{color:#075e54}.warn{background:#fff3cd;border:1px solid #ffc107;border-radius:8px;padding:10px;margin:10px 0;font-size:12px}</style></head><body><h2>ðŸ“± Enviar Certificados por WhatsApp</h2><p>${conTel.length} trabajadores con celular Â· ${sinTel.length > 0 ? `<span style="color:red">${sinTel.length} sin celular</span>` : "âœ… Todos con celular"}</p>${sinTel.length > 0 ? `<div class="warn">âš ï¸ Sin celular: ${sinTel.map(p=>p.nombres).join(", ")}</div>` : ""}<table><thead><tr><th>#</th><th>Nombre</th><th>Celular</th><th>AcciÃ³n</th></tr></thead><tbody>${rows}</tbody></table></body></html>`);
+34339:{filtered.length} certificados disponibles
+34408:// â”€â”€ Usa el MISMO generador que la HC - certificado idÃ©ntico â”€â”€
+34415:_generarCertificadoHTMLNormalizado(
+34539:// Helper para envÃ­o de certificado
+34543:const subject = encodeURIComponent(`Certificado MÃ©dico Ocupacional - ${nombre}`);
+34544:const body = encodeURIComponent(`Estimado/a ${nombre},\n\nSu certificado de aptitud mÃ©dica ocupacional ha sido emitido.\n\nâ”â”â” DESCARGUE SU CERTIFICADO â”â”â”\n\nðŸ“¥ Ingrese al Portal de Certificados:\n${portalLink}\n\nâ†’ Seleccione "ðŸªª CÃ©dula"\nâ†’ Ingrese su nÃºmero de documento: ${pac.docNumero || ""}\nâ†’ PodrÃ¡ ver y descargar su certificado en PDF\n\nâ”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”\n\nCordialmente,\n${emailConfig?.nombre || activeDoctorData?.nombre || "OcupaSalud"}\nMÃ©dico Ocupacional\n${emailConfig?.email || ""}`);
+34557:const msg = encodeURIComponent(`Estimado/a ${nombre}, su certificado de aptitud mÃ©dica ocupacional estÃ¡ listo.\n\nðŸ“¥ DescÃ¡rguelo aquÃ­:\n${portalLink}\nâ†’ Seleccione "CÃ©dula" e ingrese: ${pac.docNumero || ""}\n\n${emailConfig?.nombre || activeDoctorData?.nombre || "OcupaSalud"} - MÃ©dico Ocupacional`);
+34668:title="Consultar certificados de todos los mÃ©dicos"
+34679:// TODOS los campos sociodemogrÃ¡ficos (incluidos los importados de encuesta)
+34718:<button onClick={() => _enviarCertEmail(p)} className="text-[9px] bg-amber-50 text-amber-700 px-1.5 py-1 rounded-lg border border-amber-200 font-bold hover:bg-amber-100" title="Enviar certificado por email">ðŸ“§</button>
+34719:<button onClick={() => _enviarCertWhatsApp(p)} className="text-[9px] bg-green-50 text-green-700 px-1.5 py-1 rounded-lg border border-green-200 font-bold hover:bg-green-100" title="Enviar certificado por WhatsApp">ðŸ“±</button>
+34821:: "certificado"
+34909:// Cada empresa debe tener: Certificados, Informe sociodemogrÃ¡fico, Carta de
+34910:// custodia y Cuenta de cobro. Reusa la misma lÃ³gica del panel EnvÃ­o Integral.
+34912:// Custodias en clave dedicada (algunas se guardan ahÃ­ ademÃ¡s de en savedInformes).
+34913:const _cartasCustodiaLS = (() => { try { return JSON.parse(localStorage.getItem("siso_cartas_custodia") || "[]"); } catch { return []; } })();
+34930:const _findCustodia = (c) =>
+34931:savedInformes.find((i) => i.tipo === "custodia" && _docBelongsTo(i, c)) ||
+34932:_cartasCustodiaLS.find((cc) => _docBelongsTo(cc, c)) || null;
+34936:const socio = savedInformes.some((i) => !i.tipo && _docBelongsTo(i, c));
+34937:const custodia = !!_findCustodia(c);
+34940:if (certCount === 0) faltantes.push("Certificados");
+34941:if (!socio) faltantes.push("Informe sociodemogrÃ¡fico");
+34942:if (!custodia) faltantes.push("Carta de custodia");
+34944:return { certCount, certs: certCount > 0, socio, custodia, cuenta, faltantes, completos: 4 - faltantes.length };
+34947:const _verCertificados = async (c) => {
+34950:if (certsEmp.length === 0) { showAlert(`"${c.nombre}" no tiene certificados.\nSe generan al CERRAR la HC de cada paciente.`); return; }
+34958:_abrirVentanaPDF(_buildCertificadosEmpresaHTML(hidratados), `Certificados â€” ${c.nombre} (${hidratados.length})`);
+34959:} catch (e) { showAlert("Error generando certificados: " + (e?.message || "")); }
+34961:const _verCustodia = (c) => {
+34962:const cust = _findCustodia(c);
+34963:if (cust) { _abrirVentanaPDF(_buildCartaCustodiaHTML(cust), `Carta Custodia â€” ${c.nombre}`); return; }
+34964:showAlert(`"${c.nombre}" no tiene carta de custodia. Te llevo a crearla; al guardar quedarÃ¡ publicada en el portal.`);
+34965:goTo("custodia");
+34969:if (bill) { _abrirVentanaPDF(_buildCuentaCobroHTMLMod(bill), `Cuenta de Cobro â€” ${c.nombre}`); return; }
+34973:const _verInforme = (c) => {
+34974:const has = savedInformes.some((i) => !i.tipo && _docBelongsTo(i, c));
+34978:? `El informe sociodemogrÃ¡fico de "${c.nombre}" se ve e imprime en Reportes.`
+34979:: `"${c.nombre}" no tiene informe sociodemogrÃ¡fico. Te llevo a Reportes para generarlo (empresa preseleccionada).`);
+34990:return `- ${c.nombre} (NIT ${c.nit || "N/R"}): Certificados=${inv.certCount}, SociodemogrÃ¡fico=${inv.socio ? "SÃ­" : "No"}, Custodia=${inv.custodia ? "SÃ­" : "No"}, CuentaCobro=${inv.cuenta ? "SÃ­" : "No"} â†’ completos ${inv.completos}/4${inv.faltantes.length ? ` Â· faltan: ${inv.faltantes.join(", ")}` : ""}`;
+34995:`Cada empresa debe tener 4 documentos: Certificados, Informe sociodemogrÃ¡fico, Carta de custodia y Cuenta de cobro. ` +
+34999:`(2) Empresas a priorizar y por quÃ© (las que ya tienen certificados emitidos pero les falta custodia/cuenta son urgentes), ` +
+35112:if (_WORKER_TOKEN) { try { existing = await _workerGet(`siso_portal_empresa_docs_${nit}`); } catch {} }
+35113:if (!existing) { try { const r = await fetch(_SB_URL + "/rest/v1/siso_store?key=eq.siso_portal_empresa_docs_" + nit + "&select=value", { headers: _getSbHeaders() }); const d = await r.json(); existing = d[0]?.value || null; } catch {} }
+35125:await _sbSet("siso_portal_empresa_docs_" + nit, docsData);
+35262:<button type="button" title="Ver certificados" onClick={() => _verCertificados(c)} className={_docChipCls(inv.certs)}>
+35265:<button type="button" title="Ver informe sociodemogrÃ¡fico" onClick={() => _verInforme(c)} className={_docChipCls(inv.socio)}>
+35266:ðŸ“Š Sociodem: {inv.socio ? "âœ“" : "âœ—"}
+35268:<button type="button" title="Ver carta de custodia" onClick={() => _verCustodia(c)} className={_docChipCls(inv.custodia)}>
+35269:ðŸ“ Custodia: {inv.custodia ? "âœ“" : "âœ—"}
+35831:// Guardar en Supabase para que funcione el portal de certificados
+35836:await _sbSet("siso_portal_empresa_docs_" + nitNew, docsData);
+35858:const tot = { certs: 0, socio: 0, custodia: 0, cuenta: 0, completas: 0 };
+35862:if (inv.socio) tot.socio++;
+35863:if (inv.custodia) tot.custodia++;
+35874:{ l: "Con certificados", v: tot.certs, cls: "bg-blue-50 border-blue-200" },
+35875:{ l: "Con sociodemogrÃ¡fico", v: tot.socio, cls: "bg-blue-50 border-blue-200" },
+35876:{ l: "Con custodia", v: tot.custodia, cls: "bg-blue-50 border-blue-200" },
+35911:<th className="p-2 text-center">ðŸ“Š Sociodem.</th>
+35912:<th className="p-2 text-center">ðŸ“ Custodia</th>
+35927:<td className="p-2 text-center"><button onClick={() => _verCertificados(c)} className={_docChipCls(inv.certs)}>{inv.certCount}</button></td>
+35928:<td className="p-2 text-center"><button onClick={() => _verInforme(c)} className={_docChipCls(inv.socio)}>{inv.socio ? "âœ“" : "âœ—"}</button></td>
+35929:<td className="p-2 text-center"><button onClick={() => _verCustodia(c)} className={_docChipCls(inv.custodia)}>{inv.custodia ? "âœ“" : "âœ—"}</button></td>
+36047:{/* â•â•â• TAB: ENCUESTAS SOCIODEMOGRÃFICAS â•â•â• */}
+36321:w.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>Encuesta - ${enc.empresaNombre}</title><style>@page{size:landscape;margin:8mm}body{font-family:Arial,sans-serif;font-size:9px;margin:10px;color:#111}h1{font-size:14px;color:#065f46;margin:0}h2{font-size:10px;color:#555;margin:4px 0 10px 0}table{width:100%;border-collapse:collapse}th{background:#065f46;color:white;padding:4px 5px;text-align:left;font-size:7px;white-space:nowrap}td{padding:3px 5px;border-bottom:1px solid #e5e7eb;font-size:8px;vertical-align:top}.bg-gray-50{background:#f9fafb}tr:hover{background:#f0fdf4}.footer{margin-top:10px;font-size:7px;color:#888;text-align:center}.np{text-align:center;padding:10px}@media print{.np{display:none}}</style></head><body><h1>&#128203; ENCUESTA SOCIODEMOGRAFICA</h1><h2>${enc.empresaNombre} &middot; ${enc.tipoExamen} &middot; ${resps.length} trabajador(es) &middot; Creada: ${enc.fechaCreacion}</h2><table><thead><tr><th>#</th><th>Nombre</th><th>Documento</th><th>Fec.Nac.</th><th>Edad</th><th>Genero</th><th>Est.Civil</th><th>Escolaridad</th><th>Grupo Etnico</th><th>Lateralidad</th><th>Celular</th><th>Email</th><th>Direccion</th><th>Ciudad</th><th>Zona</th><th>Estrato</th><th>EPS</th><th>ARL</th><th>AFP</th><th>Cargo</th><th>Area</th><th>Antiguedad</th><th>Contrato</th><th>Turno</th><th>Ctc Emergencia</th><th>Tel Emergencia</th></tr></thead><tbody>${filas}</tbody></table><div class="footer">OcupaSalud &middot; Generado: ${new Date().toLocaleString("es-CO")} &middot; Res. 1843/2025</div><div class="np"><button onclick="window.print()" style="background:#065f46;color:white;border:none;padding:8px 20px;border-radius:8px;cursor:pointer;font-weight:900">Imprimir / Guardar PDF</button></div></body></html>`);
+37128:if (_WORKER_TOKEN) { try { existing = await _workerGet(`siso_portal_empresa_docs_${nitEd}`); } catch {} }
+37129:if (!existing) { try { const rEx = await fetch(_SB_URL + "/rest/v1/siso_store?key=eq.siso_portal_empresa_docs_" + nitEd + "&select=value", { headers: _getSbHeaders() }); const dEx = await rEx.json(); existing = dEx[0]?.value || null; } catch {} }
+37132:await _sbSet("siso_portal_empresa_docs_" + nitEd, docsData);
+37436:// Cualquier perfil puede verificar un certificado cerrado
+37457:"No se encontrÃ³ ningÃºn certificado cerrado con ese cÃ³digo o documento."
+37569:<FileSearch className="w-5 h-5" /> ValidaciÃ³n de Certificados
+37605:ðŸ“‹ Se encontraron {found._multiple.length} certificados para ese
+37639:onClick={() => handlePrint(`Certificado-${found.nombres}`)}
+37650:Certificado de Aptitud Laboral Verificado
+38290:// Actualizar tambiÃ©n en portal empresa (siso_portal_empresa_docs_${nit})
+38298:if (_WORKER_TOKEN) { try { _docsVal = await _workerGet(`siso_portal_empresa_docs_${_nitP}`); } catch {} }
+38299:if (!_docsVal) { try { const _pr = await fetch(`${_SB_URL}/rest/v1/siso_store?key=eq.siso_portal_empresa_docs_${_nitP}&select=value`, { headers: { apikey: _SB_KEY, Authorization: `Bearer ${_SB_KEY}` } }); const _pd = await _pr.json(); _docsVal = _pd[0]?.value || null; } catch {} }
+38305:await _sbSet(`siso_portal_empresa_docs_${_nitP}`, _docsVal);
+38944:ðŸ§‘â€ðŸ’¼ Portal de Certificados
+39122:{/* â”€â”€ BOTÃ“N DESCARGAR CERTIFICADO PDF â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+39139:const html = _generarCertificadoHTMLNormalizado(
+39152:"El navegador bloqueÃ³ la ventana emergente. Permita los popups para descargar el certificado."
+39184:ðŸ“„ Descargar Certificado de Aptitud PDF
+39192:evaluaciÃ³n. Su historia clÃ­nica completa es custodiada por
+40675:Evaluaciones mÃ©dicas ocupacionales, certificados de aptitud
+40688:Solo a la empresa empleadora del trabajador (certificado de
+42949:{ f: "tarifaInforme", l: "Informe de salud" },
+42978:(aparece en HC, Certificados, FÃ³rmulas, Informes y
+43732:Tarifa Informe ($)
+43736:value={newUserForm.doctorData?.tarifaInforme || ""}
+43742:tarifaInforme: e.target.value,
+43780:Firma Digital (aparece en HC, Certificados, Informes y
+44410:<th className="p-3 text-center">Certificados</th>
+44793:label: "Portal de Certificados",
+44870:label: "Certificado de Incapacidad",
+45219:["Portal de Certificados (Empresa)", "âœ… Incluido"],
+45461:nombre: "Informe Ejecutivo de Salud y Perfil EpidemiolÃ³gico",
+45463:precioBase: parseInt(_billDocData.tarifaInforme || 250000),
+45485:nombre: "Certificado de Aptitud Laboral Individual",
+46152:establece los lineamientos para la realizaciÃ³n y custodia
+46187:âœ“ <strong>Certificado de Aptitud Laboral:</strong> Para el
+46195:âœ“ <strong>Informe de Condiciones de Salud:</strong> Perfil
+46199:âœ“ <strong>Historia ClÃ­nica:</strong> Custodiada bajo
+47483:<h2 style="margin:0;font-size:13pt;font-weight:900;color:#dc2626;text-transform:uppercase;">Certificado de Incapacidad MÃ©dica</h2>
+47545:.write(`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"/><title>Certificado de Incapacidad - ${_sanitize(
+47569:<span class="ptitle">ðŸ¥ Certificado de Incapacidad - ${_sanitize(
+47573:<button class="btn-print" onclick="window.print()">ðŸ–¨ï¸ Imprimir certificado</button>
+47581:// No auto-print - el mÃ©dico edita y luego hace clic en "Imprimir certificado"
+47588:ðŸ¥ Certificado de Incapacidad MÃ©dica
+47811:<Printer className="w-3.5 h-3.5" /> Imprimir Certificado
+48089:// SociodemogrÃ¡ficos
+49716:"Informe",
+49717:"Certificado",
+55004:if (tipo === "cert") return _generarCertificadoHTMLNormalizado(p, docD, sig, comp);
+55045:const lbl = {cert:"Certificado",deriv:"Derivaciones",formula:"Formula",examen:"Examenes",interconsulta:"Interconsultas"}[tipo]||tipo;
+55072:const html = _generarCertificadoHTMLNormalizado(p, docD, sig, comp);
+55078:const fh = _generarCertificadoHTMLNormalizado(selList[0], docD, sig, comp0);
+55082:w.document.write("<!DOCTYPE html><html lang=\"es\"><head><meta charset=\"UTF-8\"><title>Certificados â€” "+empLabel+"</title><style>@page{size:letter portrait;margin:12mm 14mm 14mm 14mm;}*{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}table{border-collapse:collapse;page-break-inside:auto;}tr{page-break-inside:avoid;}td,th{page-break-inside:avoid;}"+styles+".np-dl{position:fixed;top:10px;right:10px;z-index:9999;}@media print{.np-dl{display:none!important;}body{padding:0!important;}}</style></head><body><div class=\"np-dl\"><button onclick=\"window.print()\" style=\"background:#065f46;color:#fff;border:none;padding:10px 24px;border-radius:10px;font-weight:900;cursor:pointer;font-size:12px;\">&#128229; Guardar PDF ("+selList.length+" certificados)</button></div>"+certs+"</body></html>");
+55751:{ icon:"âœ…", val: pacientesEmpresa.filter(p=>p.estadoHistoria==="Cerrada").length, label:"Certificados", color:"text-emerald-600" },
+55766:{ icon:"ðŸ“¥", label:"Descargar documentos", desc:"Certificados, fÃ³rmulas, exÃ¡menes", tab:"descargas" },
+55767:{ icon:"ðŸ“„", label:"Documentos e informes", desc:"Informe epidemiolÃ³gico, cuentas", tab:"documentos" },
+55770:{ icon:"ðŸ”’", label:"Carta de custodia", desc:"Confidencialidad de datos", tab:"documentos" },
+55873:{ k:"cert",         icon:"ðŸ“‹", label:"Certificado de Aptitud",    desc:"PDF firmado",                   color:"emerald" },
+55878:{ k:"informe",      icon:"ðŸ“Š", label:"Informe EpidemiolÃ³gico",    desc:"DiagnÃ³stico colectivo",         color:"teal"    },
+56772:{/* TAB: Concepto MÃ©dico + Certificado */}
+56836:tipo: "certificado_evolucion",
+56846:const html = _generarCertificadoHTMLNormalizado(certData, activeDoctorData || {}, activeSignature, companies.find((c) => c.id === currentUser?.empresaId) || {});
+56849:showAlert(`âœ… Certificado de evoluciÃ³n generado.\nNuevo cÃ³digo: ${newCode}\nVinculado a HC original: ${data.codigoVerificacion || "â€”"}`);
+56853:ðŸ“„ Expedir Nuevo Certificado (con nuevo cÃ³digo)
+57393:// CARTA DE CUSTODIA â€” Historias ClÃ­nicas Ocupacionales
+57395:const renderCartaCustodia = () => (
+57396:<CartaCustodia
+57401:saveInforme={saveInforme}
+57402:savedInformes={savedInformes}
+57539:if (view === "custodia") return renderCartaCustodia();
+57545:savedInformes={savedInformes}
+57553:publicarAlPortalFn={_publicarAlPortalEmpresa}
+57624:activeTab === "certificado" &&
+57625:renderCertificado()}
+57852:SociodemogrÃ¡ficos" para que aparezca en el carnÃ©.
+57873:Certificado de Incapacidad MÃ©dica
+58567:const body = `Estimado/a ${nombre},\n\nSus documentos mÃ©dicos han sido emitidos.\n\nPortal de Certificados:\n${portalLink}\nâ†’ CÃ©dula: ${data.docNumero || ""}\n\nCordialmente,\n${docD.nombre || ""}\n${docD.titulo || ""}\n${docD.licencia ? "Lic: " + docD.licencia : ""}\n${docD.email || emailConfig?.email || ""}`;
+59063:Certificado de Incapacidad MÃ©dica
+59312:const hasInforme = savedInformes.some(i => i.empresaId === emp.empresaId) || !!_emit?.informe;
+59313:const hasCerts = patientsList.filter(p => p.empresaId === emp.empresaId && p.estadoHistoria === "Cerrada").length > 0 || (_emit?.certificados > 0);
+59314:const certCount = patientsList.filter(p => p.empresaId === emp.empresaId && p.estadoHistoria === "Cerrada").length || (_emit?.certificados || 0);
+59317:// Carta de custodia: check in savedInformes with tipo "custodia"
+59318:const hasCustodia = savedInformes.some(i => i.empresaId === emp.empresaId && i.tipo === "custodia") || !!_emit?.custodia;
+59319:const todoListo = hasInforme && hasCerts && hasCuenta && hasCustodia;
+59332:{/* Informe */}
+59333:<div className={`flex items-center justify-between p-3 rounded-xl border ${hasInforme ? "bg-emerald-50 border-emerald-200" : "bg-red-50 border-red-200"}`}>
+59335:<span>{hasInforme ? "âœ…" : "âŒ"}</span>
+59336:<div><p className="text-xs font-black text-gray-800">Informe EpidemiolÃ³gico</p>
+59337:<p className="text-[10px] text-gray-500">{hasInforme ? "Guardado" : "No guardado â€” use 'Guardar Informe' primero"}</p></div>
+59339:{!hasInforme && <span className="text-[9px] text-red-600 font-bold">Guarde el informe â†‘</span>}
+59341:{/* Certificados */}
+59345:<div><p className="text-xs font-black text-gray-800">Certificados de Aptitud</p>
+59401:{/* Carta de custodia */}
+59402:<div className={`flex items-center justify-between p-3 rounded-xl border ${hasCustodia ? "bg-emerald-50 border-emerald-200" : "bg-amber-50 border-amber-200"}`}>
+59404:<span>{hasCustodia ? "âœ…" : "âŒ"}</span>
+59405:<div><p className="text-xs font-black text-gray-800">Carta de Custodia</p>
+59406:<p className="text-[10px] text-gray-500">{hasCustodia ? "Guardada" : "No creada"}</p></div>
+59408:{!hasCustodia && <button onClick={() => {
+59412:const custodia = {
+59417:tipo: "custodia",
+59436:saveInforme(custodia);
+59437:// Guardar tambiÃ©n en clave dedicada siso_cartas_custodia en Supabase
+59438:const _prevCartas = (() => { try { return JSON.parse(localStorage.getItem("siso_cartas_custodia") || "[]"); } catch { return []; } })();
+59439:const _newCartas = [..._prevCartas.filter(c => !(c.empresaId === custodia.empresaId && c.periodo === custodia.periodo)), custodia];
+59440:localStorage.setItem("siso_cartas_custodia", JSON.stringify(_newCartas));
+59441:_sbSet("siso_cartas_custodia_" + (currentUser?.user || "shared"), _newCartas);
+59442:showAlert("âœ… Carta de Custodia generada y guardada para " + emp.empresaNombre);
+59451:{/* Certificados */}
+59465:const html = _buildCertificadosEmpresaHTML(hidratados);
+59466:_abrirVentanaPDF(html, `Certificados â€” ${emp.empresaNombre} (${hidratados.length})`);
+59467:} catch (e) { showAlert("Error generando certificados: " + e?.message); }
+59470:>ðŸ“„ Certificados ({certCount})</button>
+59472:{/* Carta de custodia */}
+59474:disabled={!hasCustodia}
+59476:const cust = savedInformes.find(i => i.empresaId === emp.empresaId && i.tipo === "custodia");
+59477:if (!cust) { showAlert("No hay carta de custodia guardada."); return; }
+59478:_abrirVentanaPDF(_buildCartaCustodiaHTML(cust), `Carta Custodia â€” ${emp.empresaNombre}`);
+59480:className={"py-2 text-[11px] font-black rounded-xl flex items-center justify-center gap-1 " + (hasCustodia ? "bg-purple-600 text-white hover:bg-purple-700" : "bg-gray-100 text-gray-400 cursor-not-allowed")}
+59481:>ðŸ“ Carta Custodia</button>
+59496:{/* Informe â€” abre la vista de reportes donde se ve/imprime */}
+59498:disabled={!hasInforme}
+59499:onClick={() => { setShowEnvioIntegral(false); goTo("reporte"); showAlert("El informe se ve e imprime en la secciÃ³n Reportes (botÃ³n 'Descargar / Imprimir Informe')."); }}
+59500:className={"py-2 text-[11px] font-black rounded-xl flex items-center justify-center gap-1 " + (hasInforme ? "bg-blue-600 text-white hover:bg-blue-700" : "bg-gray-100 text-gray-400 cursor-not-allowed")}
+59501:>ðŸ“‹ Informe</button>
+59505:disabled={!hasCerts && !hasCustodia}
+59509:// Certificados
+59519:partes.push(_buildCertificadosEmpresaHTML(hidratados));
+59521:// Carta custodia
+59522:if (hasCustodia) {
+59523:const cust = savedInformes.find(i => i.empresaId === emp.empresaId && i.tipo === "custodia");
+59524:if (cust) partes.push(`<div style="page-break-before:always;">${_buildCartaCustodiaHTML(cust)}</div>`);
+59529:className={"w-full mt-2 py-2 text-[11px] font-black rounded-xl " + ((hasCerts || hasCustodia) ? "bg-gray-800 text-white hover:bg-gray-900" : "bg-gray-100 text-gray-400 cursor-not-allowed")}
+59530:>ðŸ“¦ Ver/Descargar paquete (certificados + carta)</button>
+59546:const informeData = savedInformes.find(i => i.empresaId === emp.empresaId && !i.tipo);
+59547:const custodiaData = savedInformes.find(i => i.empresaId === emp.empresaId && i.tipo === "custodia");
+59557:informe: informeData ? { totalPacientes: informeData.totalPacientes || emp.totalPacientes, resumen: informeData.resumen || "", fecha: informeData.fecha, statsKey: informeData.statsKey || null } : null,
+59558:certificados: { count: certCount, documentos: certsEmpresa.map(p => (p.docNumero || "").replace(/\s/g, "")) },
+59586:custodia: custodiaData ? {
+59587:fecha: custodiaData.fecha,
+59588:medicoNombre: custodiaData.medicoNombre,
+59589:medicoLicencia: custodiaData.medicoLicencia || "14497-12-2019",
+59590:medicoCC: custodiaData.medicoCC || "1061750704",
+59591:medicoTitulo: custodiaData.medicoTitulo || "MEDICO ESPECIALISTA EN SST",
+59592:medicoEmail: custodiaData.medicoEmail || "dr.juliancucalon@gmail.com",
+59593:medicoTel: custodiaData.medicoTel || "3182213979",
+59594:medicoCiudad: custodiaData.medicoCiudad || "PopayÃ¡n",
+59595:firma: custodiaData.firma || null,
+59603:if (_WORKER_TOKEN) { try { _existVal = await _workerGet(`siso_portal_empresa_docs_${nitClean}`); } catch {} }
+59604:if (!_existVal) { try { const existR = await fetch(`${_SB_URL}/rest/v1/siso_store?key=eq.siso_portal_empresa_docs_${nitClean}&select=value`, { headers: { apikey: _SB_KEY, Authorization: `Bearer ${_SB_KEY}` } }); const existD = await existR.json(); _existVal = existD[0]?.value || null; } catch {} }
+59610:// re-envÃ­o con estado local incompleto borre informe/cuenta/custodia.
+59614:np.informe = np.informe || _oldSame.informe || null;
+59616:np.custodia = np.custodia || _oldSame.custodia || null;
+59617:if (!(np.certificados && np.certificados.count) && _oldSame.certificados) np.certificados = _oldSame.certificados;
+59628:await _sbSet(`siso_portal_empresa_docs_${nitClean}`, portalDocsData);
+59655:`  â€¢ Informe EpidemiolÃ³gico ............. ${emp.totalPacientes} trabajador(es)`,
+59656:`  â€¢ Certificados de Aptitud Laboral .... ${certCount} certificado(s)`,
+59658:`  â€¢ Carta de Custodia de Historias ..... Incluida`,
+59675:`Cada trabajador tambiÃ©n puede consultar su certificado`,
+59694:const extraHTML = `<p style="font-size:12px;color:#065f46;font-weight:900;margin:0 0 10px;">ðŸ“¦ DocumentaciÃ³n completa â€” ${emp.empresaNombre}</p><table style="width:100%;border-collapse:collapse;"><tbody><tr style="border-bottom:1px solid #e5e7eb;"><td style="padding:8px;font-size:12px;">ðŸ“‹ Informe EpidemiolÃ³gico</td><td style="padding:8px;font-size:11px;color:#065f46;font-weight:700;">${emp.totalPacientes} trabajadores</td></tr><tr style="border-bottom:1px solid #e5e7eb;"><td style="padding:8px;font-size:12px;">ðŸ“„ Certificados</td><td style="padding:8px;font-size:11px;color:#065f46;font-weight:700;">${certCount} certificados</td></tr><tr style="border-bottom:1px solid #e5e7eb;"><td style="padding:8px;font-size:12px;">ðŸ’° Cuenta de Cobro</td><td style="padding:8px;font-size:11px;color:#065f46;font-weight:700;">No. ${cuentaData?.number || "â€”"} Â· $${Number(cuentaData?.amount || 0).toLocaleString("es-CO")}</td></tr><tr><td style="padding:8px;font-size:12px;">ðŸ“ Carta de Custodia</td><td style="padding:8px;font-size:11px;color:#065f46;font-weight:700;">âœ…</td></tr></tbody></table><div style="background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:10px;margin-top:12px;text-align:center;"><p style="font-size:10px;color:#065f46;font-weight:700;margin:0;">ðŸ”‘ CÃ³digo de acceso empresarial</p><p style="font-size:18px;font-family:monospace;font-weight:900;color:#065f46;margin:4px 0 0;letter-spacing:2px;">${codAccFinal}</p></div>`;
+59816:showAlert("âœ… Email configurado con envÃ­o automÃ¡tico (EmailJS)\n\nðŸ“§ " + em + "\n\nLos certificados se enviarÃ¡n con 1 clic, sin abrir Gmail.");
+60617:if (!window.confirm(`Â¿Publicar ${totalCerradas} HCs cerradas al portal?\n\nEsto incluye pacientes de TODOS los mÃ©dicos e instituciones almacenados en este dispositivo.\n\nDespuÃ©s de esto, cualquier paciente podrÃ¡ buscar su certificado por cÃ©dula o cÃ³digo.`)) return;
+60618:const r = await _rePublicarPortalTodos(patientsList, activeDoctorData, activeSignature);
+60635:ðŸŒ Publicar Portal Global (Todos los mÃ©dicos / instituciones)
+60700:label: "Informes",
+60701:val: syncReport.summary.informes,

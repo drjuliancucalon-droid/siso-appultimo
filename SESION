@@ -1,0 +1,79 @@
+# 📋 SESION_ESTADO.md — Punto de Reanudación
+
+**Última actualización:** 2026-07-16 12:45 PM (UTC-4)  
+**Hash:** `4cb6143` (commit más reciente en GitHub)  
+**Progreso:** 46% (18/39 items)
+
+---
+
+## 🎯 PROMPT PARA LA PRÓXIMA SESIÓN
+
+```
+Retomo la sesión del proyecto SISO. HEAD actual: 4cb6143.
+
+PROTOCOLO:
+- 46% completado (18/39 items)
+- FASE 0.5 (Aislamiento Worker): 100% ✅
+- FASE 1 (Worker Endpoints): 86% (falta F1-07)
+- FASE 2 (Énfasis CONDUCCIÓN): 86% (falta F2-03 en CertificateView.jsx ~93 líneas)
+- FASE 0 (Guardado/Cierre/Portal): 0% — PRIORIDAD ABSOLUTA (~1,680 líneas en 4 archivos)
+- FASE 3 (Mejoras): 0%
+
+ORDEN A SEGUIR:
+1. Completar F2-03: Vista previa certificado CONDUCCIÓN en src/modules/clinical/components/CertificateView.jsx (~93 líneas JSX)
+2. Completar F1-07: Verificar parseo encuestas con ?raw=1 en EncuestasTab.jsx (~5 líneas)
+3. Iniciar FASE 0: F0-01 handleCloseHistory con 9 acciones en cadena en HistoriaOcupacional.jsx (~300 líneas)
+
+Documentos de referencia:
+- PROTOCOLO_INTERVENCION.md (plan detallado con estados)
+- AUDITORIA_QUIRURGICA_2026-07-16.md (auditoría técnica completa)
+- mono-real/siso-worker/index.js (worker de producción del monolito, 639 líneas — GUÍA)
+
+Backend compartido: siso-api.dr-juliancucalon.workers.dev (D1: siso-db)
+
+Continúa desde donde quedamos.
+```
+
+---
+
+## 📊 ESTADO POR FASE
+
+| Fase | Items | Completados | Progreso |
+|------|:---:|:---:|:---:|
+| 🛡️ FASE 0.5 | 5 | 5 | 100% ✅ |
+| 🔴 FASE 1 | 7 | 6 | 86% |
+| 🟡 FASE 2 | 7 | 6 | 86% |
+| 🚨 FASE 0 | 12 | 0 | 0% |
+| 🟢 FASE 3 | 8 | 0 | 0% |
+| **TOTAL** | **39** | **17+1*** | **46%** |
+
+---
+
+## 🔑 COMMITS DE HOY
+
+| Hash | Fase | Descripción |
+|------|------|-------------|
+| `11a18c3` | Protocolo | Creación del protocolo de intervención |
+| `39a9650` | FASE 0.5 | 5 candados de aislamiento en worker |
+| `b378f10` | FASE 1 | ?raw=1, fusión encuestas, /cleanup, /storage-stats |
+| `4979936` | FASE 2 | Catálogo + prompts IA CONDUCCIÓN |
+| `1346423` | FASE 2 | Select énfasis + HC impresión CONDUCCIÓN |
+| `4cb6143` | FASE 2 | Formulario completo CONDUCCIÓN (~170 líneas) |
+
+---
+
+## 📁 ARCHIVOS MODIFICADOS (7 archivos)
+
+| Archivo | Cambios |
+|---------|---------|
+| `siso-worker/index.js` | 5 candados + 4 endpoints nuevos (~200 líneas) |
+| `siso-worker-deploy/index.js` | Replicación completa |
+| `src/modules/ai/services/aiAnalysis.js` | Catálogo CONDUCCIÓN + prompts IA |
+| `src/sections/HistoriaOcupacional.jsx` | Select + formulario CONDUCCIÓN (~242 líneas) |
+| `src/lib/printService.js` | HC impresión CONDUCCIÓN + bordes certificados |
+| `AUDITORIA_QUIRURGICA_2026-07-16.md` | Auditoría técnica completa |
+| `PROTOCOLO_INTERVENCION.md` | Plan de implementación con estados |
+
+---
+
+*Sesión cerrada. Listo para continuar en la próxima sesión.*

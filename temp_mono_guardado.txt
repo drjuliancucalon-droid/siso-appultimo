@@ -1,0 +1,70 @@
+﻿1823:// Las claves siso_portal_doc_{cedula} son globales â†’ cualquier paciente de cualquier
+2091:const _rePublicarPortalTodos = async (patients, activeDoctorData, activeSignature) => {
+2118:const portalRows = [];   // siso_portal_doc_*, siso_portal_*, siso_portal_CV-*
+2178:if (cedula) portalRows.push({ key: "siso_portal_doc_" + cedula, value: portalData });
+2283:// Reconstruir siso_portal_empresa_docs_{nit} desde localStorage
+2304:try { existDocs = await _workerGet(`siso_portal_empresa_docs_${nitIdx}`); } catch {}
+2308:const rdExist = await fetch(`${_SB_URL}/rest/v1/siso_store?key=eq.siso_portal_empresa_docs_${nitIdx}&select=value`, { headers: _getSbHeaders() });
+2377:key: `siso_portal_empresa_docs_${nitIdx}`,
+14101:// GENERADOR DE CERTIFICADO PARA PORTAL (usa datos de siso_portal_doc_*)
+14279:// Alimentado del objeto `cuenta` guardado en el portal (siso_portal_empresa_docs).
+15434:try { docs = await _workerGet(`siso_portal_empresa_docs_${nit}`); } catch {}
+15438:const r = await fetch(`${sbUrl}/rest/v1/siso_store?key=eq.siso_portal_empresa_docs_${nit}&select=value`, { headers: { apikey: sbKey, Authorization: `Bearer ${sbKey}` } });
+15447:await _sbPortalSave(sbUrl, sbKey, `siso_portal_empresa_docs_${nit}`, docs);
+16326:try { val = await _readSmart(`siso_portal_empresa_docs_${n}`); } catch {}
+16592:// Para bÃºsqueda por cÃ©dula: intentar siso_portal_doc_CEDULA
+16659:// â”€â”€ Validar cÃ³digo de acceso contra siso_portal_empresa_docs_{nit} â”€â”€
+16665:// Validar cÃ³digo de acceso contra siso_portal_empresa_docs_{nit}
+16673:const rd = await fetchKey("siso_portal_empresa_docs_" + nv);
+16804:const _res = await Promise.all(_lote.map(dn => fetchKey("siso_portal_doc_" + dn).then(r => ({ dn, r })).catch(() => ({ dn, r: { ok: false } }))));
+16843:const r1 = await fetchKey("siso_portal_doc_" + docClean);
+18153:// se publica automÃ¡ticamente en `siso_portal_empresa_docs_{nit}.periodos[]`.
+18192:let portalKey = `siso_portal_empresa_docs_${nit}`;
+18197:const altKey = `siso_portal_empresa_docs_${nit.slice(0, -1)}`;
+18287:okD1 = await _workerSet(portalKey, portalData);
+18442:let _pKey = `siso_portal_empresa_docs_${_empNit}`;
+18445:if (!_pData && _empNit.length > 6) { const _alt = `siso_portal_empresa_docs_${_empNit.slice(0, -1)}`; try { const _a = await _workerGet(_alt); if (_a) { _pKey = _alt; _pData = _a; } } catch {} }
+18617:// portal (siso_portal_empresa_docs). Funciona retroactivamente para empresas que
+18635:try { docs = await _workerGet(`siso_portal_empresa_docs_${nv}`); } catch {}
+18687:let docs = null; try { docs = await _workerGet(`siso_portal_empresa_docs_${nv}`); } catch {}
+18702:if (_WORKER_TOKEN) { try { pd = await _workerGet("siso_portal_doc_" + cc); } catch {} }
+19940:const val = await _workerGet(`siso_portal_empresa_docs_${nitClean}`);
+19946:const r = await fetch(_SB_URL + "/rest/v1/siso_store?key=eq.siso_portal_empresa_docs_" + nitClean + "&select=value", { headers: _getSbHeaders() });
+20629:// â”€â”€ AUTO-PUSH D1: HCs cerradas (siso_portal_doc_* + siso_hc_completa_*) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+20670:_portalRows.push({ key: "siso_portal_doc_" + ced, value: portalVal });
+23830:try { await _workerSet("siso_portal_" + code, portalData); }
+23834:// 2Â° siso_portal_doc_<cc> â€” D1 bloqueante + SB backup
+23837:try { await _workerSet("siso_portal_doc_" + _docCC, portalData); }
+23840:_sbSet("siso_portal_doc_" + _docCC, portalData).catch(() => {});
+23866:try { await _workerSet("siso_portal_CV-" + code, portalData); } catch {}
+23884:try { await _workerSet(`siso_portal_empresa_${_nitIdx}`, pe); } catch {}
+23923:try { await _workerSet(`siso_portal_empresa_atenciones_${_nitIdx}`, pa); } catch (e) { console.warn("[cierre] D1 portal_empresa_atenciones:", e?.message); }
+23929:if (_WORKER_TOKEN) { try { pd = await _workerGet(`siso_portal_empresa_docs_${_nitIdx}`); } catch {} }
+23944:try { await _workerSet(`siso_portal_empresa_docs_${_nitIdx}`, pd); } catch (e) { console.warn("[cierre] D1 portal_empresa_docs:", e?.message); }
+23946:_sbSet(`siso_portal_empresa_docs_${_nitIdx}`, pd).catch(() => {});
+24837:"siso_portal_doc_" + p.docNumero.replace(/\s/g, ""),
+32526:if (_WORKER_TOKEN) { try { _docsExist = await _workerGet(`siso_portal_empresa_docs_${_nit}`); } catch {} }
+32527:if (!_docsExist) { try { const r = await fetch(`${_SB_URL}/rest/v1/siso_store?key=eq.siso_portal_empresa_docs_${_nit}&select=value`, { headers: { apikey: _SB_KEY, Authorization: `Bearer ${_SB_KEY}` } }); const d = await r.json(); _docsExist = d[0]?.value || null; } catch {} }
+32539:await _sbSet(`siso_portal_empresa_docs_${_nit}`, docs);
+32548:const _raw = await _workerGetRaw(`siso_portal_empresa_docs_${_nit}`);
+32549:const _meta = await _workerGetRaw(`siso_portal_empresa_docs_${_nit}` + _CHUNK_SUF_META);
+32564:await _sbSet(`siso_portal_empresa_docs_${_nit}`, newDoc);
+34955:if (_WORKER_TOKEN && cc) { try { pd = await _workerGet("siso_portal_doc_" + cc); } catch {} }
+35112:if (_WORKER_TOKEN) { try { existing = await _workerGet(`siso_portal_empresa_docs_${nit}`); } catch {} }
+35113:if (!existing) { try { const r = await fetch(_SB_URL + "/rest/v1/siso_store?key=eq.siso_portal_empresa_docs_" + nit + "&select=value", { headers: _getSbHeaders() }); const d = await r.json(); existing = d[0]?.value || null; } catch {} }
+35125:await _sbSet("siso_portal_empresa_docs_" + nit, docsData);
+35836:await _sbSet("siso_portal_empresa_docs_" + nitNew, docsData);
+37128:if (_WORKER_TOKEN) { try { existing = await _workerGet(`siso_portal_empresa_docs_${nitEd}`); } catch {} }
+37129:if (!existing) { try { const rEx = await fetch(_SB_URL + "/rest/v1/siso_store?key=eq.siso_portal_empresa_docs_" + nitEd + "&select=value", { headers: _getSbHeaders() }); const dEx = await rEx.json(); existing = dEx[0]?.value || null; } catch {} }
+37132:await _sbSet("siso_portal_empresa_docs_" + nitEd, docsData);
+38290:// Actualizar tambiÃ©n en portal empresa (siso_portal_empresa_docs_${nit})
+38298:if (_WORKER_TOKEN) { try { _docsVal = await _workerGet(`siso_portal_empresa_docs_${_nitP}`); } catch {} }
+38299:if (!_docsVal) { try { const _pr = await fetch(`${_SB_URL}/rest/v1/siso_store?key=eq.siso_portal_empresa_docs_${_nitP}&select=value`, { headers: { apikey: _SB_KEY, Authorization: `Bearer ${_SB_KEY}` } }); const _pd = await _pr.json(); _docsVal = _pd[0]?.value || null; } catch {} }
+38305:await _sbSet(`siso_portal_empresa_docs_${_nitP}`, _docsVal);
+44643:`siso_portal_doc_${u.user}`,
+59462:if (_WORKER_TOKEN && cc) { try { pd = await _workerGet("siso_portal_doc_" + cc); } catch {} }
+59516:if (_WORKER_TOKEN && cc) { try { pd = await _workerGet("siso_portal_doc_" + cc); } catch {} }
+59603:if (_WORKER_TOKEN) { try { _existVal = await _workerGet(`siso_portal_empresa_docs_${nitClean}`); } catch {} }
+59604:if (!_existVal) { try { const existR = await fetch(`${_SB_URL}/rest/v1/siso_store?key=eq.siso_portal_empresa_docs_${nitClean}&select=value`, { headers: { apikey: _SB_KEY, Authorization: `Bearer ${_SB_KEY}` } }); const existD = await existR.json(); _existVal = existD[0]?.value || null; } catch {} }
+59628:await _sbSet(`siso_portal_empresa_docs_${nitClean}`, portalDocsData);
+60618:const r = await _rePublicarPortalTodos(patientsList, activeDoctorData, activeSignature);

@@ -1,0 +1,797 @@
+    const logs = JSON.parse(localStorage.getItem('siso_audit_log') || '[]');
+    localStorage.setItem('siso_audit_log', JSON.stringify(logs));
+  getKey: () => 'siso_rl_login',
+  get: () => { try { return JSON.parse(localStorage.getItem('siso_rl_login') || '{"attempts":0,"blockedUntil":0}'); } catch(_){ return {attempts:0,blockedUntil:0}; } },
+  set: (data) => { try { localStorage.setItem('siso_rl_login', JSON.stringify(data)); } catch(_){} },
+// ALTER TABLE siso_store ENABLE ROW LEVEL SECURITY;
+// CREATE POLICY user_isolation ON siso_store FOR ALL
+// Verificar: SELECT tablename, rowsecurity FROM pg_tables WHERE tablename='siso_store';
+// ✅ La key publishable es de sólo escritura en siso_store (tabla específica)
+// CREATE POLICY portal_public_read ON siso_store
+//   FOR SELECT USING (key LIKE 'siso_portal_%');
+const _LS_TOKEN_CACHE_KEY = "siso_worker_token_cache";
+const _LS_URL_CACHE_KEY = "siso_worker_url_cache";
+// La cola vive en localStorage como `siso_pending_d1_writes`.
+const _PENDING_D1_KEY = "siso_pending_d1_writes";
+        fetch(`${_SB_URL}/rest/v1/siso_store?key=eq.${encodeURIComponent(key)}&select=value,updated_at`, {
+    const r = await fetch(`${_SB_URL}/rest/v1/siso_store`, {
+  "siso_db_patients",
+  "siso_companies",
+  "siso_users",
+  "siso_saved_bills",
+  "siso_saved_reports",
+  "siso_audit_log",
+  "siso_mensajes",
+  "siso_agendados",
+  "siso_ai_config_provider",
+  "siso_doctor_signature",
+  "siso_privacidad_aceptada",
+  "siso_atenciones_cerradas",
+  "siso_arl_reportes",
+  "siso_db_patients_",
+  "siso_companies_",
+  "siso_habeas_",
+  "siso_patients_",
+  "siso_portal_",
+  "siso_adj_",
+      const r = await fetch(`${_SB_URL}/rest/v1/siso_store`, {
+    let url = `${_SB_URL}/rest/v1/siso_store?select=key,value,updated_at`;
+      url += `&key=ilike.siso_patients_%25`;
+          const s = _ls.getItem("siso_session");
+          "siso_users",
+          "siso_companies_shared",
+          "siso_saved_bills",
+          "siso_saved_reports",
+          "siso_audit_log",
+          "siso_mensajes",
+          "siso_ai_config_provider",
+          "siso_doctor_signature",
+          "siso_privacidad_aceptada",
+          "siso_atenciones_cerradas",
+          "siso_arl_reportes",
+          "siso_encuestas",
+          "siso_cotizaciones",
+          "siso_cartas_custodia"
+      `${_SB_URL}/rest/v1/siso_store?key=in.(${encodeURIComponent(keyList)})&select=key,value,updated_at`,
+      const rawKey = `siso_raw_${field}_${patient.id}`;
+  if (key === "siso_doctor_signature") return true;
+  if (key.startsWith("siso_db_patients_") || key.startsWith("siso_patients_")) {
+    const ts = parseInt(localStorage.getItem("siso_last_sync_ts") || "0");
+  try { localStorage.setItem("siso_last_sync_ts", Date.now().toString()); } catch {}
+// Recuperar pacientes desde filas siso_hc_completa_* (backup del portal)
+    // Traer todas las filas: gte "siso_hc_completa_" y lt "siso_hc_completa`" (carácter justo después de "_")
+    const PREFIX = "siso_hc_completa_";
+    const url = `${_SB_URL}/rest/v1/siso_store?key=gte.${encodeURIComponent(PREFIX)}&key=lt.${encodeURIComponent(PREFIX_NEXT)}&select=key,value&limit=5000`;
+    // Filtrar: excluir las que son por código (siso_hc_completa_codigo_*)
+    const cedRows = rows.filter(row => !row.key.startsWith("siso_hc_completa_codigo_"));
+      `${_SB_URL}/rest/v1/siso_store?key=eq.${encodeURIComponent(key)}`,
+  "siso_db_patients_",
+  "siso_patients_",
+  "siso_companies_",
+  "siso_atenciones_",
+  "siso_informes_",
+  "siso_caja_",
+  "siso_saved_bills_",
+  "siso_encuestas",
+  "siso_cartas_custodia",
+  "siso_audit_log",
+  "siso_users",
+  "siso_atenciones_cerradas",
+  "siso_saved_reports",
+  "siso_cartas_custodia",
+  "siso_audit_log",
+  "siso_doctor_signature",
+            k.startsWith("siso_snapshot_") ||                // snapshots viejos
+            k.startsWith("siso_backup_") ||                  // backups
+const _patKey = (userId) => `siso_db_patients_${userId}`;
+const _patKeyCloud = (userId) => `siso_patients_${userId}`;
+const _compKey = (userId) => `siso_companies_${userId}`;
+const _compKeyCloud = (userId) => `siso_companies_${userId}`;
+// Útil cuando la tabla siso_store fue creada después de cerrar HCs
+// Las claves siso_portal_doc_{cedula} son globales → cualquier paciente de cualquier
+// Función standalone (sin React state) — trabaja con datos almacenados en siso_hc_completa_*
+      k.startsWith("siso_db_patients_") || k.startsWith("siso_patients_")
+  const portalRows = [];   // siso_portal_doc_*, siso_portal_*, siso_portal_CV-*
+  const hcRows = [];       // siso_hc_completa_*, siso_hc_completa_codigo_*
+    if (cedula) portalRows.push({ key: "siso_portal_doc_" + cedula, value: portalData });
+      portalRows.push({ key: "siso_portal_" + codeUp, value: portalData });
+      if (!codeUp.startsWith("CV-")) portalRows.push({ key: "siso_portal_CV-" + codeUp, value: portalData });
+    if (cedula) hcRows.push({ key: "siso_hc_completa_" + cedula, value: hcCompleta });
+    if (codeUp) hcRows.push({ key: "siso_hc_completa_codigo_" + codeUp, value: hcCompleta });
+    const sets = ["siso_informes"];
+    try { Object.keys(localStorage).filter(k => k.startsWith("siso_informes_")).forEach(k => sets.push(k)); } catch {}
+    const sets = ["siso_saved_bills"];
+    try { Object.keys(localStorage).filter(k => k.startsWith("siso_saved_bills_")).forEach(k => sets.push(k)); } catch {}
+    try { return JSON.parse(localStorage.getItem("siso_cartas_custodia") || "[]"); } catch { return []; }
+        try { existingVal = await _workerGet(`siso_portal_empresa_${nitIdx}`); } catch {}
+          const r = await fetch(`${_SB_URL}/rest/v1/siso_store?key=eq.siso_portal_empresa_${nitIdx}&select=value`, { headers: _getSbHeaders() });
+      empresaDocsRows.push({ key: `siso_portal_empresa_${nitIdx}`, value: existing });
+    // Reconstruir siso_portal_empresa_docs_{nit} desde localStorage
+        try { existDocs = await _workerGet(`siso_portal_empresa_docs_${nitIdx}`); } catch {}
+          const rdExist = await fetch(`${_SB_URL}/rest/v1/siso_store?key=eq.siso_portal_empresa_docs_${nitIdx}&select=value`, { headers: _getSbHeaders() });
+        key: `siso_portal_empresa_docs_${nitIdx}`,
+const MEDICAMENTOS_CO_CUSTOM_KEY = "siso_custom_meds";
+    _sync("siso_users", JSON.stringify(upd));
+    _sbSetSafe("siso_users", upd); // sync inmediato a nube (sin base64)
+    localStorage.removeItem("siso_rl_login");
+    localStorage.removeItem("siso_login_attempts");
+    localStorage.removeItem("siso_login_blocked_until");
+      const usuarios = JSON.parse(localStorage.getItem("siso_users") || "[]");
+        localStorage.setItem("siso_users", JSON.stringify(actualizados));
+// GENERADOR DE CERTIFICADO PARA PORTAL (usa datos de siso_portal_doc_*)
+// Alimentado del objeto `cuenta` guardado en el portal (siso_portal_empresa_docs).
+// Los datos se guardan en Supabase: siso_encuesta_resp_{token}
+    fetch(`${sbUrl}/rest/v1/siso_store?key=eq.siso_encuesta_${token}&select=value`, {
+          body: JSON.stringify({ key: `siso_encuesta_resp_${token}`, value: respuestas }),
+    return _fetchWithTimeout(`${sbUrl}/rest/v1/siso_store`, {
+      body: JSON.stringify({ key: `siso_encuesta_resp_${token}`, value: respuestas, updated_at: new Date().toISOString() }),
+        const r = await _fetchWithTimeout(`${workerUrl}/store/${encodeURIComponent(`siso_encuesta_resp_${token}`)}`, {
+      const r = await _fetchWithTimeout(`${sbUrl}/rest/v1/siso_store?key=eq.siso_encuesta_resp_${token}&select=value`, {
+          const r = await _fetchWithTimeout(`${workerUrl}/store/${encodeURIComponent(`siso_encuesta_resp_${token}`)}`, {
+          const readResp = await _fetchWithTimeout(`${sbUrl}/rest/v1/siso_store?key=eq.siso_encuesta_resp_${token}&select=value`, {
+// Query directo a Supabase clave pública 'siso_portal_{codigo}'
+    await fetch(`${sbUrl}/rest/v1/siso_store`, {
+  try { cfg = JSON.parse(localStorage.getItem("siso_ai_config_provider") || "{}"); } catch {}
+        try { const v = await _workerGet("siso_cartas_custodia"); if (Array.isArray(v)) arr = v; } catch {}
+          const r = await fetch(`${sbUrl}/rest/v1/siso_store?key=eq.siso_cartas_custodia&select=value`, { headers: { apikey: sbKey, Authorization: `Bearer ${sbKey}` } });
+            const raw = await _workerGetRaw("siso_cartas_custodia");
+            const meta = await _workerGetRaw("siso_cartas_custodia" + _CHUNK_SUF_META);
+      await _sbPortalSave(sbUrl, sbKey, "siso_cartas_custodia", merged);
+        try { val = await _workerGet("siso_cartas_custodia"); } catch {}
+        const r = await fetch(`${sbUrl}/rest/v1/siso_store?key=eq.siso_cartas_custodia&select=value`, { headers: { apikey: sbKey, Authorization: `Bearer ${sbKey}` } });
+          try { docs = await _workerGet(`siso_portal_empresa_docs_${nit}`); } catch {}
+            const r = await fetch(`${sbUrl}/rest/v1/siso_store?key=eq.siso_portal_empresa_docs_${nit}&select=value`, { headers: { apikey: sbKey, Authorization: `Bearer ${sbKey}` } });
+          await _sbPortalSave(sbUrl, sbKey, `siso_portal_empresa_docs_${nit}`, docs);
+      sbKey:upRes.ok?null:`siso_adj_${pac.id}_${arch.id}`,
+    const lsKey=`siso_db_patients_${userId}`;
+    _sbSet(`siso_adj_meta_${pac.id}`,adjsAct).catch(()=>{});
+        try { val = await _readSmart(`siso_portal_empresa_docs_${n}`); } catch {}
+      // El portal busca con el prefijo siso_portal_ en Supabase
+      // Para búsqueda por cédula: intentar siso_portal_doc_CEDULA
+        const r1 = await fetchKey("siso_portal_" + qUp);
+          const r2 = await fetchKey("siso_portal_CV-" + qUp);
+          const r3 = await fetchKey("siso_portal_" + q.trim());
+        // 4) Buscar por código directamente en siso_store (formato antiguo no-portal)
+          const r5 = await fetchKey("siso_portal_" + codeNoDash);
+        // Búsqueda por NIT de empresa: usar índice siso_portal_empresa_{nit}
+        // ── Validar código de acceso contra siso_portal_empresa_docs_{nit} ──
+        // Validar código de acceso contra siso_portal_empresa_docs_{nit}
+          const rd = await fetchKey("siso_portal_empresa_docs_" + nv);
+              const ri = await fetchKey("siso_portal_empresa_" + nv);
+                  fetch(`${_WORKER_URL}/store/prefix/siso_portal_empresa_`, {
+          // probar siso_portal_empresa_atenciones_<nit> (TODAS las variantes), que
+              const rAt = await fetchKey("siso_portal_empresa_atenciones_" + nv);
+              const _res = await Promise.all(_lote.map(dn => fetchKey("siso_portal_doc_" + dn).then(r => ({ dn, r })).catch(() => ({ dn, r: { ok: false } }))));
+        const r1 = await fetchKey("siso_portal_doc_" + docClean);
+            "⚙️ El portal requiere configuración en Supabase.\nEjecute en el SQL Editor de Supabase:\nCREATE POLICY portal_public_read ON siso_store FOR SELECT USING (key LIKE 'siso_portal_%');"
+          fetchKey("siso_hc_completa_" + cedula).then(rHC => {
+                _sync("siso_users", JSON.stringify(upd));
+                _sbSet("siso_users", upd); // FIX: sync inmediato a Supabase tras cambio de contraseña
+      const logs = JSON.parse(localStorage.getItem("siso_error_log") || "[]");
+      localStorage.setItem("siso_error_log", JSON.stringify(logs));
+const _ENCRYPT_KEY_NAME = "siso_enc_key";
+      const sess = JSON.parse(_ls.getItem("siso_session") || "null");
+      const sess = JSON.parse(_ls.getItem("siso_session") || "null");
+      const sess = JSON.parse(_ls.getItem("siso_session") || "null");
+        const users = JSON.parse(_ls.getItem("siso_users") || "[]");
+    const stored = parseInt(_ls.getItem("siso_login_attempts") || "0");
+    const stored = parseInt(_ls.getItem("siso_login_blocked_until") || "0");
+      return !!JSON.parse(_ls.getItem("siso_privacidad_aceptada") || "false");
+    _sync("siso_privacidad_aceptada", JSON.stringify(registro));
+      setTimeout(() => _sync("siso_audit_log", JSON.stringify(nuevo)), 0);
+    try { return JSON.parse(localStorage.getItem("siso_ai_calls_count") || "{}"); } catch { return {}; }
+      if (_ls.getItem("siso_atenciones_v") !== "2") return [];
+      return JSON.parse(_ls.getItem("siso_atenciones_cerradas") || "[]");
+      return JSON.parse(_ls.getItem("siso_audit_log") || "[]");
+        JSON.parse(_ls.getItem("siso_session") || "null")?.activeTab || "form"
+      const saved = _ls.getItem("siso_active_form");
+        JSON.parse(_ls.getItem("siso_session") || "null")?.dataType ||
+    try { return JSON.parse(localStorage.getItem("siso_email_config") || "null") || { email: "", nombre: "", configurado: false, emailjsPublicKey: "", emailjsServiceId: "", emailjsTemplateId: "", emailjsConfigurado: false }; } catch { return { email: "", nombre: "", configurado: false, emailjsPublicKey: "", emailjsServiceId: "", emailjsTemplateId: "", emailjsConfigurado: false }; }
+    try { return JSON.parse(localStorage.getItem("siso_informes") || "[]"); } catch { return []; }
+  // se publica automáticamente en `siso_portal_empresa_docs_{nit}.periodos[]`.
+      let portalKey = `siso_portal_empresa_docs_${nit}`;
+          const altKey = `siso_portal_empresa_docs_${nit.slice(0, -1)}`;
+      try { localStorage.setItem("siso_caja_movs", JSON.stringify(updated)); } catch {}
+      _sbSet(`siso_caja_movs_${currentUser?.user || "shared"}`, updated);
+      try { localStorage.setItem("siso_caja_movs", JSON.stringify(updated)); } catch {}
+      _sbSet(`siso_caja_movs_${currentUser?.user || "shared"}`, updated);
+    const sufKey = "siso_informes_" + (currentUser?.user || "shared");
+        await _writeArrayMergeD1("siso_informes", updated, "id");
+    try { localStorage.setItem("siso_informes", JSON.stringify(updated)); }
+    _idbSet("siso_informes", updated).catch(() => {}); // ETAPA 1: espejo a IndexedDB
+    _sbSet("siso_informes", updated).catch(() => {}); // segundo backup
+    // en savedInformes, siso_cartas_custodia y el portal. Conserva las de meses CON
+            try { localStorage.setItem("siso_informes", JSON.stringify(_limpio)); } catch {}
+            if (_WORKER_TOKEN) { _writeArrayMergeD1("siso_informes", _limpio, "id").catch(() => {}); _writeArrayMergeD1(sufKey, _limpio, "id").catch(() => {}); }
+            _sbSet("siso_informes", _limpio).catch(() => {});
+          // 2) siso_cartas_custodia
+            const _cartas = JSON.parse(localStorage.getItem("siso_cartas_custodia") || "[]");
+                localStorage.setItem("siso_cartas_custodia", JSON.stringify(_cl));
+                if (_WORKER_TOKEN) { _workerSet("siso_cartas_custodia", _cl).catch(() => {}); }
+                _sbSet("siso_cartas_custodia_" + (currentUser?.user || "shared"), _cl).catch(() => {});
+              let _pKey = `siso_portal_empresa_docs_${_empNit}`;
+              if (!_pData && _empNit.length > 6) { const _alt = `siso_portal_empresa_docs_${_empNit.slice(0, -1)}`; try { const _a = await _workerGet(_alt); if (_a) { _pKey = _alt; _pData = _a; } } catch {} }
+              if (!_pData) { try { const r = await fetch(`${_SB_URL}/rest/v1/siso_store?key=eq.${_pKey}&select=value`, { headers: _getSbHeaders() }); const d = await r.json(); _pData = d[0]?.value || null; } catch {} }
+    localStorage.setItem("siso_email_config", JSON.stringify(cfg));
+    _sbSet("siso_email_config_" + (currentUser?.user || "shared"), cfg);
+  // portal (siso_portal_empresa_docs). Funciona retroactivamente para empresas que
+        try { docs = await _workerGet(`siso_portal_empresa_docs_${nv}`); } catch {}
+        let docs = null; try { docs = await _workerGet(`siso_portal_empresa_docs_${nv}`); } catch {}
+        if (_WORKER_TOKEN) { try { pd = await _workerGet("siso_portal_doc_" + cc); } catch {} }
+      let cartas = null; if (_WORKER_TOKEN) { try { cartas = await _workerGet("siso_cartas_custodia"); } catch {} }
+      return _ss.getItem("siso_dian_apikey") || "";
+      return JSON.parse(localStorage.getItem("siso_portafolio") || "[]");
+      return JSON.parse(localStorage.getItem("siso_cotizaciones") || "[]");
+      const sess = JSON.parse(localStorage.getItem("siso_session") || "{}");
+        localStorage.getItem(`siso_caja_${suf}`) || "null"
+      return JSON.parse(localStorage.getItem("siso_caja") || "[]");
+      return JSON.parse(_ls.getItem("siso_habeas_requests") || "[]");
+    try { return JSON.parse(localStorage.getItem("siso_encuestas") || "[]"); } catch { return []; }
+    sp("siso_arl_reportes", [])
+      return JSON.parse(_ls.getItem("siso_teleconsultas") || "[]");
+      return localStorage.getItem("siso_medico_turno") || "";
+        localStorage.getItem("siso_orgs_list") || "null"
+        localStorage.setItem(`siso_caja_${suf}`, JSON.stringify(movs));
+        _sbSet(`siso_caja_movs_${suf}`, movs);
+  // Cada 30s revisa siso_pending_d1_writes y reintenta cada item.
+  // `siso_autosave_<id>` se escribe en cada autoguardado pero NUNCA se borraba →
+        if (!k || !k.startsWith("siso_autosave_") || k.startsWith("siso_autosave_cloud_")) continue;
+  // pacientes. `siso_atenciones_cerradas` (HC cerradas) era el "elefante" que volvía
+    run("siso_atenciones_cerradas", "_firma", "atenciones");
+    run(`siso_atenciones_${sid}`, "_firma", "atenciones-usuario");
+    run("siso_cartas_custodia", "firma", "custodias");
+          _idbGet("siso_atenciones_cerradas").catch(() => null),
+      const prefijos = ["siso_atenciones_cerradas", "siso_atenciones_drcucalon", "siso_atenciones_"];
+          const permKey = `siso_permisos_${currentUser.user}`;
+                `${_SB_URL}/rest/v1/siso_store?key=eq.${encodeURIComponent(permKey)}&select=value,updated_at`,
+        // Estrategia 2: para admin/médico, recargar siso_users completo (menos frecuente)
+      // 1. Worker D1: buscar por prefijo siso_encuestas (incluye todas las variantes)
+            `${_WORKER_URL}/store/prefix/siso_encuestas`,
+              try { localStorage.setItem("siso_encuestas", JSON.stringify(merged)); } catch {}
+      const r1 = await fetch(`${_SB_URL}/rest/v1/siso_store?key=eq.siso_encuestas&select=value`, { headers: hdrs });
+      const r2 = await fetch(`${_SB_URL}/rest/v1/siso_store?key=eq.${encodeURIComponent(`siso_encuestas_${uid}`)}&select=value`, { headers: hdrs });
+      const P = "siso_encuestas_"; const PN = P.slice(0, -1) + "`";
+      const r3 = await fetch(`${_SB_URL}/rest/v1/siso_store?key=gte.${encodeURIComponent(P)}&key=lt.${encodeURIComponent(PN)}&select=key,value&limit=200`, { headers: hdrs });
+        try { localStorage.setItem("siso_encuestas", JSON.stringify(merged)); } catch {}
+        _sbSet("siso_encuestas", merged);
+        _sbSet(`siso_encuestas_${uid}`, merged);
+                const val = await _workerGet(`siso_portal_empresa_docs_${nitClean}`);
+              const r = await fetch(_SB_URL + "/rest/v1/siso_store?key=eq.siso_portal_empresa_docs_" + nitClean + "&select=value", { headers: _getSbHeaders() });
+          try { localStorage.setItem("siso_companies", JSON.stringify(companiesSynced)); } catch {}
+    // NOTA: si venimos de "historia", omitimos siso_patients_* en TODAS las vistas.
+      patients:   comingFromHC ? [] : [`siso_patients_${userId}`, `siso_db_patients_${userId}`],
+      historia:   [`siso_patients_${userId}`, `siso_db_patients_${userId}`],
+        ? [`siso_companies_${userId}`, `siso_atenciones_cerradas`]
+        : [`siso_patients_${userId}`, `siso_companies_${userId}`, `siso_atenciones_cerradas`],
+      companies:  [`siso_companies_${userId}`],
+      perfilips:  [`siso_companies_${userId}`],
+      reporte:    [`siso_informes_${userId}`, `siso_saved_reports`, `siso_patients_${userId}`, `siso_db_patients_${userId}`],
+      bill:       [`siso_saved_bills`, `siso_saved_bills_${suffix}`],
+      caja:       [`siso_saved_bills`, `siso_saved_bills_${suffix}`, `siso_caja_movs_${suffix}`],
+      agenda:     comingFromHC ? [`siso_atenciones_cerradas`] : [`siso_atenciones_cerradas`, `siso_patients_${userId}`],
+      asistencia: [`siso_atenciones_cerradas`],
+      sve:        comingFromHC ? [] : [`siso_patients_${userId}`],
+      arl:        comingFromHC ? [] : [`siso_patients_${userId}`],
+      custodia:   [`siso_cartas_custodia_${userId}`, `siso_cartas_custodia`],
+              `${_SB_URL}/rest/v1/siso_store?key=eq.${encodeURIComponent(key)}&select=key,value`,
+          if ((key.startsWith("siso_patients_") || key.startsWith("siso_db_patients_")) && Array.isArray(value) && value.length > 0) {
+          if (key.startsWith("siso_companies_") && Array.isArray(value) && value.length > 0) {
+          if (key.startsWith("siso_saved_bills") && Array.isArray(value)) {
+          if (key === "siso_saved_reports" && Array.isArray(value)) {
+            try { _ls.setItem("siso_saved_reports", JSON.stringify(value)); } catch {}
+          if (key.startsWith("siso_informes_") && Array.isArray(value)) {
+            try { localStorage.setItem("siso_informes", JSON.stringify(value)); } catch {}
+          if (key === "siso_atenciones_cerradas" && Array.isArray(value)) {
+            _idbSet("siso_atenciones_cerradas", value).catch(() => {}); // ETAPA 1: espejo a IndexedDB
+              _ls.setItem("siso_atenciones_cerradas", _jv);
+              const _sess2 = JSON.parse(_ls.getItem("siso_session") || "{}");
+              _ls.setItem(`siso_atenciones_${_suf2}`, _jv);
+              _ls.setItem("siso_atenciones_v", "2"); // marcar cache como válido
+          if (key.startsWith("siso_caja_movs_") && Array.isArray(value)) {
+            try { _ls.setItem(`siso_caja_${suffix}`, JSON.stringify(value)); } catch {}
+          if (key.startsWith("siso_cartas_custodia") && Array.isArray(value)) {
+            try { localStorage.setItem("siso_cartas_custodia", JSON.stringify(value)); } catch {}
+        return JSON.parse(_ls.getItem("siso_session") || "null")?.user;
+    // NO cargar 'siso_db_patients' genérico - mezclaria pacientes de todos los médicos
+    const storedUsers = sp("siso_users", null);
+      // ── RESTAURACIÓN EN ARRANQUE: aunque siso_users esté en localStorage,
+                  _patsRaw = await _workerGet(`siso_db_patients_${sessionUser}`)
+                    || await _workerGet(`siso_patients_${sessionUser}`);
+                  _comps = await _workerGet(`siso_companies_${sessionUser}`)
+                    || await _workerGet("siso_companies_shared");
+                    `siso_patients_${sessionUser}`,
+                    `siso_db_patients_${sessionUser}`,
+                    `siso_companies_${sessionUser}`,
+                    "siso_companies_shared",
+                    _patsRaw = cloud?.["siso_patients_" + sessionUser]?.value
+                      || cloud?.["siso_db_patients_" + sessionUser]?.value;
+                    _comps = cloud?.["siso_companies_" + sessionUser]?.value
+                      || cloud?.["siso_companies_shared"]?.value;
+            "siso_users",
+            "siso_companies",
+            "siso_companies_shared",
+            "siso_doctor_signature",
+            "siso_ai_config_provider",
+              `siso_patients_${sessionUser}`,
+              `siso_db_patients_${sessionUser}`,
+              `siso_companies_${sessionUser}`,
+          if (cloud && cloud["siso_users"]?.value && Array.isArray(cloud["siso_users"].value) && cloud["siso_users"].value.length > 0) {
+            let cloudUsers = cloud["siso_users"].value;
+              const dedicatedDD = cloud[`siso_doctor_data_${u.user}`]?.value;
+            _ls.setItem("siso_users", JSON.stringify(cloudUsers));
+            if (cloud["siso_doctor_signature"]?.value) {
+              setDoctorSignature(cloud["siso_doctor_signature"].value);
+              _ls.setItem("siso_doctor_signature", cloud["siso_doctor_signature"].value);
+            if (cloud["siso_companies"]?.value && Array.isArray(cloud["siso_companies"].value)) {
+              setCompanies(cloud["siso_companies"].value);
+              _ls.setItem("siso_companies", JSON.stringify(cloud["siso_companies"].value));
+            if (cloud["siso_ai_config_provider"]?.value) {
+              const prov = cloud["siso_ai_config_provider"].value;
+              _ls.setItem("siso_ai_config_provider", JSON.stringify(prov));
+              const _initPatsRaw = cloud?.["siso_patients_" + sessionUser]?.value
+                || cloud?.["siso_db_patients_" + sessionUser]?.value;
+              const _initComps = cloud?.["siso_companies_" + sessionUser]?.value
+                || cloud?.["siso_companies_shared"]?.value;
+    setSavedReports(sp("siso_saved_reports", []));
+    setMensajes(sp("siso_mensajes", []));
+        return JSON.parse(_ls.getItem("siso_session") || "{}");
+      sp(`siso_agendados_${_initSuf}`, null) ?? sp("siso_agendados", [])
+      // Prioridad: siso_atenciones_cerradas (escrito por Supabase sync, siempre limpio)
+      _ls.getItem("siso_atenciones_v") === "2"
+        ? (sp("siso_atenciones_cerradas", null) ?? sp(`siso_atenciones_${_initSuf}`, []))
+      sp(`siso_saved_bills_${_initSuf}`, null) ?? sp("siso_saved_bills", [])
+    setDoctorSignature(_ls.getItem("siso_doctor_signature") || null);
+    const savedProvider = sp("siso_ai_config_provider", {
+    const _initUser = (() => { try { const s = JSON.parse(_ls.getItem("siso_session") || "null"); return s?.user; } catch { return null; } })();
+    const savedKeysLS = _initUser ? sp("siso_ai_keys_" + _initUser, null) : null;
+    const savedKeysSS = sps("siso_ai_keys", emptyKeys);
+    _ls.setItem("siso_ai_config_version", AI_CONFIG_VERSION);
+        const pats = JSON.parse(localStorage.getItem(`siso_db_patients_${_loginUid}`) || "[]");
+      const _d1PushFlag = `siso_d1_push_done_${_loginUid}`;
+            const _d1Check = await _workerGet(`siso_db_patients_${_loginUid}`);
+              const _patsRaw = JSON.parse(localStorage.getItem(`siso_db_patients_${_loginUid}`) || "[]");
+                const ok1 = await _sbSetSafe(`siso_db_patients_${_loginUid}`, _patsRaw);
+                const ok2 = await _sbSetSafe(`siso_patients_${_loginUid}`, _patsRaw);
+      const _sig = _ls.getItem("siso_doctor_signature");
+            const existing = await _workerGet("siso_doctor_signature");
+              await _workerSet("siso_doctor_signature", _sig);
+    // ── AUTO-PUSH D1: HCs cerradas (siso_portal_doc_* + siso_hc_completa_*) ─────────────
+      const _hcPushFlagKey = `siso_hc_d1_push_ts_${_loginUid}`;
+            const _allPatsRaw = JSON.parse(_ls.getItem(`siso_db_patients_${_loginUid}`) || "[]");
+                _portalRows.push({ key: "siso_portal_doc_" + ced, value: portalVal });
+                _hcRows.push({ key: "siso_hc_completa_" + ced, value: hcVal });
+                _portalRows.push({ key: "siso_portal_" + code, value: portalVal });
+                _hcRows.push({ key: "siso_hc_completa_codigo_" + code, value: hcVal });
+      if (localStorage.getItem("siso_data_fix_v2") === "done") return false;
+        const _ac = JSON.parse(localStorage.getItem("siso_atenciones_cerradas") || localStorage.getItem(`siso_atenciones_${_loginUid}`) || "[]");
+      try { localStorage.removeItem("siso_last_sync_ts"); } catch {}
+      "siso_users",
+      // siso_doctor_signature excluida: es base64 pesada, vive en localStorage
+      "siso_ai_config_provider",
+      "siso_saved_bills",
+      "siso_saved_reports",
+      "siso_audit_log",
+      "siso_mensajes",
+      "siso_agendados",
+      "siso_atenciones_cerradas",
+      "siso_encuestas",
+      `siso_patients_${_loginUid}`,
+      `siso_db_patients_${_loginUid}`,
+      `siso_companies_${_loginUid}`,
+      `siso_saved_bills_${_loginSuf}`,
+      `siso_caja_movs_${_loginSuf}`,
+      `siso_informes_${_loginUid}`,
+      `siso_informes`,
+      `siso_encuestas_${_loginUid}`,
+      `siso_cartas_custodia_${_loginUid}`,
+      `siso_cartas_custodia`,
+      `siso_email_config_${_loginUid}`,
+        const _cajaCloudKey = `siso_caja_movs_${_cajaSuf}`;
+        const _cajaLocalKey = `siso_caja_${_cajaSuf}`;
+      applyCloud("siso_saved_bills", setSavedBillsList, [], "siso_saved_bills");
+        applyCloud(`siso_saved_bills_${_billSuf}`, setSavedBillsList, [], `siso_saved_bills_${_billSuf}`);
+        applyCloud("siso_encuestas", setEncuestas, [], "siso_encuestas");
+        const _oldKey = `siso_encuestas_${_encSuf}`;
+          const sharedEncs = Array.isArray(cloud["siso_encuestas"]?.value) ? cloud["siso_encuestas"].value : [];
+            localStorage.setItem("siso_encuestas", JSON.stringify(merged));
+            _sbSet("siso_encuestas", merged); // migrar a clave compartida
+        const _infData = cloud?.[`siso_informes_${_infSuf}`]?.value
+          || cloud?.["siso_informes"]?.value;
+          localStorage.setItem("siso_informes", JSON.stringify(_infData));
+          localStorage.setItem(`siso_informes_${_infSuf}`, JSON.stringify(_infData));
+        const _custData = cloud?.[`siso_cartas_custodia_${_custSuf}`]?.value
+          || cloud?.["siso_cartas_custodia"]?.value;
+          try { localStorage.setItem("siso_cartas_custodia", JSON.stringify(_custData)); } catch {}
+        const _billData = cloud?.[`siso_saved_bills_${_billSuf}`]?.value
+          || cloud?.["siso_saved_bills"]?.value;
+          try { localStorage.setItem(`siso_saved_bills_${_billSuf}`, JSON.stringify(_billData)); } catch {}
+        applyCloud(`siso_email_config_${_emSuf}`, (cfg) => { if (cfg && cfg.email) { setEmailConfig(cfg); localStorage.setItem("siso_email_config", JSON.stringify(cfg)); } }, null, "siso_email_config");
+        "siso_saved_reports",
+        "siso_saved_reports"
+      applyCloud("siso_audit_log", setAuditLog, [], "siso_audit_log");
+      applyCloud("siso_mensajes", setMensajes, [], "siso_mensajes");
+      applyCloud("siso_agendados", setAgendados, [], "siso_agendados");
+        "siso_atenciones_cerradas",
+        "siso_atenciones_cerradas"
+      // SYNC-FIX: si siso_atenciones_cerradas tiene más registros que siso_atenciones_drcucalon,
+        const _cerradasCloud = cloud["siso_atenciones_cerradas"]?.value;
+        const _drcKey = `siso_atenciones_${_loginUid}`;
+        cloud["siso_users"]?.value &&
+        Array.isArray(cloud["siso_users"].value) &&
+        cloud["siso_users"].value.length > 0
+        const cloudUsers = cloud["siso_users"].value;
+          _ls.setItem("siso_users", JSON.stringify(merged));
+      // Se carga desde _ls.getItem("siso_doctor_signature") en el arranque de la app.
+      if (cloud["siso_ai_config_provider"]?.value) {
+        const prov = cloud["siso_ai_config_provider"].value;
+      try { localStorage.setItem("siso_data_fix_v2", "done"); } catch {}
+      _ls.setItem("siso_active_form", JSON.stringify(saveData));
+      _ls.setItem("siso_autosave_" + (data.id || "new"), JSON.stringify(saveData));
+        const key = "siso_autosave_cloud_" + (currentUser?.user || "anon") + "_" + data.id;
+            _sbSet(_patKeyCloud(_u), _patToSave),   // siso_patients_drcucalon   (primaria)
+            _sbSet(_patKey(_u),      _patToSave),   // siso_db_patients_drcucalon (respaldo)
+            _sbSet(_compKeyCloud(_u), _compToSave), // siso_companies_drcucalon  (primaria)
+            _sbSet("siso_companies_shared", _compToSave), // respaldo compartido
+          _sbSetSafe("siso_users",                        usersList),  // strip firma/logo
+          _sbSet(`siso_saved_bills_${_asSuf}`,            savedBillsList),
+          _sbSet("siso_saved_reports",                    savedReports),
+          _sbSet("siso_audit_log",                        auditLog),
+          _sbSet("siso_mensajes",                         mensajes),
+          _sbSet(`siso_agendados_${_asSuf}`,              agendados),
+          _writeArrayMergeD1("siso_atenciones_cerradas", atencionesCerradas).then(() =>
+            _sbSet("siso_atenciones_cerradas",          atencionesCerradas)
+          _sbSet(`siso_atenciones_${_asSuf}`,              atencionesCerradas),
+          _sbSet("siso_ai_config_provider", { activeProvider: aiConfig.activeProvider }),
+        // if (doctorSignature) tasks.push(_sbSet("siso_doctor_signature", doctorSignature));
+          tasks.push(_sbSet(`siso_doctor_data_${currentUser.user}`, currentUser.doctorData));
+          tasks.push(_sbSet(`siso_caja_movs_${_u}`, cajaMovimientos));
+          tasks.push(_sbSet(`siso_arl_${_u}`, arlGuardados));
+          tasks.push(_sbSet(`siso_teleconsultas_${_u}`, teleconsultas));
+          tasks.push(_sbSet(`siso_habeas_${_u}`, habeasRequests));
+        const _cartasCustodia = sp("siso_cartas_custodia", null);
+          tasks.push(_sbSet("siso_cartas_custodia", _cartasCustodia));
+        const _cotizaciones = sp("siso_cotizaciones", null);
+          tasks.push(_sbSet("siso_cotizaciones", _cotizaciones));
+        const _informesMedico = sp(`siso_informes_${_u}`, null);
+          tasks.push(_sbSet(`siso_informes_${_u}`, _informesMedico));
+        const _informesData = sp(`siso_informes_${_informesSuf}`, null) || sp("siso_informes", null);
+          tasks.push(_sbSet(`siso_informes_${_informesSuf}`, _informesData));
+          tasks.push(_sbSet("siso_informes", _informesData));
+          tasks.push(_sbSet(`siso_saved_bills_${_asSuf}`, savedBillsList));
+          tasks.push(_sbSet("siso_saved_bills", savedBillsList));
+        const _custodiasData = sp("siso_cartas_custodia", null);
+          tasks.push(_sbSet("siso_cartas_custodia", _custodiasData));
+          tasks.push(_sbSet(`siso_cartas_custodia_${_informesSuf}`, _custodiasData));
+        const _customMeds = sp("siso_custom_meds", null);
+          tasks.push(_sbSet("siso_custom_meds", _customMeds));
+          tasks.push(_sbSet(`siso_encuestas_${_u}`, encuestas));  // clave por usuario
+          tasks.push(_sbSet("siso_encuestas", encuestas));         // clave compartida (para carga al login)
+              const _resp = sp(`siso_encuesta_resp_${enc.token}`, null);
+              if (_resp?.length) tasks.push(_sbSet(`siso_encuesta_resp_${enc.token}`, _resp));
+        const currentKeys = sps("siso_ai_keys", aiConfig.keys || {});
+          tasks.push(_sbSet(`siso_ai_keys_${currentUser.user}`, currentKeys));
+      "siso_last_activity",
+      _ls.removeItem("siso_session");
+        "siso_session",
+      _ls.removeItem("siso_session");
+      _ls.removeItem("siso_active_form");
+      _ls.setItem("siso_active_form", JSON.stringify(data));
+      _ls.removeItem("siso_session");
+      _ls.removeItem("siso_active_form");
+              try { localStorage.setItem("siso_ai_calls_count", JSON.stringify(updated)); } catch {}
+    const currentKeys = sps("siso_ai_keys", aiConfig.keys || {});
+      "Usuarios y perfiles": _sbSet("siso_users", usersList),
+      "Facturas / Cuentas de cobro": _sbSet(`siso_saved_bills_${_bkSuf}`, savedBillsList),
+      "Informes guardados": _sbSet("siso_saved_reports", savedReports),
+      "Log de auditoría": _sbSet("siso_audit_log", auditLog),
+      "Mensajes internos": _sbSet("siso_mensajes", mensajes),
+      "Agenda / Citas": _sbSet(`siso_agendados_${_bkSuf}`, agendados),
+      // siso_atenciones_cerradas = fuente autoritativa (leída en login)
+      // siso_atenciones_${_bkSuf} = clave por usuario (también leída en algunos flujos)
+        _writeArrayMergeD1("siso_atenciones_cerradas", _atencionesCerradasSlim).then(() =>
+          _sbSet("siso_atenciones_cerradas", _atencionesCerradasSlim)
+        _sbSet(`siso_atenciones_${_bkSuf}`, _atencionesCerradasSlim),
+      "Configuración IA (proveedor)": _sbSet("siso_ai_config_provider", {
+        ? { "Firma digital": _sbSet("siso_doctor_signature", doctorSignature) }
+        ? { [`Datos médico (${currentUser.user})`]: _sbSet(`siso_doctor_data_${currentUser.user}`, currentUser.doctorData) }
+              `siso_ai_keys_${currentUser.user}`,
+        { key: `siso_db_patients_${uid}`, label: "Pacientes / Lista HC" },
+        { key: `siso_atenciones_cerradas`,  label: "HC Cerradas (autoritativo)" },
+        { key: `siso_companies_${uid}`,     label: "Empresas" },
+        { key: `siso_users`,                label: "Usuarios y perfiles" },
+        { key: `siso_saved_bills_${bkSuf}`, label: "Facturas / Cuentas de cobro" },
+        { key: `siso_saved_reports`,        label: "Informes guardados" },
+        { key: `siso_doctor_signature`,     label: "Firma médica" },
+        { key: `siso_audit_log`,            label: "Log de auditoría" },
+        { key: `siso_agendados_${bkSuf}`,   label: "Agenda / Citas" },
+        { key: `siso_ai_config_provider`,   label: "Config IA" },
+        .filter(k => !knownKeys.has(k) && (k.includes("patient") || k.includes("pacient") || k.includes("compan") || k.includes("empresa") || k.includes("siso_companies")))
+      const cerradasD1 = details["siso_atenciones_cerradas"]?.count || 0;
+      const pacientesD1 = details[`siso_db_patients_${uid}`]?.count || 0;
+        advertencias.push(`⚠️ siso_atenciones_cerradas está vacío en nube pero hay ${cerradasPantalla} HC cerradas en pantalla — presiona "Guardar en Nube" para sincronizar.`);
+      if (!details["siso_doctor_signature"]?.found)
+    const isComp = key.includes("compan") || (key === "siso_companies");
+  // ── RECUPERACIÓN DESDE siso_hc_completa_* (filas individuales del portal) ─────
+    _ss.setItem("siso_ai_keys", keysJson);
+    _ss.setItem("siso_ai_keys_" + uid, keysJson);
+    _ls.setItem("siso_ai_keys_" + uid, keysJson);
+    _ls.setItem("siso_ai_keys", keysJson);
+    _sync("siso_ai_config_provider", JSON.stringify({ activeProvider: cfg.activeProvider }));
+    _ls.setItem("siso_ai_config_provider_" + uid, JSON.stringify({ activeProvider: cfg.activeProvider }));
+    const userKey = "siso_ai_keys_" + uid;
+    _ls.setItem("siso_ai_config_version", "v3");
+            _sync("siso_users", JSON.stringify(updated));
+          if (cloudData?.["siso_users"]?.value && Array.isArray(cloudData["siso_users"].value)) {
+            const cloudUserList = cloudData["siso_users"].value;
+              _ls.setItem("siso_users", JSON.stringify(cloudUserList));
+            if (cloudData["siso_doctor_signature"]?.value) {
+              setDoctorSignature(cloudData["siso_doctor_signature"].value);
+              _ls.setItem("siso_doctor_signature", cloudData["siso_doctor_signature"].value);
+            if (cloudData["siso_companies"]?.value && Array.isArray(cloudData["siso_companies"].value)) {
+              setCompanies(cloudData["siso_companies"].value);
+              _ls.setItem("siso_companies", JSON.stringify(cloudData["siso_companies"].value));
+                  const dedicatedDD = cloudData[`siso_doctor_data_${x.user}`]?.value;
+              const aiKeysCloud = cloudData[`siso_ai_keys_${found.user}`]?.value;
+                _ss.setItem("siso_ai_keys", JSON.stringify(aiKeysCloud));
+        _ls.removeItem("siso_login_attempts");
+        _ls.removeItem("siso_login_blocked_until");
+              const permKey = `siso_permisos_${baseSesion.user}`;
+                    `${_SB_URL}/rest/v1/siso_store?key=eq.${encodeURIComponent(permKey)}&select=value`,
+          _ls.removeItem("siso_session");
+          setTimeout(() => _sync("siso_audit_log", JSON.stringify(n)), 0);
+        _ls.setItem("siso_active_form", ""); // limpiar borrador del usuario anterior
+          const allUsers = JSON.parse(_ls.getItem("siso_users") || "[]");
+          _loadScoped(`siso_caja_${_storageUserId}`, "siso_caja")
+          _loadScoped(`siso_agendados_${_storageUserId}`, "siso_agendados")
+            `siso_atenciones_${_storageUserId}`,
+            "siso_atenciones_cerradas"
+          _loadScoped(`siso_saved_bills_${_storageUserId}`, "siso_saved_bills")
+            || cloud?.["siso_db_patients_" + _storageUserId]?.value
+            || cloud?.["siso_patients_" + _storageUserId]?.value;
+          // FIX RECUPERACIÓN: también buscar en siso_companies_shared (clave segura no borrada por auto-sync)
+            || cloud?.["siso_companies_" + _storageUserId]?.value
+            || cloud?.["siso_companies_shared"]?.value;
+            const legacyComps = cloud?.["siso_companies"]?.value;
+          const aiKeyCloud = cloud?.[`siso_ai_keys_${found.user}`]?.value;
+            _ss.setItem("siso_ai_keys", aiKeysStr);
+            _ss.setItem("siso_ai_keys_" + found.user, aiKeysStr);
+            _ls.setItem("siso_ai_keys_" + found.user, aiKeysStr);
+            _ls.setItem("siso_ai_keys", aiKeysStr);
+          const doctorDataCloud = cloud?.[`siso_doctor_data_${found.user}`]?.value;
+          // 3. DoctorData desde siso_users (embebido en el array de usuarios)
+          const cloudUsersList = cloud?.["siso_users"]?.value;
+              _ls.setItem("siso_users", JSON.stringify(updated));
+          if (cloud?.["siso_doctor_signature"]?.value) {
+            setDoctorSignature(cloud["siso_doctor_signature"].value);
+            _ls.setItem("siso_doctor_signature", cloud["siso_doctor_signature"].value);
+          if (cloud?.["siso_ai_config_provider"]?.value) {
+            const prov = cloud["siso_ai_config_provider"].value;
+            _ls.setItem("siso_ai_config_provider", JSON.stringify(prov));
+          _ls.setItem("siso_login_attempts", String(next));
+            _ls.setItem("siso_login_blocked_until", String(blockedUntil));
+              setTimeout(() => _sync("siso_audit_log", JSON.stringify(n)), 0);
+    _ls.removeItem("siso_login_attempts");
+    _ls.removeItem("siso_login_blocked_until");
+      _ls.removeItem("siso_session");
+      setTimeout(() => _sync("siso_audit_log", JSON.stringify(n)), 100);
+    _ls.setItem("siso_active_form", "");
+    const _autoRaw = _ls.getItem("siso_autosave_" + p.id);
+  // La firma vive aparte (siso_doctor_signature / activeSignature) y el render ya
+    const k1 = `siso_saved_bills_${_suf()}`, k2 = "siso_saved_bills";
+    for (const key of [`siso_saved_bills_${_suf()}`, "siso_saved_bills"]) {
+    try { _ls.removeItem("siso_autosave_" + toSave.id); } catch {}
+        // Política SQL necesaria: CREATE POLICY portal_public_read ON siso_store FOR SELECT USING (key LIKE 'siso_portal_%');
+          _firma: activeSignature || (() => { try { return _ls.getItem("siso_doctor_signature") || ""; } catch { return ""; } })(),
+            const _firmaD1 = await _workerGet("siso_doctor_signature");
+              try { _ls.setItem("siso_doctor_signature", _firmaD1); } catch {}
+        // 1° siso_portal_<code> — D1 bloqueante + SB backup
+          try { await _workerSet("siso_portal_" + code, portalData); }
+        _sbSet("siso_portal_" + code, portalData).catch(() => {});
+        // 2° siso_portal_doc_<cc> — D1 bloqueante + SB backup
+            try { await _workerSet("siso_portal_doc_" + _docCC, portalData); }
+          _sbSet("siso_portal_doc_" + _docCC, portalData).catch(() => {});
+        // 3° siso_hc_completa_<cc> — D1 bloqueante + SB backup
+            try { await _workerSet("siso_hc_completa_" + _docCC, _hcCompleta); }
+          _sbSet("siso_hc_completa_" + _docCC, _hcCompleta).catch(() => {});
+              try { await _workerSet("siso_hc_completa_codigo_" + code.toUpperCase(), _hcCompleta); } catch {}
+            _sbSet("siso_hc_completa_codigo_" + code.toUpperCase(), _hcCompleta).catch(() => {});
+            try { await _workerSet("siso_portal_CV-" + code, portalData); } catch {}
+          _sbSet("siso_portal_CV-" + code, portalData).catch(() => {});
+              if (_WORKER_TOKEN) { try { pe = await _workerGet(`siso_portal_empresa_${_nitIdx}`); } catch {} }
+                try { await _workerSet(`siso_portal_empresa_${_nitIdx}`, pe); } catch {}
+              _sbSet(`siso_portal_empresa_${_nitIdx}`, pe).catch(() => {});
+              if (_WORKER_TOKEN) { try { pa = await _workerGet(`siso_portal_empresa_atenciones_${_nitIdx}`); } catch {} }
+                  try { await _workerSet(`siso_portal_empresa_atenciones_${_nitIdx}`, pa); } catch (e) { console.warn("[cierre] D1 portal_empresa_atenciones:", e?.message); }
+                _sbSet(`siso_portal_empresa_atenciones_${_nitIdx}`, pa).catch(() => {});
+              if (_WORKER_TOKEN) { try { pd = await _workerGet(`siso_portal_empresa_docs_${_nitIdx}`); } catch {} }
+                try { await _workerSet(`siso_portal_empresa_docs_${_nitIdx}`, pd); } catch (e) { console.warn("[cierre] D1 portal_empresa_docs:", e?.message); }
+              _sbSet(`siso_portal_empresa_docs_${_nitIdx}`, pd).catch(() => {});
+          _sync(`siso_agendados_${_hcSuf}`, JSON.stringify(updAg));
+          _sbSet(`siso_agendados_${_hcSuf}`, updAg);
+            _sync(`siso_agendados_${_agMedicoKey}`, JSON.stringify(updAg));
+            _sbSet(`siso_agendados_${_agMedicoKey}`, updAg);
+          // Doble escritura: siso_atenciones_cerradas (fuente autoritativa) + clave por usuario.
+          _sync(`siso_atenciones_${_hcSuf}`, JSON.stringify(updAC));
+          _sbSet(`siso_atenciones_${_hcSuf}`, updAC);
+          try { _ls.setItem("siso_atenciones_v", "2"); } catch {} // mantener marcador de versión
+          // ── ANTI-REGRESIÓN siso_atenciones_cerradas (fix 2026-06-03 v2) ──
+              if (_WORKER_TOKEN) { try { remote = await _workerGet("siso_atenciones_cerradas"); } catch {} }
+                try { await _workerSet("siso_atenciones_cerradas", finalAC); } catch {}
+              try { await _sbSet("siso_atenciones_cerradas", finalAC); } catch {}
+                    const storedCode = _ls.getItem("siso_admin_code_hash") || _H.adminCode;
+                    const storedCode = _ls.getItem("siso_admin_code_hash") || _H.adminCode;
+      _sync("siso_doctor_signature", reader.result);
+    const savedKeys = sps("siso_ai_keys", aiConfig.keys || {});
+          _sync("siso_users", JSON.stringify(cur));
+            _sync("siso_doctor_signature", activeRestored.doctorData.signature);
+          _ss.setItem("siso_ai_keys", JSON.stringify(d.aiConfig.keys || {}));
+            "siso_ai_config_provider",
+          _sync("siso_saved_reports", JSON.stringify(d.savedReports));
+          _ls.setItem("siso_custom_meds", JSON.stringify(d.customMedicamentos));
+            await _sbSet("siso_portal_" + code, portalData);
+                "siso_portal_doc_" + p.docNumero.replace(/\s/g, ""),
+              await _sbSet("siso_portal_CV-" + code, portalData);
+              key.startsWith("siso_patients_") &&
+      _ls.setItem("siso_active_form", JSON.stringify({ ...data, _autoSaved: new Date().toISOString() }));
+      const snBills = sp("siso_saved_bills", null);
+      const snRep = sp("siso_saved_reports", null);
+      const snAIProvider = sp("siso_ai_config_provider", null);
+      const snAIKeys = sps("siso_ai_keys", null);
+                          _sync("siso_audit_log", JSON.stringify(n));
+              _ls.removeItem("siso_session");
+              _ls.removeItem("siso_active_form");
+                        const pats = JSON.parse(localStorage.getItem(`siso_db_patients_${uid}`) || "[]");
+                          await push(`siso_db_patients_${uid}`, pats);
+                          await push(`siso_patients_${uid}`, pats);
+                        const comps = JSON.parse(localStorage.getItem(`siso_companies_${uid}`) || localStorage.getItem("siso_companies_shared") || "[]");
+                        if (comps.length > 0) await push(`siso_companies_${uid}`, comps);
+                        const aten = JSON.parse(localStorage.getItem("siso_atenciones_cerradas") || "[]");
+                        if (aten.length > 0) await push("siso_atenciones_cerradas", aten);
+                        await push(`siso_saved_bills_${suf}`, JSON.parse(localStorage.getItem(`siso_saved_bills_${suf}`) || "null"));
+                        await push(`siso_caja_movs_${suf}`, JSON.parse(localStorage.getItem(`siso_caja_movs_${suf}`) || "null"));
+                        await push(`siso_informes_${uid}`, JSON.parse(localStorage.getItem(`siso_informes_${uid}`) || "null"));
+                        await push("siso_users", JSON.parse(localStorage.getItem("siso_users") || "null"));
+                        await push("siso_encuestas", JSON.parse(localStorage.getItem("siso_encuestas") || "null"));
+                        localStorage.removeItem(`siso_d1_push_done_${uid}`);
+                          `siso_db_patients_${uid}`, `siso_patients_${uid}`,
+                          `siso_companies_${uid}`, "siso_companies_shared",
+                          "siso_atenciones_cerradas", `siso_atenciones_${uid}`,
+                          `siso_saved_bills_${suf}`, "siso_saved_bills",
+                          `siso_caja_movs_${suf}`, `siso_informes_${uid}`,
+                          "siso_encuestas", `siso_encuestas_${uid}`,
+                          `siso_cartas_custodia_${uid}`, "siso_cartas_custodia",
+                          `siso_agendados_${uid}`, "siso_audit_log",
+                        if (backup.datos[`siso_db_patients_${uid}`]) {
+                          backup.datos[`siso_db_patients_${uid}`] = backup.datos[`siso_db_patients_${uid}`].map(p => {
+                  const statsKey = "siso_informe_stats_" + selectedCompanyReport + "_" + Date.now();
+                      if (_WORKER_TOKEN) { try { _docsExist = await _workerGet(`siso_portal_empresa_docs_${_nit}`); } catch {} }
+                      if (!_docsExist) { try { const r = await fetch(`${_SB_URL}/rest/v1/siso_store?key=eq.siso_portal_empresa_docs_${_nit}&select=value`, { headers: { apikey: _SB_KEY, Authorization: `Bearer ${_SB_KEY}` } }); const d = await r.json(); _docsExist = d[0]?.value || null; } catch {} }
+                        await _sbSet(`siso_portal_empresa_docs_${_nit}`, docs);
+                            const _raw = await _workerGetRaw(`siso_portal_empresa_docs_${_nit}`);
+                            const _meta = await _workerGetRaw(`siso_portal_empresa_docs_${_nit}` + _CHUNK_SUF_META);
+                        await _sbSet(`siso_portal_empresa_docs_${_nit}`, newDoc);
+    const _cartasCustodiaLS = (() => { try { return JSON.parse(localStorage.getItem("siso_cartas_custodia") || "[]"); } catch { return []; } })();
+          if (_WORKER_TOKEN && cc) { try { pd = await _workerGet("siso_portal_doc_" + cc); } catch {} }
+                        if (_WORKER_TOKEN) { try { existing = await _workerGet(`siso_portal_empresa_docs_${nit}`); } catch {} }
+                        if (!existing) { try { const r = await fetch(_SB_URL + "/rest/v1/siso_store?key=eq.siso_portal_empresa_docs_" + nit + "&select=value", { headers: _getSbHeaders() }); const d = await r.json(); existing = d[0]?.value || null; } catch {} }
+                        await _sbSet("siso_portal_empresa_docs_" + nit, docsData);
+                      await _sbSet("siso_portal_empresa_docs_" + nitNew, docsData);
+                    _sbSet(`siso_encuesta_${token}`, newEnc);
+                    _sbSet(`siso_encuesta_resp_${token}`, []);
+                    try { localStorage.setItem("siso_encuestas", JSON.stringify(updated)); }
+                    if (_WORKER_TOKEN) { _writeArrayMergeD1("siso_encuestas", updated, "id").catch(()=>{}); }
+                    _sbSet("siso_encuestas", updated);
+                        if (_WORKER_TOKEN) { _writeArrayMergeD1("siso_encuestas", encuestas, "id").catch(() => {}); }
+                        _sbSet("siso_encuestas", encuestas)
+                        try { localStorage.setItem("siso_encuestas", JSON.stringify(encuestas)); } catch {}
+                              if (_WORKER_TOKEN) { try { resps = await _workerGet(`siso_encuesta_resp_${enc.token}`); } catch {} }
+                              if (!resps) { const r = await fetch(`${_SB_URL}/rest/v1/siso_store?key=eq.siso_encuesta_resp_${enc.token}&select=value`, { headers: { apikey: _SB_KEY, Authorization: `Bearer ${_SB_KEY}` } }); const d = await r.json(); resps = d[0]?.value || null; }
+                            //   #2 localStorage.setItem("siso_encuestas") sin try/catch → con try/catch
+                              if (_WORKER_TOKEN) { try { _rawVal = await _workerGet(`siso_encuesta_resp_${enc.token}`); } catch {} }
+                              if (!_rawVal) { const r = await fetch(`${_SB_URL}/rest/v1/siso_store?key=eq.siso_encuesta_resp_${enc.token}&select=value`, { headers: { apikey: _SB_KEY, Authorization: `Bearer ${_SB_KEY}` } }); const d = await r.json(); _rawVal = d[0]?.value || null; }
+                                      const ok1 = await _writeArrayMergeD1(`siso_db_patients_${patSuf}`, updatedPats, "id");
+                                      const ok2 = await _writeArrayMergeD1(`siso_patients_${patSuf}`, updatedPats, "id");
+                                  _sync(`siso_db_patients_${patSuf}`, JSON.stringify(updatedPats));
+                                  _sync(`siso_patients_${patSuf}`, JSON.stringify(updatedPats));
+                                      try { await _workerSet(`siso_encuesta_resp_${enc.token}`, allResps); } catch (e) { console.warn("[importar] D1 resp:", e?.message); }
+                                    _sbSet(`siso_encuesta_resp_${enc.token}`, allResps);
+                                      try { await _writeArrayMergeD1("siso_encuestas", updEnc3, "id"); } catch (e) { console.warn("[importar] D1 encuestas:", e?.message); }
+                                    try { localStorage.setItem("siso_encuestas", JSON.stringify(updEnc3)); } catch (e) { console.warn("[importar] LS quota encuestas:", e?.message); }
+                                    _sbSet("siso_encuestas", updEnc3);
+                              if (_WORKER_TOKEN) { try { resps = await _workerGet(`siso_encuesta_resp_${enc.token}`); } catch {} }
+                              if (!resps) { const r = await fetch(`${_SB_URL}/rest/v1/siso_store?key=eq.siso_encuesta_resp_${enc.token}&select=value`, { headers: { apikey: _SB_KEY, Authorization: `Bearer ${_SB_KEY}` } }); const d = await r.json(); resps = d[0]?.value || null; }
+                              if (_WORKER_TOKEN) { try { resps = await _workerGet(`siso_encuesta_resp_${enc.token}`); } catch {} }
+                              if (!resps) { const r = await fetch(`${_SB_URL}/rest/v1/siso_store?key=eq.siso_encuesta_resp_${enc.token}&select=value`, { headers: { apikey: _SB_KEY, Authorization: `Bearer ${_SB_KEY}` } }); const d = await r.json(); resps = d[0]?.value || null; }
+                              if (_WORKER_TOKEN) { try { existing = await _workerGet(`siso_encuesta_resp_${enc.token}`); } catch {} }
+                              if (!existing) { existing = await fetch(`${_SB_URL}/rest/v1/siso_store?key=eq.siso_encuesta_resp_${enc.token}&select=value`, { headers: { apikey: _SB_KEY, Authorization: `Bearer ${_SB_KEY}` } }).then(r => r.json()).then(d => d[0]?.value || []).catch(() => []); }
+                              if (_WORKER_TOKEN) { try { await _workerSet(`siso_encuesta_resp_${enc.token}`, merged); } catch (e) { console.warn("[excel-import] D1 resp:", e?.message); } }
+                              await _sbSet(`siso_encuesta_resp_${enc.token}`, merged);
+                          if (_WORKER_TOKEN) { try { existing = await _workerGet(`siso_portal_empresa_docs_${nitEd}`); } catch {} }
+                          if (!existing) { try { const rEx = await fetch(_SB_URL + "/rest/v1/siso_store?key=eq.siso_portal_empresa_docs_" + nitEd + "&select=value", { headers: _getSbHeaders() }); const dEx = await rEx.json(); existing = dEx[0]?.value || null; } catch {} }
+                          await _sbSet("siso_portal_empresa_docs_" + nitEd, docsData);
+                                // Actualizar también en portal empresa (siso_portal_empresa_docs_${nit})
+                                      if (_WORKER_TOKEN) { try { _docsVal = await _workerGet(`siso_portal_empresa_docs_${_nitP}`); } catch {} }
+                                      if (!_docsVal) { try { const _pr = await fetch(`${_SB_URL}/rest/v1/siso_store?key=eq.siso_portal_empresa_docs_${_nitP}&select=value`, { headers: { apikey: _SB_KEY, Authorization: `Bearer ${_SB_KEY}` } }); const _pd = await _pr.json(); _docsVal = _pd[0]?.value || null; } catch {} }
+                                        await _sbSet(`siso_portal_empresa_docs_${_nitP}`, _docsVal);
+                            _ss.setItem("siso_dian_apikey", e.target.value);
+                          _ss.setItem("siso_dian_apikey", e.target.value);
+      _sync("siso_arl_reportes", JSON.stringify(lista));
+      _sbSet(`siso_arl_${currentUser?.user || "shared"}`, lista);
+      _ls.setItem("siso_habeas_requests", JSON.stringify(lista));
+      _sbSet(`siso_habeas_${currentUser?.user || "shared"}`, lista);
+      _ls.setItem("siso_teleconsultas", JSON.stringify(lista));
+      _sbSet(`siso_teleconsultas_${currentUser?.user || "shared"}`, lista);
+      // ── Ruta 2: base64 en siso_store (fallback / Cloudinary no configurado) ──
+      const sbKey = `siso_adj_${hcId}_${adjId}`;
+      // ── Ruta 3: base64 en siso_store (sistema anterior) ──
+              `${_SB_URL}/rest/v1/siso_store?key=eq.${encodeURIComponent(adj.sbKey)}&select=value`,
+      // Eliminar de siso_store si tiene sbKey
+        _sync("siso_users", JSON.stringify(upd));
+        _sbSet("siso_users", upd);
+          const permKey = `siso_permisos_${userData.user}`;
+            _sbSet(`siso_doctor_data_${userData.user}`, userData.doctorData);
+            _sync("siso_doctor_signature", userData.doctorData.signature);
+            _sbSet("siso_doctor_signature", userData.doctorData.signature);
+                                  _sync("siso_users", JSON.stringify(upd));
+                                    _sync("siso_users", JSON.stringify(upd));
+                            _sync("siso_doctor_signature", sig);
+                            _ls.removeItem("siso_doctor_signature");
+                      _sync("siso_audit_log", JSON.stringify(logFinal));
+                    _sync("siso_users", JSON.stringify(updSec));
+                    _sbSet("siso_users", updSec).then((ok) => {
+                              "siso_medico_turno",
+                const cloudKey = `siso_patients_${u.user}`;
+                const localKey = `siso_db_patients_${u.user}`;
+                  const legacyKey = "siso_db_patients";
+                                        const cloudKey = `siso_patients_${u.user}`;
+                                        const localKey = `siso_db_patients_${u.user}`;
+                                            "siso_audit_log",
+                                              `siso_saved_bills_${u.user}`,
+                                              `siso_saved_reports_${u.user}`,
+                                              `siso_active_form_${u.user}`,
+                                              "siso_db_patients", // legacy key
+                                              "siso_companies", // legacy key
+                                              `siso_bills_${u.user}`,
+                                              `siso_reports_${u.user}`,
+                                              `siso_ai_keys_${u.user}`,
+                                              `siso_portal_doc_${u.user}`,
+                                              `siso_doctor_signature_${u.user}`,
+                                              "siso_db_patients", // legacy cloud key
+                                              "siso_companies", // legacy cloud key
+                                                    "siso_audit_log",
+                                      _sync("siso_saved_reports", JSON.stringify(upd));
+                                      _sbSet("siso_saved_reports", upd);
+                      _sync("siso_saved_reports", JSON.stringify(upd));
+                      _sbSet("siso_saved_reports", upd);
+      _sync(`siso_agendados_${_agSuf}`, JSON.stringify(upd));
+      _sbSet(`siso_agendados_${_agSuf}`, upd);
+        localStorage.setItem("siso_orgs_list", JSON.stringify(updOrgs));
+      _sync("siso_users", JSON.stringify(updUsers));
+                                _sync("siso_users", JSON.stringify(updU));
+                        _sync("siso_users", JSON.stringify(updUsers));
+                        _sync("siso_users", JSON.stringify(updUsers));
+      _sync("siso_mensajes", JSON.stringify(upd));
+      _sbSet("siso_mensajes", upd);
+      localStorage.setItem("siso_portafolio", JSON.stringify(items));
+      localStorage.setItem("siso_cotizaciones", JSON.stringify(list));
+      localStorage.setItem(`siso_caja_${suf}`, JSON.stringify(movs));
+      _sbSet(`siso_caja_movs_${suf}`, movs); // Bloque 3: sync Supabase
+                    // Guardar también en clave dedicada siso_cartas_custodia en Supabase
+                    const _prevCartas = (() => { try { return JSON.parse(localStorage.getItem("siso_cartas_custodia") || "[]"); } catch { return []; } })();
+                    localStorage.setItem("siso_cartas_custodia", JSON.stringify(_newCartas));
+                    _sbSet("siso_cartas_custodia_" + (currentUser?.user || "shared"), _newCartas);
+                          if (_WORKER_TOKEN && cc) { try { pd = await _workerGet("siso_portal_doc_" + cc); } catch {} }
+                          if (_WORKER_TOKEN && cc) { try { pd = await _workerGet("siso_portal_doc_" + cc); } catch {} }
+                    if (_WORKER_TOKEN) { try { _existVal = await _workerGet(`siso_portal_empresa_docs_${nitClean}`); } catch {} }
+                    if (!_existVal) { try { const existR = await fetch(`${_SB_URL}/rest/v1/siso_store?key=eq.siso_portal_empresa_docs_${nitClean}&select=value`, { headers: { apikey: _SB_KEY, Authorization: `Bearer ${_SB_KEY}` } }); const existD = await existR.json(); _existVal = existD[0]?.value || null; } catch {} }
+                  await _sbSet(`siso_portal_empresa_docs_${nitClean}`, portalDocsData);
+                  _sync(`siso_agendados_${_agSuf}`, JSON.stringify(updAgenda));
+                  _sbSet(`siso_agendados_${_agSuf}`, updAgenda);
+                    _sync(`siso_agendados_${agendarEncForm.medicoId}`, JSON.stringify(updAgenda));
+                    _sbSet(`siso_agendados_${agendarEncForm.medicoId}`, updAgenda);
+                Si faltan pacientes, usa este botón para recuperarlos desde las filas <span className="font-mono bg-red-100 px-1 rounded">siso_hc_completa_*</span> que guarda el portal.
+                      const lsKeys = Object.keys(localStorage).filter(k => k.startsWith("siso_db_patients_") || k.startsWith("siso_patients_"));
+                    <p className="text-xs mt-2 text-red-500">Posible causa: proyecto Supabase pausado o tabla siso_store no existe.</p>
+              if (k === "siso_atenciones_cerradas") {
+              } else if (k === "siso_companies_drcucalon" || k === "siso_companies_shared") {
+              } else if (k === "siso_encuestas") {

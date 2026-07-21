@@ -1,0 +1,18 @@
+﻿5:import CartaCustodia from "./pages/CartaCustodia";
+2328:const custTipos = ["custodia", "carta_custodia"];
+14234:const _buildCartaCustodiaHTML = (c) => {
+14280:const _buildCuentaCobroHTMLMod = (c) => {
+15415:function PortalCuentaCobroCard({ cuenta, empresaNombre, periodo, sbUrl, sbKey, nitBusq }) {
+16490:<PortalCuentaCobroCard
+18760:const blob = await _htmlToPdfBlobMod(_wrapDoc(_buildCuentaCobroHTMLMod(c))); zip.file("03_Cuenta_de_Cobro_No" + String(c.number || "1").padStart(3, "0") + ".pdf", blob); total++;
+18769:if (cust) { const blob = await _htmlToPdfBlobMod(_wrapDoc(_buildCartaCustodiaHTML(cust))); zip.file("04_Carta_de_Custodia.pdf", blob); total++; }
+32826:const _generarCuenta = () => {
+32983:onClick={_generarCuenta}
+34963:if (cust) { _abrirVentanaPDF(_buildCartaCustodiaHTML(cust), `Carta Custodia â€” ${c.nombre}`); return; }
+34969:if (bill) { _abrirVentanaPDF(_buildCuentaCobroHTMLMod(bill), `Cuenta de Cobro â€” ${c.nombre}`); return; }
+34990:return `- ${c.nombre} (NIT ${c.nit || "N/R"}): Certificados=${inv.certCount}, SociodemogrÃ¡fico=${inv.socio ? "SÃ­" : "No"}, Custodia=${inv.custodia ? "SÃ­" : "No"}, CuentaCobro=${inv.cuenta ? "SÃ­" : "No"} â†’ completos ${inv.completos}/4${inv.faltantes.length ? ` Â· faltan: ${inv.faltantes.join(", ")}` : ""}`;
+57395:const renderCartaCustodia = () => (
+57396:<CartaCustodia
+57539:if (view === "custodia") return renderCartaCustodia();
+59478:_abrirVentanaPDF(_buildCartaCustodiaHTML(cust), `Carta Custodia â€” ${emp.empresaNombre}`);
+59524:if (cust) partes.push(`<div style="page-break-before:always;">${_buildCartaCustodiaHTML(cust)}</div>`);

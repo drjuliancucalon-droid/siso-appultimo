@@ -1,0 +1,141 @@
+﻿23960:                  ...a,
+23961:                  estado: "atendido",
+23962:                  horaFin,
+23963:                  vistoEn: new Date().toISOString(),
+23964:                }
+23965:              : a
+23966:          );
+23967:          setAgendados(updAg);
+23968:          // PASO 6: clave aislada del usuario actual
+23969:          const _hcSuf = currentUser?.empresaId
+23970:            ? "empresa_" + currentUser.empresaId
+23971:            : currentUser?.user || "shared";
+23972:          _sync(`siso_agendados_${_hcSuf}`, JSON.stringify(updAg));
+23973:          _sbSet(`siso_agendados_${_hcSuf}`, updAg);
+23974:          // â”€â”€ Sync tambiÃ©n en clave del mÃ©dico asignado (para secretaria) â”€â”€â”€â”€â”€â”€
+23975:          const agOrig = agendados.find((a) => a.id === data._agendaId);
+23976:          const _agMedicoKey = agOrig?.medicoId;
+23977:          if (_agMedicoKey && _agMedicoKey !== _hcSuf) {
+23978:            _sync(`siso_agendados_${_agMedicoKey}`, JSON.stringify(updAg));
+23979:            _sbSet(`siso_agendados_${_agMedicoKey}`, updAg);
+23980:          }
+23981:          // â”€â”€ Registrar en Atenciones Recientes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+23982:          const nuevaAtencion = {
+23983:            id: "ac_" + Date.now(),
+23984:            agendaId: data._agendaId,
+23985:            pacienteId: closed.id,
+23986:            nombre: closed.nombres || agOrig?.nombre || "",
+23987:            docNumero: closed.docNumero || agOrig?.docNumero || "",
+23988:            empresa: closed.empresa || agOrig?.empresa || "",
+23989:            cargo: closed.cargo || agOrig?.cargo || "",
+23990:            tipo: dataType,
+23991:            tipoConsulta: agOrig?.tipoConsulta || closed.motivoConsulta || "",
+23992:            conceptoAptitud: closed.conceptoAptitud || "",
+23993:            codigoVerificacion: code,
+23994:            medicoId: closed._medicoId || agOrig?.medicoId || currentUser?.user,
+23995:            medicoNombre: agOrig?.medicoNombre || currentUser?.name || "",
+23996:            fechaAtencion: new Date().toISOString().split("T")[0],
+23997:            horaInicio: agOrig?.horaInicio || agOrig?.horaCita || "",
+23998:            horaFin,
+23999:            cerradaEn: new Date().toISOString(),
+24000:            estadoHistoria: "Cerrada",
+24001:          };
+24002:          // SYNC-FIX: sin lÃ­mite de 100 â€” guardar TODOS los registros.
+24003:          // Doble escritura: siso_atenciones_cerradas (fuente autoritativa) + clave por usuario.
+24004:          const updAC = [nuevaAtencion, ...atencionesCerradas];
+24005:          setAtencionesCerradas(updAC);
+24006:          _sync(`siso_atenciones_${_hcSuf}`, JSON.stringify(updAC));
+24007:          _sbSet(`siso_atenciones_${_hcSuf}`, updAC);
+24008:          try { _ls.setItem("siso_atenciones_v", "2"); } catch {} // mantener marcador de versiÃ³n
+24009:          // â”€â”€ ANTI-REGRESIÃ“N siso_atenciones_cerradas (fix 2026-06-03 v2) â”€â”€
+24010:          // Antes de sobrescribir D1 + SB con `updAC`, leer remoto y MERGE
+24011:          // por id para preservar atenciones recuperadas o de otros clientes
+24012:          // que el navegador local desconoce. Fire-and-forget.
+24013:          (async () => {
+24014:            try {
+24015:              let remote = null;
+24016:              if (_WORKER_TOKEN) { try { remote = await _workerGet("siso_atenciones_cerradas"); } catch {} }
+24017:              let finalAC = updAC;
+24018:              if (Array.isArray(remote) && remote.length > 0) {
+24019:                const localIds  = new Set(updAC.filter(a => a?.id).map(a => a.id));
+24020:                const localDocs = new Set(updAC.filter(a => a?.docNumero).map(a => String(a.docNumero).trim()));
+24021:                const extras = remote.filter(a => {
+24022:                  if (!a || (!a.id && !a.docNumero)) return false;
+24023:                  if (a.id && localIds.has(a.id)) return false;
+24024:                  // No usar docNumero solo, porque un trabajador puede tener varias atenciones
+24025:                  if (a.id) return true; // si tiene id distinto, preservar
+24026:                  return false;
+24027:                });
+24028:                if (extras.length > 0) {
+24029:                  finalAC = [nuevaAtencion, ...extras, ...atencionesCerradas];
+24030:                  console.warn(`[cierreHC] MERGE atenciones: cliente=${updAC.length}, D1=${remote.length}, +${extras.length} preservadas = ${finalAC.length}`);
+24031:                  try { setAtencionesCerradas(finalAC); } catch {}
+24032:                }
+24033:              }
+24034:              if (_WORKER_TOKEN) {
+24035:                try { await _workerSet("siso_atenciones_cerradas", finalAC); } catch {}
+24036:              }
+24037:              try { await _sbSet("siso_atenciones_cerradas", finalAC); } catch {}
+24038:            } catch (e) {
+24039:              console.warn("[cierreHC] anti-regresiÃ³n atenciones fallÃ³:", e?.message);
+24040:            }
+24041:          })();
+24042:        }
+24043:        // â”€â”€ PASO 3: Auto-facturaciÃ³n â€” generar movimiento en Caja â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+24044:        try {
+24045:          const agOrig2 = data._agendaId
+24046:            ? agendados.find((a) => a.id === data._agendaId)
+24047:            : null;
+24048:          const _tipoConsulta = (
+24049:            agOrig2?.tipoConsulta ||
+24050:            data.tipoExamen ||
+24051:            closed.tipoExamen ||
+24052:            "general"
+24053:          ).toLowerCase();
+24054:          // Calcular tarifa: convenio empresa â†’ tarifa mÃ©dico â†’ 0
+24055:          const _empCliente = companies.find(
+24056:            (c) =>
+24057:              c.id === closed.empresaId ||
+24058:              c.nit === closed.empresaNit ||
+24059:              c.nombre === closed.empresaNombre
+24060:          );
+24061:          let _tarifa = 0;
+24062:          if (_empCliente) {
+24063:            if (_tipoConsulta.includes("ingreso"))
+24064:              _tarifa = Number(_empCliente.tarifaIngreso || 0);
+24065:            else if (
+24066:              _tipoConsulta.includes("periodico") ||
+24067:              _tipoConsulta.includes("periÃ³dico")
+24068:            )
+24069:              _tarifa = Number(_empCliente.tarifaPeriodico || 0);
+24070:            else if (
+24071:              _tipoConsulta.includes("egreso") ||
+24072:              _tipoConsulta.includes("retiro")
+24073:            )
+24074:              _tarifa = Number(_empCliente.tarifaEgreso || 0);
+24075:            else _tarifa = Number(_empCliente.tarifaConsulta || 0);
+24076:          }
+24077:          if (!_tarifa)
+24078:            _tarifa = Number(activeDoctorData?.tarifaExamenOcup || 0);
+24079:          const _tipoLabel = _tipoConsulta.includes("ingreso")
+24080:            ? "Examen Ingreso"
+24081:            : _tipoConsulta.includes("periodico") ||
+24082:              _tipoConsulta.includes("periÃ³dico")
+24083:            ? "Examen PeriÃ³dico"
+24084:            : _tipoConsulta.includes("egreso") ||
+24085:              _tipoConsulta.includes("retiro")
+24086:            ? "Examen Egreso"
+24087:            : _tipoConsulta.includes("general")
+24088:            ? "Consulta General"
+24089:            : "Examen MÃ©dico";
+24090:          const autoMov = {
+24091:            id: "mob_" + Date.now(),
+24092:            tipo: "ingreso",
+24093:            concepto: `${_tipoLabel} Â· ${_sanitize(
+24094:              closed.nombres || ""
+24095:            )} Â· ${_sanitize(
+24096:              closed.empresaNombre || agOrig2?.empresa || "Particular"
+24097:            )}`,
+24098:            monto: String(_tarifa),
+24099:            formaPago: "Por cobrar",
+24100:            estado: "pendiente",

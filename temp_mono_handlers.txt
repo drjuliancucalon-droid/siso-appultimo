@@ -1,0 +1,1224 @@
+﻿2054:<button onclick="window.print()" style="border:none;padding:5px 14px;border-radius:6px;background:#10b981;color:white;font-weight:900;cursor:pointer;">ðŸ–¨ï¸ Imprimir / PDF</button>
+2055:<button onclick="window.close()" style="border:none;padding:5px 14px;border-radius:6px;background:#ef4444;color:white;font-weight:900;cursor:pointer;margin-left:6px;">âœ• Cerrar</button></div>
+6269:onChange,
+6297:onClick={handleBackdrop}
+6323:<button onClick={onClose}>
+6349:onClick={() =>
+6391:onChange={() =>
+6392:onChange((p) => ({ ...p, [item.id]: !p[item.id] }))
+6420:onClick={onGenerate}
+6432:onClick={onApply || onClose}
+8075:const CUPSInput = ({ value, onChange, placeholder, className }) => {
+8093:onChange && onChange(v);
+8106:onChange && onChange(completo);
+8114:onChange={handleInput}
+8115:onFocus={() => {
+8640:const CIE10Input = ({ value, onChange, placeholder, className, name }) => {
+8658:onChange && onChange(v);
+8671:onChange && onChange(completo);
+8680:onChange={handleInput}
+8681:onFocus={() => {
+9746:onChange,
+9765:onChange={onChange}
+9787:onChange,
+9802:onChange={onChange}
+9823:onChange,
+9834:onChange={onChange}
+9933:<button onClick={() => { if (window._sisoGoTo) window._sisoGoTo("planes"); }} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-xs font-bold transition">
+10215:onClick={() => setPendingActivationPlan(null)}
+10376:onClick={() =>
+10408:onChange={(e) =>
+10432:onChange={(e) =>
+10449:onChange={(e) =>
+10465:onChange={(e) =>
+10489:onChange={(e) =>
+10508:onChange={(e) =>
+10596:onChange={(e) => {
+10633:onClick={() => {
+10646:onClick={() => {
+10656:onClick={() => {
+10680:onClick={() => {
+10697:onClick={() => {
+10940:onClick={(e) => {
+10963:<button onClick={onClose}>
+11009:onClick={() =>
+11094:onClick={() => setActiveGuide(isGuideOpen ? null : k)}
+11144:onChange={(e) =>
+11154:onClick={() =>
+11163:onClick={() => testProvider(k)}
+11191:onClick={onClose}
+11197:onClick={() => {
+11215:onChange,
+11235:onClick={handleBackdrop}
+11253:<button onClick={onClose}>
+11273:onClick={() =>
+11315:onChange={() =>
+11316:onChange((p) => ({ ...p, [item.id]: !p[item.id] }))
+11338:onClick={onGenerate}
+11350:onClick={onApply || onClose}
+11365:onChange,
+11431:onChange(query.trim());
+11446:onChange={(e) => {
+11448:onChange(e.target.value);
+11450:onFocus={() => query.length >= 2 && setShow(true)}
+11456:onClick={handleAddCustom}
+11469:onClick={() => {
+11471:onChange(s.label);
+11791:<button class="btn-print" onclick="window.print()">ðŸ–¨ï¸ Imprimir receta</button>
+11792:<button class="btn-close" onclick="window.close()">âœ• Cerrar</button>
+12008:<button class="btn-print" onclick="window.print()">ðŸ–¨ï¸ Imprimir ahora</button>
+12009:<button class="btn-close" onclick="window.close()">âœ• Cerrar</button>
+12072:onClick={() => setActiveSubTab(t.k)}
+12086:onClick={() => openPrintWindow("formula", "FÃ³rmula MÃ©dica")}
+12094:onClick={() =>
+12104:onClick={() => openPrintWindow("examenes", "Solicitud de ExÃ¡menes")}
+12133:onChange={(v) => setNewMed((p) => ({ ...p, nombre: v }))}
+12152:onChange={(e) =>
+12165:onChange={(e) =>
+12178:onChange={(e) =>
+12191:onChange={(e) =>
+12204:onChange={(e) =>
+12214:onClick={addMedicamento}
+12222:onClick={() => { setEditMedIdx(null); setNewMed({nombre:"",presentacion:"",dosis:"",frecuencia:"",duracion:"",indicaciones:""}); }}
+12261:onClick={() => {
+12272:onClick={() => openSingleMedWindow(med, idx)}
+12279:onClick={() => removeMed(med.id || idx)}
+12310:onChange={(e) =>
+12363:onChange={(e) => {
+12367:onFocus={() => setShowDerivSugg(true)}
+12377:onClick={() => {
+12412:onClick={() =>
+12432:onChange={(e) =>
+12445:onChange={(e) =>
+12463:onChange={(e) =>
+12476:onChange={(e) =>
+12488:onClick={addDerivacion}
+12534:onClick={() => removeDerivacion(der.id || idx)}
+12657:onClick={onCerrar}
+12737:onChange={(e) => {
+12750:onChange={(e) => {
+12767:onClick={onCerrar}
+12773:onClick={handleConfirmar}
+12843:onChange={(e) => setU(e.target.value.slice(0, MAX_USER_LEN))}
+12846:onKeyDown={(e) => e.key === "Enter" && submit()}
+12854:onChange={(e) => setP(e.target.value.slice(0, MAX_PASS_LEN))}
+12857:onKeyDown={(e) => e.key === "Enter" && submit()}
+12863:onClick={submit}
+12919:onClick={() => { setAbierto(true); setMsg(""); setCodigo(""); }}
+12931:onChange={e => setCodigo(e.target.value)}
+12932:onKeyDown={e => e.key === "Enter" && intentar()}
+12938:<button type="button" onClick={intentar}
+12942:<button type="button" onClick={() => setAbierto(false)}
+13028:onClick={onCerrar}
+13139:onClick={onCerrar}
+14092:<button class="btn-print" onclick="window.print()">ðŸ–¨ï¸ Imprimir ahora</button>
+14093:<button class="btn-close" onclick="window.close()">âœ• Cerrar</button></div>
+14149:<button onclick="window.print()" style="background:#10b981;color:#fff;border:none;padding:9px 22px;border-radius:8px;font-weight:900;cursor:pointer;font-size:12px;">ðŸ“¥ Imprimir / Guardar PDF</button>
+14150:<button onclick="window.close()" style="background:#ef4444;color:#fff;border:none;padding:9px 16px;border-radius:8px;font-weight:900;cursor:pointer;font-size:12px;">âœ• Cerrar</button>
+14808:<input value={form.nombres} onChange={e => u("nombres", e.target.value)} className="w-full p-2 border border-gray-200 rounded-lg text-sm" placeholder="NOMBRES Y APELLIDOS COMPLETOS" />
+14813:<select value={form.docTipo} onChange={e => u("docTipo", e.target.value)} className="w-full p-2 border rounded-lg text-sm">
+14819:<input value={form.docNumero} onChange={e => u("docNumero", e.target.value)} className="w-full p-2 border rounded-lg text-sm" placeholder="1061234567" />
+14825:<input type="date" value={form.fechaNacimiento} onChange={e => {
+14843:<select value={form.genero} onChange={e => u("genero", e.target.value)} className="w-full p-2 border rounded-lg text-sm">
+14852:<select value={form.estadoCivil} onChange={e => u("estadoCivil", e.target.value)} className="w-full p-2 border rounded-lg text-sm">
+14859:<select value={form.escolaridad} onChange={e => u("escolaridad", e.target.value)} className="w-full p-2 border rounded-lg text-sm">
+14866:<select value={form.grupoEtnico} onChange={e => u("grupoEtnico", e.target.value)} className="w-full p-2 border rounded-lg text-sm">
+14873:<select value={form.lateralidad} onChange={e => u("lateralidad", e.target.value)} className="w-full p-2 border rounded-lg text-sm">
+14887:<input type="tel" value={form.celular} onChange={e => u("celular", e.target.value)} className="w-full p-2 border rounded-lg text-sm" placeholder="300 123 4567" />
+14891:<input type="email" value={form.email} onChange={e => u("email", e.target.value)} className="w-full p-2 border rounded-lg text-sm" placeholder="correo@email.com" />
+14897:<input value={form.direccion} onChange={e => u("direccion", e.target.value)} className="w-full p-2 border rounded-lg text-sm" placeholder="Cra 5 #10-20" />
+14901:<input value={form.ciudad} onChange={e => u("ciudad", e.target.value)} className="w-full p-2 border rounded-lg text-sm" placeholder="PopayÃ¡n" />
+14905:<select value={form.zonaResidencia} onChange={e => u("zonaResidencia", e.target.value)} className="w-full p-2 border rounded-lg text-sm">
+14918:<select value={form.eps} onChange={e => u("eps", e.target.value)} className="w-full p-2 border rounded-lg text-sm">
+14925:<select value={form.arl} onChange={e => u("arl", e.target.value)} className="w-full p-2 border rounded-lg text-sm">
+14932:<select value={form.afp} onChange={e => u("afp", e.target.value)} className="w-full p-2 border rounded-lg text-sm">
+14939:<select value={form.estrato} onChange={e => u("estrato", e.target.value)} className="w-full p-2 border rounded-lg text-sm">
+14953:<input value={form.cargo} onChange={e => u("cargo", e.target.value)} className="w-full p-2 border rounded-lg text-sm" placeholder="Operario, Conductor, etc." />
+14957:<input value={form.area} onChange={e => u("area", e.target.value)} className="w-full p-2 border rounded-lg text-sm" placeholder="ProducciÃ³n, Admin..." />
+14963:<input value={form.antiguedad} onChange={e => u("antiguedad", e.target.value)} className="w-full p-2 border rounded-lg text-sm" placeholder="2 aÃ±os" />
+14967:<select value={form.tipoContrato} onChange={e => u("tipoContrato", e.target.value)} className="w-full p-2 border rounded-lg text-sm">
+14974:<select value={form.turnoTrabajo} onChange={e => u("turnoTrabajo", e.target.value)} className="w-full p-2 border rounded-lg text-sm">
+14987:<input value={form.contactoEmergencia} onChange={e => u("contactoEmergencia", e.target.value)} className="w-full p-2 border border-gray-200 rounded-lg text-sm" placeholder="Nombre del contacto" />
+14991:<input type="tel" value={form.telEmergencia} onChange={e => u("telEmergencia", e.target.value)} className="w-full p-2 border border-gray-200 rounded-lg text-sm" placeholder="300 000 0000" />
+14996:<button onClick={handleSubmit} disabled={loading} className="w-full py-3 bg-emerald-700 hover:bg-emerald-800 disabled:opacity-50 text-white font-black rounded-xl text-sm flex items-center justify-center gap-2">
+15329:w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Carta Custodia â€” ${c.empresaNombre}</title><style>*{box-sizing:border-box;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}body{margin:0;padding:0;background:#e5e7eb;}@media print{body{background:white;}.no-print{display:none!important;}@page{size:letter portrait;margin:0;}}</style></head><body><div class="no-print" style="padding:10px 16px;background:#1e3a5f;display:flex;gap:10px;align-items:center;"><button onclick="window.print()" style="background:#10b981;color:white;border:none;padding:8px 20px;border-radius:6px;font-weight:900;cursor:pointer;font-size:12px;">ðŸ“¥ Imprimir / PDF</button><button onclick="window.close()" style="background:#ef4444;color:white;border:none;padding:8px 16px;border-radius:6px;font-weight:900;cursor:pointer;font-size:12px;">âœ• Cerrar</button><span style="color:#94a3b8;font-size:11px;margin-left:8px;">Carta Custodia â€” ${c.empresaNombre}</span></div><div style="padding:24px;display:flex;justify-content:center;">${cartaHtml}</div></body></html>`);
+15343:<button onClick={handleLoadSaved} className="px-2 py-1 bg-gray-100 text-gray-600 text-[10px] font-black rounded-lg hover:bg-gray-200 transition">
+15346:<button onClick={() => setShow(s => !s)} className="px-2 py-1 bg-purple-700 text-white text-[10px] font-black rounded-lg hover:bg-purple-800 transition">
+15357:<button onClick={() => { setShowSaved(false); setViewSavedIdx(null); }} className="text-gray-400 hover:text-red-500 font-black text-lg leading-none">âœ•</button>
+15371:<button onClick={() => printCarta(c)} className="px-2 py-1 bg-purple-600 text-white text-[10px] font-black rounded-lg hover:bg-purple-700 flex-shrink-0">
+15387:<button onClick={handleSave} disabled={saving}
+15391:<button onClick={() => printCarta({ docNombre, docTitulo, docLicencia, docCC, docCel, docEmail, docCiudad, firmaSrc, fechaTexto, empresaNombre, periodo, mesTexto, anioVal, savedAt: "" })}
+15624:onClick={() => setShowDoc(v => !v)}
+15638:<button onClick={() => { const w=window.open("","_blank"); w.document.write(`<html><head><style>body{margin:0;font-family:Arial,sans-serif;}</style></head><body>${document.querySelector('.portal-bill-doc')?.innerHTML||""}</body></html>`); w.document.close(); w.print(); }} className="text-[10px] font-bold text-gray-500 hover:text-gray-800 px-2 py-1 rounded hover:bg-gray-200 transition">ðŸ–¨ï¸ Imprimir</button>
+15673:<input type="file" accept="image/jpeg,image/png,image/webp,application/pdf" className="hidden" onChange={handleFile} disabled={uploading} />
+15813:<div className="fixed inset-0 bg-black/70 z-[9999] flex items-center justify-center p-2" onClick={e=>e.target===e.currentTarget&&onClose()}>
+15820:<button onClick={onClose} className="text-white/70 hover:text-white text-xl font-black px-2">âœ•</button>
+15826:<div onDragOver={e=>{e.preventDefault();setDrag(true);}} onDragLeave={()=>setDrag(false)} onDrop={e=>{e.preventDefault();setDrag(false);const fs=Array.from(e.dataTransfer.files).filter(f=>["application/pdf","image/jpeg","image/png","image/tiff","image/webp"].includes(f.type));if(fs.length)procesar(fs);}} onClick={()=>fRef.current?.click()}
+15837:<input ref={fRef} type="file" multiple accept=".pdf,.jpg,.jpeg,.png,.tiff,.webp" onChange={e=>{const fs=Array.from(e.target.files||[]);if(fs.length)procesar(fs);e.target.value="";}} className="hidden"/>
+15864:<button onClick={()=>{setItems([]);setEtapa(E.sel);}} className="px-3 py-1.5 text-xs border border-gray-300 rounded-lg hover:bg-gray-50">â† Cambiar</button>
+15865:<button onClick={subirTodos} className="px-4 py-1.5 bg-blue-700 text-white text-xs font-black rounded-lg hover:bg-blue-800">
+15885:<select value={arch.pacId||""} onChange={e=>upd(arch.id,"pacId",e.target.value)}
+15896:<select value={arch.tipo} onChange={e=>upd(arch.id,"tipo",e.target.value)}
+15904:<button onClick={()=>upd(arch.id,"accion","subir")} className={`flex-1 py-1.5 text-xs font-black rounded-lg ${arch.accion==="subir"?"bg-blue-700 text-white":"bg-gray-100 text-gray-600 hover:bg-gray-200"}`}>ðŸ“¤ Subir</button>
+15905:<button onClick={()=>upd(arch.id,"accion","omitir")} className={`flex-1 py-1.5 text-xs font-black rounded-lg ${arch.accion==="omitir"?"bg-gray-500 text-white":"bg-gray-100 text-gray-600 hover:bg-gray-200"}`}>â­ Omitir</button>
+15970:{a.txt&&<button onClick={()=>{const w=window.open("","_blank","width=600,height=500");if(w){w.document.write(`<pre style="font:11px monospace;padding:16px;white-space:pre-wrap;">${a.txt.slice(0,2000)}</pre>`);w.document.close();}}} className="text-[10px] bg-blue-100 text-blue-700 px-2 py-1 rounded-lg font-bold">ðŸ‘ Texto</button>}
+15973:<select value={arch.pacId||""} onChange={e=>upd(a.id,"pacId",e.target.value)}
+15980:<button onClick={async()=>{
+16026:<button onClick={()=>{setItems([]);setRep(null);setEtapa(E.sel);}} className="px-4 py-2 bg-blue-700 text-white text-sm font-black rounded-xl hover:bg-blue-800">ðŸ“ Nueva carga</button>
+16027:<button onClick={onClose} className="px-4 py-2 bg-gray-800 text-white text-sm font-black rounded-xl hover:bg-gray-900">Cerrar</button>
+16084:w.document.write(`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Informe EpidemiolÃ³gico â€” ${empresaNombre}</title><script src="https://cdn.tailwindcss.com"><\/script><style>*{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}body{font-family:sans-serif;padding:0;margin:0;}@media print{.no-print{display:none!important;}body{padding:8mm 10mm;}}@page{size:letter landscape;margin:0.8cm 1cm;}</style></head><body><div class="no-print" style="background:#1e3a5f;padding:10px 16px;display:flex;gap:10px;margin-bottom:16px;"><button onclick="window.print()" style="background:#10b981;color:white;border:none;padding:8px 20px;border-radius:6px;font-weight:900;cursor:pointer;">ðŸ“¥ Imprimir / PDF</button><button onclick="window.close()" style="background:#ef4444;color:white;border:none;padding:8px 14px;border-radius:6px;font-weight:900;cursor:pointer;">âœ• Cerrar</button></div><div style="padding:16px;">${el.innerHTML}</div></body></html>`);
+16091:onClick={() => { setExpanded(e => !e); if (!expanded) loadFull(); }}>
+16295:<button onClick={handlePrint} className="w-full py-2.5 bg-blue-700 text-white text-xs font-black rounded-xl hover:bg-blue-800 flex items-center justify-center gap-2 mt-2">
+16367:onClick={() => setActivePi(activePi === pi ? null : pi)}
+16400:onClick={() => {
+16419:w.document.write(`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Certificados â€” ${portalDocs.nombre}</title><style>@page{size:letter portrait;margin:0;}*{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}table{border-collapse:collapse;page-break-inside:auto;}tr{page-break-inside:avoid;page-break-after:auto;}td,th{page-break-inside:avoid;}${styles}.np-dl{position:fixed;top:10px;right:10px;z-index:9999;}@media print{.np-dl{display:none!important;}body{padding:0!important;}}</style></head><body><div class="np-dl"><button onclick="window.print()" style="background:#065f46;color:#fff;border:none;padding:10px 24px;border-radius:10px;font-weight:900;cursor:pointer;font-size:12px;box-shadow:0 4px 12px rgba(0,0,0,.2);">ðŸ“¥ Guardar PDF / Imprimir (${pacs.length} certificados)</button></div>${certs}</body></html>`);
+16434:onChange={e => setCertSearch(e.target.value)}
+16464:onClick={() => {
+16468:const htmlConBtn = html.replace("</body>", `<div style="position:fixed;top:10px;right:10px;z-index:9999;"><button onclick="window.print()" style="background:#065f46;color:white;border:none;padding:10px 24px;border-radius:10px;font-weight:900;cursor:pointer;font-size:12px;box-shadow:0 4px 12px rgba(0,0,0,.2);">ðŸ“¥ PDF / Imprimir</button></div></body>`);
+16993:const fullHtml = `<!DOCTYPE html><html lang="es"><head><title>${sf(titleDoc)} - ${sf(res.nombres)}</title><meta charset="UTF-8"/><style>${baseStyle}.print-toolbar{position:fixed;top:0;left:0;right:0;background:#1e3a5f;color:white;padding:8px 14px;display:flex;align-items:center;gap:10px;z-index:9999;box-shadow:0 2px 8px rgba(0,0,0,.25);}.print-toolbar .ptitle{flex:1;font-size:9.5pt;font-weight:700;}.print-toolbar button{border:none;padding:6px 14px;border-radius:6px;font-weight:900;cursor:pointer;font-size:9pt;}.btn-print{background:#10b981;color:white;}.btn-close{background:#ef4444;color:white;}body{padding-top:52px;}@media print{.print-toolbar{display:none!important;}body{padding-top:0!important;}}</style></head><body><div class="print-toolbar"><span class="ptitle">ðŸ“„ ${sf(titleDoc)} Â· ${sf(res.nombres)}</span><button class="btn-print" onclick="window.print()">ðŸ–¨ï¸ Imprimir / Guardar PDF</button><button class="btn-close" onclick="window.close()">âœ• Cerrar</button></div><div>${hdr}</div><div>${bodyHtml}</div></body></html>`;
+17018:<button onClick={onVolver} className="text-white/70 hover:text-white text-xs font-bold bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-xl transition flex items-center gap-1">
+17032:onClick={() => {
+17064:onClick={() => { setTipoBusqueda(opt.v); setBusqueda(""); setError(""); setResultado(null); }}
+17080:onChange={e => setBusqueda(tipoBusqueda === "codigo" ? e.target.value.toUpperCase().trim() : e.target.value.trim())}
+17081:onKeyDown={e => e.key === "Enter" && !cargando && buscar()}
+17095:onClick={() => buscar()}
+17163:<button key={btn.section} onClick={() => _portalPrint(btn.section, resultado)} className={`flex flex-col items-center gap-1 py-3 px-2 rounded-xl text-white font-black text-[11px] shadow-sm transition ${btn.color}`}>
+17174:onClick={() => {
+17178:const htmlConBtn = html.replace("</body>", '<div class="np-dl"><button onclick="window.print()">ðŸ“¥ Guardar / Imprimir PDF</button><p>En el diÃ¡logo de impresiÃ³n,<br/>selecciona <b>Guardar como PDF</b></p></div></body>');
+17193:<button onClick={() => { const html = _generarHCPortalHTML(hcCompleta); const w = window.open("", "_blank", "width=900,height=1100"); if (!w) { alert("Permita las ventanas emergentes."); return; } w.document.write(html); w.document.close(); }} className="w-full py-2.5 bg-violet-600 text-white rounded-lg font-black text-sm hover:bg-violet-700 transition">
+17231:onChange={e => setBusqueda(e.target.value.trim())}
+17232:onKeyDown={e => e.key === "Enter" && !cargando && buscar()}
+17246:onChange={e => setCodigoPortal(e.target.value.toUpperCase().trim())}
+17247:onKeyDown={e => e.key === "Enter" && !cargando && buscar()}
+17261:onClick={() => buscar()}
+17316:<button onClick={() => { setResultadosEmpresa([]); setEmpresaAtenciones(null); setBusqueda(""); setCodigoPortal(""); setFechaFiltroEmpresa(""); setCertSeleccionados({}); }} className="text-white/70 hover:text-white text-[10px] font-bold bg-white/15 hover:bg-white/25 px-3 py-1.5 rounded-xl transition flex-shrink-0">
+17345:onClick={() => setTabEmpresa(t.id)}
+17360:<div className="bg-emerald-50 border border-emerald-200 rounded-2xl px-4 py-2.5 flex items-center gap-3 cursor-pointer hover:bg-emerald-100 transition" onClick={() => setTabEmpresa("documentos")}>
+17376:<button onClick={() => { const all = {}; atencionesVisibles.forEach((_, i) => { all[i] = true; }); setCertSeleccionados(Object.keys(certSeleccionados).length === atencionesVisibles.length ? {} : all); }} className="px-3 py-1.5 bg-white/20 text-white text-[10px] font-black rounded-xl hover:bg-white/30 transition">
+17379:<button onClick={() => {
+17386:const htmlContent = "<!DOCTYPE html><html lang=\"es\"><head><meta charset=\"UTF-8\"><title>Certificados - " + empNombreActual + "</title><style>@page{size:letter portrait;margin:12mm 14mm 14mm 14mm;}*{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}table{border-collapse:collapse;page-break-inside:auto;}tr{page-break-inside:avoid;page-break-after:auto;}td,th{page-break-inside:avoid;}" + styles + ".np-dl{position:fixed;top:10px;right:10px;z-index:9999;}@media print{.np-dl{display:none!important;}body{padding:0!important;}}</style></head><body><div class=\"np-dl\"><button onclick=\"window.print()\" style=\"background:#065f46;color:#fff;border:none;padding:10px 24px;border-radius:10px;font-weight:900;cursor:pointer;font-size:12px;box-shadow:0 4px 12px rgba(0,0,0,.2);\">ðŸ“¥ Guardar PDF / Imprimir (" + pacs.length + " certificados)</button></div>" + certs + "</body></html>";
+17400:<button onClick={() => { setFechaFiltroEmpresa(""); setCertSeleccionados({}); }} className={"px-2.5 py-1 rounded-full text-[10px] font-black border transition " + (!fechaFiltroEmpresa ? "bg-blue-700 text-white border-blue-700" : "bg-white text-blue-700 border-blue-300 hover:border-blue-500")}>
+17406:<button key={f} onClick={() => { setFechaFiltroEmpresa(f); setCertSeleccionados({}); }} className={"px-2.5 py-1 rounded-full text-[10px] font-black border transition " + (fechaFiltroEmpresa === f ? "bg-blue-700 text-white border-blue-700" : "bg-white text-blue-600 border-blue-200 hover:border-blue-500")}>
+17427:onClick={() => setCertSeleccionados(prev => ({...prev, [i]: !prev[i]}))}>
+17442:<div className="flex gap-1.5 flex-wrap mt-2" onClick={e => e.stopPropagation()}>
+17443:{pMeds > 0 && <button onClick={() => _portalPrint("formula", p)} className="px-2 py-1 bg-emerald-100 text-emerald-700 text-[10px] font-black rounded-lg hover:bg-emerald-200 transition">{"ðŸ’Š Medicamentos (" + pMeds + ")"}</button>}
+17444:{pDerivs > 0 && <button onClick={() => _portalPrint("derivaciones", p)} className="px-2 py-1 bg-violet-100 text-violet-700 text-[10px] font-black rounded-lg hover:bg-violet-200 transition">{"ðŸ¥ Derivaciones (" + pDerivs + ")"}</button>}
+17445:{pExams > 0 && <button onClick={() => _portalPrint("examenes", p)} className="px-2 py-1 bg-teal-100 text-teal-700 text-[10px] font-black rounded-lg hover:bg-teal-200 transition">{"ðŸ”¬ ExÃ¡menes (" + pExams + ")"}</button>}
+17446:{pIncap && <button onClick={() => _portalPrint("incapacidad", p)} className="px-2 py-1 bg-red-100 text-red-700 text-[10px] font-black rounded-lg hover:bg-red-200 transition">ðŸ›Œ Incapacidad</button>}
+17611:onClick={onAccept}
+17621:onClick={onAccept}
+17637:onChange,
+17652:onChange={(e) => onChange(e.target.value)}
+17666:onChange={(e) => onChange(e.target.value)}
+17719:onChange={(e) => setNp(e.target.value)}
+17755:onChange={(e) => setNp2(e.target.value)}
+17772:onClick={() => {
+17862:onClick: () => window.location.reload(),
+17867:onClick: () => { this.setState({ hasError: false, error: null, errorInfo: null }); },
+19345:const showPrompt = (msg, onSubmit, type = "text") => {
+19347:setPromptConfig({ msg, onSubmit, type });
+25714:'<div class="np-bar"><span style="flex:1;font-weight:700;">\uD83D\uDCCB HC ' + _e(data.nombres||"") + ' \u2014 ' + _e(data.codigoVerificacion||"") + '</span><button onclick="_dlHC(this)" style="background:#6d28d9;">\uD83D\uDCE5 Descargar PDF</button><button onclick="window.print()" style="background:#374151;">\uD83D\uDDA8\uFE0F Imprimir</button><button onclick="window.close()" style="background:#ef4444;">\u2715 Cerrar</button></div>' +
+25874:onClick={() => goTo("dashboard")}
+25917:onClick={() => setShowAIConfig(true)}
+25935:onClick={() => data.estadoHistoria === "Cerrada" ? goTo("dashboard") : goBack()}
+25951:onClick={() => {
+25989:onClick={handleEditHistory}
+25999:onClick={handleCloseHistory}
+26009:onClick={() => setActiveTab("form")}
+26015:onClick={() => setActiveTab("certificado")}
+26021:onClick={() => setActiveTab("incapacidad")}
+26027:onClick={() => setActiveTab("formulaTab")}
+26033:onClick={() => setActiveTab("solicitudExamenes")}
+26039:onClick={() => setActiveTab("adjuntos")}
+26046:onClick={() => setActiveTab("carnetAlimentos")}
+26057:onClick={() => setActiveTab("formGeneral")}
+26063:onClick={() => setActiveTab("ordenMedica")}
+26069:onClick={() => setActiveTab("solicitudExamenes")}
+26075:onClick={() => setActiveTab("incapacidadGeneral")}
+26084:onClick={() => (view === "historia" && (dataType === "ocupacional" || dataType === "general")) ? _printHCClean() : handlePrint(data.nombres)}
+26093:onClick={() => setShowEnviarPanel(!showEnviarPanel)}
+26114:<input type="checkbox" checked={item.av ? !!enviarChecklist[item.k] : false} disabled={!item.av} onChange={() => { if (item.av) setEnviarChecklist(p => ({...p, [item.k]: !p[item.k]})); }} className="w-3.5 h-3.5 accent-blue-600" />
+26121:<button onClick={() => {
+26165:const _combHtml = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"/><title>Documentos - ${_sanitize(data.nombres||"")}</title><style>${_baseGn}.np-bar{position:fixed;bottom:20px;right:20px;z-index:9999;}.np-bar button{background:#065f46;color:#fff;border:none;padding:10px 20px;border-radius:10px;font-weight:900;font-size:11pt;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.2);}@media print{.np-bar{display:none!important;}}</style></head><body>${pages.join("")}<div class="np-bar"><button onclick="window.print()">ðŸ“¥ Imprimir / Guardar PDF</button></div></body></html>`;
+26173:<button onClick={() => {
+26185:<button onClick={() => {
+26204:onClick={() => setShowEnviarPanel(!showEnviarPanel)}
+26231:<input type="checkbox" checked={item.available ? !!enviarChecklist[item.k] : false} disabled={!item.available} onChange={() => { if (item.available) setEnviarChecklist(p => ({...p, [item.k]: !p[item.k]})); }} className="w-3.5 h-3.5 accent-blue-600" />
+26238:<button onClick={() => {
+26247:if (w) { w.document.write(html.replace("</body>", '<div class="np-dl"><button onclick="window.print()">ðŸ“¥ Guardar PDF</button></div></body>')); w.document.close(); }
+26262:const _iHtml = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"/><title>Incapacidad - ${_sanitize(data.nombres||"")}</title><style>@page{size:letter portrait;margin:1.1cm 1.3cm 1.3cm 1.3cm;}*{box-sizing:border-box;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}body{font-family:Arial,Helvetica,sans-serif;font-size:9.5pt;color:#111;margin:0;padding:1.1cm 1.3cm 1.1cm 1.3cm;padding-top:60px;}.itb{position:fixed;top:0;left:0;right:0;background:#7f1d1d;color:white;padding:8px 14px;display:flex;align-items:center;gap:10px;z-index:9999;}.itb .iptitle{flex:1;font-size:9.5pt;font-weight:700;}.itb button{border:none;padding:6px 14px;border-radius:6px;font-weight:900;cursor:pointer;font-size:9pt;}.ibp{background:#10b981;color:white;}.ibc{background:#ef4444;color:white;}@media print{.itb{display:none!important;}body{padding-top:1.1cm!important;}}</style></head><body><div class="itb"><span class="iptitle">ðŸ¥ Incapacidad MÃ©dica â€” ${_sanitize(data.nombres||"")}</span><button class="ibp" onclick="window.print()">ðŸ–¨ï¸ Imprimir</button><button class="ibc" onclick="window.close()">âœ• Cerrar</button></div><div style="display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid ${_acI};padding-bottom:10px;margin-bottom:14px;">${_ipsDocLeftHtml(_miIPS,_docI,_acI)}<div style="width:34%;text-align:center;border-left:1px solid #ddd;border-right:1px solid #ddd;padding:0 10px;"><p style="font-size:13pt;font-weight:900;color:${_acI};text-transform:uppercase;margin:2px 0;">INCAPACIDAD MÃ‰DICA</p><p style="font-size:7pt;color:#888;margin:2px 0;">Res. 1995/1999</p><p style="font-size:8pt;font-weight:700;color:#333;margin:5px 0 2px 0;">Fecha: ${_sanitize(_fdI)}</p></div><div style="width:32%;text-align:right;padding-left:8px;"><p style="font-size:10.5pt;font-weight:900;color:${_acI};text-transform:uppercase;margin:0 0 3px 0;">${_sanitize(data.nombres||"---")}</p><p style="font-size:7.5pt;color:#444;margin:1px 0;">${_sanitize(data.docTipo||"CC")}: <b>${_sanitize(data.docNumero||"---")}</b></p><p style="font-size:7.5pt;color:#444;margin:1px 0;">Empresa: <b>${_sanitize(data.empresa||"---")}</b></p></div></div>${_iBody}</body></html>`;
+26325:w.document.write('<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"/><title>Documentos - ' + _esc2(data.nombres) + '</title><style>' + allStyles.join("\n") + ' .np-dl{position:fixed;bottom:20px;right:20px;z-index:9999;} .np-dl button{background:#065f46;color:#fff;border:none;padding:10px 20px;border-radius:10px;font-weight:900;font-size:11pt;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.2);} @media print{.np-dl{display:none!important;}}</style></head><body>' + pages.join("") + '<div class="np-dl"><button onclick="window.print()">ðŸ“¥ Guardar / Imprimir PDF (' + pages.length + ' docs)</button></div></body></html>');
+26330:<button onClick={() => {
+26343:<button onClick={() => {
+26360:onClick={async () => {
+26411:onClick={() => {
+26432:onClick={handleSavePatient}
+26447:onChange={handleImportData}
+26450:onClick={() => fileInputRef.current.click()}
+26456:onClick={handleExportData}
+26463:onClick={() => {
+26505:onClick={handleManualCloudSave}
+26517:onClick={handleDiagnosticoNube}
+26525:onClick={() => setShowCargaMasiva(true)}
+26536:onChange={handleSignatureUpload}
+26539:onClick={() => fileInputSigRef.current.click()}
+26560:onClick={() => { if (syncStatus === "error" || syncStatus === "idle") handleDiagnosticoNube(); }}
+26590:onClick={() => {
+26614:onClick={() => goTo("habeasdata")}
+26629:onClick={() => goTo("custodia")}
+26645:onClick={() => goTo("telemedicina")}
+26659:<button onClick={() => goTo("agenda")} className={_agCls}>
+26669:onClick={() => setShowMensajePanel((v) => !v)}
+26682:onClick={() => goTo("planes")}
+26693:onClick={() => {
+26730:onClick={() => setShowAIConfig(true)}
+26740:onChange={handleImportData}
+26743:onClick={() => fileInputRef.current.click()}
+26798:onClick={() =>
+26814:onClick={() =>
+26892:onClick={() => goTo("planes")}
+27022:onClick={handleNewOccupHistory}
+27040:onClick={handleNewGeneralHistory}
+27069:onClick={() => goTo("patients")}
+27085:onClick={() => goTo("agenda")}
+27101:onClick={() => goTo("verification")}
+27126:onClick={() => goTo("companies")}
+27140:onClick={() => {
+27181:onClick={() => goTo("perfilips")}
+27198:onClick={() => goTo("portafolio")}
+27224:onClick={() =>
+27265:onClick={() => goTo("caja")}
+27284:onClick={() => goTo("billing_v2")}
+27302:onClick={() =>
+27333:onClick={() =>
+27373:onClick={() => goTo("contabilidad")}
+27399:onClick={() =>
+27438:onClick={() =>
+27475:onClick={() => goTo("portafolio")}
+27506:onClick={async (e) => {
+27563:onClick={() => {
+27650:onClick={() => { window.location.hash = "#portaltrabajador"; setShowPortalPublico(true); }}
+27666:onClick={() => goTo("habeasdata")}
+27691:onClick={() => goTo("superadmin")}
+27774:onClick={a.accion}
+27831:onClick={() => {
+28000:onClick={() => openPatient(p)}
+28007:onClick={() => {
+28029:onClick={() => handleDeletePatient(p.id)}
+28038:onClick={async () => {
+28075:onClick={() => {
+28171:onClick={() => handleOpenHistoryModal(data.docNumero)}
+28218:onClick={() => setShowConsentModal(true)}
+28228:onClick={() => setShowConsentModal(true)}
+28274:onChange={handleCompanySelect}
+28291:onChange={handleChange}
+28327:onChange={handleChange}
+28346:onChange={handleChange}
+28366:onClick={() => selectPatientSuggestion(p)}
+28390:onChange={handleNameChange}
+28398:onChange={handleChange}
+28406:onChange={handleChange}
+28414:onChange={(e) => {
+28432:onChange={handleChange}
+28439:onChange={handleChange}
+28453:onChange={handleChange}
+28461:onChange={handleChange}
+28469:onChange={handleChange}
+28477:onChange={handleChange}
+28485:onChange={handleChange}
+28503:onChange={handleChange}
+28519:onChange={handleChange}
+28526:onChange={handleChange}
+28533:onChange={handleChange}
+28541:onChange={handleChange}
+28550:onChange={handleChange}
+28567:onChange={handleChange}
+28574:onChange={handleChange}
+28582:onChange={handleChange}
+28589:onChange={handleChange}
+28596:onChange={handleChange}
+28604:onChange={handleChange}
+28613:onChange={handleChange}
+28621:onChange={handleChange}
+28628:onChange={handleChange}
+28636:onChange={handleChange}
+28652:onChange={handleChange}
+28676:onChange={handleChange}
+28687:onChange={handleChange}
+28697:onChange={handleChange}
+28713:onChange={handleChange}
+28727:onChange={handleChange}
+28737:onChange={handleChange}
+28761:onClick={() =>
+28783:onChange={(e) => {
+28834:onChange={handleChange}
+28842:onChange={handleChange}
+28852:onChange={handleChange}
+28860:onChange={handleChange}
+28870:onChange={handleChange}
+28877:onChange={handleChange}
+28884:onChange={handleChange}
+28905:onChange={(e) =>
+28941:onChange={() =>
+28961:onChange={() =>
+28984:onChange={(e) =>
+29016:onChange={(e) =>
+29045:onChange={handleChange}
+29052:onChange={handleChange}
+29058:onChange={handleChange}
+29065:onChange={handleChange}
+29071:onChange={handleChange}
+29078:onChange={handleChange}
+29102:onChange={handleChange}
+29111:onChange={(e) =>
+29126:onChange={(e) =>
+29142:onChange={(e) =>
+29164:onClick={() =>
+29204:onChange={() =>
+29228:onChange={() =>
+29262:onChange={(e) =>
+29333:onChange={() =>
+29352:onChange={(e) =>
+29380:onChange={() => setData((p) => ({ ...p, examenAlturas: { ...p.examenAlturas, [f.k]: o } }))}
+29392:onChange={(e) => setData((p) => ({ ...p, examenAlturas: { ...p.examenAlturas, audiometriaObs: e.target.value } }))}
+29416:onChange={() => setData((p) => ({ ...p, examenAlturas: { ...p.examenAlturas, [f.k]: o } }))}
+29428:onChange={(e) => setData((p) => ({ ...p, examenAlturas: { ...p.examenAlturas, paracliOtros: e.target.value } }))}
+29469:onChange={() =>
+29562:onChange={() =>
+29588:onChange={(e) =>
+29608:onChange={(e) =>
+29695:onChange={() =>
+29790:onChange={() =>
+29819:onChange={(e) =>
+29839:onChange={(e) =>
+29928:onChange={() =>
+29950:onChange={(e) =>
+29969:onChange={(e) =>
+29988:onChange={(e) =>
+30015:onChange={(e) =>
+30035:onChange={(e) =>
+30061:onClick={generateAIAnalysis}
+30073:onClick={() => {
+30100:onClick={() => {
+30170:onChange={(v) =>
+30186:onChange={(v) =>
+30200:onChange={(v) =>
+30213:onChange={handleChange}
+30233:onChange={handleChange}
+30240:onChange={handleChange}
+30252:onChange={(e) => setData(p => ({ ...p, analisisIA: e.target.value }))}
+30270:onChange={(e) => setData(p => ({ ...p, analisisIA: e.target.value }))}
+30286:onChange={(e) => setData(p => ({ ...p, conductaSeguir: e.target.value }))}
+30303:onChange={(e) => setData(p => ({ ...p, conductaSeguir: e.target.value }))}
+30323:<button onClick={() => setData(p => ({ ...p, sveRecomendado: (p.sveRecomendado || []).filter((_, i) => i !== idx) }))} className="text-red-400 hover:text-red-600"><X className="w-3 h-3" /></button>
+30348:onClick={() => {
+30365:onChange={handleChange}
+30491:onChange={(e) => setGenPatSearch(e.target.value)}
+30502:onClick={() => loadGenPatient(p)}
+30548:onChange={handleNameChange}
+30555:onChange={handleChange}
+30562:onChange={(e) => {
+30579:onChange={handleChange}
+30586:onChange={handleChange}
+30594:onChange={handleChange}
+30602:onChange={handleChange}
+30610:onChange={handleChange}
+30617:onChange={handleChange}
+30624:onChange={handleChange}
+30632:onChange={handleChange}
+30645:onChange={handleChange}
+30652:onChange={handleChange}
+30691:onChange={() =>
+30708:onChange={() =>
+30731:onChange={(e) =>
+30840:onChange={() =>
+30859:onChange={() =>
+30886:onChange={(e) =>
+30915:onChange={(e) =>
+30927:onChange={(e) =>
+30938:onChange={(e) =>
+30949:onChange={(e) =>
+30960:onChange={(e) => {
+30982:onChange={(e) => {
+31017:onChange={(e) =>
+31031:onClick={() =>
+31072:onChange={() =>
+31098:onChange={() =>
+31145:onChange={(e) =>
+31198:onClick={generateAIGeneral}
+31225:onChange={(v) => {
+31248:onChange={(e) => {
+31261:onClick={() =>
+31277:onClick={() =>
+31296:onChange={(e) =>
+31307:onChange={(e) =>
+32006:onClick={() => {
+32047:onClick={() => openCarnetAlimentos(data, activeDoctorData)}
+32066:onChange={(e) =>
+32102:onChange={(e) =>
+32118:onChange={(e) =>
+32165:onClick={() => goBack()}
+32342:onClick={() => goBack()}
+32352:onChange={(e) => setReportStartDate(e.target.value)}
+32359:onChange={(e) => setReportEndDate(e.target.value)}
+32364:onChange={(e) => {
+32383:onChange={(e) => { setSelectedMedicoReport(e.target.value); setReportAIResult(null); }}
+32402:onClick={() => {
+32446:+ '<button onclick="window.print()">ðŸ“¥ Imprimir / PDF</button>'
+32447:+ '<button class="btn-close" onclick="window.close()">âœ• Cerrar</button></div>'
+32460:onClick={async () => {
+32518:onClick={async (e) => {
+32590:onClick={() => {
+32615:onClick={() => _descargarPaqueteEmpresa()}
+32632:onClick={() => {
+32857:onClick={() => setPrecioModo(m.id)}
+32875:onChange={e => setPrecioPorPaciente(e.target.value)}
+32901:onChange={e => setPrecioPorPaciente(e.target.value)}
+32906:onClick={() => {
+32934:onChange={e => setPrecioPorPaciente(e.target.value)}
+32939:onClick={() => {
+32959:onChange={e => setPreciosPorFecha(p => ({...p, [fecha]: e.target.value}))}
+32983:onClick={_generarCuenta}
+32996:onClick={() => exportPatientTable(filtered, compName)}
+33002:onClick={() => {
+33121:<br/><button onclick="window.print()" style="background:#1e293b;color:white;padding:6px 16px;border:none;border-radius:6px;cursor:pointer;font-size:11px;">ðŸ–¨ï¸ Imprimir / Guardar PDF</button>
+33130:onClick={() => setShowExportTable((v) => !v)}
+33254:onChange={e =>
+33631:onClick={() => generateAIReport(stats, total, compName)}
+33985:'<div class="np-dl"><button onclick="window.print()">ðŸ“¥ Guardar / Imprimir PDF</button>' +
+34054:'<button class="np-bp" onclick="window.print()">ðŸ–¨ï¸ Imprimir todos</button>' +
+34055:'<button class="np-bc" onclick="window.close()">âœ• Cerrar</button></div>' +
+34085:onClick={() => {
+34104:onClick={printSelectedCerts}
+34113:onClick={async () => {
+34194:onClick={() => {
+34232:'<button class="np-bp" onclick="window.print()">ðŸ“¥ Guardar todos en PDF</button>' +
+34233:'<button class="np-bc" onclick="window.close()">âœ• Cerrar</button>' +
+34248:<button onClick={() => setShowEmailConfig(true)} className={`px-2 py-2 rounded-xl text-xs font-black flex items-center gap-1 ${emailConfig.configurado ? "bg-emerald-50 text-emerald-700 border border-emerald-200" : "bg-gray-100 text-gray-500 border border-gray-200"}`} title="Configurar email">
+34253:onClick={() => {
+34269:onClick={() => {
+34285:onClick={() => {
+34325:onChange={() => {
+34362:onChange={() =>
+34405:onClick={() => {
+34435:`<div class="np-dl"><button onclick="window.print()">ðŸ“¥ Guardar / Imprimir PDF</button><p>En el diÃ¡logo, selecciona <b>Guardar como PDF</b></p></div></body>`
+34575:onClick={() => goBack()}
+34587:<input className="pl-8 w-full p-1.5 border border-gray-200 rounded-lg text-xs focus:ring-2 focus:ring-teal-400 outline-none" placeholder="Nombre o documento..." value={patientSearchTerm} onChange={(e) => setPatientSearchTerm(e.target.value)} />
+34592:<select value={patFiltroEmpresa} onChange={(e) => setPatFiltroEmpresa(e.target.value)} className="w-full p-1.5 border border-gray-200 rounded-lg text-xs">
+34600:<input type="date" value={patFiltroDesde} onChange={(e) => setPatFiltroDesde(e.target.value)} className="p-1.5 border border-gray-200 rounded-lg text-xs" />
+34604:<input type="date" value={patFiltroHasta} onChange={(e) => setPatFiltroHasta(e.target.value)} className="p-1.5 border border-gray-200 rounded-lg text-xs" />
+34607:<button onClick={() => { setPatFiltroEmpresa(""); setPatFiltroDesde(""); setPatFiltroHasta(""); setPatientSearchTerm(""); }} className="px-3 py-1.5 bg-gray-200 text-gray-600 rounded-lg text-[10px] font-black hover:bg-gray-300">âœ• Limpiar</button>
+34653:onClick={() => handleOpenHistoryModal(p.docNumero)}
+34664:onClick={() =>
+34677:onClick={() => {
+34718:<button onClick={() => _enviarCertEmail(p)} className="text-[9px] bg-amber-50 text-amber-700 px-1.5 py-1 rounded-lg border border-amber-200 font-bold hover:bg-amber-100" title="Enviar certificado por email">ðŸ“§</button>
+34719:<button onClick={() => _enviarCertWhatsApp(p)} className="text-[9px] bg-green-50 text-green-700 px-1.5 py-1 rounded-lg border border-green-200 font-bold hover:bg-green-100" title="Enviar certificado por WhatsApp">ðŸ“±</button>
+34723:onClick={() => handleDeletePatient(p.id)}
+34751:<button onClick={() => setShowHistoryModal(false)}>
+34801:onClick={() => {
+34815:onClick={() => {
+34838:onClick={() => setShowHistoryModal(false)}
+34871:onClick={() => goBack()}
+35022:onClick={() => goTo("analisis_docs")}
+35030:onClick={() => goBack()}
+35064:onClick={() => setCompaniesTab(t.k)}
+35089:<button onClick={async (e) => {
+35236:onClick={() => setEditingCompany(c)}
+35242:onClick={() =>
+35262:<button type="button" title="Ver certificados" onClick={() => _verCertificados(c)} className={_docChipCls(inv.certs)}>
+35265:<button type="button" title="Ver informe sociodemogrÃ¡fico" onClick={() => _verInforme(c)} className={_docChipCls(inv.socio)}>
+35268:<button type="button" title="Ver carta de custodia" onClick={() => _verCustodia(c)} className={_docChipCls(inv.custodia)}>
+35271:<button type="button" title="Ver cuenta de cobro" onClick={() => _verCuenta(c)} className={_docChipCls(inv.cuenta)}>
+35336:onClick={() => {
+35347:onClick={() => {
+35382:onChange={(e) =>
+35392:onChange={(e) =>
+35401:onChange={(e) =>
+35410:onChange={(e) =>
+35418:onChange={(e) =>
+35426:onChange={(e) =>
+35434:onChange={(e) =>
+35442:onChange={(e) =>
+35451:onChange={(e) =>
+35468:onChange={(e) =>
+35487:onChange={(e) =>
+35499:onChange={(e) =>
+35511:onChange={(e) =>
+35523:onChange={(e) =>
+35538:onChange={(e) =>
+35556:onChange={(e) =>
+35568:onChange={(e) =>
+35580:onChange={(e) =>
+35592:onChange={(e) =>
+35606:onChange={(e) =>
+35639:onChange={(e) => {
+35688:onClick={() =>
+35705:onChange={(e) =>
+35713:onChange={(e) =>
+35721:onChange={(e) =>
+35727:onClick={() => {
+35758:onChange={(e) =>
+35775:onChange={(e) =>
+35789:onClick={async () => {
+35888:<input type="checkbox" checked={docsSoloIncompletas} onChange={(e) => setDocsSoloIncompletas(e.target.checked)} />
+35892:onClick={_generarResumenDocsIA}
+35927:<td className="p-2 text-center"><button onClick={() => _verCertificados(c)} className={_docChipCls(inv.certs)}>{inv.certCount}</button></td>
+35928:<td className="p-2 text-center"><button onClick={() => _verInforme(c)} className={_docChipCls(inv.socio)}>{inv.socio ? "âœ“" : "âœ—"}</button></td>
+35929:<td className="p-2 text-center"><button onClick={() => _verCustodia(c)} className={_docChipCls(inv.custodia)}>{inv.custodia ? "âœ“" : "âœ—"}</button></td>
+35930:<td className="p-2 text-center"><button onClick={() => _verCuenta(c)} className={_docChipCls(inv.cuenta)}>{inv.cuenta ? "âœ“" : "âœ—"}</button></td>
+36073:onClick={() => {
+36144:onClick={() => _reloadEncuestasFromSupabase()}
+36152:onClick={() => {
+36186:<button onClick={() => { const url = _sisoStableOrigin() + window.location.pathname + "#encuesta?token=" + enc.token; navigator.clipboard?.writeText(url); showAlert("ðŸ“‹ Link copiado al portapapeles:\n\n" + url + "\n\nEnvÃ­elo por WhatsApp o email al encargado de la empresa."); }} className="px-3 py-1.5 bg-blue-50 text-blue-700 text-[10px] font-black rounded-lg hover:bg-blue-100">ðŸ“‹ Copiar Link</button>
+36187:<button onClick={async () => {
+36200:<button onClick={async () => {
+36310:<button onClick={async () => {
+36321:w.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>Encuesta - ${enc.empresaNombre}</title><style>@page{size:landscape;margin:8mm}body{font-family:Arial,sans-serif;font-size:9px;margin:10px;color:#111}h1{font-size:14px;color:#065f46;margin:0}h2{font-size:10px;color:#555;margin:4px 0 10px 0}table{width:100%;border-collapse:collapse}th{background:#065f46;color:white;padding:4px 5px;text-align:left;font-size:7px;white-space:nowrap}td{padding:3px 5px;border-bottom:1px solid #e5e7eb;font-size:8px;vertical-align:top}.bg-gray-50{background:#f9fafb}tr:hover{background:#f0fdf4}.footer{margin-top:10px;font-size:7px;color:#888;text-align:center}.np{text-align:center;padding:10px}@media print{.np{display:none}}</style></head><body><h1>&#128203; ENCUESTA SOCIODEMOGRAFICA</h1><h2>${enc.empresaNombre} &middot; ${enc.tipoExamen} &middot; ${resps.length} trabajador(es) &middot; Creada: ${enc.fechaCreacion}</h2><table><thead><tr><th>#</th><th>Nombre</th><th>Documento</th><th>Fec.Nac.</th><th>Edad</th><th>Genero</th><th>Est.Civil</th><th>Escolaridad</th><th>Grupo Etnico</th><th>Lateralidad</th><th>Celular</th><th>Email</th><th>Direccion</th><th>Ciudad</th><th>Zona</th><th>Estrato</th><th>EPS</th><th>ARL</th><th>AFP</th><th>Cargo</th><th>Area</th><th>Antiguedad</th><th>Contrato</th><th>Turno</th><th>Ctc Emergencia</th><th>Tel Emergencia</th></tr></thead><tbody>${filas}</tbody></table><div class="footer">OcupaSalud &middot; Generado: ${new Date().toLocaleString("es-CO")} &middot; Res. 1843/2025</div><div class="np"><button onclick="window.print()" style="background:#065f46;color:white;border:none;padding:8px 20px;border-radius:8px;cursor:pointer;font-weight:900">Imprimir / Guardar PDF</button></div></body></html>`);
+36325:<button onClick={async () => {
+36344:onClick={() => setImportExcelModal({ enc, step: 'upload', rows: [], headers: [], mapping: {}, preview: [] })}
+36404:<button onClick={() => setImportExcelModal(null)} className="text-white font-black text-xl hover:text-indigo-200">âœ•</button>
+36417:onChange={(e) => {
+36486:<button onClick={() => setImportExcelModal(prev => ({ ...prev, step: 'upload' }))}
+36515:onChange={e => setImportExcelModal(prev => ({ ...prev, mapping: { ...prev.mapping, [field]: e.target.value || undefined } }))}
+36561:<button onClick={() => setImportExcelModal(null)}
+36567:onClick={async () => {
+36641:onClick={() => setEditingCompany(null)}
+36652:onChange={(e) =>
+36664:onChange={(e) =>
+36675:onChange={(e) =>
+36686:onChange={(e) =>
+36697:onChange={(e) =>
+36708:onChange={(e) =>
+36728:onChange={(e) =>
+36747:onChange={(e) =>
+36759:onChange={(e) =>
+36771:onChange={(e) =>
+36783:onChange={(e) =>
+36795:onChange={(e) =>
+36810:onChange={(e) =>
+36833:onChange={(e) =>
+36847:onChange={(e) =>
+36871:onClick={() => {
+36897:onClick={() => {
+36932:onChange={(e) => {
+36981:onClick={() =>
+37000:onChange={(e) =>
+37008:onChange={(e) =>
+37014:onClick={() => {
+37045:onChange={(e) =>
+37062:onChange={(e) =>
+37083:onClick={async (e) => {
+37206:onClick={() => setPortalActivadoInfo(null)}
+37238:onClick={() => {
+37269:onClick={() => {
+37373:onClick={() => {
+37399:onClick={() => {
+37409:onClick={() => setPortalActivadoInfo(null)}
+37474:<select value={billFilterEmp} onChange={(e) => { setBillFilterEmp(e.target.value); const c = companiesList.find(x => x.id === e.target.value || x.nombre === e.target.value); if(c) setBillData(p => ({...p, companyId: c.id, clientName: c.nombre, clientNit: c.nit || ''})); }}
+37482:<input type="month" value={billFilterMes} onChange={(e) => setBillFilterMes(e.target.value)}
+37499:onChange={() => setBillModoCobro('por_trabajador')} />
+37504:onChange={() => setBillModoCobro('por_atencion')} />
+37511:onChange={(e) => setBillValorUnitario(parseFloat(e.target.value) || 0)}
+37527:onChange={() => {
+37548:<button type="button" onClick={() => { setBillSelectedWorkers(p => ({...p, [trabajador.docNumero]: !p[trabajador.docNumero]})); }}
+37555:onChange={(e) => setBillWorkerValues(p => ({...p, [trabajador.docNumero]: parseFloat(e.target.value) || 0}))}
+37572:onClick={() => goBack()}
+37587:onChange={(e) => setCode(e.target.value)}
+37588:onKeyDown={(e) => e.key === "Enter" && search()}
+37593:onClick={search}
+37612:onClick={() => setVerificationFound(p)}
+37639:onClick={() => handlePrint(`Certificado-${found.nombres}`)}
+37750:onClick={() => goBack()}
+37785:onClick={() => goBack()}
+37812:<button onClick={() => { setEditingBillId(null); }} className="text-xs text-gray-400 hover:text-gray-600 font-bold underline">Cancelar ediciÃ³n</button>
+37818:onClick={() => goBack()}
+37824:onClick={() => {
+37873:onClick={() => setShowSavedBills(v => !v)}
+37884:onClick={() => handlePrint("Cuenta-de-Cobro")}
+37890:onClick={() => {
+37946:onClick={() =>
+37994:onChange={(e) =>
+38063:onClick={() =>
+38093:onChange={(e) => {
+38119:onChange={(e) =>
+38128:onChange={(e) =>
+38137:onChange={(e) =>
+38147:onChange={(e) =>
+38157:onChange={(e) =>
+38178:<button onClick={() => setShowSavedBills(false)} className="text-blue-200 hover:text-white font-black text-lg">âœ•</button>
+38221:onClick={() => {
+38253:onClick={() => {
+38283:onClick={async (e) => {
+38318:onClick={() => {
+38655:onClick={() => setShowDianPanel(false)}
+38686:onClick={() => setDianProvider(p.id)}
+38715:onChange={(e) => {
+38725:onClick={async () => {
+38779:onChange={(e) => {
+38803:onClick={() => {
+38835:onClick={() => {
+38937:onClick={() => goBack()}
+38966:onClick={() => {
+38985:onClick={() => { window.location.hash = "#portaltrabajador"; setShowPortalPublico(true); }}
+39002:onChange={(e) => setPortalCodigo(e.target.value.toUpperCase())}
+39003:onKeyDown={(e) => e.key === "Enter" && handleBuscar()}
+39009:onClick={handleBuscar}
+39033:onClick={() => { setPortalPaciente(p); setPortalMultiple([]); }}
+39125:onClick={() => {
+39160:<button onclick="window.print()" style="background:#065f46;color:#fff;border:none;padding:10px 22px;border-radius:10px;font-weight:900;font-size:11pt;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,0.22);">ðŸ“¥ Guardar / Imprimir PDF</button>
+39236:onClick={() => goBack()}
+39272:onClick={() => goBack()}
+39403:onClick={() => goBack()}
+39427:onClick={() => setSvePrograma(pr.id)}
+39445:onChange={(e) => setSveFiltroEmpresa(e.target.value)}
+39485:onChange={(e) => setSveAIFiltroEmpresa(e.target.value)}
+39498:onClick={async () => {
+39880:onClick={() => {
+39954:onClick={exportarSVE}
+40058:onClick={() => goBack()}
+40254:onClick={() => goBack()}
+40276:onClick={() => {
+40319:onChange={(e) =>
+40328:onChange={(e) =>
+40344:onChange={(e) =>
+40355:onClick={handleGuardar}
+40361:onClick={() => handleImprimir(null)}
+40404:onClick={() => handleImprimir(rep)}
+40529:onClick={() => goBack()}
+40565:onChange={(e) =>
+40578:onChange={(e) =>
+40591:onChange={(e) =>
+40610:onChange={(e) =>
+40628:onChange={(e) =>
+40635:onClick={handleRegistrarSolicitud}
+40795:onChange={(e) =>
+40848:onClick={() => goBack()}
+40995:onClick={() => goBack()}
+41016:onClick={() => setTeleTab("nueva")}
+41026:onClick={() => setTeleTab("historial")}
+41053:onClick={handleCerrarSala}
+41080:onClick={() => {
+41144:onChange={(e) =>
+41157:onChange={(e) =>
+41170:onChange={(e) =>
+41184:onChange={(e) =>
+41197:onChange={(e) =>
+41209:onChange={(e) =>
+41251:onChange={(e) =>
+41267:onClick={handleIniciarSala}
+41302:onClick={function () { handleIniciarConsulta(t.id); }}
+41379:onClick={function () { crearHCDesdeTele(t); }}
+41387:onClick={function () { handleIniciarConsulta(t.id); }}
+41725:onChange={async (e) => {
+41760:onClick={() => document.getElementById("examen-ia-input")?.click()}
+41774:onChange={(e) => setData((prev) => ({ ...prev, resultadosParaclinicos: e.target.value }))}
+41811:onChange={handleSubirAdjunto}
+41856:onClick={() => handleVerAdjunto(adj)}
+41863:onClick={() => handleEliminarAdjunto(adj)}
+41997:onClick={() => {
+42034:onClick={() => {
+42156:onClick={() => startEdit(u)}
+42178:onClick={() => {
+42215:onClick={() =>
+42294:onClick={() => setUserEditId(null)}
+42306:onClick={() => setUserEditId(null)}
+42329:onChange={(e) =>
+42345:onChange={(e) =>
+42359:onChange={(e) =>
+42390:onChange={(e) =>
+42417:onChange={(e) =>
+42443:onChange={(e) =>
+42532:onClick={() =>
+42596:onClick={() =>
+42644:onClick={() =>
+42661:onClick={() => {
+42716:onChange={(e) => setDD("nombre", e.target.value)}
+42727:onChange={(e) => setDD("cedula", e.target.value)}
+42738:onChange={(e) => setDD("titulo", e.target.value)}
+42749:onChange={(e) => setDD("licencia", e.target.value)}
+42760:onChange={(e) => setDD("ciudad", e.target.value)}
+42770:onChange={(e) => setDD("celular", e.target.value)}
+42780:onChange={(e) => setDD("email", e.target.value)}
+42790:onChange={(e) => setDD("direccion", e.target.value)}
+42809:onClick={() => setDD("fotoPerfil", null)}
+42828:onChange={(e) => {
+42885:onChange={(e) => setDD("banco", e.target.value)}
+42896:onChange={(e) => setDD("tipoCuenta", e.target.value)}
+42911:onChange={(e) => setDD("numeroCuenta", e.target.value)}
+42922:onChange={(e) => setDD("rut", e.target.value)}
+42933:onChange={(e) => setDD("regimen", e.target.value)}
+42964:onChange={(e) => setDD(t.f, e.target.value)}
+43007:onChange={(e) => {
+43034:onClick={() =>
+43044:onClick={() => {
+43072:onClick={saveEdit}
+43108:onClick={() => {
+43247:onChange={(e) =>
+43260:onChange={(e) =>
+43274:onChange={(e) =>
+43305:onChange={(e) =>
+43335:onChange={(e) =>
+43381:onClick={() =>
+43420:onClick={() =>
+43460:onChange={(e) =>
+43479:onChange={(e) =>
+43498:onChange={(e) =>
+43517:onChange={(e) =>
+43536:onChange={(e) =>
+43555:onChange={(e) =>
+43574:onChange={(e) =>
+43599:onChange={(e) =>
+43618:onChange={(e) =>
+43639:onChange={(e) =>
+43658:onChange={(e) =>
+43677:onChange={(e) =>
+43697:onChange={(e) =>
+43717:onChange={(e) =>
+43737:onChange={(e) =>
+43757:onChange={(e) =>
+43805:onChange={(e) => {
+43822:onClick={() =>
+43832:onClick={() =>
+43854:onClick={() => {
+44060:onClick={distribuirEquitativamente}
+44077:onChange={(e) => {
+44192:onChange={(e) => {
+44323:onClick={loadSbData}
+44330:<button onClick={loadSbData} className="hidden" />
+44532:onClick={() => {
+44611:onClick={() => {
+45123:onClick={() => {
+45135:onClick={() =>
+45240:onClick={() => {
+45252:onClick={() =>
+45277:onClick={() =>
+45391:onClick={() => goBack()}
+45426:onClick={() => goBack()}
+45535:onClick={() => setPropModulo("propuesta")}
+45545:onClick={() => setPropModulo("cotizacion")}
+45555:onClick={() => setPropModulo("historial")}
+45576:<button onClick={() => goBack()} className="text-gray-500 font-bold text-sm flex items-center gap-1">
+45624:onClick={() => { setPropForm(prop); setPropModulo("propuesta"); }}
+45631:onClick={() => showConfirm("Â¿Eliminar esta propuesta del historial?", () => {
+45665:onClick={() => goBack()}
+45671:onClick={() => {
+45705:onClick={() => handlePrint("Propuesta-Economica")}
+45728:onChange={(e) =>
+45753:onChange={(e) =>
+45768:onChange={(e) =>
+45781:onChange={(e) =>
+45794:onChange={(e) => {
+45817:onChange={(e) =>
+45830:onChange={(e) =>
+45845:onChange={(e) =>
+45858:onChange={(e) =>
+45876:onChange={(e) =>
+45895:onChange={(e) => setSelSvc(e.target.value)}
+45907:onClick={addServicio}
+45939:onChange={(e) => {
+45954:onChange={(e) => {
+45973:onClick={() =>
+46013:onChange={(e) =>
+47075:onClick={() => setShowPackages((v) => !v)}
+47087:onClick={() => {
+47125:onChange={(e) =>
+47139:onClick={applyPackage}
+47145:onClick={() => {
+47171:onChange={(e) => {
+47175:onFocus={() => setShowSuggs(true)}
+47186:onClick={() => addExam(item.code + " - " + item.desc)}
+47227:onClick={() => addExam(s)}
+47239:onClick={addFreeText}
+47249:onClick={addFreeText}
+47280:onChange={(e) => {
+47294:onChange={(e) => {
+47305:onClick={() => removeExam(i)}
+47323:onChange={(e) => {
+47341:onChange={(e) => {
+47354:onClick={() => {
+47372:onClick={() => {
+47573:<button class="btn-print" onclick="window.print()">ðŸ–¨ï¸ Imprimir certificado</button>
+47574:<button class="btn-close" onclick="window.close()">âœ• Cerrar</button>
+47640:onChange={(v) =>
+47656:onChange={(e) =>
+47679:onChange={(e) => {
+47708:onChange={(e) => {
+47736:onChange={(e) =>
+47768:onChange={(e) =>
+47790:onChange={(e) =>
+47808:onClick={printIncap}
+47833:onClick={() => goBack()}
+47866:onClick={() => goBack()}
+48380:onClick={() => iniciarAtencion(ag)}
+48389:onClick={() => setHcChoiceAgenda(ag)}
+48397:onClick={() => marcarAtendido(ag.id)}
+48405:onClick={() => eliminarCita(ag.id)}
+48437:onClick={() => goTo("asistencia")}
+48443:onClick={() => goTo("dashboard")}
+48481:onClick={function () { setAgendaTab(t.k); }}
+48648:onClick={() => setAgendaTab("nueva")}
+48723:onChange={(e) => handleBusqueda(e.target.value)}
+48731:<button onClick={() => setAgendaSuggs([])} className="text-gray-400 hover:text-gray-600 text-xs">âœ•</button>
+48736:<div key={p.id} onClick={() => seleccionarPaciente(p)} className="p-3 hover:bg-blue-50 cursor-pointer border-b border-gray-50 last:border-0 transition-colors">
+48777:onChange={(v) =>
+48791:onChange={(v) =>
+48806:onChange={(v) =>
+48816:onChange={(v) =>
+48838:onChange={(v) =>
+48855:onChange={(v) =>
+48865:onChange={(v) =>
+48875:onChange={(v) =>
+48885:onChange={(v) =>
+48898:onChange={(v) =>
+48908:onChange={(v) =>
+48923:onChange={(v) =>
+48939:onChange={(v) =>
+48957:onChange={(v) =>
+48976:onChange={(v) =>
+48994:onChange={(v) =>
+49017:onChange={(v) =>
+49026:onChange={(v) =>
+49036:onChange={(v) =>
+49045:onChange={(v) =>
+49054:onChange={(v) =>
+49064:onChange={(v) =>
+49074:onChange={(v) =>
+49084:onChange={(v) =>
+49101:onChange={(v) =>
+49111:onChange={(v) =>
+49121:onChange={(v) =>
+49131:onChange={(v) =>
+49149:onChange={(v) =>
+49158:onChange={(v) =>
+49167:onChange={(v) =>
+49176:onChange={(v) =>
+49192:onChange={(v) =>
+49209:onChange={(v) =>
+49222:onChange={function (e) { setAgendaRecurrente(e.target.checked); }}
+49233:onChange={function (e) { setAgendaRecurrenciaPeriodo(e.target.value); }}
+49247:onClick={registrarPaciente}
+49322:onClick={function () { setAgendaSemanaOffset(agendaSemanaOffset - 1); }}
+49329:onClick={function () { setAgendaSemanaOffset(agendaSemanaOffset + 1); }}
+49402:onClick={function () { setAgendaMesOffset(agendaMesOffset - 1); }}
+49409:onClick={function () { setAgendaMesOffset(agendaMesOffset + 1); }}
+49557:onClick={() => goTo("agenda")}
+49571:onChange={(e) => setAsistenciaFecha(e.target.value)}
+49627:onClick={exportCSV}
+49633:onClick={() => window.print()}
+49777:onClick={() => goTo("dashboard")}
+49797:onChange={(e) =>
+49813:onChange={(e) =>
+49830:onChange={(e) =>
+49846:onChange={(e) =>
+49865:onChange={(e) =>
+49877:onClick={handleSaveItem}
+49884:onClick={() => {
+49962:onClick={() => handleEdit(item)}
+49968:onClick={() => handleDelete(item.id)}
+50061:onClick={() => setCotizacionView("nueva")}
+50144:onChange={(e) =>
+50161:onClick={() =>
+50171:onClick={() => deleteCotiz(cot.id)}
+50230:onClick={() => setCotizacionView("list")}
+50243:onChange={(e) =>
+50257:onChange={(e) =>
+50271:onChange={(e) =>
+50285:onChange={(e) =>
+50300:onChange={(e) =>
+50313:onChange={(e) =>
+50332:onChange={(e) => {
+50343:onChange={(e) => {
+50355:onChange={(e) => {
+50364:onClick={() => handleRemoveItem(idx)}
+50373:onClick={handleNewItem}
+50386:onChange={(e) =>
+50396:onClick={() => saveCotiz("Pendiente")}
+50402:onClick={() => saveCotiz("Aprobada")}
+50552:<button onclick="window.print()" style="background:#1a4f8a;color:#fff;border:none;padding:8px 20px;border-radius:6px;font-weight:900;cursor:pointer">ðŸ–¨ï¸ Imprimir</button>
+50553:<button onclick="window.close()" style="background:#666;color:#fff;border:none;padding:8px 20px;border-radius:6px;font-weight:900;cursor:pointer">âœ• Cerrar</button>
+50586:onClick={() => setCotizacionView("nueva")}
+50592:onClick={() => goTo("dashboard")}
+50679:onChange={(e) =>
+50696:onClick={() => openPrintCotiz(cot)}
+50702:onClick={() => deleteCotiz(cot.id)}
+50724:onClick={() => setCotizacionView("list")}
+50764:onChange={(e) =>
+50782:onChange={(e) =>
+50798:onChange={(e) =>
+50817:onClick={handleNewItem}
+50836:onChange={(e) => {
+50866:onChange={(e) => {
+50881:onChange={(e) => {
+50899:onClick={() => handleRemoveItem(idx)}
+50920:onChange={(e) =>
+50930:onClick={() => saveCotiz("Pendiente")}
+50936:onClick={() => saveCotiz("Aprobada")}
+51060:onClick={() => goBack()}
+51078:onClick={() => setContabPeriodo(p)}
+51103:onClick={() => setContabTab(t.k)}
+51691:onClick={e.action}
+51784:onClick={() => goBack()}
+51823:onChange={handleLogoUpload}
+51829:onClick={() => setForm((p) => ({ ...p, logo: "" }))}
+51849:onChange={(e) =>
+51862:onChange={(e) =>
+51875:onChange={(e) =>
+51889:onChange={(e) =>
+51902:onChange={(e) =>
+51915:onChange={(e) =>
+51929:onChange={(e) =>
+51942:onChange={(e) =>
+51955:onChange={(e) =>
+52008:onClick={handleSave}
+52037:onClick={() => goTo("dashboard")}
+52284:onClick={() => goTo("dashboard")}
+52301:onClick={() => setCajaFiltroPeriodo(p.k)}
+52316:onChange={(e) => setCajaFiltroDesde(e.target.value)}
+52323:onChange={(e) => setCajaFiltroHasta(e.target.value)}
+52396:onClick={() => setCajaTab(t.k)}
+52477:<button onClick={() => setCajaTab("facturacion")} className="px-3 py-1 bg-red-600 text-white text-[10px] font-black rounded-lg hover:bg-red-700">Ver â†’</button>
+52484:<button onClick={() => setCajaTab("caja")} className="px-3 py-1 bg-amber-600 text-white text-[10px] font-black rounded-lg hover:bg-amber-700">Cobrar â†’</button>
+52501:<button key={q.t} onClick={() => setCajaTab(q.t)} className={`bg-${q.c}-50 border border-${q.c}-200 rounded-xl p-3 text-center hover:bg-${q.c}-100 transition`}>
+52514:<button key={st.k} onClick={() => setCajaSubTab(st.k)} className={`flex-1 py-1.5 text-[10px] font-black rounded-md transition ${cajaSubTab === st.k ? "bg-white shadow text-blue-700" : "text-gray-500 hover:text-gray-700"}`}>{st.l}</button>
+52532:onChange={(e) =>
+52547:onChange={(e) =>
+52561:onChange={(e) =>
+52574:onChange={(e) =>
+52601:onChange={(e) =>
+52619:onChange={(e) =>
+52627:onClick={handleAddMov}
+52682:onClick={() => deleteMovimiento(m.id)}
+52755:onClick={() => {
+52815:onClick={() => {
+52923:onClick={() => openComprobanteWindow(m.tipo, m)}
+52929:onClick={() => deleteMovimiento(m.id)}
+52993:onClick={() => {
+53077:onClick={() => goTo("bill")}
+53114:onClick={() => marcarPagada(b.id)}
+53121:onClick={() => editarCuenta(b)}
+53127:onClick={() => eliminarCuenta(b.id)}
+53145:onClick={() => goTo("bill")}
+53210:onClick={csvPV}
+53287:onClick={() => {
+53350:onClick={() => {
+53451:onClick={() => setPeriodoFiltro(p)}
+53562:onClick={() => {
+53633:onChange={(e) =>
+53662:onChange={(e) => {
+53783:onClick={() => {
+54163:onClick={() => {
+54176:onClick={() => {
+54214:onClick={() => goTo("dashboard")}
+54313:onClick={() => goTo("dashboard")}
+54330:onClick={() => setSuperAdminTab(k)}
+54477:onClick={() => {
+54538:onChange={(e) =>
+54555:onChange={(e) =>
+54568:onClick={crearOrganizacion}
+54647:onChange={(e) =>
+54658:onChange={(e) =>
+54672:onChange={(e) =>
+54683:onClick={async () => {
+54768:onClick={() => {
+54785:onClick={() => {
+55082:w.document.write("<!DOCTYPE html><html lang=\"es\"><head><meta charset=\"UTF-8\"><title>Certificados â€” "+empLabel+"</title><style>@page{size:letter portrait;margin:12mm 14mm 14mm 14mm;}*{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}table{border-collapse:collapse;page-break-inside:auto;}tr{page-break-inside:avoid;}td,th{page-break-inside:avoid;}"+styles+".np-dl{position:fixed;top:10px;right:10px;z-index:9999;}@media print{.np-dl{display:none!important;}body{padding:0!important;}}</style></head><body><div class=\"np-dl\"><button onclick=\"window.print()\" style=\"background:#065f46;color:#fff;border:none;padding:10px 24px;border-radius:10px;font-weight:900;cursor:pointer;font-size:12px;\">&#128229; Guardar PDF ("+selList.length+" certificados)</button></div>"+certs+"</body></html>");
+55102:onClick={() => {
+55114:onClick={() => goBack()}
+55136:onChange={(e) => setCodigoEmpresa(e.target.value)}
+55137:onKeyDown={(e) => e.key === "Enter" && buscarEmpresa()}
+55142:onClick={buscarEmpresa}
+55159:onChange={(e) => setPortalAdminLoginUser(e.target.value)}
+55166:onChange={(e) => setPortalAdminLoginPass(e.target.value)}
+55167:onKeyDown={(e) => {
+55201:onClick={() => {
+55250:onClick={() => {
+55273:onClick={() => setPortalAdminTab(t.k)}
+55339:onChange={(e) =>
+55350:onChange={(e) =>
+55362:onChange={(e) =>
+55373:onChange={(e) =>
+55386:onClick={async () => {
+55507:onChange={(e) =>
+55518:onChange={(e) =>
+55530:onChange={(e) =>
+55541:onClick={async () => {
+55736:<button key={t.k} onClick={() => setPortalTab(t.k)}
+55772:<button key={a.label} onClick={()=>{ if(a.tab==="noAptos_inline") setPortalTab("trabajadores"); else setPortalTab(a.tab); }}
+55787:<input value={portalEmpresaFiltroDoc} onChange={e=>setPortalEmpresaFiltroDoc(e.target.value)}
+55791:<button onClick={()=>setPortalTab("descargas")}
+55832:<button onClick={()=>setPortalDescargaSeleccion(new Set(pacientesEmpresa.map(p=>p.id)))}
+55834:<button onClick={()=>setPortalDescargaSeleccion(new Set())}
+55840:<input value={portalDescargaFiltro} onChange={e=>setPortalDescargaFiltro(e.target.value)}
+55852:<input type="checkbox" checked={sel} onChange={e=>{
+55883:<input type="checkbox" checked={!!on} onChange={e=>setPortalDescargaTipos(p=>({...p,[t.k]:e.target.checked}))} className="w-4 h-4 flex-shrink-0"/>
+55894:<button onClick={()=>showAlert("âœ… Descarga iniciada\n\nâ€¢ " + portalDescargaSeleccion.size + " trabajador(es) seleccionado(s)\nâ€¢ Tipos: " + Object.entries(portalDescargaTipos).filter(([,v])=>v).map(([k])=>k).join(", ") + "\n\nLos archivos se generarÃ¡n segÃºn los documentos disponibles en cada historia clÃ­nica.")}
+56054:onClick={() => setShowEvolucionModal(false)}
+56125:onClick={() =>
+56148:onChange={(e) =>
+56163:onChange={(e) =>
+56191:onChange={(e) =>
+56208:onChange={(e) =>
+56229:onChange={(e) => {
+56239:onChange={(e) => {
+56249:onChange={(e) => {
+56262:onClick={() =>
+56278:onClick={() =>
+56303:onChange={(e) =>
+56320:onChange={(e) =>
+56338:onClick={() =>
+56360:onChange={(e) => {
+56370:onChange={(e) => {
+56380:onChange={(e) => {
+56392:onClick={() =>
+56418:onClick={() =>
+56455:onClick={() =>
+56471:onChange={(e) => {
+56484:onChange={(e) => {
+56497:onChange={(e) => {
+56523:onChange={(e) => {
+56536:onChange={(e) => {
+56549:onChange={(e) => {
+56562:onChange={(e) => {
+56588:onChange={(e) => setEvolucionForm(p => ({ ...p, _examSearch: e.target.value }))}
+56593:onClick={() => {
+56620:onChange={(e) => {
+56630:onClick={() => setEvolucionForm(p => ({ ...p, examenesSolicitados: (p.examenesSolicitados || []).filter((_, j) => j !== i) }))}
+56644:onChange={(e) =>
+56674:onChange={(e) =>
+56693:onChange={(e) =>
+56717:onChange={(e) =>
+56736:onChange={(e) =>
+56754:onChange={(e) =>
+56782:onChange={(e) => setEvolucionForm((p) => ({ ...p, nuevoConcept: e.target.value }))}
+56798:onChange={(e) => setEvolucionForm((p) => ({ ...p, recomendaciones: e.target.value }))}
+56808:onChange={(e) => setEvolucionForm((p) => ({ ...p, texto: e.target.value }))}
+56817:onClick={() => {
+56874:onClick={() => setShowEvolucionModal(false)}
+56880:onClick={guardarEvolucion}
+56973:onClick={() => setShowMensajePanel(false)}
+56994:onClick={() => setShowComposeMensaje((v) => !v)}
+57001:onClick={() => setShowMensajePanel(false)}
+57022:onClick={() =>
+57040:onClick={() =>
+57054:onChange={(e) =>
+57063:onClick={enviarMensaje}
+57069:onClick={() => setShowComposeMensaje(false)}
+57091:onClick={() => {
+57140:onChange={(e) => setMensajeRespuesta(e.target.value)}
+57147:onClick={() => responderMensaje(msg)}
+57153:onClick={() => {
+57164:onClick={() => {
+57316:<button onclick="window.print()" style="background:#1a1a1a;color:#fff;border:none;padding:8px 18px;border-radius:6px;font-weight:900;cursor:pointer">ðŸ–¨ï¸ Imprimir</button>
+57317:<button onclick="window.close()" style="background:#666;color:#fff;border:none;padding:8px 18px;border-radius:6px;font-weight:900;cursor:pointer">âœ• Cerrar</button>
+57383:<button onclick="window.print()" style="background:#1a6b2f;color:#fff;border:none;padding:8px 20px;border-radius:6px;font-weight:900;cursor:pointer">ðŸ–¨ï¸ Imprimir CarnÃ©</button>
+57384:<button onclick="window.close()" style="background:#666;color:#fff;border:none;padding:8px 20px;border-radius:6px;font-weight:900;cursor:pointer">âœ• Cerrar</button>
+57460:onChange={(e) => {
+57464:onKeyDown={(e) => {
+57477:onClick={handleVerify2FA}
+57484:onClick={() => {
+57603:onClick={_resetInactivity}
+57713:<button onclick="document.body.contentEditable='true'" style="margin-right:8px;padding:6px 14px;background:#4B5563;color:white;border:none;border-radius:6px;cursor:pointer">âœï¸ Editar</button>
+57714:<button onclick="window.print()" style="padding:6px 14px;background:#16a34a;color:white;border:none;border-radius:6px;cursor:pointer">ðŸ–¨ï¸ Imprimir</button>
+57776:onClick={printCarnet}
+57886:onChange={(e) =>
+57905:onChange={(e) => {
+57940:onChange={(e) =>
+57964:onChange={(e) =>
+58086:<div class="print-toolbar"><span class="ptitle">ðŸ”¬ Orden de ExÃ¡menes â€” ${_sanitize(data.nombres)}</span><button class="btn-print" onclick="window.print()">ðŸ–¨ï¸ Imprimir / Guardar PDF</button><button class="btn-close" onclick="window.close()">âœ• Cerrar</button></div>
+58233:<button class="btn-print" onclick="window.print()">ðŸ–¨ï¸ Imprimir ahora</button>
+58234:<button class="btn-close" onclick="window.close()">âœ• Cerrar</button>
+58322:<button class="btn-print" onclick="window.print()">ðŸ–¨ï¸ Imprimir receta</button>
+58323:<button class="btn-close" onclick="window.close()">âœ• Cerrar</button>
+58360:onClick={() => {
+58374:onClick={() => {
+58387:onClick={() => {
+58402:onClick={() => {
+58418:onClick={() =>
+58429:onClick={() =>
+58440:onClick={() => openGnExamenesWindow()}
+58447:onClick={() =>
+58459:onClick={() =>
+58471:onClick={() => setShowEnviarPanel(!showEnviarPanel)}
+58495:<input type="checkbox" checked={item.available ? !!chkG[item.k] : false} disabled={!item.available} onChange={() => { if (item.available) setChkG(p => ({...p, [item.k]: !p[item.k]})); }} className="w-3.5 h-3.5 accent-blue-600" />
+58502:<button onClick={() => {
+58554:const _combGn = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"/><title>Documentos - ${_sanitize(data.nombres||"")}</title><style>${_baseGn2}</style></head><body>${pgsGn.join("")}<div class="np-bar"><button onclick="window.print()">ðŸ“¥ Imprimir / Guardar PDF</button></div></body></html>`;
+58562:<button onClick={() => {
+58574:<button onClick={() => {
+58692:onClick={() => openSingleMedWindow(med, idx)}
+59200:onClick={() => {
+59218:onClick={() => setPostCierreHC(null)}
+59254:onChange={(e) => setCierreHCData({ ...cierreHCData, fecha: e.target.value })}
+59283:onClick={() => setCierreHCData(null)}
+59290:onClick={() => cierreHCData.onConfirm(_fSel)}
+59329:<button onClick={() => setShowEnvioIntegral(false)} className="text-gray-400 hover:text-red-500 text-xl font-black">âœ•</button>
+59357:<button onClick={() => {
+59389:<button onClick={() => {
+59408:{!hasCustodia && <button onClick={() => {
+59454:onClick={async () => {
+59475:onClick={() => {
+59486:onClick={() => {
+59499:onClick={() => { setShowEnvioIntegral(false); goTo("reporte"); showAlert("El informe se ve e imprime en la secciÃ³n Reportes (botÃ³n 'Descargar / Imprimir Informe')."); }}
+59506:onClick={async () => {
+59535:<button onClick={async () => {
+59724:<button onClick={() => setShowEmailConfig(false)} className="text-gray-400 hover:text-red-500 text-xl font-black">âœ•</button>
+59744:<button onClick={() => { saveEmailConfig({...emailConfig, configurado: false}); }} className="mt-2 text-[10px] bg-blue-600 text-white px-3 py-1 rounded-lg font-bold hover:bg-blue-700">âš™ï¸ Configurar EmailJS</button>
+59747:<button onClick={() => { saveEmailConfig({ email: "", nombre: "", configurado: false, emailjsPublicKey: "", emailjsServiceId: "", emailjsTemplateId: "", emailjsConfigurado: false }); }} className="w-full py-2 bg-red-50 text-red-700 border border-red-200 rounded-xl text-xs font-black hover:bg-red-100">ðŸšª Cerrar sesiÃ³n / Cambiar cuenta</button>
+59798:<button onClick={() => {
+59852:onClick={() => setRipsModalData(null)}
+59876:onClick={() => {
+59889:onClick={() => {
+59911:onClick={() => setRipsModalData(null)}
+59942:onClick={() => setBackupModalData(null)}
+59956:onClick={() => {
+59969:onClick={() => {
+59991:onClick={() => setBackupModalData(null)}
+60008:onClick={() => setAlertMsg("")}
+60029:onClick={btn.action}
+60039:onClick={() => { confirmConfig.onCancel?.(); setConfirmConfig(null); }}
+60045:onClick={() => { confirmConfig.onConfirm(); setConfirmConfig(null); }}
+60068:onClick={() => {
+60079:onClick={() => {
+60090:onClick={() => _setExitHcConfirm(null)}
+60123:onClick={() =>
+60141:onClick={() => abrirHCDesdeAgenda(hcChoiceAgenda, "general")}
+60158:onClick={() => setHcChoiceAgenda(null)}
+60180:onChange={(e) => setPromptValue(e.target.value)}
+60181:onKeyDown={(e) => {
+60183:promptConfig.onSubmit(promptValue);
+60191:onClick={() => setPromptConfig(null)}
+60197:onClick={() => {
+60198:promptConfig.onSubmit(promptValue);
+60214:onClick={(e) => { if (e.target === e.currentTarget) setAgendarEncModal(null); }}>
+60230:onChange={e => setAgendarEncForm(p => ({...p, fecha: e.target.value}))}
+60236:onChange={e => setAgendarEncForm(p => ({...p, horaInicio: e.target.value}))}
+60245:onChange={e => setAgendarEncForm(p => ({...p, duracion: e.target.value}))}
+60254:onChange={e => setAgendarEncForm(p => ({...p, tipoConsulta: e.target.value}))}
+60265:onChange={e => setAgendarEncForm(p => ({...p, medicoId: e.target.value}))}
+60279:onChange={() => setAgendarEncForm(p => ({...p, tipoPago: opt.v}))} className="sr-only" />
+60290:onChange={e => setAgendarEncForm(p => ({...p, valorConsulta: e.target.value}))}
+60312:<button onClick={() => setAgendarEncModal(null)}
+60318:onClick={() => {
+60394:<div className="fixed inset-0 bg-black/60 z-[200] flex items-center justify-center p-4" onClick={(e) => { if (e.target === e.currentTarget) setShowSecretariaPatientModal(null); }}>
+60401:<button onClick={() => setShowSecretariaPatientModal(null)} className="text-white/80 hover:text-white text-xl font-black">âœ•</button>
+60448:<button onClick={() => { const p = showSecretariaPatientModal; setShowSecretariaPatientModal(null); setAgendaForm(prev => ({...prev, nombre: p.nombres||"", docTipo: p.docTipo||"CC", docNumero: p.docNumero||"", celular: p.celular||p.telefono||"", empresa: p.empresaNombre||p.empresa||"", cargo: p.cargo||"", medicoId: p._medicoId||prev.medicoId||"", eps: p.eps||"", _busquedaQuery: p.nombres||""})); goTo("agenda"); }} className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-black flex items-center justify-center gap-2 transition">
+60473:<div className="fixed inset-0 bg-black/70 z-[9999] flex items-center justify-center p-4" onClick={() => setShowDiagnostico(false)}>
+60474:<div className="bg-white rounded-2xl shadow-2xl max-w-xl w-full p-6 max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+60480:<button onClick={() => setShowDiagnostico(false)} className="text-gray-400 hover:text-gray-600"><X className="w-5 h-5" /></button>
+60490:onClick={handleRecuperarDesdeHC}
+60545:<button onClick={() => handleRestaurarDesdeKey(key)} className="bg-emerald-600 text-white px-2 py-0.5 rounded-md text-[10px] font-bold hover:bg-emerald-700">
+60579:<button onClick={() => handleRestaurarDesdeKey(info.key)} className="bg-blue-600 text-white px-2 py-0.5 rounded-md text-[10px] font-bold hover:bg-blue-700">
+60597:onClick={async () => {
+60637:<button onClick={() => setShowDiagnostico(false)} className="w-full bg-gray-800 text-white py-2.5 rounded-xl font-black text-sm hover:bg-gray-900">
+60649:onClick={() => setShowSyncReport(false)}
+60653:onClick={(e) => e.stopPropagation()}
+60670:onClick={() => setShowSyncReport(false)}
+60779:onClick={() => { setShowSyncReport(false); handleDiagnosticoNube(); }}
+60786:onClick={() => setShowSyncReport(false)}
+60800:<button onClick={() => setShowDiagnostico(false)} className="text-gray-400 hover:text-gray-600"><X className="w-5 h-5" /></button>
+60828:<button onClick={() => handleRestaurarDesdeKey(k)}
+60847:<button onClick={() => handleRestaurarDesdeKey(key)}
+60868:<button onClick={() => handleRestaurarDesdeKey(key)}
+60889:<button onClick={() => setShowDiagnostico(false)}
+60900:onChange={(fn) =>
+60919:onChange={(fn) =>
+60945:onChangesDetected={async (changedKeys) => {

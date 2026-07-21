@@ -1,0 +1,101 @@
+﻿20600:            }
+20601:          } catch (e) {
+20602:            console.warn("[SISO] Auto-push D1 fallÃ³:", e.message);
+20603:          }
+20604:        })();
+20605:      }
+20606:    }
+20607:
+20608:    // â”€â”€ AUTO-PUSH D1: firma del mÃ©dico â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+20609:    // La firma se excluye del sync masivo por tamaÃ±o, pero se protege aquÃ­ con una sola
+20610:    // escritura a D1. Sin flag: se reintenta en cada login para mantener la firma fresca.
+20611:    if (_WORKER_TOKEN && _loginUid) {
+20612:      const _sig = _ls.getItem("siso_doctor_signature");
+20613:      if (_sig && _sig.length > 50) {
+20614:        (async () => {
+20615:          try {
+20616:            const existing = await _workerGet("siso_doctor_signature");
+20617:            if (!existing) {
+20618:              await _workerSet("siso_doctor_signature", _sig);
+20619:              console.log("[SISO] âœ… Firma mÃ©dica subida a D1 como respaldo");
+20620:            }
+20621:          } catch (e) {
+20622:            console.warn("[SISO] Auto-push firma D1 fallÃ³:", e.message);
+20623:          }
+20624:        })();
+20625:      }
+20626:    }
+20627:
+20628:    // â”€â”€ AUTO-PUSH D1: HCs cerradas (siso_portal_doc_* + siso_hc_completa_*) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+20629:    // Las HCs histÃ³ricas fueron guardadas solo en Supabase. Se re-publican a D1 una vez
+20630:    // por login (flag con timestamp de 7 dÃ­as para refrescar periÃ³dicamente).
+20631:    if (_WORKER_TOKEN && _loginUid) {
+20632:      const _hcPushFlagKey = `siso_hc_d1_push_ts_${_loginUid}`;
+20633:      const _hcPushTs = parseInt(localStorage.getItem(_hcPushFlagKey) || "0");
+20634:      const _hcPushAge = Date.now() - _hcPushTs;
+20635:      const _HC_PUSH_TTL = 7 * 24 * 60 * 60 * 1000; // 7 dÃ­as
+20636:      if (_hcPushAge > _HC_PUSH_TTL) {
+20637:        (async () => {
+20638:          try {
+20639:            const _allPatsRaw = JSON.parse(_ls.getItem(`siso_db_patients_${_loginUid}`) || "[]");
+20640:            const _cerradas = Array.isArray(_allPatsRaw)
+20641:              ? _allPatsRaw.filter(p => p.estadoHistoria === "Cerrada" || p.historiaFirmada || p.codigoVerificacion)
+20642:              : [];
+20643:            if (_cerradas.length === 0) return;
+20644:            const _portalRows = [];
+20645:            const _hcRows = [];
+20646:            for (const p of _cerradas) {
+20647:              const ced = (p.docNumero || "").replace(/\s/g, "");
+20648:              const code = (p.codigoVerificacion || p.firmaDigital?.codigoQR || "").trim().toUpperCase();
+20649:              const docData = p._doctorData || {};
+20650:              // FIX 2026-06-15: ANTI-DEGRADADO. No reescribir portal_doc/hc_completa
+20651:              // si el paciente local es "slim" (sin firma real o sin mÃ©dico embebido).
+20652:              // Su versiÃ³n en D1 ya es igual o mejor. Antes este auto-push pelaba
+20653:              // certificados ya publicados con firma + recomendaciones (ej. pacientes
+20654:              // importados de encuesta como AMEZQUITA) cada login.
+20655:              const _firmaLocal = p._firma || "";
+20656:              if (!(_firmaLocal && _firmaLocal.length > 100) || !docData.nombre) continue;
+20657:              const portalVal = {
+20658:                nombres: p.nombres, docTipo: p.docTipo, docNumero: p.docNumero,
+20659:                empresaNombre: p.empresaNombre || "", empresaNit: p.empresaNit || "",
+20660:                cargo: p.cargo, tipoExamen: p.tipoExamen,
+20661:                fechaExamen: p.fechaExamen, conceptoAptitud: p.conceptoAptitud,
+20662:                codigoVerificacion: code, estadoHistoria: "Cerrada",
+20663:                fechaCierre: p.fechaCierre || "",
+20664:                _doctorData: docData, _firma: p._firma || "",
+20665:              };
+20666:              // Slim HC: strip raw study data + adj binarios pero conservar firma
+20667:              const hcVal = { ..._slimPatient(p), _doctorData: docData, _firma: p._firma || "" };
+20668:              if (ced) {
+20669:                _portalRows.push({ key: "siso_portal_doc_" + ced, value: portalVal });
+20670:                _hcRows.push({ key: "siso_hc_completa_" + ced, value: hcVal });
+20671:              }
+20672:              if (code) {
+20673:                _portalRows.push({ key: "siso_portal_" + code, value: portalVal });
+20674:                _hcRows.push({ key: "siso_hc_completa_codigo_" + code, value: hcVal });
+20675:              }
+20676:            }
+20677:            const allRows = [..._portalRows, ..._hcRows];
+20678:            if (allRows.length > 0) {
+20679:              const res = await _sbBulkSet(allRows);
+20680:              console.log(`[SISO] âœ… HCs cerradas â†’ D1: ${res.ok} ok, ${res.fail} fail (${_cerradas.length} pacientes)`);
+20681:            }
+20682:            localStorage.setItem(_hcPushFlagKey, String(Date.now()));
+20683:          } catch (e) {
+20684:            console.warn("[SISO] Auto-push HCs D1 fallÃ³:", e.message);
+20685:          }
+20686:        })();
+20687:      }
+20688:    }
+20689:
+20690:    // DATA-FIX-v2: si hay atenciones locales con empresaId vacÃ­o pero empresaNit conocido,
+20691:    // invalidar el cachÃ© para forzar re-descarga desde Supabase (datos corregidos).
+20692:    const _needsDataFix = (() => {
+20693:      if (localStorage.getItem("siso_data_fix_v2") === "done") return false;
+20694:      try {
+20695:        const _ac = JSON.parse(localStorage.getItem("siso_atenciones_cerradas") || localStorage.getItem(`siso_atenciones_${_loginUid}`) || "[]");
+20696:        if (!Array.isArray(_ac) || _ac.length === 0) return false;
+20697:        // Detectar registros sin empresaId pero con empresaNit o empresaNombre conocidos
+20698:        const _hasBad = _ac.some(a => !a.empresaId && (a.empresaNit || a.empresaNombre));
+20699:        return _hasBad;
+20700:      } catch { return false; }

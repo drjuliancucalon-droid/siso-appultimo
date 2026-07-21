@@ -3,7 +3,7 @@ import {
   LogOut,
   UserCheck,
 } from 'lucide-react';
-import PlanGate from '../components/ui/PlanGate';
+import PlanGate from '../../../shared/components/ui/PlanGate';
 import { _canUse, _secretariaPuede } from '../shared/data/planConfig';
 import { getSpanishDate } from '../shared/lib/formatters';
 import { initialOccupPatientState, initialGeneralPatientState } from '../shared/data/initialStates';

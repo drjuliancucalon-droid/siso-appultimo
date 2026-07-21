@@ -1,0 +1,12 @@
+diff --git a/src/App.jsx b/src/App.jsx
+index 06638c2..b9b3b8b 100644
+--- a/src/App.jsx
++++ b/src/App.jsx
+@@ -32695,6 +32695,7 @@ Esta historia clínica debe conservarse mínimo 20 años.
+           (p) =>
+             p.empresaId === _reportEmpId &&
+             p.fechaExamen &&
++            !p._archivado &&
+             (reportStartDate ? p.fechaExamen >= reportStartDate : true) &&
+             (reportEndDate ? p.fechaExamen <= reportEndDate : true) &&
+             (selectedMedicoReport ? p._medicoId === selectedMedicoReport : true) &&
