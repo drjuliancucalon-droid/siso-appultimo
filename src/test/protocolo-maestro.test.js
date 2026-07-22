@@ -122,7 +122,7 @@ describe('Protocolo Maestro — Verificación completa', () => {
   // ═══ BLOQUE 4: ENCUESTAS (F26-F32) ═══
   describe('F26-F32: Empresas con encuestas', () => {
     it('Companies.jsx (legacy completo) se importa', async () => {
-      const mod = await import('../pages/Companies.jsx');
+      const mod = await import('../pages/CompaniesPage.jsx');
       expect(mod.default).toBeDefined();
     });
   });
@@ -138,7 +138,7 @@ describe('Protocolo Maestro — Verificación completa', () => {
   // ═══ BLOQUE 7: PORTAL (F45-F48) ═══
   describe('F45-F48: Portal trabajador', () => {
     it('WorkerPortal.jsx se importa', async () => {
-      const mod = await import('../pages/WorkerPortal.jsx');
+      const mod = await import('../modules/patients/components/WorkerPortal.jsx');
       expect(mod.default).toBeDefined();
     });
   });

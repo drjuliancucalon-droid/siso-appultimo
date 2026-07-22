@@ -77,8 +77,8 @@ describe('Runtime — NO undefined reference errors', () => {
   });
 
   it('AIConfigPanel importa sin error', async () => {
-    const mod = await import('../components/panels/AIConfigPanel.jsx');
-    expect(mod.default).toBeDefined();
+    const mod = await import('../modules/ai/components/AIConfigPanel.jsx');
+    expect(mod.AIConfigPanel).toBeDefined();
   });
 
   // Services

@@ -12,6 +12,7 @@ export const PrintStyles = `
       @page { size: A4; margin: 15mm; }
       body { font-family: Arial, sans-serif; font-size: 11px; color: #111; }
       .no-print { display: none !important; }
+      .ai-label-print-hide { display: none !important; }
       .page-break { page-break-before: always; }
       .header { text-align: center; border-bottom: 3px solid #059669; padding-bottom: 15px; margin-bottom: 20px; }
       .header h1 { color: #059669; margin: 0; font-size: 24px; }

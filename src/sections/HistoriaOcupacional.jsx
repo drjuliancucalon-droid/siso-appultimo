@@ -7,14 +7,14 @@ import {
   ShieldAlert,
   X,
 } from 'lucide-react';
-import InputGroup from '../../../shared/components/ui/InputGroup';
-import SelectGroup from '../../../shared/components/ui/SelectGroup';
-import TextAreaGroup from '../../../shared/components/ui/TextAreaGroup';
-import SectionTitle from '../components/ui/SectionTitle';
-import CIE10Input from '../components/ui/CIE10Input';
+import InputGroup from '../shared/components/ui/InputGroup';
+import SelectGroup from '../shared/components/ui/SelectGroup';
+import TextAreaGroup from '../shared/components/ui/TextAreaGroup';
+import SectionTitle from '../shared/components/ui/SectionTitle';
+import CIE10Input from '../shared/components/CIE10Input';
 import { CIE11Badge } from '../shared/components/CIE11Badge';
-import DoctorSignature from '../components/ui/DoctorSignature';
-import BrandLogo from '../components/ui/BrandLogo';
+import DoctorSignature from '../shared/components/ui/DoctorSignature';
+import BrandLogo from '../shared/components/ui/BrandLogo';
 import ConsentimientoModal from '../components/modals/ConsentimientoModal';
 import { TURNO_LIST, NORMAL_DESCRIPTIONS_SYSTEMS } from '../shared/data/catalogs';
 import { DEFAULT_RECOMENDACIONES_SELECTED } from '../shared/data/recomendaciones';

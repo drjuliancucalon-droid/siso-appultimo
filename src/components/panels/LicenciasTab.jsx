@@ -1,9 +1,6 @@
 ﻿// src/components/panels/LicenciasTab.jsx
 import React from 'react';
-import { PLAN_CONFIG } from '../../../shared/data/planConfig';
-import { _validarContrasena } from '../ui/FortalezaPass.jsx';
-import _FortalezaPass from '../ui/FortalezaPass.jsx';
-import { _sha256, _H, _pbkdf2Hash, _hashSync, _verifyPassword, _auditLog, _rl } from '../../utils/security.js';
+import { PLAN_CONFIG } from '../../shared/data/planConfig';
 import { Clock, Users, CheckCircle2, AlertCircle, Lock, Shield, RefreshCw, Plus, ChevronDown, Trash2 } from 'lucide-react';
 
 const LicenciasTab = ({
