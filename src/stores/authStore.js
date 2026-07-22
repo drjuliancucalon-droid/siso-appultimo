@@ -24,8 +24,15 @@ function _isAdminEmpresa(role) {
  * Si no existe, inicializa con seed users del monolito (línea 9085-9200).
  */
 // Hashes correctos para usuarios conocidos — permite corregir D1 sin destruir cuentas nuevas
+// FIX 2026-07-21 (URGENTE, reportado en producción): este hash estaba
+// equivocado (no correspondía a SHA-256("cucalon2026") ni a ningún hash
+// real), y la migración de abajo lo reescribía sobre D1 en cada carga de
+// la app — auto-corrompiendo el passHash correcto de drcucalon cada vez
+// que alguien iniciaba sesión, sin importar qué hubiera en D1 antes.
+// Valor verificado directamente contra el monolito de producción
+// (App.jsx línea 9337, initialUsers): SHA-256("cucalon2026").
 const KNOWN_CORRECT_HASHES = {
-  'drcucalon': '49679f37304820e18bae7ed12292e42a7722a7d1a55f12e41b1abca5cc5162fd',
+  'drcucalon': '11177743b7227bd517fd7a05e0c9576b3497830f72ccfec4a5a0e1c9f65d9892',
 };
 
 async function _loadUsersFromD1() {
