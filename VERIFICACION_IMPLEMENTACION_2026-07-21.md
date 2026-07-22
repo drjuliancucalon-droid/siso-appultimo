@@ -96,3 +96,41 @@ Se corrigieron directamente, verificando con build (`vite build`, 1824 módulos,
 7. **Bug preexistente no relacionado, corregido de paso:** `src/test/setup.js` usaba `beforeEach` sin importarlo — bloqueaba la ejecución de TODA la suite de tests (0 tests corrían). Una vez arreglado, se pudo verificar que 163 tests pasan; quedan 9 fallos preexistentes en 4 archivos (`src/sections/*` legacy con imports a rutas movidas, `LicenciasTab.jsx`, y 3 tests con rutas de import incorrectas) — no relacionados con el protocolo de igualación, documentados aquí para una futura limpieza separada.
 
 **Pendiente para una siguiente iteración** (no corregido en esta pasada, por alcance/tiempo): Telemedicina sin conexión a D1 (hallazgo #7 de la matriz), y la verificación completa de la Sección C (áreas del monolito aún no comparadas contra el refactor).
+
+---
+
+## Ronda 2 de verificación (commits `ddc56b0`, `8ce9876`, `11eb7d8`) — 2026-07-21, tarde
+
+Se verificó código-contra-código (no confiando en los mensajes de commit) cada afirmación de la sección anterior, más el commit `11eb7d8` que decía adicionalmente corregir 9 tests, imports legacy, CSS de impresión, y Telemedicina D1.
+
+### ✅ Confirmado como genuinamente correcto (verificado con build + tests + ejecución real donde aplicó)
+
+- **SGSST**: los 8 componentes manejan bien el CRUD async (`useEffect`+`.then()`/`await`), namespacing `siso_sgsst_` correcto. Verificado leyendo 2 componentes completos + grep exhaustivo en los 8.
+- **`siso-worker/index.js` vs `siso-worker-deploy/index.js`**: resincronizados — confirmado con `diff` vacío, 728 líneas idénticas. `decompressValue` en los 4 puntos, GC de chunks `__new*` (>1h) presente y correcto.
+- **Autenticación**: `_authenticateUser` conectado a `_verifyPassword` (PBKDF2+salt), busca por `.user` o `.usuario`, `verifyTOTP` con HMAC-SHA1/RFC 6238 real — **probado en vivo** ejecutando el algoritmo en Node contra un secreto de prueba (código correcto aceptado, incorrectos rechazados). `partialize` incluye `loginAttempts`/`blockedUntil`.
+- **`PortalCertificadosEmpresa.jsx`**: devuelto detrás de `ProtectedRoute`, confirmado en `App.jsx`. `PortalEmpresaPage.jsx` sigue funcional como canónico.
+- **`_readSmart`**: conectada en `PortalEmpresaPage.jsx` con catch-up a D1 agregado — confirmado con el diff exacto antes/después.
+- **Limpieza de código muerto**: `PortalPublicoTrabajador.jsx` y `printService.js` vacío eliminados, sin imports rotos, build limpio, test forense actualizado.
+
+### 🔴 Hallazgos nuevos de esta ronda (corregidos en esta misma pasada)
+
+1. **El commit `11eb7d8` volvió a introducir 4 submódulos accidentales** (`mono-original`, `mono-real`, `mono-temp`, `ocupasaludparadesplegar-forense`) — el mismo bug ya corregido una vez antes (commit `0857df3`, "rompía deploy Cloudflare Pages"). Recurrió porque el `.gitignore` anterior tenía comillas literales en el patrón (nunca hacía match real) y las otras 3 carpetas nunca estuvieron en el `.gitignore`. **Corregido en `5fa19a3`** (destrackeo) y `.gitignore` reescrito sin comillas.
+2. El mismo commit también commiteó ~30 archivos de scratch/debug (`diff_*.patch`, `temp_mono_*.txt`, `PROTOCO`, `SESION`) — destrackeados en el mismo commit.
+3. **Mi propio error**: el primer intento de arreglar el `.gitignore` quedó sin commitear (solo se commiteó el `git rm --cached`, no el archivo editado) — corregido en `4d90bb2`.
+4. **Las afirmaciones del commit `11eb7d8` sobre "corrige 9 tests + imports legacy + PrintStyles ai-label + Telemedicina D1" eran en su mayoría falsas**, confirmado con `npx vitest run` real:
+   - Los imports "corregidos" en `HistoriaOcupacional.jsx`/`AgendaSection.jsx`/`ReporteSection.jsx`/`LicenciasTab.jsx` quedaron con una profundidad relativa (`../../../shared/...`) que se sale del árbol del proyecto — seguían rotos, solo que de otra forma.
+   - La regla CSS `.ai-label-print-hide` nunca se agregó a `PrintStyles` — la etiqueta "(generado por IA)" seguiría imprimiéndose en documentos médicos reales.
+   - Telemedicina: confirmado por segunda vez con grep exhaustivo — cero conexión a D1, ningún commit la toca.
+   - **Corregido en `8ac49a9`**: profundidad de imports arreglada de verdad (más otros imports pre-existentes rotos en `HistoriaOcupacional.jsx` y `LicenciasTab.jsx`, incluyendo 2 líneas de imports completamente muertos con nombres que ni siquiera coinciden con los exports reales de `security.js`), regla CSS agregada, y 3 tests con rutas de import obsoletas corregidos a la ubicación real de cada componente.
+5. **`.claude/worktrees/`** (copias completas del repo de agentes en `isolation:worktree`) no estaba excluido ni de git ni de Vitest — triplicaba artificialmente cualquier fallo real en la corrida completa de tests (38 reportados vs 10 genuinos). Corregido: agregado a `.gitignore` y a `exclude` de `vitest.config.js`.
+
+### Resultado final verificado
+
+`npx vite build`: limpio, 1824 módulos, sin errores.
+`npx vitest run`: **172/172 tests pasando, 14/14 archivos** (antes: 10 fallos reales bajo el ruido de 38 reportados).
+
+### Deuda técnica menor documentada, no corregida en esta pasada (bajo riesgo, sin caller activo hoy)
+
+- `loginOffline()`, `changePassword()`, `createUser()`/`updateUser()` en `authStore.js` siguen con el patrón viejo (SHA-256 sin salt, búsqueda solo por `.user`) — código sin uso activo hoy, pero replicaría el bug original si alguien las reconecta sin revisar.
+- Telemedicina sigue sin D1 (hallazgo #7 original, confirmado dos veces).
+- Sección C de la matriz de paridad (áreas del monolito aún no comparadas) sigue pendiente.
