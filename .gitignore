@@ -46,4 +46,21 @@ coverage/
 vite_log.txt
 vite_out2.txt
 vite_output.txt
-"ocupasaludparadesplegar-forense/"  
+
+# Clones de referencia del monolito usados para auditorías — NUNCA deben
+# trackearse como submódulo (rompe el deploy de Cloudflare Pages, ya pasó dos
+# veces: commits 0857df3 y 11eb7d8). La entrada anterior tenía comillas
+# literales en el patrón, por lo que nunca hizo match con el nombre real.
+ocupasaludparadesplegar-forense/
+mono-original/
+mono-real/
+mono-temp/
+
+# Basura de scratch/debug que se coló en commits de auditoría — no aporta
+# nada al código y no debería vivir en el repo.
+diff_*.patch
+temp_mono_*.txt
+temp_refactor_*.txt
+__mono_*.txt
+PROTOCO
+SESION
