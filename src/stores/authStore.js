@@ -5,7 +5,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { d1Get, d1Set, d1WriteArrayMerge, _markUnsyncedHC } from '../lib/d1Client';
 import { migrateLocalStorageToCloud } from '../lib/migrateStorage';
-import { _sha256, _verifyPassword, _totpVerify } from '../shared/lib/crypto';
+import { _sha256, _pbkdf2Hash, _verifyPassword, _totpVerify } from '../shared/lib/crypto';
 import { _canUse, _secretariaPuede, PLAN_CONFIG, SECRETARIA_PERMISOS_DEFAULT } from '../shared/data/planConfig.js';
 import { useAIStore } from './aiStore';
 
@@ -410,14 +410,20 @@ export const useAuthStore = create(
         const users = await _loadUsersFromD1();
 
         // Validar username único
-        if (users.some((u) => u.user === userData.user)) {
+        if (users.some((u) => u.user === userData.user || u.usuario === userData.user)) {
           throw new Error('El nombre de usuario ya existe');
         }
 
+        // FIX 2026-07-21: PBKDF2+salt (antes SHA-256 sin salt) — consistente
+        // con _authenticateUser/_verifyPassword y con UserForm.jsx.
+        const { hash: _newHash, salt: _newSalt } = userData.password
+          ? await _pbkdf2Hash(userData.password)
+          : { hash: '', salt: '' };
         const newUser = {
           id: Date.now(),
           user: userData.user,
-          passHash: userData.password ? await _sha256(userData.password) : '',
+          passHash: _newHash,
+          passSalt: _newSalt,
           name: userData.name || userData.user,
           nombre: userData.nombre || userData.name || userData.user,
           role: userData.role || 'medico',
@@ -463,12 +469,15 @@ export const useAuthStore = create(
         if (!currentUser) throw new Error('No autenticado');
 
         const users = await _loadUsersFromD1();
-        const idx = users.findIndex((u) => u.id === id || u.user === id);
+        const idx = users.findIndex((u) => u.id === id || u.user === id || u.usuario === id);
         if (idx === -1) throw new Error('Usuario no encontrado');
 
         const updated = { ...users[idx], ...updates };
         if (updates.password) {
-          updated.passHash = await _sha256(updates.password);
+          // FIX 2026-07-21: PBKDF2+salt (antes SHA-256 sin salt).
+          const { hash, salt } = await _pbkdf2Hash(updates.password);
+          updated.passHash = hash;
+          updated.passSalt = salt;
           delete updated.password;
         }
 
@@ -483,7 +492,7 @@ export const useAuthStore = create(
         // Actualizar cache local
         const { passHash: _, ...cleanUser } = updated;
         const { usersList: currentList } = get();
-        const newList = currentList.map((u) => (u.id === id || u.user === id ? cleanUser : u));
+        const newList = currentList.map((u) => (u.id === id || u.user === id || u.usuario === id ? cleanUser : u));
         set({ usersList: newList });
 
         return { ok: true, user: cleanUser };
@@ -498,7 +507,7 @@ export const useAuthStore = create(
         if (!currentUser) throw new Error('No autenticado');
 
         const users = await _loadUsersFromD1();
-        const idx = users.findIndex((u) => u.id === id || u.user === id);
+        const idx = users.findIndex((u) => u.id === id || u.user === id || u.usuario === id);
         if (idx === -1) throw new Error('Usuario no encontrado');
 
         // Soft delete: marcar inactivo
@@ -595,21 +604,27 @@ export const useAuthStore = create(
        */
       changePassword: async (username, currentPassword, newPassword) => {
         const users = await _loadUsersFromD1();
-        const idx = users.findIndex((u) => u.user === username);
+        const idx = users.findIndex((u) => u.user === username || u.usuario === username);
         if (idx === -1) throw new Error('Usuario no encontrado');
 
-        const currentHash = await _sha256(currentPassword);
-        if (currentHash !== users[idx].passHash) {
+        // FIX 2026-07-21: _verifyPassword soporta PBKDF2+salt con fallback a
+        // SHA-256 legacy sin salt — antes solo comparaba SHA-256 puro, lo que
+        // rechazaba la contraseña actual correcta de cualquier usuario creado
+        // con PBKDF2 (el formato real que usa UserForm.jsx).
+        const ok = await _verifyPassword(currentPassword, users[idx].passHash, users[idx].passSalt);
+        if (!ok) {
           throw new Error('Contraseña actual incorrecta');
         }
 
-        users[idx].passHash = await _sha256(newPassword);
+        const { hash, salt } = await _pbkdf2Hash(newPassword);
+        users[idx].passHash = hash;
+        users[idx].passSalt = salt;
         users[idx].mustChangePassword = false;
         await d1Set(SISO_USERS_KEY, users);
 
         // Actualizar currentUser si es el mismo
         const { currentUser } = get();
-        if (currentUser?.user === username) {
+        if (currentUser?.user === username || currentUser?.usuario === username) {
           set({ currentUser: { ...currentUser, mustChangePassword: false } });
         }
 
@@ -709,10 +724,12 @@ export const useAuthStore = create(
           // Si D1 falla, intentar con usuarios en localStorage como fallback
           try {
             const local = JSON.parse(localStorage.getItem('siso_users') || '[]');
-            const user = local.find((u) => u.user === username && u.activo !== false);
+            const user = local.find((u) => (u.user === username || u.usuario === username) && u.activo !== false);
             if (!user) throw new Error('Usuario no encontrado');
-            const hash = await _sha256(password);
-            if (hash !== user.passHash) throw new Error('Contraseña incorrecta');
+            // FIX 2026-07-21: _verifyPassword soporta PBKDF2+salt (antes
+            // comparaba SHA-256 puro, incompatible con usuarios PBKDF2).
+            const ok = await _verifyPassword(password, user.passHash, user.passSalt);
+            if (!ok) throw new Error('Contraseña incorrecta');
             const { passHash: _, ...cleanUser } = user;
             const token = `siso_local_${Date.now()}_${Math.random().toString(36).slice(2, 14)}`;
             set({

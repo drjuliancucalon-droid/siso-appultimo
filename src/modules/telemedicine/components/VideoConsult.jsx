@@ -1,11 +1,11 @@
 // B-07: Telemedicine - Sala de espera + flujo completo (monolito líneas 30966-31800)
 import React, { useState, useEffect, useRef } from 'react';
 import { Video, Clock, Play, Square, Link2, Copy, CheckCircle, FileText, Phone, PhoneOff, Users, Plus } from 'lucide-react';
-import { sp, _ls } from '../../../shared/lib/storage';
-
-const STORAGE_KEY = 'siso_teleconsultas';
-const TELE_SALA_KEY = 'siso_teleSala';
-const TELE_ESPERA_KEY = 'siso_teleEspera';
+import {
+  getConsultas, saveConsultas,
+  getTeleSala, saveTeleSala,
+  getTeleEspera, saveTeleEspera,
+} from '../services/telemedicineService';
 
 const STATUS_CONFIG = {
   programada: { label: 'Programada', color: 'bg-yellow-100 text-yellow-800' },
@@ -26,21 +26,32 @@ const generarSalaJitsi = (medicoId) => {
 };
 
 export const VideoConsult = ({ currentUser }) => {
+  const medicoId = currentUser?.user || 'default';
   const [consultas, setConsultas] = useState([]);
-  
-  // B-07: Estado de sala de telemedicine
-  const [teleSala, setTeleSala] = useState(() => sp(TELE_SALA_KEY, { activa: false, room: null, link: null, iniciada: null }));
-  const [teleEspera, setTeleEspera] = useState(() => sp(TELE_ESPERA_KEY, []));
+
+  // B-07: Estado de sala de telemedicine (D1 primero, localStorage fallback)
+  const [teleSala, setTeleSala] = useState({ activa: false, room: null, link: null, iniciada: null });
+  const [teleEspera, setTeleEspera] = useState([]);
   const [consultaActiva, setConsultaActiva] = useState(null);
 
-  // B-07: Guardar estado de sala
+  // FIX 2026-07-21 (FASE 4): hidratar sala y espera desde D1 al montar.
   useEffect(() => {
-    _ls.setItem(TELE_SALA_KEY, JSON.stringify(teleSala));
-  }, [teleSala]);
+    getTeleSala(medicoId).then(setTeleSala);
+    getTeleEspera(medicoId).then(setTeleEspera);
+  }, [medicoId]);
 
+  // B-07: Guardar estado de sala (D1 + localStorage)
+  const _teleSalaSkipFirst = useRef(true);
   useEffect(() => {
-    _ls.setItem(TELE_ESPERA_KEY, JSON.stringify(teleEspera));
-  }, [teleEspera]);
+    if (_teleSalaSkipFirst.current) { _teleSalaSkipFirst.current = false; return; }
+    saveTeleSala(medicoId, teleSala);
+  }, [teleSala, medicoId]);
+
+  const _teleEsperaSkipFirst = useRef(true);
+  useEffect(() => {
+    if (_teleEsperaSkipFirst.current) { _teleEsperaSkipFirst.current = false; return; }
+    saveTeleEspera(medicoId, teleEspera);
+  }, [teleEspera, medicoId]);
 
   // B-07: Iniciar sala de telemedicine (monolito handleIniciarSala)
   const handleIniciarSala = () => {
@@ -96,14 +107,14 @@ export const VideoConsult = ({ currentUser }) => {
   const [ahora, setAhora] = useState(Date.now());
 
   useEffect(() => {
-    setConsultas(sp(STORAGE_KEY, []));
+    getConsultas().then(setConsultas);
     timerRef.current = setInterval(() => setAhora(Date.now()), 1000);
     return () => clearInterval(timerRef.current);
   }, []);
 
   const guardar = (nuevas) => {
     setConsultas(nuevas);
-    _ls.setItem(STORAGE_KEY, JSON.stringify(nuevas));
+    saveConsultas(nuevas);
   };
 
   const iniciarConsulta = (id) => {

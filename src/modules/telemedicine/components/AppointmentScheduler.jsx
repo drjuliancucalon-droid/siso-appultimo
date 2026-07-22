@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import { CalendarPlus, Save, X, Video } from 'lucide-react';
-import { sp, _ls } from '../../../shared/lib/storage';
-
-const STORAGE_KEY = 'siso_teleconsultas';
+import { upsertConsulta } from '../services/telemedicineService';
 
 const TIPOS_CONSULTA = [
   'Consulta general',
@@ -36,7 +34,7 @@ export const AppointmentScheduler = ({ onClose, onSave, pacientes = [] }) => {
     setError('');
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.paciente.trim()) {
       setError('Seleccione o ingrese el nombre del paciente');
@@ -50,9 +48,7 @@ export const AppointmentScheduler = ({ onClose, onSave, pacientes = [] }) => {
       createdAt: new Date().toISOString(),
     };
 
-    const existentes = sp(STORAGE_KEY, []);
-    const actualizadas = [...existentes, nueva];
-    _ls.setItem(STORAGE_KEY, JSON.stringify(actualizadas));
+    await upsertConsulta(nueva);
 
     if (onSave) onSave(nueva);
     if (onClose) onClose();
