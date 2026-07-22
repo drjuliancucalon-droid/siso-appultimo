@@ -71,6 +71,44 @@ const { data: companies, loading: lc } = useBackendData('/data/companies', 'siso
     await handleSaveProposal(updatedProp);
   };
 
+  // FIX 2026-07-21 (Sección C): BillGenerator (tab "Facturación") se renderizaba
+  // sin onSave — el botón "Guardar" de la cuenta de cobro era un no-op
+  // silencioso, no llegaba a D1/Supabase/localStorage. Mismo patrón que
+  // Propuestas: merge por 'numero' en la clave real que usa useBackendData
+  // para bills (siso_saved_bills_<userId>).
+  const billsKey = `siso_saved_bills_${userId}`;
+  const [savedBillsLocal, setSavedBillsLocal] = useState([]);
+  useEffect(() => { setSavedBillsLocal(bills || []); }, [bills]);
+
+  const handleSaveBill = async (billCompleto) => {
+    try { await d1WriteArrayMerge(billsKey, [billCompleto], 'numero'); } catch { /* fallback abajo */ }
+    setSavedBillsLocal((prev) => {
+      const updated = [billCompleto, ...prev.filter((b) => b.numero !== billCompleto.numero)];
+      try { localStorage.setItem(billsKey, JSON.stringify(updated)); } catch {}
+      return updated;
+    });
+  };
+
+  const handlePrintBill = (bill) => {
+    const w = window.open('', '_blank', 'width=900,height=1100');
+    if (!w) { alert('Permita ventanas emergentes para imprimir.'); return; }
+    const filas = (bill.items || [])
+      .map((it) => `<tr><td>${it.descripcion || ''}</td><td style="text-align:center">${it.cantidad || 0}</td><td style="text-align:right">$${Number(it.valorUnit || 0).toLocaleString('es-CO')}</td><td style="text-align:right">$${((it.cantidad || 0) * (it.valorUnit || 0)).toLocaleString('es-CO')}</td></tr>`)
+      .join('');
+    const total = (bill.items || []).reduce((s, it) => s + (it.cantidad || 0) * (it.valorUnit || 0), 0);
+    w.document.write(`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>${bill.numero || ''} - ${bill.empresaNombre || ''}</title>
+      <style>body{font-family:Arial,sans-serif;font-size:12px;color:#111;padding:20px}table{width:100%;border-collapse:collapse;margin:12px 0}th,td{border:1px solid #ddd;padding:6px}th{background:#f3f4f6;text-align:left}.total{font-weight:bold;text-align:right;font-size:14px}</style></head>
+      <body>
+      <h2>Cuenta de Cobro ${bill.numero || ''}</h2>
+      <p><strong>Cliente:</strong> ${bill.empresaNombre || ''} ${bill.empresaNit ? '· NIT ' + bill.empresaNit : ''}</p>
+      <p><strong>Fecha:</strong> ${bill.fecha || ''}</p>
+      <table><thead><tr><th>Descripción</th><th>Cant.</th><th>Valor Unit.</th><th>Subtotal</th></tr></thead><tbody>${filas}</tbody></table>
+      <p class="total">TOTAL: $${total.toLocaleString('es-CO')}</p>
+      <script>window.onload = () => window.print();</script>
+      </body></html>`);
+    w.document.close();
+  };
+
   const handlePrintProposal = (prop) => {
     const w = window.open('', '_blank', 'width=900,height=1100');
     if (!w) { alert('Permita ventanas emergentes para imprimir.'); return; }
@@ -130,7 +168,17 @@ const { data: companies, loading: lc } = useBackendData('/data/companies', 'siso
         </div>
       ) : (
         <>
-          {activeTab === 'facturacion' && <BillGenerator companies={companies} savedBills={bills} atencionesCerradas={atencionesCerradas} patients={patients} />}
+          {activeTab === 'facturacion' && (
+            <BillGenerator
+              companies={companies}
+              savedBills={savedBillsLocal}
+              atencionesCerradas={atencionesCerradas}
+              patients={patients}
+              onSave={handleSaveBill}
+              onPrint={handlePrintBill}
+              doctorData={currentUser}
+            />
+          )}
           {activeTab === 'propuestas' && (
             <Proposals
               proposals={proposals}

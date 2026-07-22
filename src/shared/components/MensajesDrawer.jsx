@@ -5,7 +5,11 @@ import { X, Send, Plus, User, MessageCircle } from 'lucide-react';
 import { useAuthStore } from '../../stores/authStore';
 import { useBackendData } from '../../hooks/useBackendData';
 
-const STORAGE_KEY = 'siso_mensajes_drawer';
+// FIX 2026-07-21 (Sección C): esta clave estaba desincronizada de
+// MensajesPage.jsx (que usa 'siso_mensajes', la clave real del monolito) —
+// un mensaje enviado desde este drawer global era invisible en la página
+// completa de Mensajes y viceversa. Unificada a la misma clave.
+const STORAGE_KEY = 'siso_mensajes';
 const load = () => { try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); } catch { return []; } };
 const save = (d) => { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(d)); } catch {} };
 

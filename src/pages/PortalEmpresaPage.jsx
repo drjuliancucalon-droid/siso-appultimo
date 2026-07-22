@@ -1,7 +1,7 @@
 // src/pages/PortalEmpresaPage.jsx — Portal Empresa v3 (paridad monolito PortalPublicoTrabajador)
 // FASE 2A: Certificados premium + FASE 2B: Documentos D1 por Período + FASE 2C: Estadísticas enriquecidas
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { Building2, Loader2, Download, Search, FileText, BarChart3, Users, Activity, Printer, Shield, TrendingUp, CheckSquare, Square, ChevronDown } from 'lucide-react';
+import { Building2, Loader2, Download, Search, FileText, BarChart3, Users, Activity, Printer, Shield, CheckSquare, Square, ChevronDown } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 import { d1Get, _readSmart } from '../lib/d1Client';
 
@@ -611,15 +611,16 @@ ${certHTML}<script>setTimeout(()=>window.print(),300)</script></body></html>`;
               {resultadosEmpresa.length === 0 && <p className="text-xs text-gray-400">Sin datos</p>}
             </div>
 
-            <div className="bg-white rounded-xl shadow-sm border p-5">
-              <h3 className="font-black text-gray-800 text-sm mb-3 flex items-center gap-2"><TrendingUp size={16} className="text-purple-600"/> Top Diagnósticos CIE-10</h3>
-              {(() => { const diags = {}; resultadosEmpresa.forEach(a => { if(a.diagnosticoPrincipal){ const d = a.diagnosticoPrincipal; diags[d] = (diags[d] || 0) + 1; } });
-                return Object.entries(diags).sort((a,b) => b[1]-a[1]).slice(0,8).map(([d,c],i) => (
-                  <div key={d} className="flex items-center gap-2 mb-1.5"><span className="w-5 h-5 rounded-full bg-purple-100 text-purple-700 text-[9px] font-black flex items-center justify-center flex-shrink-0">{i+1}</span><span className="text-xs text-gray-700 flex-1 truncate">{d}</span><span className="text-xs font-bold text-purple-600">{c}</span></div>
-                ));
-              })()}
-              {resultadosEmpresa.length === 0 && <p className="text-xs text-gray-400">Sin diagnósticos</p>}
-            </div>
+            {/* FIX 2026-07-21 (Sección C, hallazgo CRÍTICO de confidencialidad):
+                se eliminó el panel "Top Diagnósticos CIE-10" que existía aquí.
+                Mostraba diagnósticos clínicos reales a la empresa cliente,
+                violando directamente el Art.16 Res. 1843/2025 — el monolito
+                garantiza explícitamente que el portal de empresa NUNCA muestra
+                diagnóstico/CIE-10/hallazgos clínicos, solo concepto de aptitud
+                y documentos administrativos ya generados. No reemplazar por
+                otro desglose de diagnósticos: cualquier variante (por código,
+                por texto, agrupado) sigue siendo información clínica
+                confidencial no autorizada para este destinatario. */}
 
             <div className="bg-white rounded-xl shadow-sm border p-5">
               <h3 className="font-black text-gray-800 text-sm mb-3 flex items-center gap-2"><Shield size={16} className="text-orange-600"/> Riesgos Laborales</h3>

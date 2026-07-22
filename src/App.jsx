@@ -178,15 +178,23 @@ export default function App() {
               <Route path="config/ips" element={<ConfigIPSPage />} />
               <Route path="mensajes" element={<MensajesPage />} />
               <Route path="portafolio" element={<PortafolioPage />} />
-              <Route path="contabilidad" element={<ContabilidadPage />} />
+              <Route path="contabilidad" element={
+                <ProtectedRoute roles={['super_admin', 'administrador']}>
+                  <ContabilidadPage />
+                </ProtectedRoute>
+              } />
               <Route path="settings" element={
                 <ProtectedRoute roles={['super_admin', 'administrador']}>
                   <SettingsPage />
                 </ProtectedRoute>
               } />
               <Route path="planes" element={<PlanesPage />} />
+              {/* FIX 2026-07-21 (Sección C): el monolito restringe Super Admin
+                  EXCLUSIVAMENTE a super_admin — permitir 'administrador' dejaba
+                  que un admin de clínica normal creara/gestionara organizaciones
+                  multi-tenant y viera datos cruzados de otras organizaciones. */}
               <Route path="admin" element={
-                <ProtectedRoute roles={['super_admin', 'administrador']}>
+                <ProtectedRoute roles={['super_admin']}>
                   <SuperAdminPage />
                 </ProtectedRoute>
               } />

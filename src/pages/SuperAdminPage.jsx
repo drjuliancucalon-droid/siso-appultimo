@@ -50,7 +50,10 @@ export default function SuperAdminPage() {
     const updated = orgs.filter((o) => o.id !== id); setOrgs(updated); persist(updated);
   };
 
-  if (currentUser?.role !== 'super_admin' && currentUser?.role !== 'administrador') {
+  // FIX 2026-07-21 (Sección C): el monolito exige EXCLUSIVAMENTE super_admin —
+  // permitir 'administrador' aquí dejaba gestionar organizaciones multi-tenant
+  // a cualquier admin de clínica normal.
+  if (currentUser?.role !== 'super_admin') {
     return <div className="p-6 text-center text-gray-400"><Shield className="w-12 h-12 mx-auto mb-2" /><p>Acceso restringido a Super Admin</p></div>;
   }
 

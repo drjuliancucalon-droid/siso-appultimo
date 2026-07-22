@@ -3,6 +3,7 @@ import React, { useState, useMemo } from 'react';
 import { Calendar, Search, CheckCircle, Clock, User, Filter, Sparkles, Loader2, Download, Stethoscope } from 'lucide-react';
 import { useAIStore } from '../../../stores/aiStore';
 import { optimizeSchedule } from '../../ai/services/aiAnalysis';
+import { AppointmentForm } from './AppointmentForm';
 
 const STATUS_CONFIG = {
   espera: { label: 'En espera', color: 'bg-yellow-100 text-yellow-800', icon: Clock },
@@ -12,6 +13,10 @@ const STATUS_CONFIG = {
 };
 
 export const AgendaView = ({ currentUser, appointments = [], onAppointmentsChange, onOpenHC }) => {
+  // FIX 2026-07-21 (Sección C): "Nueva Cita" llamaba a navigate(), nunca
+  // importado ni definido — ReferenceError al hacer clic. AppointmentForm.jsx
+  // ya existe pero estaba desconectado; ahora se muestra como modal.
+  const [showNuevaCita, setShowNuevaCita] = useState(false);
   const [filtroFecha, setFiltroFecha] = useState(new Date().toISOString().slice(0, 10));
   const [busqueda, setBusqueda] = useState('');
   const [filtroEstado, setFiltroEstado] = useState('todos');
@@ -142,8 +147,21 @@ export const AgendaView = ({ currentUser, appointments = [], onAppointmentsChang
             {v.l}
           </button>
         ))}
-        <button onClick={() => navigate('/agenda')} className="px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-bold">➕ Nueva Cita</button>
+        <button onClick={() => setShowNuevaCita(true)} className="px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-bold">➕ Nueva Cita</button>
       </div>
+
+      {showNuevaCita && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <AppointmentForm
+            medicos={currentUser ? [currentUser] : []}
+            onClose={() => setShowNuevaCita(false)}
+            onSave={(nuevaCita) => {
+              onAppointmentsChange?.([...(appointments || []), nuevaCita]);
+              setShowNuevaCita(false);
+            }}
+          />
+        </div>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
         <div>

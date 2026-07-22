@@ -1164,7 +1164,7 @@ export function _generarCertificadoDesdePortal(portalData, doctorData) {
     <div class="info-item"><label>Tipo Examen</label><span>${_sanitize(portalData.tipoExamen || '—')}</span></div>
     <div class="info-item"><label>Fecha Examen</label><span>${_sanitize(portalData.fechaExamen || '—')}</span></div>
     <div class="info-item"><label>Vigencia</label><span>${_sanitize(portalData.vigencia || '1 año')}</span></div>
-    <div class="info-item"><label>Diagnóstico</label><span>${_sanitize(portalData.diagnosticoPrincipal || 'Z10.0 — EXAMEN MÉDICO OCUPACIONAL')}</span></div>
+    <div class="info-item"><label>Diagnóstico</label><span>Z10.0 — EXAMEN MÉDICO OCUPACIONAL</span></div>
   </div>
   <div style="text-align:center;margin:15px 0;padding:10px;border:2px solid #059669;border-radius:8px;">
     <p style="font-size:7pt;color:#666;text-transform:uppercase;margin:0;">Concepto Emitido</p>

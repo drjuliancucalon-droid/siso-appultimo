@@ -4,10 +4,13 @@ import { AgendaView } from '../modules/agenda/components/AgendaView';
 import { QueueManager } from '../modules/agenda/components/QueueManager';
 import { useAuthStore } from '../stores/authStore';
 import { useBackendData } from '../hooks/useBackendData';
+import { d1WriteArrayMerge } from '../lib/d1Client';
 import { Calendar, Loader2, Cloud, HardDrive, Users } from 'lucide-react';
 
 export default function AgendaPage() {
   const { currentUser } = useAuthStore();
+  const userId = currentUser?.user || currentUser?.usuario || 'drcucalon';
+  const agendaKey = `siso_agendados_${userId}`;
   const { data: appointments, loading, source } = useBackendData(
     '/data/agenda', 'siso_agendados', 'appointments'
   );
@@ -17,9 +20,18 @@ export default function AgendaPage() {
     if (Array.isArray(appointments)) setCitas(appointments);
   }, [appointments]);
 
+  // FIX 2026-07-21 (Sección C): los cambios de citas (crear, marcar
+  // atendido, etc.) solo actualizaban el estado de React en memoria —
+  // nunca llegaban a D1 ni a localStorage. Ahora se persisten con merge
+  // por id, igual que el resto del sistema.
   const handleAppointmentsChange = useCallback((next) => {
-    setCitas(Array.isArray(next) ? next : []);
-  }, []);
+    const list = Array.isArray(next) ? next : [];
+    setCitas(list);
+    try { localStorage.setItem(agendaKey, JSON.stringify(list)); } catch {}
+    if (list.length > 0) {
+      d1WriteArrayMerge(agendaKey, list, 'id').catch(() => {});
+    }
+  }, [agendaKey]);
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
