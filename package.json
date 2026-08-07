@@ -7,7 +7,7 @@
     "dev": "vite",
     "dev:backend": "cd backend && npm run dev",
     "dev:all": "concurrently \"npm run dev\" \"npm run dev:backend\"",
-    "build": "vite build",
+    "build": "vite build && node tests/security/scan-dist-for-token.mjs",
     "preview": "vite preview",
     "lint": "eslint src --ext .js,.jsx",
     "test": "vitest run",
