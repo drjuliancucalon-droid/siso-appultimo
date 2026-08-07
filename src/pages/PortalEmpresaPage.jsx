@@ -4,6 +4,14 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Building2, Loader2, Download, Search, FileText, BarChart3, Users, Activity, Printer, Shield, CheckSquare, Square, ChevronDown } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 import { d1Get, _readSmart } from '../lib/d1Client';
+// FIX Fase A (BFF same-origin): buscarEmpresa() (gate de codigoAcceso +
+// atenciones_<nit>) migró a este cliente same-origin, sin token en el
+// navegador. d1Get/_readSmart de arriba SIGUEN siendo necesarios: los usa
+// cargarDocumentos() para periodos/cuenta/custodia/informe y para el
+// fallback de bills/caja/custodia — coexistencia temporal, ver CLAUDE.md.
+// buscarIndividual() (más abajo) tampoco se tocó en este bloque — fuera
+// del alcance acordado ("solo la porción de docs/atenciones").
+import { getEmpresaDocsPublic } from '../lib/bffPortalClient';
 
 // FIX 2026-07-21 (FASE 2 PROMPT_MAESTRO): consulta Supabase para _readSmart —
 // antes esta pantalla leía siso_portal_empresa_docs SOLO de D1, sin ningún
@@ -91,40 +99,35 @@ export default function PortalEmpresaPage() {
     const nitClean = q.replace(/[^0-9]/g, '');
     if (!nitClean || nitClean.length < 3) { setError('NIT inválido'); setLoading(false); return; }
 
+    // FIX Fase A (BFF same-origin): antes esta función hacía el gate de
+    // codigoAcceso y la lectura de atenciones_<nit> con d1Client.js
+    // directo desde el navegador (mismo patrón que exponía
+    // VITE_WORKER_TOKEN — ver CLAUDE.md). Ahora usa
+    // /api/internal-store/portal-empresa-docs/:nit same-origin.
+    //
+    // CORRECCIÓN DE SEGURIDAD deliberada respecto al código anterior: la
+    // versión previa inicializaba `codigoValido = true` FUERA del
+    // `if (cod)`, así que si el usuario dejaba el campo de código vacío,
+    // la búsqueda pasaba SIN NINGÚN bloqueo — un bypass más grave que el
+    // ya documentado del monolito (que al menos requería que el NIT nunca
+    // hubiera tenido código configurado). Ver CLAUDE.md, hallazgo "Bypass
+    // de autorización — portal empresa por NIT". El nuevo endpoint BFF
+    // exige código de acceso siempre; sin código, deniega.
+    //
+    // `cargarDocumentos()` (periodos/cuenta/custodia/informe + fallback a
+    // bills/caja/custodia) sigue intacta, usando d1Client.js sin cambios —
+    // coexistencia temporal, ver CLAUDE.md.
     try {
-      let codigoValido = true; let docsKeyFound = false;
-      const nitVariants = [nitClean];
-      for (let dv = 0; dv <= 9; dv++) nitVariants.push(nitClean + dv);
-      if (nitClean.length > 6) nitVariants.push(nitClean.slice(0, -1));
-
-      if (cod) {
-        for (const nv of nitVariants) {
-          const rd = await fetchKey(`siso_portal_empresa_docs_${nv}`);
-          if (rd.ok && rd.data?.codigoAcceso) {
-            docsKeyFound = true;
-            if (String(rd.data.codigoAcceso).trim().toUpperCase() === cod.toUpperCase()) { codigoValido = true; break; }
-          }
-        }
-        if (docsKeyFound && !codigoValido) {
-          setError('🔒 Código de acceso incorrecto.\n\nVerifique el código enviado al correo de la empresa.\nFormato: EMP-XXXX-XXXX');
-          setLoading(false); return;
-        }
+      const bffRes = await getEmpresaDocsPublic(nitClean, cod);
+      if (!bffRes.ok || !bffRes.data?.autorizado) {
+        setError('🔒 Código de acceso incorrecto.\n\nVerifique el código enviado al correo de la empresa.\nFormato: EMP-XXXX-XXXX');
+        setLoading(false); return;
       }
 
-      const _atMap = new Map(); let baseAtenciones = null;
-      for (const nv of nitVariants) {
-        const rAt = await fetchKey(`siso_portal_empresa_atenciones_${nv}`);
-        if (rAt.ok && rAt.data && typeof rAt.data === 'object') {
-          if (!baseAtenciones) baseAtenciones = rAt.data;
-          (rAt.data.atenciones || []).forEach(a => {
-            const dn = String(a?.docNumero || '').replace(/\s/g, '').trim();
-            if (dn && !_atMap.has(dn)) _atMap.set(dn, a);
-          });
-        }
-      }
+      const atenciones = Array.isArray(bffRes.data.atenciones) ? bffRes.data.atenciones : [];
 
-      if (_atMap.size > 0 && baseAtenciones) {
-        const grupo = { ...baseAtenciones, atenciones: [..._atMap.values()] };
+      if (atenciones.length > 0) {
+        const grupo = { nombre: 'Empresa', atenciones };
         setEmpresaAtenciones(grupo);
         setResultadosEmpresa(grupo.atenciones);
         setAuthenticated({ nombre: grupo.nombre || 'Empresa', nit: nitClean });
@@ -137,6 +140,7 @@ export default function PortalEmpresaPage() {
     finally { setLoading(false); }
   };
 
+  // TEMPORAL: bills/caja/custodia siguen en d1Client.js hasta Fase C/D — ver CLAUDE.md
   // ═══ CARGAR DOCUMENTOS — Fusión multi-NIT como monolito PortalEmpresaDocsPeriodos ═══
   const cargarDocumentos = async (nitClean) => {
     setDocsLoading(true);
