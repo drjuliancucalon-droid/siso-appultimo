@@ -1,9 +1,23 @@
 // src/modules/patients/components/WorkerPortal.jsx — SPRINT 5
-// Conectado a D1: búsqueda por cédula vía siso_portal_doc_<cc>
-// y por código vía siso_portal_<code> + siso_portal_CV-<code>
+// FIX Fase A (BFF same-origin): antes llamaba a d1Client.js directamente
+// desde el navegador (mismo patrón que exponía VITE_WORKER_TOKEN en el
+// bundle público — ver CLAUDE.md). Ahora consume
+// /api/internal-store/verify/:codigo, sin token en el cliente.
+// Búsqueda por cédula vía siso_portal_doc_<cc>, por código vía
+// siso_portal_<code> + siso_portal_CV-<code> (mismas 3 claves candidatas
+// del endpoint compartido con VerificacionPage.jsx).
+//
+// LIMITACIÓN FUNCIONAL CONOCIDA (no un bug de esta migración): el endpoint
+// BFF devuelve solo el PRIMER match entre las 3 claves candidatas, con
+// solo 3 campos (conceptoAptitud/cargo/tipoExamen). Antes esta pantalla
+// podía acumular varios resultados de D1 (siso_portal_ Y siso_portal_CV-
+// simultáneamente) y mostraba el certificado completo vía CertificateView.
+// Con el BFF ya no se acumulan múltiples matches de D1, y CertificateView
+// recibirá un objeto con casi todos sus campos vacíos — ampliar el alcance
+// de campos del endpoint requiere decisión humana separada.
 import React, { useState } from 'react';
 import { Shield, Search, FileText, AlertCircle, CheckCircle, Clock } from 'lucide-react';
-import { d1Get } from '../../../lib/d1Client';
+import { verifyCode } from '../../../lib/bffPortalClient';
 import { CertificateView } from '../../clinical/components/CertificateView';
 
 export const WorkerPortal = () => {
@@ -21,10 +35,10 @@ export const WorkerPortal = () => {
     try {
       const results = [];
       const isCedula = /^\d{5,15}$/.test(q);
+      const r = await verifyCode(q);
+      if (r.ok && r.data?.encontrado) results.push(r.data);
       if (isCedula) {
-        const { value } = await d1Get(`siso_portal_doc_${q}`);
-        if (value) results.push(value);
-        // Fallback localStorage
+        // Fallback localStorage (no toca D1/token, sin cambios)
         try {
           const raw = localStorage.getItem('siso_atenciones_cerradas');
           if (raw) {
@@ -34,10 +48,6 @@ export const WorkerPortal = () => {
         } catch {}
       } else {
         const qUp = q.toUpperCase();
-        const { value: v1 } = await d1Get(`siso_portal_${qUp}`);
-        if (v1) results.push(v1);
-        const { value: v2 } = await d1Get(`siso_portal_CV-${qUp}`);
-        if (v2 && !results.some(r=>r.codigoVerificacion===v2.codigoVerificacion)) results.push(v2);
         if (results.length===0) {
           try {
             const raw = localStorage.getItem('siso_pacientes');
