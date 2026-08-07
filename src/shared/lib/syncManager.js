@@ -12,50 +12,21 @@ import {
   clearOfflineDB,
 } from './offlineDB.js';
 
-// ── D1 Worker config ──────────────────────────────────
-const _d1Config = () => {
-  if (typeof window === 'undefined') return { url: '', token: '' };
-  return {
-    url: window.__SISO_CONFIG?.workerUrl || '',
-    token: window.__SISO_CONFIG?.workerToken || '',
-  };
-};
-
-const _d1GetAll = async () => {
-  const { url: W, token: TOK } = _d1Config();
-  if (!W || !TOK) return null;
-  try {
-    const r = await fetch(`${W}/store/prefix/siso_`, {
-      headers: { 'X-Siso-Token': TOK },
-    });
-    if (!r.ok) return null;
-    const rows = await r.json();
-    const out = {};
-    for (const row of (rows || [])) {
-      const rawVal = row.value;
-      out[row.key] = {
-        value: rawVal,
-        updatedAt:
-          (rawVal && typeof rawVal === 'object' && rawVal.updatedAt) ||
-          row.ts || row.updatedAt || new Date().toISOString(),
-      };
-    }
-    return out;
-  } catch { return null; }
-};
-
-const _d1Get = async (key) => {
-  const { url: W, token: TOK } = _d1Config();
-  if (!W || !TOK) return null;
-  try {
-    const r = await fetch(`${W}/store/${encodeURIComponent(key)}`, {
-      headers: { 'X-Siso-Token': TOK },
-    });
-    if (!r.ok) return null;
-    const d = await r.json();
-    return d[0]?.value ?? null;
-  } catch { return null; }
-};
+// FIX 2026-08-07 (segundo precedente de seguridad, ver CLAUDE.md): se
+// retiraron _d1Config/_d1GetAll/_d1Get — leían window.__SISO_CONFIG?.workerToken
+// y lo mandaban como header X-Siso-Token en un fetch hecho DESDE EL
+// NAVEGADOR contra el Worker siso-api. Vector de fuga del token maestro
+// (acceso global de lectura/escritura a toda la D1 compartida, sin scopes
+// por usuario). Estaba inerte porque nada en el refactor puebla
+// window.__SISO_CONFIG (ni siquiera el middleware BFF de Fase 1C, que
+// deliberadamente nunca lo hace), pero quedaba listo para filtrar el
+// token en cuanto alguien conectara esa pieza — exactamente el patrón que
+// SÍ estaba activo en src/lib/d1Client.js (VITE_WORKER_TOKEN), ver
+// hallazgo P0 en CLAUDE.md. El patrón correcto es el BFF same-origin
+// (functions/api/internal-store/*, token solo server-side) — no
+// implementado aquí, esta corrección solo retira la rama muerta.
+// El fallback a Supabase (_sbGetAll/_fetchFromSupabase, abajo) queda
+// intacto: usa la key pública/publishable de Supabase, no un secreto maestro.
 
 // ── Supabase helpers — adaptados para el destino ──────────
 const _sbUrl = () => (typeof window !== 'undefined' && window.__SISO_CONFIG?.sbUrl) || '';
@@ -154,9 +125,10 @@ export const hybridGet = async (key, fallback = null) => {
   try {
     const idbVal = await idbGet(key);
     if (idbVal !== null) {
-      if (typeof navigator !== 'undefined' && navigator.onLine) {
-        _refreshFromD1(key).catch(() => {});
-      }
+      // FIX 2026-08-07: aquí llamaba a _refreshFromD1(key) (retirada, ver
+      // nota arriba en el archivo) — refresco en segundo plano vía token en
+      // el navegador. Sin reemplazo: el refresco desde D1 requiere el
+      // patrón BFF (fase futura), no un fetch directo desde aquí.
       return idbVal;
     }
   } catch {}
@@ -172,11 +144,6 @@ export const hybridGet = async (key, fallback = null) => {
 
   if (typeof navigator !== 'undefined' && navigator.onLine) {
     try {
-      const d1Val = await _d1Get(key);
-      if (d1Val !== null) {
-        await idbSet(key, d1Val);
-        return d1Val;
-      }
       const sbData = await _fetchFromSupabase(key);
       if (sbData !== null) {
         await idbSet(key, sbData);
@@ -247,12 +214,10 @@ export const syncNow = async () => {
       }
     }
 
-    let cloudData = await _d1GetAll().catch(() => null);
-    let fuente = 'D1';
-    if (!cloudData) {
-      cloudData = await _sbGetAll().catch(() => null);
-      fuente = 'Supabase (fallback)';
-    }
+    // FIX 2026-08-07: antes intentaba _d1GetAll() primero (token en el
+    // navegador, retirada) y caía a Supabase solo si eso fallaba. Ahora va
+    // directo a Supabase — ver nota al inicio del archivo.
+    const cloudData = await _sbGetAll().catch(() => null);
     if (cloudData) {
       const localData = await idbGetAll();
       let updated = 0;
@@ -306,13 +271,6 @@ export const hybridAuditLog = async (action, user, detail = '', extra = {}) => {
   }
 
   await enqueueAuditLog(entry);
-};
-
-const _refreshFromD1 = async (key) => {
-  const d1Val = await _d1Get(key);
-  if (d1Val === null) return;
-  await idbSet(key, d1Val);
-  try { if (typeof localStorage !== 'undefined') localStorage.setItem(key, JSON.stringify(d1Val)); } catch {}
 };
 
 const _pushAuditToSupabase = async (entry) => {
