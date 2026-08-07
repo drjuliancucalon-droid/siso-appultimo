@@ -74,3 +74,33 @@ export async function getEmpresaDocsPublic(nit, codigoAcceso) {
   if (!res.ok) return { ok: false, status: res.status, error: body?.error || "Error" };
   return { ok: true, status: res.status, data: body };
 }
+
+// FIX 2026-08-07 (P0 — ver CLAUDE.md): reemplaza la descarga completa de
+// siso_saved_bills_*/siso_caja_movs_*/siso_cartas_custodia_* + filtrado
+// client-side en PortalEmpresaPage.cargarDocumentos(). El servidor ahora
+// filtra por NIT antes de responder — el cliente nunca recibe registros de
+// otras empresas.
+export async function getEmpresaFinancieroPublic(nit, codigoAcceso) {
+  const safeNit = typeof nit === "string" ? nit.replace(/\D/g, "") : "";
+  const safeCodigo = typeof codigoAcceso === "string" ? codigoAcceso.trim() : "";
+  if (!safeNit) return { ok: false, status: 400, error: "NIT vacío" };
+  if (!safeCodigo) return { ok: false, status: 400, error: "Código de acceso requerido" };
+
+  let res;
+  try {
+    res = await fetch(`/api/internal-store/portal-empresa-financiero/${encodeURIComponent(safeNit)}`, {
+      method: "POST",
+      credentials: "same-origin",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ codigo: safeCodigo }),
+    });
+  } catch {
+    return { ok: false, status: 0, error: "Error de red" };
+  }
+
+  let body = null;
+  try { body = await res.json(); } catch { /* respuesta no-JSON inesperada */ }
+
+  if (!res.ok) return { ok: false, status: res.status, error: body?.error || "Error" };
+  return { ok: true, status: res.status, data: body };
+}

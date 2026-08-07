@@ -11,7 +11,7 @@ import { d1Get, _readSmart } from '../lib/d1Client';
 // fallback de bills/caja/custodia — coexistencia temporal, ver CLAUDE.md.
 // buscarIndividual() (más abajo) tampoco se tocó en este bloque — fuera
 // del alcance acordado ("solo la porción de docs/atenciones").
-import { getEmpresaDocsPublic } from '../lib/bffPortalClient';
+import { getEmpresaDocsPublic, getEmpresaFinancieroPublic } from '../lib/bffPortalClient';
 
 // FIX 2026-07-21 (FASE 2 PROMPT_MAESTRO): consulta Supabase para _readSmart —
 // antes esta pantalla leía siso_portal_empresa_docs SOLO de D1, sin ningún
@@ -132,7 +132,7 @@ export default function PortalEmpresaPage() {
         setResultadosEmpresa(grupo.atenciones);
         setAuthenticated({ nombre: grupo.nombre || 'Empresa', nit: nitClean });
         setCertSeleccionados({});
-        cargarDocumentos(nitClean);
+        cargarDocumentos(nitClean, cod);
         setLoading(false); return;
       }
       setError(`📭 No se encontraron certificados para esta empresa.`);
@@ -140,11 +140,19 @@ export default function PortalEmpresaPage() {
     finally { setLoading(false); }
   };
 
-  // TEMPORAL: bills/caja/custodia siguen en d1Client.js hasta Fase C/D — ver CLAUDE.md
+  // FIX 2026-08-07 (P0 — ver CLAUDE.md, "Fuga de facturación/caja/custodia
+  // en portal empresa"): esta función descargaba TODO
+  // siso_saved_bills_<userId> / siso_caja_movs_<userId> /
+  // siso_cartas_custodia_<userId> (todo el consultorio, todas las
+  // empresas, con nombre y documento de pacientes incluidos — ver
+  // HistoriaPage.jsx) y filtraba por NIT recién en el navegador, en un
+  // flujo SIN autenticación real de doctor. Ahora usa
+  // /api/internal-store/portal-empresa-financiero/:nit, que filtra
+  // server-side antes de responder — el cliente nunca recibe registros de
+  // otras empresas.
   // ═══ CARGAR DOCUMENTOS — Fusión multi-NIT como monolito PortalEmpresaDocsPeriodos ═══
-  const cargarDocumentos = async (nitClean) => {
+  const cargarDocumentos = async (nitClean, codigoAcceso) => {
     setDocsLoading(true);
-    const userId = (() => { try { const s = JSON.parse(localStorage.getItem('siso-auth') || '{}'); return s?.state?.currentUser?.user || 'drcucalon'; } catch { return 'drcucalon'; } })();
 
     const nitVariants = [nitClean];
     for (let dv = 0; dv <= 9; dv++) nitVariants.push(nitClean + dv);
@@ -191,37 +199,20 @@ export default function PortalEmpresaPage() {
         }
       }
 
-      // ── Cuentas de cobro — leer siso_saved_bills como fallback ──
+      // ── Cuentas de cobro y custodia — servidor filtra por NIT, nunca el navegador ──
       let cuentasBills = [];
+      let custBills = [];
       try {
-        const billsKey = `siso_saved_bills_${userId}`;
-        const { value: billsRaw } = await d1Get(billsKey);
-        const bills = Array.isArray(billsRaw) ? billsRaw : [];
-        const { value: cajaRaw } = await d1Get(`siso_caja_movs_${userId}`);
-        const cajaMovs = Array.isArray(cajaRaw) ? cajaRaw : [];
-        const todas = [...bills, ...cajaMovs];
-        cuentasBills = todas
-          .filter(m => {
-            const idMatch = (m.empresaClienteId || '').replace(/[^0-9]/g, '') === nitClean;
-            const nombreMatch = (m.empresaClienteNombre || '').toLowerCase().includes(nitClean);
-            return idMatch || !idMatch && nombreMatch;
-          })
-          .slice(0, 30);
+        const finRes = await getEmpresaFinancieroPublic(nitClean, codigoAcceso);
+        if (finRes.ok && finRes.data?.autorizado) {
+          cuentasBills = Array.isArray(finRes.data.cuentas) ? finRes.data.cuentas : [];
+          custBills = Array.isArray(finRes.data.custodia) ? finRes.data.custodia : [];
+        }
       } catch (_) {}
-      // Merge: portal primero, bills después (sin duplicar)
+      // Merge: portal primero (periodos[]), fallback financiero después (sin duplicar)
       const seenCuentaIds = new Set(cuentasArr.map(c => c.id).filter(Boolean));
       const mergedCuentas = [...cuentasArr, ...cuentasBills.filter(c => !seenCuentaIds.has(c.id))];
 
-      // ── Cartas de custodia como fallback ──
-      let custBills = [];
-      try {
-        const custKey = `siso_cartas_custodia_${userId}`;
-        const { value: custRaw } = await d1Get(custKey);
-        custBills = Array.isArray(custRaw) ? custRaw.filter(c => {
-          const nitC = (c.empresaNit || c.nit || '').replace(/[^0-9]/g, '');
-          return nitC === nitClean || nitC.includes(nitClean) || nitClean.includes(nitC);
-        }) : [];
-      } catch (_) {}
       const seenCustIds = new Set(custodiasArr.map(c => c.id).filter(Boolean));
       const mergedCustodia = [...custodiasArr, ...custBills.filter(c => !seenCustIds.has(c.id))];
 
