@@ -7,7 +7,12 @@ import {
   ShieldCheck, Search, Loader2, AlertCircle, CheckCircle,
   Building2, User, Printer, QrCode, Download, FileText
 } from 'lucide-react';
-import { d1Get } from '../lib/d1Client';
+// FIX Fase A (BFF same-origin): antes esta página llamaba a d1Client.js
+// directamente desde el navegador — el mismo patrón que exponía
+// VITE_WORKER_TOKEN en el bundle público (ver CLAUDE.md, incidente de
+// seguridad). Ahora consume /api/internal-store/* same-origin, sin token
+// en el cliente.
+import { verifyCode, searchByNitPublic } from '../lib/bffPortalClient';
 
 // Semáforo de concepto de aptitud (verde/amarillo/rojo)
 const getAptitudColor = (concepto = '') => {
@@ -18,20 +23,11 @@ const getAptitudColor = (concepto = '') => {
   return { bg: 'bg-gray-100', text: 'text-gray-700', dot: 'bg-gray-400', label: concepto };
 };
 
-// Buscar en D1 por clave — retorna el value directo
-const portalGet = async (key) => {
-  try {
-    const { value } = await d1Get(key);
-    return value || null;
-  } catch {
-    return null;
-  }
-};
-
 export default function VerificacionPage() {
   const { codigo: urlCodigo } = useParams();
   const [codigo, setCodigo] = useState(urlCodigo || '');
   const [nit, setNit] = useState('');
+  const [codigoAcceso, setCodigoAcceso] = useState(''); // NUEVO: gate de empresa, ver CLAUDE.md
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null); // portalData de un trabajador
   const [empresaResult, setEmpresaResult] = useState(null); // índice de empresa (por NIT)
@@ -45,40 +41,49 @@ export default function VerificacionPage() {
     if (!codigo.trim()) { setError('Ingresa un código de verificación o número de cédula'); return; }
     setLoading(true); setError(''); setResult(null); setEmpresaResult(null);
     try {
-      // 1. Por código QR exacto
-      let data = await portalGet(`siso_portal_${codigo.trim()}`);
-      // 2. Por cédula
-      if (!data) data = await portalGet(`siso_portal_doc_${codigo.trim().replace(/\s/g, '')}`);
-      if (data) { setResult(data); }
+      const r = await verifyCode(codigo.trim());
+      // NOTA (regresión funcional ya documentada, no un bug de esta
+      // migración): el endpoint BFF solo proyecta conceptoAptitud/cargo/
+      // tipoExamen — nunca nombres, documento, diagnóstico, restricciones,
+      // recomendaciones ni firma. La UI de abajo sigue intentando leer esos
+      // campos de `result`; con el BFF simplemente no estarán presentes
+      // (undefined, se renderizan vacíos). Ampliar el alcance de campos
+      // del endpoint requiere decisión humana separada — ver
+      // functions/api/internal-store/verify/[codigo].js.
+      if (r.ok && r.data?.encontrado) { setResult(r.data); }
       else setError('No se encontró ninguna historia clínica con ese código.');
     } catch (err) { setError('Error al buscar: ' + err.message); }
     finally { setLoading(false); }
   };
 
-  // B-10: Búsqueda por NIT de empresa (para RR.HH.)
+  // B-10: Búsqueda por NIT de empresa (para RR.HH.) — ahora requiere el
+  // código de acceso enviado por email a la empresa, igual que el
+  // monolito (App.jsx:17183) y PortalEmpresaPage.jsx. La versión anterior
+  // de esta función NO pedía ningún código — divergencia de seguridad ya
+  // corregida aquí, ver CLAUDE.md.
   const buscarPorNIT = async () => {
     if (!nit.trim()) { setError('Ingresa el NIT de la empresa'); return; }
+    if (!codigoAcceso.trim()) { setError('Ingresa el código de acceso enviado al correo de la empresa (formato EMP-XXXX-XXXX)'); return; }
     setLoading(true); setError(''); setResult(null); setEmpresaResult(null); setEmpresaWorkers([]);
     try {
-      const nitLimpio = nit.replace(/[^0-9]/g, '');
-      // D1 guarda un array de empresaReg (no un objeto con .documentos)
-      const empresaArray = await portalGet(`siso_portal_empresa_${nitLimpio}`);
-      if (!empresaArray || !Array.isArray(empresaArray) || empresaArray.length === 0) {
-        setError('No se encontraron registros para ese NIT.');
+      const r = await searchByNitPublic(nit, codigoAcceso);
+      if (!r.ok || !r.data?.autorizado) {
+        setError('🔐 NIT o código de acceso incorrecto.\n\nVerifique el código enviado al correo de la empresa.\nFormato: EMP-XXXX-XXXX');
         setLoading(false);
         return;
       }
-      setEmpresaResult({ nombre: nit, documentos: empresaArray.map(r => r.docNumero) });
-      // Cargar la HC completa de cada trabajador por cédula
-      const workers = [];
-      for (const reg of empresaArray) {
-        try {
-          const w = await portalGet(`siso_portal_doc_${reg.docNumero}`);
-          if (w) workers.push(w);
-          else workers.push(reg); // fallback: mostrar datos del índice
-        } catch {}
+      const trabajadores = Array.isArray(r.data.trabajadores) ? r.data.trabajadores : [];
+      if (trabajadores.length === 0) {
+        setError('Empresa encontrada, pero aún no tiene certificados disponibles.');
+        setLoading(false);
+        return;
       }
-      setEmpresaWorkers(workers);
+      setEmpresaResult({ nombre: nit, documentos: trabajadores.map(t => t.docNumero) });
+      // NOTA: la proyección del BFF trae 6 campos (nombres, docNumero,
+      // fechaExamen, conceptoAptitud, derivaciones, tipoExamen) — la tabla
+      // de abajo también referencia w.cargo/w.docTipo/w.vigencia, que ya
+      // no vienen del backend; se renderizan vacíos, no rompen la tabla.
+      setEmpresaWorkers(trabajadores);
     } catch (err) { setError('Error al buscar: ' + err.message); }
     finally { setLoading(false); }
   };
@@ -195,12 +200,21 @@ export default function VerificacionPage() {
                   className="flex-1 px-4 py-3 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-400 outline-none"
                   disabled={loading}
                 />
+              </div>
+              <div className="flex gap-2 mt-2">
+                <input type="text" value={codigoAcceso}
+                  onChange={(e) => setCodigoAcceso(e.target.value.toUpperCase())}
+                  onKeyDown={(e) => e.key === 'Enter' && buscarPorNIT()}
+                  placeholder="Código de acceso (EMP-XXXX-XXXX)"
+                  className="flex-1 px-4 py-3 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-400 outline-none font-mono"
+                  disabled={loading}
+                />
                 <button onClick={buscarPorNIT} disabled={loading}
                   className="bg-gradient-to-r from-emerald-600 to-teal-500 text-white px-5 py-3 rounded-xl font-bold hover:opacity-90 disabled:opacity-50 flex items-center gap-2">
                   {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
                 </button>
               </div>
-              <p className="text-xs text-gray-400 mt-2">Acceso para gestores de RR.HH. — Ver todos los trabajadores de la empresa</p>
+              <p className="text-xs text-gray-400 mt-2">Acceso para gestores de RR.HH. con el código enviado al correo de la empresa — Ver todos los trabajadores de la empresa</p>
             </div>
           )}
 

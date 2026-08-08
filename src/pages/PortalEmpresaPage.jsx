@@ -4,6 +4,14 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Building2, Loader2, Download, Search, FileText, BarChart3, Users, Activity, Printer, Shield, CheckSquare, Square, ChevronDown } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 import { d1Get, _readSmart } from '../lib/d1Client';
+// FIX Fase A (BFF same-origin): buscarEmpresa() (gate de codigoAcceso +
+// atenciones_<nit>) migró a este cliente same-origin, sin token en el
+// navegador. d1Get/_readSmart de arriba SIGUEN siendo necesarios: los usa
+// cargarDocumentos() para periodos/cuenta/custodia/informe y para el
+// fallback de bills/caja/custodia — coexistencia temporal, ver CLAUDE.md.
+// buscarIndividual() (más abajo) tampoco se tocó en este bloque — fuera
+// del alcance acordado ("solo la porción de docs/atenciones").
+import { getEmpresaDocsPublic, getEmpresaFinancieroPublic } from '../lib/bffPortalClient';
 
 // FIX 2026-07-21 (FASE 2 PROMPT_MAESTRO): consulta Supabase para _readSmart —
 // antes esta pantalla leía siso_portal_empresa_docs SOLO de D1, sin ningún
@@ -91,45 +99,40 @@ export default function PortalEmpresaPage() {
     const nitClean = q.replace(/[^0-9]/g, '');
     if (!nitClean || nitClean.length < 3) { setError('NIT inválido'); setLoading(false); return; }
 
+    // FIX Fase A (BFF same-origin): antes esta función hacía el gate de
+    // codigoAcceso y la lectura de atenciones_<nit> con d1Client.js
+    // directo desde el navegador (mismo patrón que exponía
+    // VITE_WORKER_TOKEN — ver CLAUDE.md). Ahora usa
+    // /api/internal-store/portal-empresa-docs/:nit same-origin.
+    //
+    // CORRECCIÓN DE SEGURIDAD deliberada respecto al código anterior: la
+    // versión previa inicializaba `codigoValido = true` FUERA del
+    // `if (cod)`, así que si el usuario dejaba el campo de código vacío,
+    // la búsqueda pasaba SIN NINGÚN bloqueo — un bypass más grave que el
+    // ya documentado del monolito (que al menos requería que el NIT nunca
+    // hubiera tenido código configurado). Ver CLAUDE.md, hallazgo "Bypass
+    // de autorización — portal empresa por NIT". El nuevo endpoint BFF
+    // exige código de acceso siempre; sin código, deniega.
+    //
+    // `cargarDocumentos()` (periodos/cuenta/custodia/informe + fallback a
+    // bills/caja/custodia) sigue intacta, usando d1Client.js sin cambios —
+    // coexistencia temporal, ver CLAUDE.md.
     try {
-      let codigoValido = true; let docsKeyFound = false;
-      const nitVariants = [nitClean];
-      for (let dv = 0; dv <= 9; dv++) nitVariants.push(nitClean + dv);
-      if (nitClean.length > 6) nitVariants.push(nitClean.slice(0, -1));
-
-      if (cod) {
-        for (const nv of nitVariants) {
-          const rd = await fetchKey(`siso_portal_empresa_docs_${nv}`);
-          if (rd.ok && rd.data?.codigoAcceso) {
-            docsKeyFound = true;
-            if (String(rd.data.codigoAcceso).trim().toUpperCase() === cod.toUpperCase()) { codigoValido = true; break; }
-          }
-        }
-        if (docsKeyFound && !codigoValido) {
-          setError('🔒 Código de acceso incorrecto.\n\nVerifique el código enviado al correo de la empresa.\nFormato: EMP-XXXX-XXXX');
-          setLoading(false); return;
-        }
+      const bffRes = await getEmpresaDocsPublic(nitClean, cod);
+      if (!bffRes.ok || !bffRes.data?.autorizado) {
+        setError('🔒 Código de acceso incorrecto.\n\nVerifique el código enviado al correo de la empresa.\nFormato: EMP-XXXX-XXXX');
+        setLoading(false); return;
       }
 
-      const _atMap = new Map(); let baseAtenciones = null;
-      for (const nv of nitVariants) {
-        const rAt = await fetchKey(`siso_portal_empresa_atenciones_${nv}`);
-        if (rAt.ok && rAt.data && typeof rAt.data === 'object') {
-          if (!baseAtenciones) baseAtenciones = rAt.data;
-          (rAt.data.atenciones || []).forEach(a => {
-            const dn = String(a?.docNumero || '').replace(/\s/g, '').trim();
-            if (dn && !_atMap.has(dn)) _atMap.set(dn, a);
-          });
-        }
-      }
+      const atenciones = Array.isArray(bffRes.data.atenciones) ? bffRes.data.atenciones : [];
 
-      if (_atMap.size > 0 && baseAtenciones) {
-        const grupo = { ...baseAtenciones, atenciones: [..._atMap.values()] };
+      if (atenciones.length > 0) {
+        const grupo = { nombre: 'Empresa', atenciones };
         setEmpresaAtenciones(grupo);
         setResultadosEmpresa(grupo.atenciones);
         setAuthenticated({ nombre: grupo.nombre || 'Empresa', nit: nitClean });
         setCertSeleccionados({});
-        cargarDocumentos(nitClean);
+        cargarDocumentos(nitClean, cod);
         setLoading(false); return;
       }
       setError(`📭 No se encontraron certificados para esta empresa.`);
@@ -137,10 +140,19 @@ export default function PortalEmpresaPage() {
     finally { setLoading(false); }
   };
 
+  // FIX 2026-08-07 (P0 — ver CLAUDE.md, "Fuga de facturación/caja/custodia
+  // en portal empresa"): esta función descargaba TODO
+  // siso_saved_bills_<userId> / siso_caja_movs_<userId> /
+  // siso_cartas_custodia_<userId> (todo el consultorio, todas las
+  // empresas, con nombre y documento de pacientes incluidos — ver
+  // HistoriaPage.jsx) y filtraba por NIT recién en el navegador, en un
+  // flujo SIN autenticación real de doctor. Ahora usa
+  // /api/internal-store/portal-empresa-financiero/:nit, que filtra
+  // server-side antes de responder — el cliente nunca recibe registros de
+  // otras empresas.
   // ═══ CARGAR DOCUMENTOS — Fusión multi-NIT como monolito PortalEmpresaDocsPeriodos ═══
-  const cargarDocumentos = async (nitClean) => {
+  const cargarDocumentos = async (nitClean, codigoAcceso) => {
     setDocsLoading(true);
-    const userId = (() => { try { const s = JSON.parse(localStorage.getItem('siso-auth') || '{}'); return s?.state?.currentUser?.user || 'drcucalon'; } catch { return 'drcucalon'; } })();
 
     const nitVariants = [nitClean];
     for (let dv = 0; dv <= 9; dv++) nitVariants.push(nitClean + dv);
@@ -187,37 +199,20 @@ export default function PortalEmpresaPage() {
         }
       }
 
-      // ── Cuentas de cobro — leer siso_saved_bills como fallback ──
+      // ── Cuentas de cobro y custodia — servidor filtra por NIT, nunca el navegador ──
       let cuentasBills = [];
+      let custBills = [];
       try {
-        const billsKey = `siso_saved_bills_${userId}`;
-        const { value: billsRaw } = await d1Get(billsKey);
-        const bills = Array.isArray(billsRaw) ? billsRaw : [];
-        const { value: cajaRaw } = await d1Get(`siso_caja_movs_${userId}`);
-        const cajaMovs = Array.isArray(cajaRaw) ? cajaRaw : [];
-        const todas = [...bills, ...cajaMovs];
-        cuentasBills = todas
-          .filter(m => {
-            const idMatch = (m.empresaClienteId || '').replace(/[^0-9]/g, '') === nitClean;
-            const nombreMatch = (m.empresaClienteNombre || '').toLowerCase().includes(nitClean);
-            return idMatch || !idMatch && nombreMatch;
-          })
-          .slice(0, 30);
+        const finRes = await getEmpresaFinancieroPublic(nitClean, codigoAcceso);
+        if (finRes.ok && finRes.data?.autorizado) {
+          cuentasBills = Array.isArray(finRes.data.cuentas) ? finRes.data.cuentas : [];
+          custBills = Array.isArray(finRes.data.custodia) ? finRes.data.custodia : [];
+        }
       } catch (_) {}
-      // Merge: portal primero, bills después (sin duplicar)
+      // Merge: portal primero (periodos[]), fallback financiero después (sin duplicar)
       const seenCuentaIds = new Set(cuentasArr.map(c => c.id).filter(Boolean));
       const mergedCuentas = [...cuentasArr, ...cuentasBills.filter(c => !seenCuentaIds.has(c.id))];
 
-      // ── Cartas de custodia como fallback ──
-      let custBills = [];
-      try {
-        const custKey = `siso_cartas_custodia_${userId}`;
-        const { value: custRaw } = await d1Get(custKey);
-        custBills = Array.isArray(custRaw) ? custRaw.filter(c => {
-          const nitC = (c.empresaNit || c.nit || '').replace(/[^0-9]/g, '');
-          return nitC === nitClean || nitC.includes(nitClean) || nitClean.includes(nitC);
-        }) : [];
-      } catch (_) {}
       const seenCustIds = new Set(custodiasArr.map(c => c.id).filter(Boolean));
       const mergedCustodia = [...custodiasArr, ...custBills.filter(c => !seenCustIds.has(c.id))];
 
