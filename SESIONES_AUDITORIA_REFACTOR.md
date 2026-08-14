@@ -233,6 +233,29 @@ Analizar y corregir la causa raíz de `DASH-001` (KPIs del Dashboard), previa ap
 
 ---
 
+### SESIÓN 004 — 2026-08-14
+**Auditor:** Cline (QA Senior / Auditor de Paridad Funcional)  
+**Objetivo:** Auditoría de evidencia comparativa 1:1 monolito ↔ refactor
+
+#### Resultado
+- Comparación 1:1 real en Dashboard, Pacientes, Historia Clínica (lectura), Agenda, Empresas, Portal Empresa (login).
+- Auditoría **DETENIDA voluntariamente** para corregir clasificación de PAC-001 y documentar evidencia real.
+- No se ejecutó Fase E ni Fase F (pendientes de autorización).
+
+#### Hallazgos
+1. `PAC-001` — **RECLASIFICADO: FALSO POSITIVO**. En el monolito, "HC Propias / Todos médicos" son botones de historial POR paciente (no filtro global), y para un usuario admin (`drcucalon`) el monolito también muestra todos los pacientes (`listFiltered = allUnique` cuando `_isAdmin(role)`; `_isAdmin = administrador || super_admin`). No hay diferencia real de alcance. NO se modificó código.
+2. `DASH-001` (MEDIA): KPIs del Dashboard difieren (fórmulas de agregación divergentes). ABIERTO.
+3. `AGENDA-001` (MEDIA): Conteo de citas 0 (monolito) vs 2 (refactor); botones adicionales en refactor. ABIERTO.
+
+#### Estado
+- Sin escrituras, sin descargas, sin exportaciones, sin cambios de código, sin cambios de D1, sin deploy.
+- Documentación actualizada localmente, sin commit.
+
+#### Próxima acción exacta
+Analizar causa raíz de `DASH-001` (fórmulas de agregación de KPIs en `DashboardPage.jsx`), sin datos clínicos.
+
+---
+
 ## 🚨 PENDIENTES PARA PRÓXIMA SESIÓN
 
 ### Acción manual requerida de Julian (no puede hacerse desde aquí)
