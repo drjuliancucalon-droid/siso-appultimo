@@ -200,6 +200,39 @@ Migrar `ConfigIPSPage.jsx` de `localStorage` a D1 (`siso_ips_perfil`), mantenien
 
 ---
 
+### SESIÓN 003 — 2026-08-14
+**Auditor:** Cline (QA Senior / Auditor de Paridad Funcional)  
+**Objetivo:** Pruebas dinámicas de navegador de paridad monolito ↔ refactor (26 módulos) + recorrido completo de botones
+
+#### Evidencia revisada
+- Navegación real con Playwright sobre ambas apps (login ingresado por el usuario).
+- Network del refactor (endpoint verificado sin exponer bodies/tokens).
+- 26 módulos recorridos vía rutas del refactor.
+
+#### Resultado
+- Endpoint del refactor: `https://siso-api.dr-juliancucalon.workers.dev` (CORRECTO; sin tráfico a dev/localhost).
+- Paridad de lectura (PACIENTE-PRUEBA-001): datos clínicos idénticos.
+- 25/26 módulos con paridad funcional confirmada.
+- FASE E (bloqueo HC cerrada) y FASE F (escritura reversible): NO ejecutadas por no autorización explícita.
+
+#### Hallazgos
+1. `DASH-001` (MEDIA): KPIs del Dashboard del refactor difieren del monolito (valores en 0). Archivo probable: `src/pages/DashboardPage.jsx`. ABIERTO.
+2. (BAJA): toolbar de HC cerrada muestra "Guardar/Cerrar HC" en refactor (campos deshabilitados).
+3. (BAJA): tabs (refactor) vs botones (monolito) en navegación.
+
+#### Commits creados
+- `SESION_PRUEBAS_NAVEGADOR_PARIDAD_2026-08-14.md` (documento de pruebas de navegador).
+
+#### Pendientes
+- Analizar causa raíz de `DASH-001`.
+- Ejecutar FASE E y FASE F tras autorización.
+- Migrar `ConfigIPSPage.jsx` a D1.
+
+#### Próxima acción exacta
+Analizar y corregir la causa raíz de `DASH-001` (KPIs del Dashboard), previa aprobación explícita.
+
+---
+
 ## 🚨 PENDIENTES PARA PRÓXIMA SESIÓN
 
 ### Acción manual requerida de Julian (no puede hacerse desde aquí)
