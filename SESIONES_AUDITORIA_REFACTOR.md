@@ -114,8 +114,8 @@ CREATE INDEX idx_key ON siso_store(key);
 |---|---|---|---|
 | `PlanesPage.jsx` | 2 KB | ✅ Funcional con guard de roles — verificado 2026-08-14 | Baja |
 | `TelemedicinePage.jsx` | 2 KB | ✅ Funcional con secretaria gate — verificado 2026-08-14 | Baja |
-| `ConfigIPSPage.jsx` | 2.4 KB | ⚠️ Solo localStorage — necesita migrar a D1 | Media |
-| `Caja.jsx` | 1 KB | ⚠️ Resolver duplicado con `CajaPage.jsx` | Media |
+| `ConfigIPSPage.jsx` | 2.4 KB | ⚠️ Solo localStorage — necesita migrar a D1 (`siso_ips_perfil`) | Media |
+| `CajaPage.jsx` + `Caja.jsx` | — | ✅ NO es duplicado: `Caja.jsx` es adaptador de `CashBox`. Persistencia en localStorage (brecha a confirmar vs monolito) | Media (por confirmar) |
 
 ---
 
@@ -162,6 +162,41 @@ CREATE INDEX idx_key ON siso_store(key);
 - **Seguridad:** CANDADO 3 activado ✅
 - **D1 dev aislado:** Parcial ⚠️ — requiere acción manual de Julian (crear `siso-db-dev`)
 - **Coexistencia monolito/refactor:** Confirmada ✅ — ambas apps leen/escriben mismo D1
+
+---
+
+### SESIÓN 002 — 2026-08-14
+**Auditor:** Cline (QA Senior / Auditor de Paridad)  
+**Objetivo:** Autotest de paridad monolito ↔ refactor (8 fases)
+
+#### Evidencia revisada
+- `src/App.jsx` (router completo, 224 líneas)
+- `src/app/Layout.jsx` (navegación NAV_ITEMS)
+- `src/pages/ConfigIPSPage.jsx`
+- `src/pages/CajaPage.jsx`, `src/pages/Caja.jsx`, `src/modules/billing/components/CashBox.jsx`
+- `src/lib/d1Client.js`, `src/hooks/useBackendData.js`
+- `extractos-monolito/renderDashboard.txt`
+
+#### Resultado
+- Fases 1-4 (Network, lectura, candado HC, escritura) **NO ejecutadas** por requerir credenciales autorizadas y datos clínicos reales. Documentadas como limitación.
+- Fase 5 (ConfigIPSPage): usa solo `localStorage`, no D1 → brecha de paridad MEDIA.
+- Fase 6 (Caja): `Caja.jsx` NO es duplicado, es adaptador de `CashBox`. Persistencia en localStorage (brecha a confirmar).
+- Fase 7 (rutas): 6 rutas sin acceso directo desde el menú de navegación.
+
+#### Hallazgos
+1. `ConfigIPSPage.jsx` no comparte `siso_ips_perfil` con el monolito (MEDIA).
+2. `CajaPage.jsx` persiste en localStorage, no D1 (MEDIA, por confirmar).
+3. 6 rutas sin entrada en NAV_ITEMS (BAJA, por confirmar).
+
+#### Commits creados
+- `SESION_AUTOTEST_PARIDAD_MONOLITO_REFACTOR_2026-08-14.md` (documento de autotest)
+
+#### Pendientes
+- Ejecutar Fases 1-4 con credenciales autorizadas y paciente de prueba.
+- Migrar `ConfigIPSPage.jsx` a D1 (requiere aprobación).
+
+#### Próxima acción exacta
+Migrar `ConfigIPSPage.jsx` de `localStorage` a D1 (`siso_ips_perfil`), manteniendo localStorage como caché, previa aprobación explícita.
 
 ---
 
