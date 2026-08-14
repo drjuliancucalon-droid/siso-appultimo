@@ -2,6 +2,7 @@
 // Cloudflare D1 via Worker API
 // Ref: PROMPT_MAESTRO_V5.md secciones 4, 5.2, 6
 // Monolito referencia: línea 21366 (_writeArrayMergeD1)
+// CAMBIO 2026-08-14: _authHeaders acepta userId para activar CANDADO 3 del worker
 
 const WORKER_URL = import.meta.env.VITE_WORKER_URL || 'https://siso-api.dr-juliancucalon.workers.dev';
 const WORKER_TOKEN = import.meta.env.VITE_WORKER_TOKEN || '';
@@ -13,13 +14,25 @@ const BASE_DELAY = 1000; // 1s base para backoff exponencial
 
 // ── Helpers ───────────────────────────────────────────────────────────
 
-function _authHeaders() {
+/**
+ * _authHeaders(userId?)
+ * FIX 2026-08-14 — CANDADO 3 ACTIVADO:
+ * Envía X-Siso-App y X-Siso-UserId en cada request al worker.
+ * El worker valida que el userId del caller coincida con el sufijo de la clave
+ * para claves siso_patients_*, siso_db_patients_*, siso_hc_*.
+ * Antes: ninguna app enviaba estos headers → CANDADO 3 permanecía INERTE.
+ * Ahora: el refactor los envía siempre que tenga userId disponible.
+ * El monolito también debe ser actualizado para máxima protección (ver TODO).
+ */
+function _authHeaders(userId = '') {
   if (!WORKER_TOKEN) {
     console.warn('[d1Client] VITE_WORKER_TOKEN no configurado. Las operaciones D1 pueden fallar.');
   }
   return {
     'Content-Type': 'application/json',
     'X-Siso-Token': WORKER_TOKEN,
+    'X-Siso-App': 'refactor',
+    'X-Siso-UserId': userId || '',
   };
 }
 
@@ -90,7 +103,7 @@ async function _retry(fn, label) {
  * formato de escritura. _chunkGet conserva la lectura de ambos formatos
  * para poder leer residuos legacy durante la transición.
  */
-async function _chunkSet(key, value) {
+async function _chunkSet(key, value, userId = '') {
   const payload = JSON.stringify(value);
   if (payload.length <= CHUNK_THRESHOLD) {
     // Small payload → direct POST
@@ -98,7 +111,7 @@ async function _chunkSet(key, value) {
       () =>
         fetch(`${WORKER_URL}/store`, {
           method: 'POST',
-          headers: _authHeaders(),
+          headers: _authHeaders(userId),
           body: JSON.stringify({ key, value }),
         }).then(_checkResponse),
       `d1Set(${key})`
@@ -108,15 +121,15 @@ async function _chunkSet(key, value) {
     // reconstruya datos viejos.
     (async () => {
       try {
-        const r = await fetch(`${WORKER_URL}/store/${encodeURIComponent(key + '__meta')}`, { headers: _authHeaders() });
+        const r = await fetch(`${WORKER_URL}/store/${encodeURIComponent(key + '__meta')}`, { headers: _authHeaders(userId) });
         if (!r.ok) return;
         const rows = await r.json();
         const meta = rows?.[0]?.value;
         if (meta && meta.chunked && Number.isFinite(meta.count)) {
           for (let i = 0; i < meta.count; i++) {
-            await fetch(`${WORKER_URL}/store/${encodeURIComponent(key + '__c' + i)}`, { method: 'DELETE', headers: _authHeaders() }).catch(() => {});
+            await fetch(`${WORKER_URL}/store/${encodeURIComponent(key + '__c' + i)}`, { method: 'DELETE', headers: _authHeaders(userId) }).catch(() => {});
           }
-          await fetch(`${WORKER_URL}/store/${encodeURIComponent(key + '__meta')}`, { method: 'DELETE', headers: _authHeaders() }).catch(() => {});
+          await fetch(`${WORKER_URL}/store/${encodeURIComponent(key + '__meta')}`, { method: 'DELETE', headers: _authHeaders(userId) }).catch(() => {});
         }
       } catch {}
     })();
@@ -124,16 +137,12 @@ async function _chunkSet(key, value) {
   }
 
   // ── Intento PRIMARIO 2026-07-11: troceo ATÓMICO server-side ──
-  // /store/chunked escribe piezas+__meta+borrado de base en UNA transacción
-  // D1 (formato canónico, con hash) — inmune a escrituras simultáneas de
-  // otras pestañas o del monolito. Fallback: troceo cliente (abajo).
-  // COMMIT e219b26: timeout 45s → 180s para conexiones lentas (consultorio).
   try {
     const ctrl = new AbortController();
     const tid = setTimeout(() => ctrl.abort(), 180000);
     const r = await fetch(`${WORKER_URL}/store/chunked`, {
       method: 'POST',
-      headers: _authHeaders(),
+      headers: _authHeaders(userId),
       body: JSON.stringify({ key, value }),
       signal: ctrl.signal,
     });
@@ -148,7 +157,6 @@ async function _chunkSet(key, value) {
   }
 
   // COMMIT e4f53e9: claves protegidas ABORTAN si /store/chunked falla.
-  // El troceo cliente sin candado PUEDE causar pérdida de datos.
   const PROTECTED_PREFIXES = ['siso_patients_', 'siso_db_patients_', 'siso_atenciones', 'siso_hc_'];
   if (PROTECTED_PREFIXES.some(p => key.startsWith(p))) {
     console.error(`[d1Client] ABORTANDO escritura de clave protegida ${key}: /store/chunked no disponible`);
@@ -158,7 +166,7 @@ async function _chunkSet(key, value) {
   // ── Detectar manifiesto legacy propio para limpiar sus piezas al final ──
   let legacyChunks = 0;
   try {
-    const r0 = await fetch(`${WORKER_URL}/store/${encodeURIComponent(key)}`, { headers: _authHeaders() });
+    const r0 = await fetch(`${WORKER_URL}/store/${encodeURIComponent(key)}`, { headers: _authHeaders(userId) });
     if (r0.ok) {
       const rows0 = await r0.json();
       const v0 = rows0?.[0]?.value;
@@ -176,19 +184,19 @@ async function _chunkSet(key, value) {
       () =>
         fetch(`${WORKER_URL}/store`, {
           method: 'POST',
-          headers: _authHeaders(),
+          headers: _authHeaders(userId),
           body: JSON.stringify({ key: `${key}__c${i}`, value: pieces[i] }),
         }).then(_checkResponse),
       `d1Set chunk ${i + 1}/${pieces.length} (${key})`
     );
   }
 
-  // ── Manifiesto `${key}__meta` (punto de commit para los lectores) ──
+  // ── Manifiesto `${key}__meta` ──
   await _retry(
     () =>
       fetch(`${WORKER_URL}/store`, {
         method: 'POST',
-        headers: _authHeaders(),
+        headers: _authHeaders(userId),
         body: JSON.stringify({
           key: `${key}__meta`,
           value: { chunked: true, count: pieces.length, totalBytes: payload.length, ts: Date.now() },
@@ -197,19 +205,18 @@ async function _chunkSet(key, value) {
     `d1Set meta (${key})`
   );
 
-  // ── Borrar la clave base (los lectores caen al __meta) y limpiar legacy ──
   await _retry(
     () =>
       fetch(`${WORKER_URL}/store/${encodeURIComponent(key)}`, {
         method: 'DELETE',
-        headers: _authHeaders(),
+        headers: _authHeaders(userId),
       }).then(_checkResponse),
     `d1Set delete-base (${key})`
   );
   if (legacyChunks > 0) {
     (async () => {
       for (let i = 0; i < legacyChunks; i++) {
-        await fetch(`${WORKER_URL}/store/${encodeURIComponent(`${key}_chunk_${i}_of_${legacyChunks}`)}`, { method: 'DELETE', headers: _authHeaders() }).catch(() => {});
+        await fetch(`${WORKER_URL}/store/${encodeURIComponent(`${key}_chunk_${i}_of_${legacyChunks}`)}`, { method: 'DELETE', headers: _authHeaders(userId) }).catch(() => {});
       }
     })();
   }
@@ -219,11 +226,12 @@ async function _chunkSet(key, value) {
 
 async function _chunkGet(key, ts, opts = {}) {
   const rawParam = opts.raw ? '?raw=1' : '';
+  const userId = opts.userId || '';
   const resp = await _retry(
     () =>
       fetch(`${WORKER_URL}/store/${encodeURIComponent(key)}${rawParam}`, {
         method: 'GET',
-        headers: _authHeaders(),
+        headers: _authHeaders(userId),
       }).then(_checkResponse),
     `d1Get(${key})${opts.raw ? ' raw' : ''}`
   );
@@ -231,7 +239,6 @@ async function _chunkGet(key, ts, opts = {}) {
   const rows = resp.json || (Array.isArray(resp) ? resp : []);
   const row = rows?.[0] || null;
   let value = row?.value ?? null;
-  // F1-07: si modo raw, el valor es string crudo → parsear en cliente
   if (opts.raw && typeof value === 'string') {
     try { value = JSON.parse(value); } catch { /* dejar como string */ }
   }
@@ -245,7 +252,7 @@ async function _chunkGet(key, ts, opts = {}) {
             () =>
               fetch(`${WORKER_URL}/store/${encodeURIComponent(key + '_chunk_' + i + '_of_' + totalChunks)}?raw=1`, {
                 method: 'GET',
-                headers: _authHeaders(),
+                headers: _authHeaders(userId),
               }).then(_checkResponse),
             `d1Get chunk ${i}/${totalChunks} (${key})`
           );
@@ -262,14 +269,13 @@ async function _chunkGet(key, ts, opts = {}) {
   }
 
   // ── Formato monolito: manifest en key__meta, chunks en key__c0..cN ──
-  // Se activa cuando la clave principal está vacía/null
   if (!value) {
     try {
       const metaResp = await _retry(
         () =>
           fetch(`${WORKER_URL}/store/${encodeURIComponent(key + '__meta')}`, {
             method: 'GET',
-            headers: _authHeaders(),
+            headers: _authHeaders(userId),
           }).then(_checkResponse),
         `d1Get meta (${key})`
       );
@@ -283,7 +289,7 @@ async function _chunkGet(key, ts, opts = {}) {
             () =>
               fetch(`${WORKER_URL}/store/${encodeURIComponent(key + '__c' + i)}?raw=1`, {
                 method: 'GET',
-                headers: _authHeaders(),
+                headers: _authHeaders(userId),
               }).then(_checkResponse),
             `d1Get monolith-chunk ${i}/${count} (${key})`
           );
@@ -310,7 +316,6 @@ async function _checkResponse(response) {
   if (!response.ok) {
     const err = new Error(`D1 Worker error ${response.status}`);
     err.status = response.status;
-    // Extract etag info on 409
     if (response.status === 409) {
       try {
         const body = await response.json();
@@ -325,7 +330,6 @@ async function _checkResponse(response) {
     } catch {}
     throw err;
   }
-  // Return parsed JSON + keep raw for etag extraction
   const raw = response;
   const cloned = raw.clone ? await raw.clone().json().catch(() => raw.body) : await raw.json().catch(() => null);
   return {
@@ -340,13 +344,8 @@ async function _checkResponse(response) {
 /**
  * d1Get(key, opts?)
  * GET /store/:key del Worker.
- * Devuelve { value, ts } donde ts es el timestamp para If-Match.
+ * opts.userId: string — se envía como X-Siso-UserId (CANDADO 3)
  * opts.raw: si true, usa ?raw=1 para evitar JSON.parse en el worker
- *           (reduce riesgo de 503 por CPU timeout en valores grandes).
- *
- * Ejemplo:
- *   const { value, ts } = await d1Get('siso_patients_drcucalon');
- *   const { value } = await d1Get('siso_encuestas', { raw: true });
  */
 export async function d1Get(key, opts = {}) {
   return _chunkGet(key, undefined, opts);
@@ -355,21 +354,18 @@ export async function d1Get(key, opts = {}) {
 /**
  * d1Set(key, value, opts)
  * POST /store con body { key, value }.
+ * opts.userId: string — se envía como X-Siso-UserId (CANDADO 3)
  * opts.ifMatchTs: envía header If-Match para locking optimista.
- * Soporta chunking automático si JSON.stringify(value) > 500KB.
- *
- * Ejemplo:
- *   await d1Set('siso_patients_drcucalon', patientsList);
- *   await d1Set('siso_patients_drcucalon', patientsList, { ifMatchTs: ts });
  */
 export async function d1Set(key, value, opts = {}) {
+  const userId = opts.userId || '';
   if (opts.ifMatchTs) {
     return _retry(
       () =>
         fetch(`${WORKER_URL}/store`, {
           method: 'POST',
           headers: {
-            ..._authHeaders(),
+            ..._authHeaders(userId),
             'If-Match': `"${opts.ifMatchTs}"`,
           },
           body: JSON.stringify({ key, value }),
@@ -377,46 +373,38 @@ export async function d1Set(key, value, opts = {}) {
       `d1Set(${key}) con If-Match`
     );
   }
-
-  // Chunking automático si payload supera umbral
-  return _chunkSet(key, value);
+  return _chunkSet(key, value, userId);
 }
 
 /**
- * d1Delete(key)
+ * d1Delete(key, opts?)
  * DELETE /store/:key del Worker.
- *
- * Ejemplo:
- *   await d1Delete('siso_patients_old');
+ * opts.userId: string — se envía como X-Siso-UserId (CANDADO 3)
  */
-export async function d1Delete(key) {
+export async function d1Delete(key, opts = {}) {
+  const userId = opts.userId || '';
   return _retry(
     () =>
       fetch(`${WORKER_URL}/store/${encodeURIComponent(key)}`, {
         method: 'DELETE',
-        headers: _authHeaders(),
+        headers: _authHeaders(userId),
       }).then(_checkResponse),
     `d1Delete(${key})`
   );
 }
 
 /**
- * d1Append(key, item, idField = 'id')
- * POST /store/append — agrega o actualiza UN item dentro de un array en D1
- * con fusión server-side. Evita carreras de escritura concurrentes.
- * Usado como vía primaria para respuestas de encuestas.
- *
- * @param {string} key - Clave D1
- * @param {object} item - Item a agregar/actualizar
- * @param {string} idField - Campo único para identificar (default: 'id')
- * @returns {Promise<{ok: boolean, count: number}>}
+ * d1Append(key, item, idField, opts?)
+ * POST /store/append — agrega o actualiza UN item dentro de un array.
+ * opts.userId: string — se envía como X-Siso-UserId (CANDADO 3)
  */
-export async function d1Append(key, item, idField = 'id') {
+export async function d1Append(key, item, idField = 'id', opts = {}) {
+  const userId = opts.userId || '';
   return _retry(
     () =>
       fetch(`${WORKER_URL}/store/append`, {
         method: 'POST',
-        headers: _authHeaders(),
+        headers: _authHeaders(userId),
         body: JSON.stringify({ key, item, idField }),
       }).then(_checkResponse),
     `d1Append(${key})`
@@ -424,21 +412,16 @@ export async function d1Append(key, item, idField = 'id') {
 }
 
 /**
- * d1GetMany(keys)
- * Batch GET de múltiples keys. Usa Promise.all con concurrencia
- * controlada (máximo 10 en paralelo).
- *
- * Ejemplo:
- *   const results = await d1GetMany(['siso_portal_ABC', 'siso_patients_X']);
- *   // results: { 'siso_portal_ABC': value, 'siso_patients_X': value }
+ * d1GetMany(keys, opts?)
+ * Batch GET de múltiples keys.
+ * opts.userId: string — se envía como X-Siso-UserId (CANDADO 3)
  */
-export async function d1GetMany(keys) {
+export async function d1GetMany(keys, opts = {}) {
   const result = {};
-  // COMMIT e4f53e9: pool reducido 10→2 para no saturar QUIC/UDP
   for (let i = 0; i < keys.length; i += 2) {
     const batch = keys.slice(i, i + 2);
     const promises = batch.map(async (k) => {
-      const { value } = await d1Get(k);
+      const { value } = await d1Get(k, opts);
       return { key: k, value };
     });
     const batchResults = await Promise.all(promises);
@@ -450,31 +433,7 @@ export async function d1GetMany(keys) {
 }
 
 /**
- * d1WriteArrayMerge(key, list, idField)
- * 🔴 CRÍTICA — PROTEGE D1 CONTRA REGRESIÓN (monolito línea 21366)
- *
- * Lee el valor actual de la key en D1 (array existente).
- * Si existe, mergea por idField:
- *   • Si un item del nuevo list existe en el viejo → reemplaza
- *   • Si no existe → agrega
- *   • Items que están en el viejo pero NO en el nuevo → se conservan
- *   • Items en el nuevo sin idField → siempre se agregan
- * Luego escribe el resultado en D1 con If-Match locking.
- *
- * Si ocurre 409 (conflicto), reintenta hasta 2 veces con el ts actualizado.
- *
- * @param {string} key - Clave D1
- * @param {Array} list - Lista nueva a mergear
- * @param {string} idField - Campo único para identificar items (default: 'id')
- * @returns {Promise<{ok: boolean, merged: number, total: number}>}
- *
- * Ejemplo:
- *   await d1WriteArrayMerge('siso_atenciones_cerradas', nuevasAtenciones, 'id');
- */
-// ── SMART READ — D1 + Supabase fallback ─────────────────────────────────
-
-/**
- * _tsOf - Extrae timestamp de un valor. Asume timestamp ISO en _updatedAt o ts.
+ * _tsOf - Extrae timestamp de un valor.
  */
 export function _tsOf(v) {
   if (!v) return 0;
@@ -486,13 +445,12 @@ export function _tsOf(v) {
 }
 
 /**
- * _readSmart(key) — Lee desde D1 y Supabase en paralelo, usa el más reciente.
- * Lee D1 en paralelo con Supabase, compara timestamps y retorna el más actual.
- * Si D1 falla, usa Supabase como fallback.
- * Si D1 tiene valor pero Supabase también tiene una versión más reciente, usa la más reciente.
+ * _readSmart(key, supabaseQuery, opts?)
+ * Lee D1 y Supabase en paralelo, usa el más reciente.
+ * opts.userId para CANDADO 3.
  */
-export async function _readSmart(key, supabaseQuery) {
-  const d1Promise = d1Get(key).catch(() => null);
+export async function _readSmart(key, supabaseQuery, opts = {}) {
+  const d1Promise = d1Get(key, opts).catch(() => null);
   const sbPromise = supabaseQuery ? Promise.race([
     supabaseQuery,
     new Promise((_, reject) => setTimeout(() => reject(new Error('Supabase timeout')), 5000))
@@ -508,18 +466,14 @@ export async function _readSmart(key, supabaseQuery) {
     const tD1 = _tsOf(d1Val);
     const tSB = _tsOf(sbVal);
     if (tSB > tD1) {
-      // FIX 2026-07-21 (FASE 2 PROMPT_MAESTRO): catch-up a D1 cuando Supabase
-      // gana — sin esto, D1 se queda desactualizado indefinidamente y la
-      // próxima fusión server-side (_mergeProtegido) compara contra una
-      // versión vieja. Mismo patrón que el monolito (App.jsx:804,813).
-      d1Set(key, sbVal).catch(() => {});
+      d1Set(key, sbVal, opts).catch(() => {});
       return sbVal;
     }
     return d1Val;
   }
   if (d1Has) return d1Val;
   if (sbHas) {
-    d1Set(key, sbVal).catch(() => {});
+    d1Set(key, sbVal, opts).catch(() => {});
     return sbVal;
   }
   return null;
@@ -567,21 +521,20 @@ export function _enqueuePendingD1(key, value) {
   }
 }
 
-export async function d1WriteArrayMerge(key, list, idField = 'id') {
+export async function d1WriteArrayMerge(key, list, idField = 'id', opts = {}) {
+  const userId = opts.userId || '';
   let attempts = 0;
   const maxAttempts = 3;
 
   while (attempts < maxAttempts) {
     attempts++;
 
-    // 1) Leer actual
-    const { value: currentValue, ts } = await d1Get(key);
+    const { value: currentValue, ts } = await d1Get(key, { userId });
     const currentList = Array.isArray(currentValue) ? currentValue : [];
 
-    // 🔴 FIX: Si la clave NO existe (primera escritura), escribir directamente sin If-Match
     if (!currentValue && list.length > 0) {
       try {
-        await d1Set(key, list);
+        await d1Set(key, list, { userId });
         return { ok: true, merged: list.length, total: list.length, firstWrite: true };
       } catch (err) {
         if (err.status === 409 && attempts < maxAttempts) {
@@ -593,32 +546,26 @@ export async function d1WriteArrayMerge(key, list, idField = 'id') {
       }
     }
 
-    // 2) Merge
     const merged = [];
     const seenIds = new Set();
-
-    // Primero: items del list existente (conservar)
     const newIds = new Set(list.map((item) => (item?.[idField] != null ? String(item[idField]) : null)).filter(Boolean));
+
     for (const oldItem of currentList) {
       if (oldItem?.[idField] != null) {
         const oldId = String(oldItem[idField]);
         seenIds.add(oldId);
-        // Si el viejo está en la nueva lista → usar versión nueva
         if (newIds.has(oldId)) {
           const newVersion = list.find((item) => String(item?.[idField]) === oldId);
           if (newVersion) merged.push(newVersion);
-          newIds.delete(oldId); // Marcar como procesado
+          newIds.delete(oldId);
         } else {
-          // Si no está en la nueva lista → conservar viejo
           merged.push(oldItem);
         }
       } else {
-        // Items viejos sin idField se conservan siempre
         merged.push(oldItem);
       }
     }
 
-    // Agregar items nuevos que no estaban en la lista vieja
     for (const newItem of list) {
       if (newItem?.[idField] != null) {
         const id = String(newItem[idField]);
@@ -627,18 +574,15 @@ export async function d1WriteArrayMerge(key, list, idField = 'id') {
           seenIds.add(id);
         }
       } else {
-        // Items nuevos sin idField → siempre agregar
         merged.push(newItem);
       }
     }
 
-    // 3) Escribir con If-Match
     try {
-      await d1Set(key, merged, { ifMatchTs: ts || undefined });
+      await d1Set(key, merged, { ifMatchTs: ts || undefined, userId });
       return { ok: true, merged: merged.length, total: merged.length };
     } catch (err) {
       if (err.status === 409 && attempts < maxAttempts) {
-        // Conflicto: otro write ganó la carrera → reintentar con versión fresca
         console.warn(`[d1Client] d1WriteArrayMerge(${key}) conflicto (409), reintento ${attempts}/${maxAttempts}...`);
         await _sleep(BASE_DELAY * Math.pow(2, attempts - 1));
         continue;
