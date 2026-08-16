@@ -1,7 +1,8 @@
 {
   "name": "siso-api",
   "main": "index.js",
-  "compatibility_date": "2024-01-01",
+  "compatibility_date": "2025-01-01",
+  "compatibility_flags": ["nodejs_compat"],
   "d1_databases": [
     {
       "binding": "DB",
@@ -9,6 +10,10 @@
       "database_id": "76da5895-478f-4486-a5d4-05069f9aa45a"
     }
   ],
-  "_comment_dev_separation": "PENDIENTE C: crear siso-db-dev con: npx wrangler d1 create siso-db-dev. Reemplazar PLACEHOLDER con el database_id real. Luego usar wrangler.dev.json para deployar el worker de dev sin tocar produccion.",
-  "_dev_database_id_placeholder": "REEMPLAZAR_CON_ID_DE_siso-db-dev"
+  "triggers": {
+    "crons": ["0 6 * * *"]
+  },
+  "observability": {
+    "enabled": true
+  }
 }
