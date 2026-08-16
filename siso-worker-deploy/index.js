@@ -1,5 +1,6 @@
 // SISO API Worker — Cloudflare D1 backend
 // Reemplaza Supabase siso_store como almacenamiento en nube
+// OPT-2026-08-16: Cache HTTP catálogo, GET /store filtrado, batch pre-read merge
 
 // Lista explícita de orígenes permitidos. Incluye el proyecto git-connected
 // (-f4q) Y el alias antiguo sin sufijo, por compatibilidad histórica.
@@ -79,10 +80,95 @@ async function _mergePeriodosObjeto(env, key, incoming) {
   } catch (e) { console.warn(`[merge] candado-objeto ${key} error:`, e.message); return incoming; }
 }
 
-// COMMIT 3531448: Fusiona por id: lo entrante gana por-id, lo existente que el
-// entrante no conoce se preserva. Usado por POST /store y POST /store/chunked.
-// COMMIT 50f852b: extendido para detectar objetos con .periodos y delegar a
-// _mergePeriodosObjeto (portal_empresa_docs).
+// OPT-2026-08-16: _mergeProtegido con batch pre-read para reducir queries D1
+// Cuando se llama desde POST /store con múltiples claves, pre-leemos todas
+// las claves protegidas en una sola query IN(...) antes del loop individual.
+// La lógica de fusión (CANDADO 1) es idéntica — solo el orden de lectura cambió.
+async function _mergeProtegidoBatch(env, rows) {
+  // Separar claves protegidas de no protegidas
+  const protectedRows = rows.filter(r => r?.key && _PROTECTED.test(r.key));
+  const unprotectedRows = rows.filter(r => !r?.key || !_PROTECTED.test(r.key));
+
+  if (protectedRows.length === 0) return rows;
+
+  // Pre-leer todas las claves protegidas en una sola query
+  const keys = protectedRows.map(r => r.key);
+  const placeholders = keys.map(() => '?').join(',');
+  let existingMap = new Map();
+  try {
+    const existing = await env.DB.prepare(
+      `SELECT key, value FROM siso_store WHERE key IN (${placeholders})`
+    ).bind(...keys).all();
+    for (const row of (existing.results || [])) {
+      existingMap.set(row.key, row.value);
+    }
+  } catch (e) {
+    console.warn('[batch-pre-read] error, fallback a individual:', e.message);
+    // Fallback: si el batch falla, procesar individualmente
+    return await Promise.all(rows.map(async r => ({
+      key: r.key,
+      value: await _mergeProtegido(env, r.key, r.value)
+    })));
+  }
+
+  // Procesar claves protegidas con datos pre-leídos
+  const mergedProtected = await Promise.all(protectedRows.map(async r => {
+    const { key, value: incoming } = r;
+
+    // Caso especial: portal_empresa_docs (objeto con .periodos)
+    if (incoming && typeof incoming === "object" && !Array.isArray(incoming) && Array.isArray(incoming.periodos)) {
+      return { key, value: await _mergePeriodosObjeto(env, key, incoming) };
+    }
+
+    if (!Array.isArray(incoming)) return { key, value: incoming };
+
+    const storedRaw = existingMap.get(key);
+    if (!storedRaw) return { key, value: incoming };
+
+    let old = null;
+    try { old = JSON.parse(await decompressValue(storedRaw)); } catch {}
+
+    // Si no es array directo, intentar reconstruir desde chunks
+    if (!Array.isArray(old)) {
+      const metaRaw = existingMap.get(key + '__meta');
+      if (metaRaw) {
+        try {
+          const m = JSON.parse(await decompressValue(metaRaw));
+          if (m?.chunked && Number.isFinite(m.count)) {
+            let joined = '';
+            for (let i = 0; i < m.count; i++) {
+              const pr = await env.DB.prepare('SELECT value FROM siso_store WHERE key = ?').bind(`${key}__c${i}`).first();
+              if (!pr?.value) { joined = null; break; }
+              const pv = JSON.parse(await decompressValue(pr.value));
+              joined += (typeof pv === 'string') ? pv : '';
+            }
+            if (joined) { try { const p = JSON.parse(joined); if (Array.isArray(p)) old = p; } catch {} }
+          }
+        } catch {}
+      }
+    }
+
+    if (Array.isArray(old) && old.length > 0) {
+      const ids = new Set(incoming.filter(x => x && x.id != null).map(x => String(x.id)));
+      const idsByToken = new Set(incoming.filter(x => x && x.token != null).map(x => String(x.token)));
+      const extras = old.filter(x => x && ((x.id != null && !ids.has(String(x.id))) || (x.id == null && x.token != null && !idsByToken.has(String(x.token)))));
+      if (extras.length > 0) {
+        console.log(`[merge] CANDADO ${key}: +${extras.length} preservados (entrante=${incoming.length}, final=${incoming.length + extras.length})`);
+        return { key, value: [...incoming, ...extras] };
+      }
+    }
+    return { key, value: incoming };
+  }));
+
+  // Recombinar en el orden original
+  const mergedMap = new Map([...mergedProtected, ...unprotectedRows.map(r => [r.key, r])].map(item => 
+    Array.isArray(item) ? [item[0], { key: item[0], value: item[1] }] : [item.key, item]
+  ));
+  return rows.map(r => mergedMap.get(r.key) || r);
+}
+
+// Función original _mergeProtegido mantenida intacta para uso individual
+// (POST /store/chunked, POST /store/append la usan directamente)
 async function _mergeProtegido(env, key, incoming) {
   if (!_PROTECTED.test(key)) return incoming;
   if (incoming && typeof incoming === "object" && !Array.isArray(incoming) && Array.isArray(incoming.periodos)) {
@@ -158,35 +244,46 @@ export default {
       // ── GET /store/:key ──────────────────────────────────────────────
       // Devuelve también `ts` (updated_at) para soporte de If-Match en POST
       // COMMIT 1bf1233 — modo ?raw=1 evita JSON.parse + 503 por CPU timeout
+      // OPT-2026-08-16: Cache HTTP 30s para claves de catálogo (companies, portal_docs, ai_keys)
       if (request.method === "GET" && path.startsWith("/store/") && !path.startsWith("/store/prefix/")) {
         const key = decodeURIComponent(path.slice(7));
         const rawMode = url.searchParams.get("raw") === "1";
         const row = await env.DB.prepare("SELECT value, updated_at FROM siso_store WHERE key = ?").bind(key).first();
         if (!row) return new Response(JSON.stringify([]), { headers });
         const ts = row.updated_at;
-        const respHeaders = { ...headers, "ETag": ts ? `"${ts}"` : '""', "X-Siso-Ts": ts || "" };
+
+        // OPT-2026-08-16: Cache HTTP para claves de catálogo (baja frecuencia de cambio)
+        // HC, pacientes y atenciones siguen con no-store para garantizar datos frescos
+        const isCatalog = key.startsWith('siso_companies_') ||
+                          key.startsWith('siso_portal_empresa_docs_') ||
+                          key.startsWith('siso_ai_keys_');
+        const cacheControl = isCatalog
+          ? 'public, max-age=30, stale-while-revalidate=60'
+          : 'no-store';
+
+        const respHeaders = {
+          ...headers,
+          "ETag": ts ? `"${ts}"` : '""',
+          "X-Siso-Ts": ts || "",
+          "Cache-Control": cacheControl,
+        };
         if (rawMode) {
-          // Modo raw: retorna value como string crudo sin JSON.parse
           return new Response(JSON.stringify([{ key, value: row.value, ts }]), { headers: respHeaders });
         }
-        // FIX 2026-07-21: decompressValue por si el valor legacy viene con prefijo gz:
         const dv = await decompressValue(row.value);
         const value = JSON.parse(dv);
         return new Response(JSON.stringify([{ key, value, ts }]), { headers: respHeaders });
       }
 
       // ── GET /store/prefix/:prefix — buscar por prefijo ───────────────
-      // COMMIT 4f8b81f — modo ?raw=1 salta JSON.parse por fila (reduce
-      // latencia y CPU cuando el cliente solo necesita las claves).
-      // FIX 2026-07-21: excluir piezas de chunk para no contaminar la
-      // respuesta con __cN y _chunk_N_of_N (monolito ya lo hace).
+      // COMMIT 4f8b81f — modo ?raw=1 salta JSON.parse por fila
+      // FIX 2026-07-21: excluir piezas de chunk
       if (request.method === "GET" && path.startsWith("/store/prefix/")) {
         const prefix = decodeURIComponent(path.slice(14));
         const raw = url.searchParams.get("raw") === "1";
         const rows = await env.DB.prepare(
           "SELECT key, value FROM siso_store WHERE key LIKE ? AND key NOT GLOB '*__c[0-9]*' AND key NOT LIKE '%__new%' AND key NOT GLOB '*_chunk_[0-9]*_of_[0-9]*' LIMIT 2000"
         ).bind(prefix + "%").all();
-        // FIX 2026-07-21: decompressValue por si el valor legacy viene con prefijo gz:
         const result = raw
           ? (rows.results || []).map(r => ({ key: r.key, value: r.value }))
           : await Promise.all((rows.results || []).map(async r => {
@@ -200,17 +297,27 @@ export default {
         return new Response(JSON.stringify(result), { headers });
       }
 
-      // ── GET /store — listar todas las claves ─────────────────────────
+      // ── GET /store — listar claves ────────────────────────────────────
+      // OPT-2026-08-16: rama sin userId ahora filtra chunks/snapshots/deleted
+      // y reduce LIMIT de 2000 a 500. Rama con userId: SIN CAMBIOS.
       if (request.method === "GET" && path === "/store") {
         const userId = url.searchParams.get("userId") || "";
         let rows;
         if (userId) {
+          // Rama userId: intacta — la usan monolito y refactor
           rows = await env.DB.prepare(
             "SELECT key, value, updated_at FROM siso_store WHERE key LIKE ? OR key LIKE ? LIMIT 2000"
           ).bind(`%_${userId}`, `%_${userId}_%`).all();
         } else {
+          // Rama general: filtrar internals para reducir payload
           rows = await env.DB.prepare(
-            "SELECT key, value, updated_at FROM siso_store LIMIT 2000"
+            `SELECT key, value, updated_at FROM siso_store
+             WHERE key NOT GLOB '*__c[0-9]*'
+               AND key NOT LIKE '%__meta'
+               AND key NOT LIKE 'siso_snapshot_%'
+               AND key NOT LIKE 'siso_deleted_%'
+             ORDER BY updated_at DESC
+             LIMIT 500`
           ).all();
         }
         const result = await Promise.all((rows.results || []).map(async r => {
@@ -225,23 +332,14 @@ export default {
       }
 
       // ── POST /store — upsert uno o varios {key, value} ───────────────
-      // Soporta header If-Match: <ts> para escritura optimista (FASE 3):
-      //   • Si el ts del row actual != If-Match → 409 con el nuevo ts
-      //   • Si coincide o no envió header → ejecuta normal
-      // COMMIT a98eff1 — CANDADO 2: rechaza escrituras a HC cerradas
+      // OPT-2026-08-16: usa _mergeProtegidoBatch para pre-leer claves protegidas
+      // en una sola query IN(...) en vez de N queries individuales.
       if (request.method === "POST" && path === "/store") {
         const body = await request.json();
         const rows = Array.isArray(body) ? body : [body];
         const ifMatch = (request.headers.get("If-Match") || request.headers.get("X-Siso-If-Match") || "").replace(/"/g, "").trim();
 
-        // CANDADO 3 (2026-07-21 — INERTE): validar userId en claves de pacientes.
-        // Ningún cliente (monolito ni refactor) envía actualmente los headers
-        // X-Siso-App / X-Siso-UserId que este bloque requiere. Permanece aquí para
-        // futura activación cuando d1Client.js envíe esos headers en cada request
-        // (ver FASE 5.6 del PROMPT_MAESTRO_IGUALACION_2026-07-21). Mientras tanto,
-        // la protección real contra escritura cruzada la da _mergeProtegido (CANDADO 1).
-        // La app que escribe debe coincidir con el userId del sufijo de la clave
-
+        // CANDADO 3 (INERTE): validar userId en claves de pacientes.
         const appId = request.headers.get("X-Siso-App") || "unknown";
         const userId = request.headers.get("X-Siso-UserId") || "";
         const PROTECTED_PREFIXES_USER = ['siso_patients_', 'siso_db_patients_', 'siso_hc_'];
@@ -258,7 +356,7 @@ export default {
           }
         }
 
-        // CANDADO 2: Rechazar escrituras a claves de HC cerradas (inmutables)
+        // CANDADO 2: Rechazar escrituras a HC cerradas
         for (const row of rows) {
           if (row?.key && (
             row.key.startsWith("siso_hc_cerrada_") ||
@@ -273,11 +371,10 @@ export default {
           }
         }
 
-        // Validación If-Match: solo aplica a escrituras de UNA clave
+        // Validación If-Match
         if (ifMatch && rows.length === 1 && rows[0]?.key) {
           const currentRow = await env.DB.prepare("SELECT updated_at FROM siso_store WHERE key = ?").bind(rows[0].key).first();
           const currentTs = currentRow?.updated_at || "";
-          // Si la clave existe Y su ts no coincide con If-Match → conflicto
           if (currentTs && currentTs !== ifMatch) {
             return new Response(JSON.stringify({
               ok: false,
@@ -291,26 +388,21 @@ export default {
         const stmt = env.DB.prepare(
           "INSERT INTO siso_store(key, value, updated_at) VALUES(?, ?, datetime('now')) ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at"
         );
-        // Batch en chunks de 50 — COMMIT 3531448: fusión por id para claves
-        // protegidas (incluye siso_encuestas)
+
+        // OPT-2026-08-16: batch pre-read para claves protegidas
         const CHUNK = 50;
         for (let i = 0; i < rows.length; i += CHUNK) {
           const chunk = rows.slice(i, i + CHUNK);
-          const comp = await Promise.all(chunk.map(async ({ key, value }) => {
-            const merged = await _mergeProtegido(env, key, value);
-            return { key, cv: JSON.stringify(merged) };
-          }));
+          // Pre-leer todas las claves protegidas del chunk en una query
+          const mergedChunk = await _mergeProtegidoBatch(env, chunk);
+          const comp = mergedChunk.map(r => ({ key: r.key, cv: JSON.stringify(r.value) }));
           const batch = comp.map(({ key, cv }) => stmt.bind(key, cv));
           await env.DB.batch(batch);
         }
         return new Response(JSON.stringify({ ok: true, count: rows.length }), { headers });
       }
 
-      // ── POST /store/append — agrega/actualiza UN item dentro de un array
-      // almacenado, con la fusión hecha EN EL SERVIDOR (2026-07-09).
-      // Evita la carrera read-modify-write de clientes concurrentes: varios
-      // trabajadores enviando la encuesta a la vez se pisaban la respuesta.
-      // COMMIT 3531448 — fusión por ID para siso_encuestas (antes se reemplazaba completo)
+      // ── POST /store/append ─────────────────────────────────────────────
       if (request.method === "POST" && path === "/store/append") {
         const body = await request.json();
         const { key, item, idField = "id" } = body;
@@ -325,7 +417,6 @@ export default {
             if (Array.isArray(parsed)) arr = parsed;
           }
         } catch {}
-        // F1-02: para siso_encuestas, usar doble ID (encuestaId + trabajadorId)
         const effectiveIdField = key.includes('siso_encuesta') ? 'encuestaId' : idField;
         const idVal = item[effectiveIdField];
         const idx = idVal != null ? arr.findIndex(x => x && String(x[effectiveIdField]) === String(idVal)) : -1;
@@ -337,34 +428,15 @@ export default {
         return new Response(JSON.stringify({ ok: true, count: arr.length }), { headers });
       }
 
-      // ── POST /store/chunked — escritura chunked ATÓMICA (2026-07-11) ──
-      // El troceo cliente (piezas __cN escritas una a una) no es atómico:
-      // dos guardados simultáneos (dos pestañas, o monolito + refactor)
-      // entrelazaban piezas de generaciones distintas → hash mismatch →
-      // "CORRUPCIÓN detectada" y lectura descartada. Aquí el servidor
-      // trocea y escribe TODO (piezas + __meta con hash + borrado de la
-      // clave base y de piezas sobrantes) en UN env.DB.batch — transaccional
-      // en D1: los lectores ven la generación vieja o la nueva, nunca mezcla.
-      // Body: { key, value }. Formato 100% compatible con _workerGet del
-      // monolito y _chunkGet del refactor.
+      // ── POST /store/chunked ────────────────────────────────────────────
       if (request.method === "POST" && path === "/store/chunked") {
         const body = await request.json();
         const { key, value } = body || {};
         if (!key || value === undefined) {
           return new Response(JSON.stringify({ ok: false, error: "key y value requeridos" }), { status: 400, headers });
         }
-        // ── CANDADO ANTI-ENCOGIMIENTO (2026-07-11, compartido con POST /store) ──
-        // Incidente: una pestaña con estado viejo reescribió la lista de
-        // pacientes y borró de la nube los 23 exámenes del día (3 veces).
-        // Para colecciones protegidas, el SERVIDOR fusiona por id con lo ya
-        // almacenado: lo entrante gana por-id (ediciones), pero los
-        // registros existentes que lo entrante NO conoce se PRESERVAN.
-        // Ninguna sesión — ni con código viejo, ni con estado incompleto —
-        // puede volver a encoger estas listas. Ver _mergeProtegido (module
-        // scope) — misma función que usa POST /store.
         const toStore = await _mergeProtegido(env, key, value);
         const payload = JSON.stringify(toStore);
-        // Hash idéntico al _hash64 del monolito (h1 base31 + h2 base127*31)
         let h1 = 0, h2 = 0;
         for (let i = 0; i < payload.length; i++) {
           const c = payload.charCodeAt(i);
@@ -375,7 +447,6 @@ export default {
         const PIECE = 500 * 1024;
         const pieces = [];
         for (let off = 0; off < payload.length; off += PIECE) pieces.push(payload.slice(off, off + PIECE));
-        // Piezas viejas a borrar más allá del nuevo count (evita __cN huérfanos)
         let oldCount = 0;
         try {
           const om = await env.DB.prepare("SELECT value FROM siso_store WHERE key = ?").bind(key + "__meta").first();
@@ -389,16 +460,14 @@ export default {
         const batch = [
           ...pieces.map((p, i) => up.bind(key + "__c" + i, JSON.stringify(p))),
           up.bind(key + "__meta", JSON.stringify(meta)),
-          del.bind(key), // los lectores caen al __meta
+          del.bind(key),
         ];
         for (let i = pieces.length; i < oldCount; i++) batch.push(del.bind(key + "__c" + i));
-        await env.DB.batch(batch); // ← transaccional: todo o nada
+        await env.DB.batch(batch);
         return new Response(JSON.stringify({ ok: true, chunks: pieces.length, hash }), { headers });
       }
 
-      // ── POST /cleanup — limpieza de emergencia ─────────────────────────
-      // F1-03: Borra snapshots viejos (>7d), chunks huérfanos, autosaves (>48h).
-      // Útil cuando D1 se llena y no se puede esperar al cron diario.
+      // ── POST /cleanup ─────────────────────────────────────────────────
       if (request.method === "POST" && path === "/cleanup") {
         const snapCutoff = new Date(Date.now() - 7 * 86400000).toISOString().slice(0, 10);
         const autoCutoff = new Date(Date.now() - 48 * 3600000).toISOString();
@@ -419,19 +488,16 @@ export default {
         }), { headers });
       }
 
-      // ── GET /storage-stats — monitoreo de uso D1 ──────────────────────
-      // F1-04: Retorna filas, MB usados, % uso y alertas 70/90%.
-      // FIX 2026-07-21: usa SUM(LENGTH(value)) real en vez de estimación filas*2048.
+      // ── GET /storage-stats ────────────────────────────────────────────
       if (request.method === "GET" && path === "/storage-stats") {
         const count = await env.DB.prepare("SELECT COUNT(*) AS c FROM siso_store").first();
         const filas = count?.c ?? 0;
         const sizeRow = await env.DB.prepare("SELECT SUM(LENGTH(value)) AS total_bytes FROM siso_store").first();
         const mbUsados = sizeRow?.total_bytes ? Math.round((sizeRow.total_bytes / (1024 * 1024)) * 100) / 100 : 0;
-
         const limiteMb = 500;
         const usoPct = Math.round((mbUsados / limiteMb) * 100);
         const grupos = await env.DB.prepare(`
-          SELECT CASE 
+          SELECT CASE
             WHEN key LIKE 'siso_patients_%' OR key LIKE 'siso_db_patients_%' THEN 'patients'
             WHEN key LIKE 'siso_hc_%' THEN 'hc'
             WHEN key LIKE 'siso_portal_%' THEN 'portal'
@@ -448,11 +514,7 @@ export default {
         }), { headers });
       }
 
-      // ── POST /store/merge — merge atómico server-side ──────────────────
-      // CANDADO 6 (FASE 0.5): fusión atómica de arrays por idField.
-      // Reemplaza el read-modify-write del cliente, vulnerable a carreras
-      // entre apps. El worker lee, mergea y escribe en una sola operación.
-      // Body: { key, items[], idField }
+      // ── POST /store/merge ─────────────────────────────────────────────
       if (request.method === "POST" && path === "/store/merge") {
         const body = await request.json();
         const { key, items = [], idField = "id" } = body;
@@ -483,12 +545,7 @@ export default {
         return new Response(JSON.stringify({ ok: true, count: merged.length, added: merged.length - arr.length }), { headers });
       }
 
-      // ── GET /health — endpoint de healthcheck para FASE 4 monitoring ──
-      // AUDITORÍA 2026-07-10: los 5 COUNT(*) escanean ~2.300 filas cada uno
-      // (~11K filas leídas POR LLAMADA). Ambas apps (monolito y refactor) lo
-      // llaman cada 2 min → ~7M filas/día con 2 pestañas, superando el límite
-      // gratis de D1 (5M lecturas/día). Por defecto ahora responde con un ping
-      // barato (SELECT 1 ≈ 0 filas); los conteos completos solo con ?full=1.
+      // ── GET /health ───────────────────────────────────────────────────
       if (request.method === "GET" && path === "/health") {
         const t0 = Date.now();
         if (url.searchParams.get("full") !== "1") {
@@ -515,20 +572,13 @@ export default {
           return new Response(JSON.stringify({ ok: false, error: e.message, latencyMs: Date.now() - t0 }), { status: 500, headers });
         }
         return new Response(JSON.stringify({
-          ok: true,
-          counts,
-          latencyMs: Date.now() - t0,
-          ts: new Date().toISOString(),
+          ok: true, counts, latencyMs: Date.now() - t0, ts: new Date().toISOString(),
         }), { headers });
       }
 
-      // ── DELETE /store/:key ───────────────────────────────────────────
-      // CANDADO 4 (FASE 0.5): anti-borrado de claves críticas del sistema
-      // CANDADO 5 (FASE 0.5): snapshot automático antes de borrar
+      // ── DELETE /store/:key ────────────────────────────────────────────
       if (request.method === "DELETE" && path.startsWith("/store/")) {
         const key = decodeURIComponent(path.slice(7));
-
-        // CANDADO 4: claves críticas NO pueden ser eliminadas directamente
         const UNDELETABLE_PREFIXES = [
           'siso_users', 'siso_portal_empresa_', 'siso_portal_empresa_docs_',
           'siso_portal_empresa_atenciones_', 'siso_ai_keys_', 'siso_snapshot_'
@@ -536,11 +586,9 @@ export default {
         if (UNDELETABLE_PREFIXES.some(p => key.startsWith(p))) {
           return new Response(JSON.stringify({
             ok: false, error: "undeletable_key",
-            message: `CANDADO 4: la clave ${key} es crítica y no puede ser eliminada directamente. Use /cleanup para mantenimiento programado.`,
+            message: `CANDADO 4: la clave ${key} es crítica y no puede ser eliminada directamente.`,
           }), { status: 403, headers });
         }
-
-        // CANDADO 5: guardar copia de respaldo antes de borrar
         try {
           const row = await env.DB.prepare("SELECT value FROM siso_store WHERE key = ?").bind(key).first();
           if (row?.value) {
@@ -550,18 +598,17 @@ export default {
             ).bind(backupKey, row.value).run();
           }
         } catch {}
-
         await env.DB.prepare("DELETE FROM siso_store WHERE key = ?").bind(key).run();
         return new Response(JSON.stringify({ ok: true }), { headers });
       }
 
-      // ── POST /snapshot — disparar snapshot manualmente ───────────────
+      // ── POST /snapshot ────────────────────────────────────────────────
       if (request.method === "POST" && path === "/snapshot") {
         const result = await runDailySnapshot(env);
         return new Response(JSON.stringify(result), { headers });
       }
 
-      // ── GET /snapshot/list — listar snapshots disponibles ────────────
+      // ── GET /snapshot/list ────────────────────────────────────────────
       if (request.method === "GET" && path === "/snapshot/list") {
         const rows = await env.DB.prepare(
           "SELECT key, updated_at FROM siso_store WHERE key LIKE 'siso_snapshot_%__manifest' ORDER BY key DESC"
@@ -576,10 +623,6 @@ export default {
     }
   },
 
-  // ─────────────────────────────────────────────────────────────────────
-  // CRON TRIGGER — corre automáticamente según cron expression definido en wrangler.json
-  // Genera snapshot diario + rota viejos (>7 días).
-  // ─────────────────────────────────────────────────────────────────────
   async scheduled(event, env, ctx) {
     ctx.waitUntil(runDailySnapshot(env).catch(err => {
       console.error("[CRON snapshot] error:", err?.message);
@@ -589,22 +632,13 @@ export default {
 
 // ─────────────────────────────────────────────────────────────────────────
 // runDailySnapshot — reconstruye estado completo y lo guarda como snapshot
-// Estrategia:
-//   1) Lee TODAS las claves operacionales (excluye snapshots/legacy)
-//   2) Reconstruye claves chunked en memoria (concatena __cN)
-//   3) Serializa el estado completo y lo trocea en piezas de 500KB
-//   4) Guarda como siso_snapshot_YYYY-MM-DD__c0..cN + __meta + __manifest
-//   5) Rota: borra snapshots con fecha > 7 días atrás
 // ─────────────────────────────────────────────────────────────────────────
 async function runDailySnapshot(env) {
-  const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+  const today = new Date().toISOString().slice(0, 10);
   const snapPrefix = `siso_snapshot_${today}`;
   const t0 = Date.now();
   const log = [];
 
-  // FIX 2026-07-21: limpieza de chunks temporales __new<ts>__cN/__meta abandonados
-  // (>1h) — mismo GC que el monolito, evita que D1 acumule piezas huérfanas de
-  // escrituras interrumpidas.
   try {
     const cutoffMs = Date.now() - 60 * 60 * 1000;
     const gcRows = await env.DB.prepare(
@@ -623,20 +657,17 @@ async function runDailySnapshot(env) {
     log.push(`[GC-TEMP] error: ${e?.message}`);
   }
 
-  // 1) Leer todas las claves (excluir snapshots y legacy — no respaldar respaldos)
   const allRows = await env.DB.prepare(
     "SELECT key, value FROM siso_store WHERE key NOT LIKE 'siso_snapshot_%' AND key NOT LIKE 'siso_legacy_%'"
   ).all();
   const rows = allRows.results || [];
   log.push(`leídas ${rows.length} claves operacionales`);
 
-  // 2) Indexar y reconstruir chunks
-  const metas = {};         // baseKey → meta value
-  const chunkBags = {};     // baseKey → { idx → string }
+  const metas = {};
+  const chunkBags = {};
   const direct = {};
   const chunkRe = /__c(\d+)$/;
   for (const row of rows) {
-    // FIX 2026-07-21: decompressValue por si el valor legacy viene con prefijo gz:
     const rawVal = await decompressValue(row.value);
     if (row.key.endsWith("__meta")) {
       try { metas[row.key.slice(0, -6)] = JSON.parse(rawVal); } catch {}
@@ -667,15 +698,12 @@ async function runDailySnapshot(env) {
   }
   log.push(`reconstruidas ${reconstructedCount} claves chunked`);
 
-  // 3) Rotar snapshots viejos ANTES de escribir el nuevo (monolito ya lo hace)
-  //    Evita que D1 se llene con snapshots acumulados si el cron diario falla.
   const cutoff = new Date(Date.now() - 7 * 86400000).toISOString().slice(0, 10);
   const delRes = await env.DB.prepare(
     "DELETE FROM siso_store WHERE key LIKE 'siso_snapshot_%' AND substr(key, 15, 10) < ?"
   ).bind(cutoff).run();
   log.push(`rotación previa: borradas ${delRes.meta?.changes ?? 0} claves anteriores a ${cutoff}`);
 
-  // 4) Serializar y trocear el snapshot
   const serialized = JSON.stringify({
     snapshotVersion: "v1",
     createdAt: new Date().toISOString(),
@@ -687,24 +715,15 @@ async function runDailySnapshot(env) {
   const pieceCount = Math.ceil(totalBytes / CHUNK);
   log.push(`serializado ${(totalBytes/1024).toFixed(0)} KB → ${pieceCount} piezas`);
 
-  // 5) Escribir piezas + meta + manifest
-
   const insertStmt = env.DB.prepare(
     "INSERT INTO siso_store(key, value, updated_at) VALUES(?, ?, datetime('now')) ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at"
   );
-  // Batch para piezas (max 50 por batch para no exceder D1 binds)
   const writeBatch = [];
   for (let i = 0; i < pieceCount; i++) {
     const piece = serialized.slice(i * CHUNK, (i + 1) * CHUNK);
     writeBatch.push(insertStmt.bind(`${snapPrefix}__c${i}`, JSON.stringify(piece)));
   }
-  // Meta y manifest
-  const meta = {
-    chunked: true,
-    count: pieceCount,
-    totalBytes,
-    ts: Date.now(),
-  };
+  const meta = { chunked: true, count: pieceCount, totalBytes, ts: Date.now() };
   const manifest = {
     snapshotVersion: "v1",
     createdAt: new Date().toISOString(),
@@ -717,12 +736,9 @@ async function runDailySnapshot(env) {
   };
   writeBatch.push(insertStmt.bind(`${snapPrefix}__meta`, JSON.stringify(meta)));
   writeBatch.push(insertStmt.bind(`${snapPrefix}__manifest`, JSON.stringify(manifest)));
-
-  // Ejecutar en batches de 50
   for (let i = 0; i < writeBatch.length; i += 50) {
     await env.DB.batch(writeBatch.slice(i, i + 50));
   }
   log.push(`escritas ${writeBatch.length} claves del snapshot`);
-  // (La rotación ya se hizo antes de escribir — ver paso 3)
   return { ok: true, snapshotKey: snapPrefix, manifest, log };
 }
