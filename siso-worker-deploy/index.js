@@ -1,19 +1,18 @@
 // SISO API Worker — Cloudflare D1 backend
 // Reemplaza Supabase siso_store como almacenamiento en nube
 // OPT-2026-08-16: Cache HTTP catálogo, GET /store filtrado, batch pre-read merge
+// v2-2026-08-16: audit_log escritura en POST/DELETE, tenant header, schema_version
 
 // Lista explícita de orígenes permitidos. Incluye el proyecto git-connected
 // (-f4q) Y el alias antiguo sin sufijo, por compatibilidad histórica.
 const ALLOWED_ORIGINS = [
   "https://ocupasaludparadesplegar.pages.dev",
   "https://ocupasaludparadesplegar-f4q.pages.dev",
-    "https://siso-appultimo-arp.pages.dev",
+  "https://siso-appultimo-arp.pages.dev",
   "http://localhost:5173",
   "http://localhost:4173",
 ];
-// Fallback usado en respuestas cuando el Origin no fue reconocido (preserva
-// retro-compatibilidad: si alguien llama sin Origin válido, igual recibe CORS
-// dirigido al alias original).
+// Fallback usado en respuestas cuando el Origin no fue reconocido
 const DEFAULT_ORIGIN = ALLOWED_ORIGINS[0];
 
 async function compressValue(text) {
@@ -39,21 +38,13 @@ function isAllowedOrigin(origin) {
   if (ALLOWED_ORIGINS.includes(origin)) return true;
   if (origin.endsWith('.ocupasaludparadesplegar.pages.dev')) return true;
   if (origin.endsWith('.ocupasaludparadesplegar-f4q.pages.dev')) return true;
-  if (origin.endsWith('.siso-appultimo-arp.pages.dev')) return true; // BUG-A-08 preview URLs
+  if (origin.endsWith('.siso-appultimo-arp.pages.dev')) return true;
   return false;
 }
 
 // ── CLAVES PROTEGIDAS (fusión por id, nunca reemplazo total) ───────────────
-// COMMIT 3531448: siso_encuestas entra en la protección
-// COMMIT a28c77e: siso_companies entra en la protección
-// COMMIT 1661b5f: custodias, informes, propuestas, usuarios
-// COMMIT 50f852b: portal_empresa_docs, portal_empresa_atenciones
 const _PROTECTED = /^siso_(db_)?patients_|^siso_atenciones|^siso_hc_|^siso_encuestas|^siso_companies|^siso_cartas_custodia|^siso_saved_reports|^siso_informes|^siso_users|^siso_portal_empresa_docs|^siso_portal_empresa_atenciones/;
 
-// COMMIT 50f852b: siso_portal_empresa_docs_<nit> no es un arreglo: es un objeto
-// {nit, nombre, codigoAcceso, periodos:[{periodo, informe, cuenta, custodia, certificados}]}.
-// Fusiona por periodo, y dentro de cada periodo preserva informe/cuenta/custodia/
-// certificados que el entrante traiga en null pero el viejo sí tenía.
 async function _mergePeriodosObjeto(env, key, incoming) {
   try {
     const oldRow = await env.DB.prepare("SELECT value FROM siso_store WHERE key = ?").bind(key).first();
@@ -80,18 +71,10 @@ async function _mergePeriodosObjeto(env, key, incoming) {
   } catch (e) { console.warn(`[merge] candado-objeto ${key} error:`, e.message); return incoming; }
 }
 
-// OPT-2026-08-16: _mergeProtegido con batch pre-read para reducir queries D1
-// Cuando se llama desde POST /store con múltiples claves, pre-leemos todas
-// las claves protegidas en una sola query IN(...) antes del loop individual.
-// La lógica de fusión (CANDADO 1) es idéntica — solo el orden de lectura cambió.
 async function _mergeProtegidoBatch(env, rows) {
-  // Separar claves protegidas de no protegidas
   const protectedRows = rows.filter(r => r?.key && _PROTECTED.test(r.key));
   const unprotectedRows = rows.filter(r => !r?.key || !_PROTECTED.test(r.key));
-
   if (protectedRows.length === 0) return rows;
-
-  // Pre-leer todas las claves protegidas en una sola query
   const keys = protectedRows.map(r => r.key);
   const placeholders = keys.map(() => '?').join(',');
   let existingMap = new Map();
@@ -104,31 +87,21 @@ async function _mergeProtegidoBatch(env, rows) {
     }
   } catch (e) {
     console.warn('[batch-pre-read] error, fallback a individual:', e.message);
-    // Fallback: si el batch falla, procesar individualmente
     return await Promise.all(rows.map(async r => ({
       key: r.key,
       value: await _mergeProtegido(env, r.key, r.value)
     })));
   }
-
-  // Procesar claves protegidas con datos pre-leídos
   const mergedProtected = await Promise.all(protectedRows.map(async r => {
     const { key, value: incoming } = r;
-
-    // Caso especial: portal_empresa_docs (objeto con .periodos)
     if (incoming && typeof incoming === "object" && !Array.isArray(incoming) && Array.isArray(incoming.periodos)) {
       return { key, value: await _mergePeriodosObjeto(env, key, incoming) };
     }
-
     if (!Array.isArray(incoming)) return { key, value: incoming };
-
     const storedRaw = existingMap.get(key);
     if (!storedRaw) return { key, value: incoming };
-
     let old = null;
     try { old = JSON.parse(await decompressValue(storedRaw)); } catch {}
-
-    // Si no es array directo, intentar reconstruir desde chunks
     if (!Array.isArray(old)) {
       const metaRaw = existingMap.get(key + '__meta');
       if (metaRaw) {
@@ -147,7 +120,6 @@ async function _mergeProtegidoBatch(env, rows) {
         } catch {}
       }
     }
-
     if (Array.isArray(old) && old.length > 0) {
       const ids = new Set(incoming.filter(x => x && x.id != null).map(x => String(x.id)));
       const idsByToken = new Set(incoming.filter(x => x && x.token != null).map(x => String(x.token)));
@@ -159,16 +131,12 @@ async function _mergeProtegidoBatch(env, rows) {
     }
     return { key, value: incoming };
   }));
-
-  // Recombinar en el orden original
-  const mergedMap = new Map([...mergedProtected, ...unprotectedRows.map(r => [r.key, r])].map(item => 
+  const mergedMap = new Map([...mergedProtected, ...unprotectedRows.map(r => [r.key, r])].map(item =>
     Array.isArray(item) ? [item[0], { key: item[0], value: item[1] }] : [item.key, item]
   ));
   return rows.map(r => mergedMap.get(r.key) || r);
 }
 
-// Función original _mergeProtegido mantenida intacta para uso individual
-// (POST /store/chunked, POST /store/append la usan directamente)
 async function _mergeProtegido(env, key, incoming) {
   if (!_PROTECTED.test(key)) return incoming;
   if (incoming && typeof incoming === "object" && !Array.isArray(incoming) && Array.isArray(incoming.periodos)) {
@@ -210,11 +178,27 @@ async function _mergeProtegido(env, key, incoming) {
   return incoming;
 }
 
+// ── AUDIT LOG helper ────────────────────────────────────────────────────────
+// Escritura no-blocking: usa waitUntil si ctx disponible, si no fire-and-forget.
+// El audit_log es best-effort: nunca bloquea ni falla la operación principal.
+function _auditWrite(env, ctx, { tenant = '', operation, key, appId = 'unknown', userId = '', detail = null }) {
+  const ts = new Date().toISOString();
+  const detailStr = detail ? JSON.stringify(detail).slice(0, 500) : null;
+  const stmt = env.DB.prepare(
+    "INSERT INTO siso_audit_log(ts, tenant, operation, key, app_id, user_id, detail) VALUES(?, ?, ?, ?, ?, ?, ?)"
+  ).bind(ts, tenant, operation, key, appId, userId, detailStr).run();
+  if (ctx?.waitUntil) {
+    ctx.waitUntil(stmt.catch(e => console.warn('[audit] write error:', e?.message)));
+  } else {
+    stmt.catch(e => console.warn('[audit] write error:', e?.message));
+  }
+}
+
 function getCorsHeaders(origin) {
   const allow = isAllowedOrigin(origin) ? origin : DEFAULT_ORIGIN;
   return {
     'Access-Control-Allow-Origin': allow,
-    'Access-Control-Allow-Headers': 'Content-Type, X-Siso-Token, X-Siso-App, X-Siso-UserId',
+    'Access-Control-Allow-Headers': 'Content-Type, X-Siso-Token, X-Siso-App, X-Siso-UserId, X-Siso-Tenant',
     'Access-Control-Allow-Methods': 'GET,POST,OPTIONS,DELETE',
     'Access-Control-Max-Age': '86400',
     'Content-Type': 'application/json',
@@ -222,45 +206,41 @@ function getCorsHeaders(origin) {
 }
 
 export default {
-  async fetch(request, env) {
+  async fetch(request, env, ctx) {
     const origin = request.headers.get("Origin") || "";
     const headers = getCorsHeaders(origin);
 
-    // OPTIONS preflight
     if (request.method === "OPTIONS") {
       return new Response(null, { status: 204, headers });
     }
 
-    // Auth check
     const token = request.headers.get("X-Siso-Token");
     if (!token || token !== env.SISO_TOKEN) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers });
     }
 
-    const url = new URL(request.url);
+    // v2: headers de contexto de auditoría
+    const appId  = request.headers.get("X-Siso-App")    || "unknown";
+    const userId = request.headers.get("X-Siso-UserId") || "";
+    const tenant = request.headers.get("X-Siso-Tenant") || "";
+
+    const url  = new URL(request.url);
     const path = url.pathname;
 
     try {
       // ── GET /store/:key ──────────────────────────────────────────────
-      // Devuelve también `ts` (updated_at) para soporte de If-Match en POST
-      // COMMIT 1bf1233 — modo ?raw=1 evita JSON.parse + 503 por CPU timeout
-      // OPT-2026-08-16: Cache HTTP 30s para claves de catálogo (companies, portal_docs, ai_keys)
       if (request.method === "GET" && path.startsWith("/store/") && !path.startsWith("/store/prefix/")) {
         const key = decodeURIComponent(path.slice(7));
         const rawMode = url.searchParams.get("raw") === "1";
         const row = await env.DB.prepare("SELECT value, updated_at FROM siso_store WHERE key = ?").bind(key).first();
         if (!row) return new Response(JSON.stringify([]), { headers });
         const ts = row.updated_at;
-
-        // OPT-2026-08-16: Cache HTTP para claves de catálogo (baja frecuencia de cambio)
-        // HC, pacientes y atenciones siguen con no-store para garantizar datos frescos
         const isCatalog = key.startsWith('siso_companies_') ||
                           key.startsWith('siso_portal_empresa_docs_') ||
                           key.startsWith('siso_ai_keys_');
         const cacheControl = isCatalog
           ? 'public, max-age=30, stale-while-revalidate=60'
           : 'no-store';
-
         const respHeaders = {
           ...headers,
           "ETag": ts ? `"${ts}"` : '""',
@@ -275,9 +255,7 @@ export default {
         return new Response(JSON.stringify([{ key, value, ts }]), { headers: respHeaders });
       }
 
-      // ── GET /store/prefix/:prefix — buscar por prefijo ───────────────
-      // COMMIT 4f8b81f — modo ?raw=1 salta JSON.parse por fila
-      // FIX 2026-07-21: excluir piezas de chunk
+      // ── GET /store/prefix/:prefix ─────────────────────────────────────
       if (request.method === "GET" && path.startsWith("/store/prefix/")) {
         const prefix = decodeURIComponent(path.slice(14));
         const raw = url.searchParams.get("raw") === "1";
@@ -297,19 +275,15 @@ export default {
         return new Response(JSON.stringify(result), { headers });
       }
 
-      // ── GET /store — listar claves ────────────────────────────────────
-      // OPT-2026-08-16: rama sin userId ahora filtra chunks/snapshots/deleted
-      // y reduce LIMIT de 2000 a 500. Rama con userId: SIN CAMBIOS.
+      // ── GET /store ────────────────────────────────────────────────────
       if (request.method === "GET" && path === "/store") {
-        const userId = url.searchParams.get("userId") || "";
+        const userId2 = url.searchParams.get("userId") || "";
         let rows;
-        if (userId) {
-          // Rama userId: intacta — la usan monolito y refactor
+        if (userId2) {
           rows = await env.DB.prepare(
             "SELECT key, value, updated_at FROM siso_store WHERE key LIKE ? OR key LIKE ? LIMIT 2000"
-          ).bind(`%_${userId}`, `%_${userId}_%`).all();
+          ).bind(`%_${userId2}`, `%_${userId2}_%`).all();
         } else {
-          // Rama general: filtrar internals para reducir payload
           rows = await env.DB.prepare(
             `SELECT key, value, updated_at FROM siso_store
              WHERE key NOT GLOB '*__c[0-9]*'
@@ -331,17 +305,12 @@ export default {
         return new Response(JSON.stringify(result), { headers });
       }
 
-      // ── POST /store — upsert uno o varios {key, value} ───────────────
-      // OPT-2026-08-16: usa _mergeProtegidoBatch para pre-leer claves protegidas
-      // en una sola query IN(...) en vez de N queries individuales.
+      // ── POST /store ───────────────────────────────────────────────────
       if (request.method === "POST" && path === "/store") {
-        const body = await request.json();
-        const rows = Array.isArray(body) ? body : [body];
+        const body   = await request.json();
+        const rows   = Array.isArray(body) ? body : [body];
         const ifMatch = (request.headers.get("If-Match") || request.headers.get("X-Siso-If-Match") || "").replace(/"/g, "").trim();
 
-        // CANDADO 3 (INERTE): validar userId en claves de pacientes.
-        const appId = request.headers.get("X-Siso-App") || "unknown";
-        const userId = request.headers.get("X-Siso-UserId") || "";
         const PROTECTED_PREFIXES_USER = ['siso_patients_', 'siso_db_patients_', 'siso_hc_'];
         for (const row of rows) {
           if (row?.key && PROTECTED_PREFIXES_USER.some(p => row.key.startsWith(p))) {
@@ -356,53 +325,56 @@ export default {
           }
         }
 
-        // CANDADO 2: Rechazar escrituras a HC cerradas
         for (const row of rows) {
           if (row?.key && (
             row.key.startsWith("siso_hc_cerrada_") ||
             /siso_hc_.*_cerrada$/.test(row.key)
           )) {
             return new Response(JSON.stringify({
-              ok: false,
-              error: "hc_frozen",
+              ok: false, error: "hc_frozen",
               message: "CANDADO 2: esta HC está cerrada y no puede modificarse",
               key: row.key,
             }), { status: 423, headers });
           }
         }
 
-        // Validación If-Match
         if (ifMatch && rows.length === 1 && rows[0]?.key) {
           const currentRow = await env.DB.prepare("SELECT updated_at FROM siso_store WHERE key = ?").bind(rows[0].key).first();
-          const currentTs = currentRow?.updated_at || "";
+          const currentTs  = currentRow?.updated_at || "";
           if (currentTs && currentTs !== ifMatch) {
             return new Response(JSON.stringify({
-              ok: false,
-              error: "etag_mismatch",
-              currentTs,
-              expectedTs: ifMatch,
+              ok: false, error: "etag_mismatch", currentTs, expectedTs: ifMatch,
             }), { status: 409, headers: { ...headers, "X-Siso-Current-Ts": currentTs } });
           }
         }
 
         const stmt = env.DB.prepare(
-          "INSERT INTO siso_store(key, value, updated_at) VALUES(?, ?, datetime('now')) ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at"
+          "INSERT INTO siso_store(key, value, updated_at, tenant) VALUES(?, ?, datetime('now'), ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at, tenant = CASE WHEN excluded.tenant != '' THEN excluded.tenant ELSE siso_store.tenant END"
         );
 
-        // OPT-2026-08-16: batch pre-read para claves protegidas
         const CHUNK = 50;
         for (let i = 0; i < rows.length; i += CHUNK) {
           const chunk = rows.slice(i, i + CHUNK);
-          // Pre-leer todas las claves protegidas del chunk en una query
           const mergedChunk = await _mergeProtegidoBatch(env, chunk);
-          const comp = mergedChunk.map(r => ({ key: r.key, cv: JSON.stringify(r.value) }));
-          const batch = comp.map(({ key, cv }) => stmt.bind(key, cv));
+          const comp  = mergedChunk.map(r => ({ key: r.key, cv: JSON.stringify(r.value) }));
+          const batch = comp.map(({ key, cv }) => stmt.bind(key, cv, tenant));
           await env.DB.batch(batch);
         }
+
+        // Audit log: registrar las claves escritas (best-effort, no bloquea)
+        for (const row of rows) {
+          if (row?.key) {
+            _auditWrite(env, ctx, {
+              tenant, operation: 'WRITE', key: row.key, appId, userId,
+              detail: { count: rows.length },
+            });
+          }
+        }
+
         return new Response(JSON.stringify({ ok: true, count: rows.length }), { headers });
       }
 
-      // ── POST /store/append ─────────────────────────────────────────────
+      // ── POST /store/append ────────────────────────────────────────────
       if (request.method === "POST" && path === "/store/append") {
         const body = await request.json();
         const { key, item, idField = "id" } = body;
@@ -423,12 +395,13 @@ export default {
         if (idx >= 0) arr[idx] = item; else arr.push(item);
         const cv = await compressValue(JSON.stringify(arr));
         await env.DB.prepare(
-          "INSERT INTO siso_store(key, value, updated_at) VALUES(?, ?, datetime('now')) ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at"
-        ).bind(key, cv).run();
+          "INSERT INTO siso_store(key, value, updated_at, tenant) VALUES(?, ?, datetime('now'), ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at, tenant = CASE WHEN excluded.tenant != '' THEN excluded.tenant ELSE siso_store.tenant END"
+        ).bind(key, cv, tenant).run();
+        _auditWrite(env, ctx, { tenant, operation: 'APPEND', key, appId, userId });
         return new Response(JSON.stringify({ ok: true, count: arr.length }), { headers });
       }
 
-      // ── POST /store/chunked ────────────────────────────────────────────
+      // ── POST /store/chunked ───────────────────────────────────────────
       if (request.method === "POST" && path === "/store/chunked") {
         const body = await request.json();
         const { key, value } = body || {};
@@ -443,7 +416,7 @@ export default {
           h1 = ((h1 << 5) - h1 + c) | 0;
           h2 = ((h2 << 7) - h2 + c * 31) | 0;
         }
-        const hash = (h1 >>> 0).toString(16) + "_" + (h2 >>> 0).toString(16);
+        const hash  = (h1 >>> 0).toString(16) + "_" + (h2 >>> 0).toString(16);
         const PIECE = 500 * 1024;
         const pieces = [];
         for (let off = 0; off < payload.length; off += PIECE) pieces.push(payload.slice(off, off + PIECE));
@@ -452,18 +425,19 @@ export default {
           const om = await env.DB.prepare("SELECT value FROM siso_store WHERE key = ?").bind(key + "__meta").first();
           if (om?.value) { const m = JSON.parse(await decompressValue(om.value)); if (m?.chunked && Number.isFinite(m.count)) oldCount = m.count; }
         } catch {}
-        const up = env.DB.prepare(
-          "INSERT INTO siso_store(key, value, updated_at) VALUES(?, ?, datetime('now')) ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at"
+        const up  = env.DB.prepare(
+          "INSERT INTO siso_store(key, value, updated_at, tenant) VALUES(?, ?, datetime('now'), ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at, tenant = CASE WHEN excluded.tenant != '' THEN excluded.tenant ELSE siso_store.tenant END"
         );
         const del = env.DB.prepare("DELETE FROM siso_store WHERE key = ?");
         const meta = { chunked: true, count: pieces.length, totalBytes: payload.length, hash, ts: Date.now() };
         const batch = [
-          ...pieces.map((p, i) => up.bind(key + "__c" + i, JSON.stringify(p))),
-          up.bind(key + "__meta", JSON.stringify(meta)),
+          ...pieces.map((p, i) => up.bind(key + "__c" + i, JSON.stringify(p), tenant)),
+          up.bind(key + "__meta", JSON.stringify(meta), tenant),
           del.bind(key),
         ];
         for (let i = pieces.length; i < oldCount; i++) batch.push(del.bind(key + "__c" + i));
         await env.DB.batch(batch);
+        _auditWrite(env, ctx, { tenant, operation: 'CHUNKED_WRITE', key, appId, userId, detail: { chunks: pieces.length } });
         return new Response(JSON.stringify({ ok: true, chunks: pieces.length, hash }), { headers });
       }
 
@@ -480,6 +454,7 @@ export default {
         const autoDel = await env.DB.prepare(
           "DELETE FROM siso_store WHERE key LIKE 'siso_autosave_cloud_%' AND updated_at < ?"
         ).bind(autoCutoff).run();
+        _auditWrite(env, ctx, { tenant, operation: 'CLEANUP', key: '__cleanup__', appId, userId });
         return new Response(JSON.stringify({
           ok: true,
           snapshotsDeleted: snapDel.meta?.changes ?? 0,
@@ -488,15 +463,15 @@ export default {
         }), { headers });
       }
 
-      // ── GET /storage-stats ────────────────────────────────────────────
+      // ── GET /storage-stats ─────────────────────────────────────────────
       if (request.method === "GET" && path === "/storage-stats") {
-        const count = await env.DB.prepare("SELECT COUNT(*) AS c FROM siso_store").first();
-        const filas = count?.c ?? 0;
-        const sizeRow = await env.DB.prepare("SELECT SUM(LENGTH(value)) AS total_bytes FROM siso_store").first();
+        const count    = await env.DB.prepare("SELECT COUNT(*) AS c FROM siso_store").first();
+        const filas    = count?.c ?? 0;
+        const sizeRow  = await env.DB.prepare("SELECT SUM(LENGTH(value)) AS total_bytes FROM siso_store").first();
         const mbUsados = sizeRow?.total_bytes ? Math.round((sizeRow.total_bytes / (1024 * 1024)) * 100) / 100 : 0;
         const limiteMb = 500;
-        const usoPct = Math.round((mbUsados / limiteMb) * 100);
-        const grupos = await env.DB.prepare(`
+        const usoPct   = Math.round((mbUsados / limiteMb) * 100);
+        const grupos   = await env.DB.prepare(`
           SELECT CASE
             WHEN key LIKE 'siso_patients_%' OR key LIKE 'siso_db_patients_%' THEN 'patients'
             WHEN key LIKE 'siso_hc_%' THEN 'hc'
@@ -540,8 +515,9 @@ export default {
           }
         }
         await env.DB.prepare(
-          "INSERT INTO siso_store(key, value, updated_at) VALUES(?, ?, datetime('now')) ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at"
-        ).bind(key, JSON.stringify(merged)).run();
+          "INSERT INTO siso_store(key, value, updated_at, tenant) VALUES(?, ?, datetime('now'), ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at, tenant = CASE WHEN excluded.tenant != '' THEN excluded.tenant ELSE siso_store.tenant END"
+        ).bind(key, JSON.stringify(merged), tenant).run();
+        _auditWrite(env, ctx, { tenant, operation: 'MERGE', key, appId, userId, detail: { count: merged.length } });
         return new Response(JSON.stringify({ ok: true, count: merged.length, added: merged.length - arr.length }), { headers });
       }
 
@@ -551,7 +527,7 @@ export default {
         if (url.searchParams.get("full") !== "1") {
           try {
             await env.DB.prepare("SELECT 1").first();
-            return new Response(JSON.stringify({ ok: true, latencyMs: Date.now() - t0, ts: new Date().toISOString() }), { headers });
+            return new Response(JSON.stringify({ ok: true, latencyMs: Date.now() - t0, ts: new Date().toISOString(), schema: 'v2' }), { headers });
           } catch (e) {
             return new Response(JSON.stringify({ ok: false, error: e.message, latencyMs: Date.now() - t0 }), { status: 500, headers });
           }
@@ -568,11 +544,13 @@ export default {
           counts.hc_completas = r4?.c ?? 0;
           const r5 = await env.DB.prepare("SELECT COUNT(*) AS c FROM siso_store WHERE key LIKE 'siso_portal_empresa_%'").first();
           counts.portal_empresa_keys = r5?.c ?? 0;
+          const r6 = await env.DB.prepare("SELECT COUNT(*) AS c FROM siso_audit_log").first();
+          counts.audit_entries = r6?.c ?? 0;
         } catch (e) {
           return new Response(JSON.stringify({ ok: false, error: e.message, latencyMs: Date.now() - t0 }), { status: 500, headers });
         }
         return new Response(JSON.stringify({
-          ok: true, counts, latencyMs: Date.now() - t0, ts: new Date().toISOString(),
+          ok: true, counts, schema: 'v2', latencyMs: Date.now() - t0, ts: new Date().toISOString(),
         }), { headers });
       }
 
@@ -599,6 +577,7 @@ export default {
           }
         } catch {}
         await env.DB.prepare("DELETE FROM siso_store WHERE key = ?").bind(key).run();
+        _auditWrite(env, ctx, { tenant, operation: 'DELETE', key, appId, userId });
         return new Response(JSON.stringify({ ok: true }), { headers });
       }
 
@@ -614,6 +593,24 @@ export default {
           "SELECT key, updated_at FROM siso_store WHERE key LIKE 'siso_snapshot_%__manifest' ORDER BY key DESC"
         ).all();
         return new Response(JSON.stringify(rows.results || []), { headers });
+      }
+
+      // ── GET /audit ────────────────────────────────────────────────────
+      // Devuelve últimas 100 entradas del audit log (ordenadas por ts DESC)
+      if (request.method === "GET" && path === "/audit") {
+        const limitParam = Math.min(parseInt(url.searchParams.get("limit") || "100", 10), 500);
+        const filterKey  = url.searchParams.get("key") || "";
+        let q, rows;
+        if (filterKey) {
+          q = await env.DB.prepare(
+            "SELECT id, ts, tenant, operation, key, app_id, user_id, detail FROM siso_audit_log WHERE key = ? ORDER BY ts DESC LIMIT ?"
+          ).bind(filterKey, limitParam).all();
+        } else {
+          q = await env.DB.prepare(
+            "SELECT id, ts, tenant, operation, key, app_id, user_id, detail FROM siso_audit_log ORDER BY ts DESC LIMIT ?"
+          ).bind(limitParam).all();
+        }
+        return new Response(JSON.stringify(q.results || []), { headers });
       }
 
       return new Response(JSON.stringify({ error: "Not found" }), { status: 404, headers });
@@ -705,7 +702,7 @@ async function runDailySnapshot(env) {
   log.push(`rotación previa: borradas ${delRes.meta?.changes ?? 0} claves anteriores a ${cutoff}`);
 
   const serialized = JSON.stringify({
-    snapshotVersion: "v1",
+    snapshotVersion: "v2",
     createdAt: new Date().toISOString(),
     totalKeys: Object.keys(reconstructed).length,
     data: reconstructed,
@@ -725,7 +722,7 @@ async function runDailySnapshot(env) {
   }
   const meta = { chunked: true, count: pieceCount, totalBytes, ts: Date.now() };
   const manifest = {
-    snapshotVersion: "v1",
+    snapshotVersion: "v2",
     createdAt: new Date().toISOString(),
     totalKeys: Object.keys(reconstructed).length,
     totalBytes,
