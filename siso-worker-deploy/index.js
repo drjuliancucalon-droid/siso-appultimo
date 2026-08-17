@@ -623,33 +623,45 @@ async function runDailySnapshot(env) {
     log.push(`[GC-TEMP] error: ${e?.message}`);
   }
 
-  // 1) Leer todas las claves (excluir snapshots y legacy — no respaldar respaldos)
-  const allRows = await env.DB.prepare(
-    "SELECT key, value FROM siso_store WHERE key NOT LIKE 'siso_snapshot_%' AND key NOT LIKE 'siso_legacy_%'"
-  ).all();
-  const rows = allRows.results || [];
-  log.push(`leídas ${rows.length} claves operacionales`);
-
-  // 2) Indexar y reconstruir chunks
+  // 1) Leer claves en lotes paginados (100 filas) para no explotar la memoria
+  //    del isolate de D1. Antes se hacía un único SELECT ... .all() que cargaba
+  //    ~466 MB de value en memoria de una vez → "isolate exceeded its memory
+  //    limit and was reset". Ahora se pagina con LIMIT/OFFSET.
+  const PAGE_SIZE = 100;
   const metas = {};         // baseKey → meta value
   const chunkBags = {};     // baseKey → { idx → string }
   const direct = {};
   const chunkRe = /__c(\d+)$/;
-  for (const row of rows) {
-    // FIX 2026-07-21: decompressValue por si el valor legacy viene con prefijo gz:
-    const rawVal = await decompressValue(row.value);
-    if (row.key.endsWith("__meta")) {
-      try { metas[row.key.slice(0, -6)] = JSON.parse(rawVal); } catch {}
-      continue;
+  let offset = 0;
+  let totalRead = 0;
+  while (true) {
+    const page = await env.DB.prepare(
+      "SELECT key, value FROM siso_store WHERE key NOT LIKE 'siso_snapshot_%' AND key NOT LIKE 'siso_legacy_%' LIMIT ? OFFSET ?"
+    ).bind(PAGE_SIZE, offset).all();
+    const rows = page.results || [];
+    if (rows.length === 0) break;
+    totalRead += rows.length;
+
+    // 2) Indexar y reconstruir chunks (por lote)
+    for (const row of rows) {
+      // FIX 2026-07-21: decompressValue por si el valor legacy viene con prefijo gz:
+      const rawVal = await decompressValue(row.value);
+      if (row.key.endsWith("__meta")) {
+        try { metas[row.key.slice(0, -6)] = JSON.parse(rawVal); } catch {}
+        continue;
+      }
+      const m = chunkRe.exec(row.key);
+      if (m) {
+        const base = row.key.slice(0, -m[0].length);
+        (chunkBags[base] ||= {})[Number(m[1])] = JSON.parse(rawVal);
+        continue;
+      }
+      try { direct[row.key] = JSON.parse(rawVal); } catch { direct[row.key] = rawVal; }
     }
-    const m = chunkRe.exec(row.key);
-    if (m) {
-      const base = row.key.slice(0, -m[0].length);
-      (chunkBags[base] ||= {})[Number(m[1])] = JSON.parse(rawVal);
-      continue;
-    }
-    try { direct[row.key] = JSON.parse(rawVal); } catch { direct[row.key] = rawVal; }
+
+    offset += PAGE_SIZE;
   }
+  log.push(`leídas ${totalRead} claves operacionales (paginado en lotes de ${PAGE_SIZE})`);
 
   const reconstructed = { ...direct };
   let reconstructedCount = 0;
