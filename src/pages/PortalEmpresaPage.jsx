@@ -88,11 +88,13 @@ export default function PortalEmpresaPage() {
     if (!q) { setError('Ingrese el NIT de la empresa'); return; }
     setLoading(true); setError(''); setResultadosEmpresa([]); setEmpresaAtenciones(null); setResultadoIndividual(null);
 
-    const nitClean = q.replace(/[^0-9]/g, '');
+        const nitClean = q.replace(/[^0-9]/g, '');
     if (!nitClean || nitClean.length < 3) { setError('NIT inválido'); setLoading(false); return; }
+    if (!cod) { setError('Ingrese el código de acceso de la empresa'); setLoading(false); return; }
 
     try {
-      let codigoValido = true; let docsKeyFound = false;
+      let codigoValido = false; let docsKeyFound = false;
+
       const nitVariants = [nitClean];
       for (let dv = 0; dv <= 9; dv++) nitVariants.push(nitClean + dv);
       if (nitClean.length > 6) nitVariants.push(nitClean.slice(0, -1));
@@ -105,10 +107,11 @@ export default function PortalEmpresaPage() {
             if (String(rd.data.codigoAcceso).trim().toUpperCase() === cod.toUpperCase()) { codigoValido = true; break; }
           }
         }
-        if (docsKeyFound && !codigoValido) {
+                if (!docsKeyFound || !codigoValido) {
           setError('🔒 Código de acceso incorrecto.\n\nVerifique el código enviado al correo de la empresa.\nFormato: EMP-XXXX-XXXX');
           setLoading(false); return;
         }
+
       }
 
       const _atMap = new Map(); let baseAtenciones = null;

@@ -19,6 +19,15 @@ const getMergeKey = function(data) {
   return null;
 };
 
+const getCurrentUserId = function() {
+  try {
+    var authRaw = JSON.parse(localStorage.getItem('siso-auth') || '{}');
+    return authRaw && authRaw.state && authRaw.state.currentUser && authRaw.state.currentUser.user
+      ? authRaw.state.currentUser.user
+      : 'drcucalon';
+  } catch (_) { return 'drcucalon'; }
+};
+
 const _backupToSupabase = async function(key, data) {
   if (!SB_URL || !SB_KEY || !key) return;
   try {
@@ -74,14 +83,15 @@ export function useSaveData() {
     } catch (e) { /* continuar */ }
 
     if (d1Key) {
+      var mergeField = getMergeKey(data);
+      var itemToSave = mergeField ? data : Object.assign({}, data, { id: data.id || ('item_' + Date.now()) });
+      var mKey = mergeField || 'id';
+      var userId = getCurrentUserId();
       try {
-        var mergeField = getMergeKey(data);
-        var itemToSave = mergeField ? data : Object.assign({}, data, { id: data.id || ('item_' + Date.now()) });
-        var mKey = mergeField || 'id';
-        await d1WriteArrayMerge(d1Key, [itemToSave], mKey);
+        await d1WriteArrayMerge(d1Key, [itemToSave], mKey, { userId: userId });
         _backupToSupabase(d1Key, data).catch(function() {});
         try {
-          var fetched = await d1Get(d1Key);
+          var fetched = await d1Get(d1Key, { userId: userId });
           if (fetched && Array.isArray(fetched.value)) {
             localStorage.setItem(d1Key, JSON.stringify(fetched.value));
           }
@@ -91,16 +101,30 @@ export function useSaveData() {
         return { ok: true, source: 'd1', key: d1Key };
       } catch (e) {
         console.warn('[useSaveData] D1 write fallo:', e.message);
-        // Encolar operación offline si hay internet pero D1 falló, o si no hay internet
-        if (typeof navigator !== 'undefined' && !navigator.onLine) {
-          try {
-            const { enqueueSync } = await import('../shared/lib/syncManager');
-            await enqueueSync('upsert', d1Key, itemToSave);
-          } catch (_) {}
+        var localSaved = false;
+        try {
+          var fallbackStored = JSON.parse(localStorage.getItem(d1Key) || '[]');
+          var fallbackArr = Array.isArray(fallbackStored) ? fallbackStored : [];
+          if (mergeField && data[mergeField]) {
+            var fallbackIdx = fallbackArr.findIndex(function(x) { return x && x[mergeField] === data[mergeField]; });
+            if (fallbackIdx >= 0) fallbackArr[fallbackIdx] = Object.assign({}, fallbackArr[fallbackIdx], data);
+            else fallbackArr.push(itemToSave);
+          } else {
+            fallbackArr.push(itemToSave);
+          }
+          localStorage.setItem(d1Key, JSON.stringify(fallbackArr));
+          localSaved = true;
+        } catch (localErr) {
+          console.warn('[useSaveData] local fallback fallo:', localErr.message);
         }
+        // D1 puede fallar aun con internet: siempre encolar para reintento.
+        try {
+          const { enqueueSync } = await import('../shared/lib/syncManager');
+          await enqueueSync('upsert', d1Key, itemToSave);
+        } catch (_) {}
         setSaving(false);
-        setLastSaveStatus('local-only');
-        return { ok: true, source: 'local-only', key: d1Key };
+        setLastSaveStatus(localSaved ? 'local-only' : 'error');
+        return { ok: localSaved, source: localSaved ? 'local-only' : 'none', key: d1Key };
       }
     }
 

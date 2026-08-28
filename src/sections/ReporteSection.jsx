@@ -1209,7 +1209,7 @@ export default function ReporteSection({ ctx }) {
                         onClick={async () => {
                           // Generar el informe
                           await generateAIReport(stats, total, compName);
-                          
+
                           // Esperar un momento para que se actualice el estado con el resultado del IA
                           setTimeout(async () => {
                             // Verificar que tenemos el resultado del IA
@@ -1217,16 +1217,16 @@ export default function ReporteSection({ ctx }) {
                               console.warn('No se pudo obtener el resultado del IA para guardar');
                               return;
                             }
-                            
+
                             const compData = companies.find(c => c.id === selectedCompanyReport);
                             const reportData = {
                               companyId: selectedCompanyReport,
                               empresaId: selectedCompanyReport,
                               empresaNombre: compName,
                               empresaNit: compData?.nit || null,
-                              empresaId: selectedCompanyReport,
                               periodoInicio: reportStartDate,
                               periodoFin: reportEndDate,
+
                               tipoInforme: 'epidemiologico',
                               totalTrabajadores: total,
                               estadisticas: stats,
@@ -1245,7 +1245,7 @@ export default function ReporteSection({ ctx }) {
                                 nit: compData?.nit || null,
                                 nombre: compName,
                                 empresaId: selectedCompanyReport,
-                                periodo: reportStartDate && reportEndDate 
+                                periodo: reportStartDate && reportEndDate
                                   ? `${reportStartDate} al ${reportEndDate}`
                                   : new Date().toISOString().slice(0, 7),
                                 fechaGeneracion: new Date().toISOString(),
@@ -1255,11 +1255,11 @@ export default function ReporteSection({ ctx }) {
                               fechaGeneracion: new Date().toISOString(),
                               generadoPor: currentUser?.user || currentUser?.nombre || 'Sistema',
                             };
-                            
+
                             try {
                               const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
                               const token = currentUser?.token || localStorage.getItem('token');
-                              
+
                               const res = await fetch(`${API_URL}/write/reports/save`, {
                                 method: 'POST',
                                 headers: {
@@ -1268,7 +1268,7 @@ export default function ReporteSection({ ctx }) {
                                 },
                                 body: JSON.stringify(reportData)
                               });
-                              
+
                               if (res.ok) {
                                 const result = await res.json();
                                 console.log('Informe guardado exitosamente:', result);

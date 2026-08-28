@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-route
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useAuthStore } from './stores/authStore';
 import Layout from './app/Layout';
+import { PrivacyModal } from './modules/auth/components/PrivacyModal';
 
 // ── Lazy-loaded pages (code-splitting por ruta) ──────────────────
 const Login = React.lazy(() => import('./pages/LoginPage'));
@@ -121,17 +122,44 @@ function SessionWatcher() {
   return null;
 }
 
+// ── Privacy gate — mismo contrato de arranque del monolito ─────────
+function PrivacyGate({ children }) {
+  const privacidadAceptada = useAuthStore((state) => state.privacidadAceptada);
+  const acceptPrivacy = useAuthStore((state) => state.acceptPrivacy);
+  const [localAccepted, setLocalAccepted] = React.useState(() => {
+    try {
+      return !!JSON.parse(localStorage.getItem('siso_privacidad_aceptada') || 'false');
+    } catch {
+      return false;
+    }
+  });
+
+  const accepted = privacidadAceptada || localAccepted;
+  const handleAccept = () => {
+    const registro = { fecha: new Date().toISOString(), version: '1.0' };
+    try { localStorage.setItem('siso_privacidad_aceptada', JSON.stringify(registro)); } catch {}
+    setLocalAccepted(true);
+    acceptPrivacy();
+  };
+
+  if (!accepted) return <PrivacyModal onAccept={handleAccept} />;
+  return children;
+}
+
 // ── Main App ─────────────────────────────────────────────────────
 export default function App() {
+
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
-        <VersionWatcher />
-        <D1ChangesWatcher />
-        <StorageHealth />
-        <SessionWatcher />
-        <Suspense fallback={<PageLoader />}>
-          <Routes>
+                <PrivacyGate>
+          <VersionWatcher />
+          <D1ChangesWatcher />
+          <StorageHealth />
+          <SessionWatcher />
+          <Suspense fallback={<PageLoader />}>
+            <Routes>
+
             {/* Public routes */}
             <Route path="/login" element={<Login />} />
             <Route path="/portal/:code" element={<WorkerPortalPage />} />
@@ -216,8 +244,10 @@ export default function App() {
 
             {/* 404 */}
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
-          </Routes>
-        </Suspense>
+                      </Routes>
+          </Suspense>
+        </PrivacyGate>
+
       </BrowserRouter>
     </QueryClientProvider>
   );
