@@ -19,7 +19,7 @@ export const useAIStore = create(
       hasAnyKey: () => Object.values(get().keys).some((k) => k?.trim()?.length > 0),
       loadFromD1: (userId) => {
         if (!userId) return;
-        d1Get('siso_ai_keys_' + userId).then(({ value }) => {
+        d1Get('siso_ai_keys_' + userId, { userId }).then(({ value }) => {
           if (!value || typeof value !== 'object') return;
           const k = { ...get().keys };
           if (value.gemini) k.gemini = value.gemini;
@@ -33,7 +33,7 @@ export const useAIStore = create(
       saveToD1: async (userId) => {
         if (!userId) return;
         const { activeProvider, keys } = get();
-        return d1Set('siso_ai_keys_' + userId, { activeProvider, ...keys });
+        return d1Set('siso_ai_keys_' + userId, { activeProvider, ...keys }, { userId });
       },
     }),
     { name: 'siso-ai-config', partialize: (s) => ({ activeProvider: s.activeProvider, keys: s.keys }) }

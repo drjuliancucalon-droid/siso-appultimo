@@ -135,7 +135,7 @@ export function useBackendData(endpoint, localStorageKey, dataField) {
 
       if (d1Key) {
         try {
-          const { value } = await d1Get(d1Key);
+          const { value } = await d1Get(d1Key, { userId });
           if (!cancelled && Array.isArray(value) && value.length > 0) {
             let items = value;
             if (isPatients) {
@@ -242,7 +242,7 @@ export function useBackendObject(endpoint, localStorageKey, dataField) {
 
       if (d1Key) {
         try {
-          const { value } = await d1Get(d1Key);
+          const { value } = await d1Get(d1Key, { userId });
           if (!cancelled && value !== null && value !== undefined) {
             setData(value);
             try { localStorage.setItem(localStorageKey, JSON.stringify(value)); } catch {}

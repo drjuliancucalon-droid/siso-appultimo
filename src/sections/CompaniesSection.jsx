@@ -449,7 +449,7 @@ export default function CompaniesSection({ ctx }) {
                             {(() => {
                               try {
                                 const bills = JSON.parse(localStorage.getItem('siso_saved_bills') || '[]');
-                                const filtradas = bills.filter(b => 
+                                const filtradas = bills.filter(b =>
                                   b.empresa?.toLowerCase() === c.nombre?.toLowerCase() ||
                                   b.empresaNit === c.nit ||
                                   b.empresaId === c.id
@@ -1734,8 +1734,7 @@ export default function CompaniesSection({ ctx }) {
         {/* ═══ MODAL PORTAL ACTIVADO ═══ */}
         {portalActivadoInfo &&
           (() => {
-            const baseUrl = window.location.href.split("#")[0];
-            const portalUrl = `${baseUrl}#portalempresa?code=${portalActivadoInfo.portalCode}`;
+            const portalUrl = `${window.location.origin}/portal-empresa?nit=${encodeURIComponent(portalActivadoInfo.nit || portalActivadoInfo.empresaNit || '')}&code=${encodeURIComponent(portalActivadoInfo.portalCode || '')}`;
             const msgWhatsapp = [
               `🏢 *Portal SISO OcupaSalud - ${portalActivadoInfo.nombre}*`,
               ``,

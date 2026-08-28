@@ -1,27 +1,17 @@
 {
-  "name": "siso-api",
-  "main": "index.js",
-  "compatibility_date": "2026-01-01",
-  "compatibility_flags": ["nodejs_compat"],
-  "d1_databases": [
-    {
-      "binding": "DB",
-      "database_name": "siso-db",
-      "database_id": "76da5895-478f-4486-a5d4-05069f9aa45a"
-    }
-  ],
-  "limits": {
-    "cpu_ms": 50
-  },
-  "vars": {
-    "APP_VERSION": "2.0.0",
-    "SCHEMA_VERSION": "2",
-    "ENVIRONMENT": "production"
-  },
-  "triggers": {
-    "crons": ["0 6 * * *"]
-  },
-  "observability": {
-    "enabled": true
-  }
+	"name": "siso-api",
+	"main": "index.js",
+	"compatibility_date": "2024-01-01",
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "siso-db",
+			"database_id": "76da5895-478f-4486-a5d4-05069f9aa45a"
+		}
+	],
+	"triggers": {
+		"crons": [
+			"0 6 * * *"
+		]
+	}
 }

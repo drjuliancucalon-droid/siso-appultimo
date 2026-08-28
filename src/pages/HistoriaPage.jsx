@@ -70,6 +70,7 @@ export default function HistoriaPage() {
   const { id, patientId, docNumero } = useParams();
   const navigate = useNavigate();
   const currentUser = useAuthStore.getState().currentUser;
+  const userId = currentUser?.user || 'drcucalon';
   const aiConfig = useMemo(() => useAIStore.getState().getConfig(), []);
   const { data: patients } = useBackendData('/data/patients', 'siso_db_patients', 'patients');
   const { data: companies } = useBackendData('/data/companies', 'siso_companies', 'companies');
@@ -402,19 +403,19 @@ export default function HistoriaPage() {
 
     // Clave 1 (objeto)
     try {
-      await d1Set(`siso_hc_completa_${docClean}`, hcCompleta);
+      await d1Set(`siso_hc_completa_${docClean}`, hcCompleta, { userId });
       console.log(`${logPrefix} ✅ hc_completa`);
     } catch (e) { failedKeys.push(`hc_completa: ${e.message}`); console.warn(`${logPrefix} ❌ hc_completa:`, e.message); }
 
     // Clave 2 (objeto)
     try {
-      await d1Set(`siso_portal_doc_${docClean}`, portalData);
+      await d1Set(`siso_portal_doc_${docClean}`, portalData, { userId });
       console.log(`${logPrefix} ✅ portal_doc`);
     } catch (e) { failedKeys.push(`portal_doc: ${e.message}`); console.warn(`${logPrefix} ❌ portal_doc:`, e.message); }
 
     // Clave 3 (objeto)
     try {
-      await d1Set(`siso_portal_${code}`, portalData);
+      await d1Set(`siso_portal_${code}`, portalData, { userId });
       console.log(`${logPrefix} ✅ portal_code`);
     } catch (e) { failedKeys.push(`portal_code: ${e.message}`); console.warn(`${logPrefix} ❌ portal_code:`, e.message); }
 
@@ -426,7 +427,7 @@ export default function HistoriaPage() {
         // LEER existente primero para hacer merge incremental
         let grupoExistente = { atenciones: [], _firma: activeSignature || null, _doctorData: portalData._doctorData, nombre: portalData.empresaNombre, nit: nitClean || portalCompanyKey };
         try {
-          const { value: existente } = await d1Get(`siso_portal_empresa_atenciones_${nitClean}`);
+          const { value: existente } = await d1Get(`siso_portal_empresa_atenciones_${nitClean}`, { userId });
           if (existente && typeof existente === 'object') {
             grupoExistente = existente;
             // Unir atenciones - sin duplicar por docNumero
@@ -452,13 +453,13 @@ export default function HistoriaPage() {
             nit: nitClean,
           };
         }
-        await d1Set(`siso_portal_empresa_atenciones_${nitClean}`, grupoExistente);
+        await d1Set(`siso_portal_empresa_atenciones_${nitClean}`, grupoExistente, { userId });
         console.log(`${logPrefix} ✅ empresa_atenciones (objeto)`);
       } catch (e) { failedKeys.push(`empresa_atenciones: ${e.message}`); console.warn(`${logPrefix} ❌ empresa_atenciones:`, e.message); }
 
       // Clave 5 (array — MERGE)
       try {
-        await d1WriteArrayMerge(`siso_portal_empresa_${nitClean}`, [empresaReg], 'id');
+        await d1WriteArrayMerge(`siso_portal_empresa_${nitClean}`, [empresaReg], 'id', { userId });
         console.log(`${logPrefix} ✅ empresa`);
       } catch (e) { failedKeys.push(`empresa: ${e.message}`); console.warn(`${logPrefix} ❌ empresa:`, e.message); }
 
@@ -469,7 +470,7 @@ export default function HistoriaPage() {
       // de periodos[] y escribe de vuelta el objeto completo.
       try {
         const docsKey = `siso_portal_empresa_docs_${nitClean}`;
-        const { value: existente } = await d1Get(docsKey);
+        const { value: existente } = await d1Get(docsKey, { userId });
         let base = (existente && typeof existente === 'object' && !Array.isArray(existente))
           ? existente
           : { nit: nitClean, nombre: portalData.empresaNombre || '', codigoAcceso: existente?.codigoAcceso || null, periodos: [] };
@@ -489,7 +490,7 @@ export default function HistoriaPage() {
         } else {
           base.periodos.push(periodoDoc);
         }
-        await d1Set(docsKey, base);
+        await d1Set(docsKey, base, { userId });
         console.log(`${logPrefix} ✅ empresa_docs (objeto, ${base.periodos.length} periodo(s))`);
       } catch (e) { failedKeys.push(`empresa_docs: ${e.message}`); console.warn(`${logPrefix} ❌ empresa_docs:`, e.message); }
     }
@@ -637,7 +638,7 @@ export default function HistoriaPage() {
       }
     }
     if (enviarChecklist.formula && (data.formulaMedicamentos || []).length > 0) {
-      sections.push('<h2 style="text-align:center;font-weight:900;">Fórmula Médica</h2>' + 
+      sections.push('<h2 style="text-align:center;font-weight:900;">Fórmula Médica</h2>' +
         (data.formulaMedicamentos || []).map(m => `<p>• ${m.nombre || m.medicamento || ''} — ${m.dosis || ''} — ${m.via || 'Oral'} — ${m.frecuencia || ''} — ${m.duracion || ''}</p>`).join(''));
     }
     if (enviarChecklist.derivacion && (data.derivaciones || []).length > 0) {
@@ -658,7 +659,7 @@ export default function HistoriaPage() {
   return (
     <div className="p-4 max-w-7xl mx-auto">
       {/* Back */}
-      
+
       {/* --- VOLVER A PACIENTES --- */}
       <div className="flex items-center justify-between mb-4">
         <button onClick={() => navigate('/patients')} className="flex items-center gap-2 text-sm font-semibold text-gray-500 hover:text-emerald-700 transition-colors">
@@ -692,11 +693,11 @@ export default function HistoriaPage() {
             {HC_TABS.map((tab) => (
               <button key={tab.id} onClick={() => setActiveTab(tab.id)}
                 className={`flex items-center justify-center gap-2 px-5 py-2 text-[11px] uppercase tracking-wider font-black rounded-lg whitespace-nowrap transition-all flex-shrink-0 ${
-                  activeTab === tab.id 
-                    ? `bg-white text-${tab.color}-700 shadow-sm ring-1 ring-gray-900/5` 
+                  activeTab === tab.id
+                    ? `bg-white text-${tab.color}-700 shadow-sm ring-1 ring-gray-900/5`
                     : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'
                 }`}>
-                <tab.icon className={`w-4 h-4 ${activeTab === tab.id ? 'text-' + tab.color + '-600' : 'opacity-50'}`} /> 
+                <tab.icon className={`w-4 h-4 ${activeTab === tab.id ? 'text-' + tab.color + '-600' : 'opacity-50'}`} />
                 {tab.label}
               </button>
             ))}
@@ -721,14 +722,14 @@ export default function HistoriaPage() {
           <button onClick={() => printHC(data, activeDoctorData, null, activeSignature)} className="flex items-center gap-1.5 px-4 py-2 text-[11px] uppercase tracking-wider font-black text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 rounded-xl transition-colors shadow-sm">
             <Printer className="w-3.5 h-3.5 text-gray-500" /> Imprimir
           </button>
-          
+
           <button onClick={handleRIPS} className="flex items-center gap-1.5 px-3 py-2 text-[11px] font-bold text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 rounded-xl transition-colors">
             <Database className="w-3.5 h-3.5 text-blue-500" /> RIPS
           </button>
           <button onClick={handleFHIR} className="flex items-center gap-1.5 px-3 py-2 text-[11px] font-bold text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 rounded-xl transition-colors">
             <Heart className="w-3.5 h-3.5 text-red-500" /> FHIR
           </button>
-          
+
           <div className="relative">
             <button onClick={() => setShowEnviarPanel(!showEnviarPanel)} className="flex items-center gap-1.5 px-3 py-2 text-[11px] uppercase tracking-wider font-black text-blue-700 bg-blue-50 border border-blue-100 hover:bg-blue-100 rounded-xl transition-colors shadow-sm">
               <Download className="w-3.5 h-3.5" /> Descargar Docs
@@ -757,9 +758,9 @@ export default function HistoriaPage() {
               </div>
             )}
           </div>
-      
 
-          
+
+
           {/* WhatsApp — enviar certificado/resultado al paciente */}
           {(data.celular || data.telefono) && (
             <a
@@ -780,7 +781,7 @@ export default function HistoriaPage() {
           <button onClick={handleCloseHC} className="flex items-center gap-1.5 px-4 py-2 text-[11px] uppercase tracking-wider font-black text-red-600 bg-red-50 hover:bg-red-100 hover:text-red-700 border border-red-100 rounded-xl transition-all ml-1 shadow-sm">
             <Lock className="w-3.5 h-3.5" /> Cerrar HC
           </button>
-      
+
         </div>
       </div>
 

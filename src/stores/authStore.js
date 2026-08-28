@@ -61,7 +61,7 @@ async function _loadUsersFromD1() {
   // Seed users fieles al monolito
   const seed = [
     {
-      id: 1, user: 'drcucalon', passHash: '49679f37304820e18bae7ed12292e42a7722a7d1a55f12e41b1abca5cc5162fd',
+      id: 1, user: 'drcucalon', passHash: '11177743b7227bd517fd7a05e0c9576b3497830f72ccfec4a5a0e1c9f65d9892',
       name: 'Dr. Julian Cucalon', nombre: 'Dr. Julian Cucalon', role: 'super_admin',
       orgId: 'ORG-001', license: 'clinica', licenseExpiry: '2099-12-31', licenseStarted: '2026-01-01',
       porcentajeHonorarios: 100, secretariaPermisos: { ...SECRETARIA_PERMISOS_DEFAULT }, activo: true,
@@ -142,7 +142,7 @@ async function _authenticateUser(username, password) {
  * Restaura datos operacionales desde D1 al localStorage al hacer login.
  * MERGEA por ID: si el navegador ya tiene datos locales, la nube gana en ids repetidos
  * pero lo local aporta las claves que falten (una nube desactualizada no pisa lo creado offline).
- * 
+ *
  * Claves restauradas: pacientes, companies, bills, reports, agenda, encuestas, informes, etc.
  */
 async function _restoreFromCloud(userId) {
@@ -158,20 +158,20 @@ async function _restoreFromCloud(userId) {
       `siso_informes_${userId}`,
       `siso_doctor_data_${userId}`,
     ];
-    
+
     let restored = 0;
     for (const key of keysToRestore) {
       try {
-        const { value } = await d1Get(key);
+        const { value } = await d1Get(key, { userId });
         if (!value || (Array.isArray(value) && value.length === 0)) continue;
-        
+
         // Leer localStorage actual
         let localValue = null;
         try {
           const raw = localStorage.getItem(key);
           if (raw) localValue = JSON.parse(raw);
         } catch {}
-        
+
         // MERGE por ID (nube gana en repetidos, local aporta faltantes)
         let merged;
         if (Array.isArray(value) && Array.isArray(localValue)) {
@@ -189,21 +189,21 @@ async function _restoreFromCloud(userId) {
         } else {
           merged = value;
         }
-        
+
         localStorage.setItem(key, JSON.stringify(merged));
         restored++;
       } catch (keyErr) {
         // Clave individual falló, continuar con las demás
       }
     }
-    
+
     if (restored > 0) {
       console.log(`[authStore] _restoreFromCloud: ${restored} claves restauradas de D1`);
     }
-    
+
     // Verificar estado de respaldo y limpiar marcador si exitoso
     try {
-      const { value: patsCheck } = await d1Get(`siso_db_patients_${userId}`);
+      const { value: patsCheck } = await d1Get(`siso_db_patients_${userId}`, { userId });
       if (Array.isArray(patsCheck) && patsCheck.length > 0) {
         _markUnsyncedHC(false);
       }
